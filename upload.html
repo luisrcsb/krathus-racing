@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Krathus Racing - Painel Secreto de Upload</title>
+    <style>
+        :root {
+            --bg-dark: #0d0f17;
+            --bg-card: #161926;
+            --accent-red: #e63946;
+            --text-main: #f8f9fa;
+            --text-muted: #a0a5b5;
+            --border-color: #262a3d;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-main); display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .box { background-color: var(--bg-card); border: 1px solid var(--border-color); padding: 30px; border-radius: 12px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+        h2 { margin-bottom: 20px; font-size: 1.2rem; color: var(--accent-red); }
+        input[type="password"] { width: 100%; padding: 10px; margin-bottom: 15px; background: #0f111a; border: 1px solid var(--border-color); color: #fff; border-radius: 6px; outline: none; text-align: center; }
+        .btn { background-color: var(--accent-red); color: white; padding: 10px 18px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; width: 100%; transition: 0.2s; }
+        .btn:hover { background-color: #c82333; }
+        .drop-zone { border: 2px dashed var(--border-color); border-radius: 8px; padding: 25px; text-align: center; cursor: pointer; margin-top: 15px; }
+        #uploadSection { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="box">
+        <div id="authSection">
+            <h2>🔒 Acesso Restrito</h2>
+            <input type="password" id="accessPassword" placeholder="Digite a senha de acesso">
+            <button class="btn" onclick="checkPassword()">Entrar</button>
+        </div>
+
+        <div id="uploadSection">
+            <h2>➕ Painel de Atualização</h2>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">Selecione o JSON gerado pelo seu script para atualizar o banco de dados.</p>
+            <div class="drop-zone" onclick="document.getElementById('fileInput').click()">
+                <p>📁 Clique para enviar o JSON</p>
+                <input type="file" id="fileInput" style="display:none" onchange="handleSecretUpload(event)">
+            </div>
+            <button class="btn" style="background: transparent; border: 1px solid var(--border-color); margin-top: 15px;" onclick="location.href='index.html'">Voltar ao Início</button>
+        </div>
+    </div>
+
+    <script>
+        function checkPassword() {
+            const pass = document.getElementById('accessPassword').value;
+            // 🔑 ALTERE A SENHA ABAIXO SE QUISER:
+            if (pass === "krathus2026") {
+                document.getElementById('authSection').style.display = 'none';
+                document.getElementById('uploadSection').style.display = 'block';
+            } else {
+                alert("Senha incorreta!");
+            }
+        }
+
+        function handleSecretUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    const content = event.target.result;
+                    const parsed = JSON.parse(content);
+                    
+                    // Salva permanentemente no navegador (LocalStorage) para o site principal ler
+                    let existingData = JSON.parse(localStorage.getItem('krathus_db_sessions')) || [];
+                    const newSessions = Array.isArray(parsed) ? parsed : [parsed];
+                    
+                    newSessions.forEach(ns => {
+                        if (ns.id && ns.laps) {
+                            existingData = existingData.filter(s => s.id !== ns.id);
+                            existingData.push(ns);
+                        }
+                    });
+
+                    localStorage.setItem('krathus_db_sessions', JSON.stringify(existingData));
+                    alert("🎉 Sessão enviada e salva com sucesso! Você já pode voltar para a página principal.");
+                } catch (err) {
+                    alert("Erro ao processar o arquivo JSON.");
+                }
+            };
+            reader.readAsText(file);
+        }
+    </script>
+</body>
+</html>
