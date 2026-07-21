@@ -7,19 +7,18 @@
     <style>
         body {
             margin: 0;
-            padding: 0;
+            padding: 20px;
             background-color: #0b0f19;
             color: #e6edf3;
             font-family: Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            text-align: center;
+            min-height: 100vh;
         }
         .container {
-            max-width: 650px;
-            width: 90%;
+            max-width: 750px;
+            width: 100%;
             background: #111827;
             border: 1px solid #1f2937;
             border-radius: 12px;
@@ -34,23 +33,50 @@
             font-weight: bold;
             letter-spacing: 1px;
             text-transform: uppercase;
+            text-align: center;
             box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.2);
         }
         .conteudo {
             padding: 30px 40px;
         }
+        h2 {
+            color: #f0883e;
+            font-size: 1.3rem;
+            margin-top: 25px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #1f2937;
+            padding-bottom: 8px;
+        }
         p {
             line-height: 1.6;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             color: #9ca3af;
-            font-size: 1.05rem;
+            font-size: 1rem;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin-bottom: 20px;
+        }
+        li {
+            margin-bottom: 10px;
+            color: #9ca3af;
+            line-height: 1.5;
+        }
+        a {
+            color: #38bdf8;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
         }
         .footer {
             font-size: 0.85rem;
             color: #6b7280;
             border-top: 1px solid #1f2937;
             padding-top: 15px;
-            margin-top: 20px;
+            margin-top: 25px;
+            text-align: center;
         }
     </style>
 </head>
@@ -61,7 +87,29 @@
         </div>
         <div class="conteudo">
             <p>A Central de Telemetria e Análise Dinâmica da <strong>Krathus Racing</strong> está temporariamente indisponível para melhorias estruturais no processamento e na importação de dados de desempenho.</p>
-            <p>Agradecemos a compreensão. Retornaremos em breve com o sistema totalmente otimizado.</p>
+            
+            <h2>🏁 Krathus Racing - Central de Telemetria e Analytics</h2>
+            <p>Central oficial de telemetria, cronometragem e análise técnica da Krathus Racing. A plataforma processa dados do software de cronometragem ZRound para corridas de automodelismo 1/28 (Mini-Z / WLtoys), realizando limpeza de dados de transponder, tratamento de voltas fantasmas e geração de relatórios de desempenho.</p>
+
+            <h2>🚀 Recursos do Dashboard</h2>
+            <ul>
+                <li>⏱️ <strong>Análise de Tempos de Volta:</strong> Visualização gráfica e em tabela dos tempos por volta de cada piloto.</li>
+                <li>🎯 <strong>Tratamento de Anomalias:</strong> Identificação e expurgo transparente de voltas fantasmas e retenções extremas.</li>
+                <li>🔍 <strong>Filtros Multissessões:</strong> Filtragem por Etapa, Tipo de Sessão (Treino/Corrida), Bateria específica e Piloto.</li>
+                <li>📊 <strong>Gráficos Dinâmicos:</strong> Visual comparativo de ritmo entre concorrentes usando Chart.js.</li>
+                <li>📱 <strong>Interface Responsiva:</strong> Visual moderno otimizado para celulares, tablets e computadores.</li>
+            </ul>
+
+            <h2>🔗 Acesse o Aplicativo</h2>
+            <p>O site está publicado e disponível nas páginas do GitHub: 👉 <a href="https://luisrcsb.github.io/krathus-racing/" target="_blank">https://luisrcsb.github.io/krathus-racing/</a></p>
+
+            <h2>🛠️ Tecnologias Utilizadas</h2>
+            <ul>
+                <li>🎨 <strong>HTML5 & CSS3:</strong> Design em Dark Mode inspirado em displays corporativos de automobilismo.</li>
+                <li>⚡ <strong>JavaScript (ES6):</strong> Manipulação dinâmica de dados e filtros em tempo real.</li>
+                <li>📈 <strong>Chart.js:</strong> Biblioteca para renderização dos gráficos de evolução de voltas.</li>
+            </ul>
+
             <div class="footer">
                 &copy; 2026 Krathus Racing. Todos os direitos reservados.
             </div>
