@@ -101,15 +101,30 @@
             </div>
         </header>
 
-        <div class="filter-panel">
-            <div class="filter-grid">
-                <div class="filter-group">
-                    <label>Sessão / Bateria</label>
-                    <select id="filterSession" onchange="applyFilters()"><option value="ALL">Todas as Baterias</option></select>
+<div class="filter-panel">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="font-size: 0.95rem; text-transform: uppercase; color: var(--text-muted);">🎯 Filtros Dinâmicos por Múltipla Escolha</h3>
+                <div>
+                    <button class="btn btn-outline" style="padding: 4px 10px; font-size: 0.75rem;" onclick="toggleAllCheckboxes(true)">Marcar Todos</button>
+                    <button class="btn btn-outline" style="padding: 4px 10px; font-size: 0.75rem;" onclick="toggleAllCheckboxes(false)">Limpar Todos</button>
                 </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+                <!-- Filtro de Sessões -->
                 <div class="filter-group">
-                    <label>Piloto</label>
-                    <select id="filterDriver" onchange="applyFilters()"><option value="ALL">Todos os Pilotos</option></select>
+                    <label style="margin-bottom: 8px; display: block;">Sessões / Baterias</label>
+                    <div id="sessionCheckboxes" style="background-color: #0f111a; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+                        <!-- Gerado dinamicamente via JS -->
+                    </div>
+                </div>
+
+                <!-- Filtro de Pilotos -->
+                <div class="filter-group">
+                    <label style="margin-bottom: 8px; display: block;">Pilotos</label>
+                    <div id="driverCheckboxes" style="background-color: #0f111a; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+                        <!-- Gerado dinamicamente via JS -->
+                    </div>
                 </div>
             </div>
         </div>
