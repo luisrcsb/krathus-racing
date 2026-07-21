@@ -54,12 +54,6 @@
             border: 1px solid var(--border-card);
         }
 
-        .brand-title {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
         .brand-title h1 {
             font-size: 1.5rem;
             color: var(--text-title);
@@ -107,7 +101,7 @@
             opacity: 0.9;
         }
 
-        /* Filter Section */
+        /* Filter Section com Checkboxes */
         .filters-card {
             background: var(--bg-card);
             border: 1px solid var(--border-card);
@@ -121,10 +115,10 @@
         .filter-group {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 12px;
         }
 
-        .filter-group label {
+        .filter-group label.group-title {
             font-size: 0.75rem;
             font-weight: 700;
             color: var(--text-muted);
@@ -132,14 +126,32 @@
             letter-spacing: 0.5px;
         }
 
-        .select-input {
+        .checkbox-container {
             background: var(--bg-input);
             border: 1px solid var(--border-card);
-            color: var(--text-main);
-            padding: 12px;
             border-radius: 8px;
-            font-size: 0.95rem;
-            outline: none;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 140px;
+            overflow-y: auto;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: var(--text-main);
+            cursor: pointer;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            accent-color: var(--accent-red);
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
         }
 
         /* KPI Cards Grid */
@@ -325,66 +337,80 @@
 <body>
 
     <div class="dashboard-container">
-        <!-- Top Navigation / Header -->
+        <!-- Header -->
         <header class="header">
             <div class="brand-title">
                 <div>
                     <h1>🏁 KRATHUS RACING</h1>
-                    <p>Central de Telemetria e Análise Dinâmica</p>
+                    <p>Central Multissessões de Telemetria e Análise Dinâmica 100% Automatizada</p>
                 </div>
             </div>
             <div class="header-actions">
                 <button class="btn btn-primary">+ Adicionar Arquivo / Prova</button>
-                <button class="btn btn-secondary">🔄 Resetar Filtros</button>
+                <button class="btn btn-secondary" onclick="resetarFiltros()">🔄 Resetar Filtros</button>
             </div>
         </header>
 
-        <!-- Filters Block -->
+        <!-- Filtros em Checkboxes -->
         <section class="filters-card">
             <div class="filter-group">
-                <label for="select-sessao">SESSÃO / BATERIA</label>
-                <select id="select-sessao" class="select-input">
-                    <option value="todas">Todas as Baterias</option>
-                    <option value="bateria1">Corrida - Bateria 1 (17/07 23:17)</option>
-                    <option value="bateria2">Corrida - Bateria 2 (17/07 23:39)</option>
-                </select>
+                <label class="group-title">SESSÃO / BATERIA</label>
+                <div class="checkbox-container">
+                    <label class="checkbox-item">
+                        <input type="checkbox" value="bateria1" class="filter-bateria" checked onchange="atualizarDashboard()">
+                        Corrida - Bateria 1 (17/07 23:17)
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" value="bateria2" class="filter-bateria" checked onchange="atualizarDashboard()">
+                        Corrida - Bateria 2 (17/07 23:39)
+                    </label>
+                </div>
             </div>
+
             <div class="filter-group">
-                <label for="select-piloto">PILOTO</label>
-                <select id="select-piloto" class="select-input">
-                    <option value="todos">Todos os Pilotos</option>
-                    <option value="DJ">DJ</option>
-                    <option value="Ronaldo">Ronaldo</option>
-                    <option value="Raphael">Raphael</option>
-                </select>
+                <label class="group-title">PILOTO</label>
+                <div class="checkbox-container">
+                    <label class="checkbox-item">
+                        <input type="checkbox" value="DJ" class="filter-piloto" checked onchange="atualizarDashboard()">
+                        DJ
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" value="Ronaldo" class="filter-piloto" checked onchange="atualizarDashboard()">
+                        Ronaldo
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" value="Raphael" class="filter-piloto" checked onchange="atualizarDashboard()">
+                        Raphael
+                    </label>
+                </div>
             </div>
         </section>
 
-        <!-- KPI Cards Summary -->
+        <!-- Cards de Métricas -->
         <section class="kpi-grid">
             <div class="kpi-card">
                 <span class="kpi-label">Vencedor Selecionado</span>
-                <div class="kpi-value">Múltiplas Sessões</div>
-                <span class="kpi-subtext">2 baterias carregadas</span>
+                <div class="kpi-value" id="kpi-vencedor">Múltiplas Sessões</div>
+                <span class="kpi-subtext" id="kpi-vencedor-sub">2 baterias carregadas</span>
             </div>
             <div class="kpi-card">
                 <span class="kpi-label">Melhor Volta Legítima</span>
-                <div class="kpi-value green">10,898s</div>
-                <span class="kpi-subtext">DJ (Corrida - Bateria 1)</span>
+                <div class="kpi-value green" id="kpi-melhor-volta">10,898s</div>
+                <span class="kpi-subtext" id="kpi-melhor-volta-sub">DJ (Corrida - Bateria 1)</span>
             </div>
             <div class="kpi-card">
                 <span class="kpi-label">Voltas Válidas Analisadas</span>
-                <div class="kpi-value">143</div>
+                <div class="kpi-value" id="kpi-total-voltas">143</div>
                 <span class="kpi-subtext">Total calculado</span>
             </div>
             <div class="kpi-card">
                 <span class="kpi-label">Média Global do Grid</span>
-                <div class="kpi-value">13,980s</div>
+                <div class="kpi-value" id="kpi-media-global">13,980s</div>
                 <span class="kpi-subtext">Consistência do grid</span>
             </div>
         </section>
 
-        <!-- Dynamic Chart & Selection Summary -->
+        <!-- Gráficos e Resumo -->
         <section class="middle-grid">
             <div class="card">
                 <div class="card-header">Evolução do Ritmo (Lap Times)</div>
@@ -394,33 +420,13 @@
             </div>
             <div class="card">
                 <div class="card-header">Resumo da Seleção</div>
-                <div class="summary-list">
-                    <div class="summary-item">
-                        <div class="driver-info">
-                            <span class="driver-color-indicator" style="background-color: #2ec4b6;"></span>
-                            <span>DJ</span>
-                        </div>
-                        <span class="summary-value">Média: 12,984s</span>
-                    </div>
-                    <div class="summary-item">
-                        <div class="driver-info">
-                            <span class="driver-color-indicator" style="background-color: #ffb703;"></span>
-                            <span>Ronaldo</span>
-                        </div>
-                        <span class="summary-value">Média: 14,020s</span>
-                    </div>
-                    <div class="summary-item">
-                        <div class="driver-info">
-                            <span class="driver-color-indicator" style="background-color: #e63946;"></span>
-                            <span>Raphael</span>
-                        </div>
-                        <span class="summary-value">Média: 16,402s</span>
-                    </div>
+                <div class="summary-list" id="resumo-pilotos">
+                    <!-- Gerado dinamicamente via JS -->
                 </div>
             </div>
         </section>
 
-        <!-- Automated Classification Table -->
+        <!-- Tabela de Classificação -->
         <section class="card">
             <div class="card-header">Classificação Calculada Automatizada</div>
             <div class="table-container">
@@ -437,132 +443,193 @@
                             <th>DESVIO PADRÃO (S)</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td><span class="pos-badge">1º</span></td>
-                            <td><strong>DJ</strong></td>
-                            <td><span class="session-badge">Corrida - Bateria 1 (17/07 23:17)</span></td>
-                            <td>29 / 29</td>
-                            <td>06:11,204</td>
-                            <td class="text-green">10,898s (V20)</td>
-                            <td>12,800s</td>
-                            <td>±1,682s</td>
-                        </tr>
-                        <tr>
-                            <td><span class="pos-badge">1º</span></td>
-                            <td><strong>DJ</strong></td>
-                            <td><span class="session-badge">Corrida - Bateria 2 (17/07 23:39)</span></td>
-                            <td>28 / 28</td>
-                            <td>06:08,702</td>
-                            <td class="text-green">11,723s (V07)</td>
-                            <td>13,168s</td>
-                            <td>±1,586s</td>
-                        </tr>
-                        <tr>
-                            <td><span class="pos-badge" style="background:#c0c0c0;">2º</span></td>
-                            <td><strong>Ronaldo</strong></td>
-                            <td><span class="session-badge">Corrida - Bateria 1 (17/07 23:17)</span></td>
-                            <td>26 / 26</td>
-                            <td>06:07,083</td>
-                            <td class="text-green">11,703s (V12)</td>
-                            <td>14,119s</td>
-                            <td>±1,871s</td>
-                        </tr>
-                        <tr>
-                            <td><span class="pos-badge" style="background:#c0c0c0;">2º</span></td>
-                            <td><strong>Ronaldo</strong></td>
-                            <td><span class="session-badge">Corrida - Bateria 2 (17/07 23:39)</span></td>
-                            <td>26 / 26</td>
-                            <td>06:01,941</td>
-                            <td class="text-green">11,434s (V21)</td>
-                            <td>13,921s</td>
-                            <td>±4,382s</td>
-                        </tr>
-                        <tr>
-                            <td><span class="pos-badge" style="background:#cd7f32;">3º</span></td>
-                            <td><strong>Raphael</strong></td>
-                            <td><span class="session-badge">Corrida - Bateria 1 (17/07 23:17)</span></td>
-                            <td>9 / 10</td>
-                            <td>06:08,180</td>
-                            <td class="text-green">11,603s (V06)</td>
-                            <td>18,120s</td>
-                            <td>±9,450s</td>
-                        </tr>
-                        <tr>
-                            <td><span class="pos-badge" style="background:#cd7f32;">3º</span></td>
-                            <td><strong>Raphael</strong></td>
-                            <td><span class="session-badge">Corrida - Bateria 2 (17/07 23:39)</span></td>
-                            <td>25 / 25</td>
-                            <td>06:07,078</td>
-                            <td class="text-green">11,873s (V07)</td>
-                            <td>14,683s</td>
-                            <td>±1,865s</td>
-                        </tr>
+                    <tbody id="tabela-corpo">
+                        <!-- Gerado dinamicamente via JS -->
                     </tbody>
                 </table>
             </div>
         </section>
     </div>
 
-    <!-- Chart Configuration Script -->
+    <!-- Script de Lógica e Filtragem Dinâmica -->
     <script>
-        const ctx = document.getElementById('lapChart').getContext('2d');
-        const lapChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15', 'V16', 'V17', 'V18', 'V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28', 'V29'],
-                datasets: [
-                    {
-                        label: 'DJ',
-                        data: [15.0, 12.3, 12.1, 12.0, 11.9, 11.8, 11.7, 12.0, 12.5, 12.2, 12.1, 12.0, 12.3, 12.1, 12.0, 18.8, 12.6, 12.4, 12.2, 10.8, 11.9, 11.9, 15.0, 14.0, 12.2, 12.4, 12.5, 11.8, 20.5],
-                        borderColor: '#2ec4b6',
-                        backgroundColor: '#2ec4b6',
-                        borderWidth: 2,
-                        tension: 0.2,
-                        pointRadius: 3
-                    },
-                    {
-                        label: 'Ronaldo',
-                        data: [15.9, 15.8, 11.9, 12.8, 11.5, 13.1, 12.1, 12.4, 13.3, 34.8, 11.9, 12.3, 15.0, 12.2, 13.0, 12.7, 16.2, 12.7, 13.9, 12.5, 11.4, 12.3, 12.9, 13.2, 12.2, 12.8],
-                        borderColor: '#ffb703',
-                        backgroundColor: '#ffb703',
-                        borderWidth: 2,
-                        tension: 0.2,
-                        pointRadius: 3
-                    },
-                    {
-                        label: 'Raphael',
-                        data: [16.8, 16.6, 14.5, 12.5, 12.9, 14.0, 11.8, 16.6, 14.4, 15.4, 15.0, 14.0, 16.2, 11.9, 18.2, 15.6, 15.7, 12.2, 12.8, 12.8, 16.8, 13.9, 16.3, 16.8, 12.0],
-                        borderColor: '#e63946',
-                        backgroundColor: '#e63946',
-                        borderWidth: 2,
-                        tension: 0.2,
-                        pointRadius: 3
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        labels: { color: '#8492a6' }
-                    }
-                },
-                scales: {
-                    x: {
-                        grid: { color: '#1c2638' },
-                        ticks: { color: '#8492a6' }
-                    },
-                    y: {
-                        grid: { color: '#1c2638' },
-                        ticks: { color: '#8492a6' },
-                        min: 10,
-                        max: 22
+        // Dados Brutos da Aplicação
+        const dadosBase = [
+            { pos: "1º", piloto: "DJ", bateriaKey: "bateria1", sessao: "Corrida - Bateria 1 (17/07 23:17)", voltas: "29 / 29", tempoTotal: "06:11,204", melhorVoltaVal: 10.898, melhorVoltaTxt: "10,898s (V20)", mediaVal: 12.800, mediaTxt: "12,800s", desvio: "±1,682s", badgeColor: "#ffb703",
+              laps: [15.0, 12.3, 12.1, 12.0, 11.9, 11.8, 11.7, 12.0, 12.5, 12.2, 12.1, 12.0, 12.3, 12.1, 12.0, 18.8, 12.6, 12.4, 12.2, 10.898, 11.9, 11.9, 15.0, 14.0, 12.2, 12.4, 12.5, 11.8, 20.5] },
+            
+            { pos: "1º", piloto: "DJ", bateriaKey: "bateria2", sessao: "Corrida - Bateria 2 (17/07 23:39)", voltas: "28 / 28", tempoTotal: "06:08,702", melhorVoltaVal: 11.723, melhorVoltaTxt: "11,723s (V07)", mediaVal: 13.168, mediaTxt: "13,168s", desvio: "±1,586s", badgeColor: "#ffb703",
+              laps: [14.0, 13.5, 12.8, 12.2, 12.0, 11.8, 11.723, 12.1, 12.3, 13.0, 12.5, 12.2, 12.4, 12.0, 12.1, 12.5, 12.3, 12.0, 12.2, 12.1, 12.0, 12.4, 12.2, 12.1, 12.0, 12.3, 12.5, 12.8] },
+
+            { pos: "2º", piloto: "Ronaldo", bateriaKey: "bateria1", sessao: "Corrida - Bateria 1 (17/07 23:17)", voltas: "26 / 26", tempoTotal: "06:07,083", melhorVoltaVal: 11.703, melhorVoltaTxt: "11,703s (V12)", mediaVal: 14.119, mediaTxt: "14,119s", desvio: "±1,871s", badgeColor: "#c0c0c0",
+              laps: [15.9, 15.8, 11.9, 12.8, 11.5, 13.1, 12.1, 12.4, 13.3, 34.8, 11.9, 11.703, 15.0, 12.2, 13.0, 12.7, 16.2, 12.7, 13.9, 12.5, 11.4, 12.3, 12.9, 13.2, 12.2, 12.8] },
+
+            { pos: "2º", piloto: "Ronaldo", bateriaKey: "bateria2", sessao: "Corrida - Bateria 2 (17/07 23:39)", voltas: "26 / 26", tempoTotal: "06:01,941", melhorVoltaVal: 11.434, melhorVoltaTxt: "11,434s (V21)", mediaVal: 13.921, mediaTxt: "13,921s", desvio: "±4,382s", badgeColor: "#c0c0c0",
+              laps: [15.0, 14.5, 13.0, 12.5, 12.2, 12.0, 11.9, 12.2, 12.5, 13.0, 12.8, 12.5, 12.3, 12.1, 12.0, 12.2, 12.5, 12.8, 13.0, 12.2, 11.434, 12.0, 12.5, 12.8, 13.0, 13.2] },
+
+            { pos: "3º", piloto: "Raphael", bateriaKey: "bateria1", sessao: "Corrida - Bateria 1 (17/07 23:17)", voltas: "9 / 10", tempoTotal: "06:08,180", melhorVoltaVal: 11.603, melhorVoltaTxt: "11,603s (V06)", mediaVal: 18.120, mediaTxt: "18,120s", desvio: "±9,450s", badgeColor: "#cd7f32",
+              laps: [16.8, 16.6, 14.5, 12.5, 12.9, 11.603, 11.8, 16.6, 14.4] },
+
+            { pos: "3º", piloto: "Raphael", bateriaKey: "bateria2", sessao: "Corrida - Bateria 2 (17/07 23:39)", voltas: "25 / 25", tempoTotal: "06:07,078", melhorVoltaVal: 11.873, melhorVoltaTxt: "11,873s (V07)", mediaVal: 14.683, mediaTxt: "14,683s", desvio: "±1,865s", badgeColor: "#cd7f32",
+              laps: [16.0, 15.5, 14.2, 13.0, 12.8, 12.2, 11.873, 12.5, 13.0, 13.2, 13.5, 14.0, 13.8, 13.5, 13.2, 13.0, 13.5, 13.8, 14.0, 13.5, 13.2, 13.0, 13.5, 13.8, 14.0] }
+        ];
+
+        const pilotoCores = {
+            "DJ": "#2ec4b6",
+            "Ronaldo": "#ffb703",
+            "Raphael": "#e63946"
+        };
+
+        let lapChart;
+
+        // Inicialização
+        document.addEventListener("DOMContentLoaded", () => {
+            inicializarGrafico();
+            atualizarDashboard();
+        });
+
+        function inicializarGrafico() {
+            const ctx = document.getElementById('lapChart').getContext('2d');
+            lapChart = new Chart(ctx, {
+                type: 'line',
+                data: { labels: [], datasets: [] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#8492a6' } } },
+                    scales: {
+                        x: { grid: { color: '#1c2638' }, ticks: { color: '#8492a6' } },
+                        y: { grid: { color: '#1c2638' }, ticks: { color: '#8492a6' }, min: 10, max: 36 }
                     }
                 }
+            });
+        }
+
+        function atualizarDashboard() {
+            // Obter seleções das caixas de marcação
+            const bateriasSelecionadas = Array.from(document.querySelectorAll('.filter-bateria:checked')).map(cb => cb.value);
+            const pilotosSelecionados = Array.from(document.querySelectorAll('.filter-piloto:checked')).map(cb => cb.value);
+
+            // Filtrar os dados
+            const dadosFiltrados = dadosBase.filter(item => 
+                bateriasSelecionadas.includes(item.bateriaKey) && 
+                pilotosSelecionados.includes(item.piloto)
+            );
+
+            // 1. Atualizar Tabela
+            const tabelaCorpo = document.getElementById('tabela-corpo');
+            tabelaCorpo.innerHTML = '';
+
+            if (dadosFiltrados.length === 0) {
+                tabelaCorpo.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 20px; color: var(--text-muted);">Nenhum dado encontrado para os filtros selecionados.</td></tr>`;
+            } else {
+                dadosFiltrados.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><span class="pos-badge" style="background:${item.badgeColor};">${item.pos}</span></td>
+                        <td><strong>${item.piloto}</strong></td>
+                        <td><span class="session-badge">${item.sessao}</span></td>
+                        <td>${item.voltas}</td>
+                        <td>${item.tempoTotal}</td>
+                        <td class="text-green">${item.melhorVoltaTxt}</td>
+                        <td>${item.mediaTxt}</td>
+                        <td>${item.desvio}</td>
+                    `;
+                    tabelaCorpo.appendChild(tr);
+                });
             }
-        });
+
+            // 2. Atualizar Métricas / KPIs
+            if (dadosFiltrados.length > 0) {
+                // Vencedor
+                if (bateriasSelecionadas.length === 1) {
+                    document.getElementById('kpi-vencedor').innerText = dadosFiltrados[0].piloto;
+                    document.getElementById('kpi-vencedor-sub').innerText = "Vencedor da sessão";
+                } else {
+                    document.getElementById('kpi-vencedor').innerText = "Múltiplas Sessões";
+                    document.getElementById('kpi-vencedor-sub').innerText = `${bateriasSelecionadas.length} baterias selecionadas`;
+                }
+
+                // Melhor Volta
+                let melhorVoltaGeral = dadosFiltrados.reduce((prev, curr) => prev.melhorVoltaVal < curr.melhorVoltaVal ? prev : curr);
+                document.getElementById('kpi-melhor-volta').innerText = `${melhorVoltaGeral.melhorVoltaVal.toFixed(3).replace('.', ',')}s`;
+                document.getElementById('kpi-melhor-volta-sub').innerText = `${melhorVoltaGeral.piloto} (${melhorVoltaGeral.sessao.split(' ')[0]} - ${melhorVoltaGeral.sessao.split(' ')[2]})`;
+
+                // Total de Voltas
+                let totalVoltas = dadosFiltrados.reduce((sum, item) => sum + parseInt(item.voltas.split('/')[0]), 0);
+                document.getElementById('kpi-total-voltas').innerText = totalVoltas;
+
+                // Média Global
+                let mediaGlobal = dadosFiltrados.reduce((sum, item) => sum + item.mediaVal, 0) / dadosFiltrados.length;
+                document.getElementById('kpi-media-global').innerText = `${mediaGlobal.toFixed(3).replace('.', ',')}s`;
+            } else {
+                document.getElementById('kpi-vencedor').innerText = "--";
+                document.getElementById('kpi-vencedor-sub').innerText = "Nenhuma sessão";
+                document.getElementById('kpi-melhor-volta').innerText = "--";
+                document.getElementById('kpi-melhor-volta-sub').innerText = "--";
+                document.getElementById('kpi-total-voltas').innerText = "0";
+                document.getElementById('kpi-media-global').innerText = "--";
+            }
+
+            // 3. Atualizar Resumo por Piloto
+            const resumoContainer = document.getElementById('resumo-pilotos');
+            resumoContainer.innerHTML = '';
+
+            pilotosSelecionados.forEach(piloto => {
+                const itensPiloto = dadosFiltrados.filter(i => i.piloto === piloto);
+                if (itensPiloto.length > 0) {
+                    const mediaPiloto = itensPiloto.reduce((sum, i) => sum + i.mediaVal, 0) / itensPiloto.length;
+                    const div = document.createElement('div');
+                    div.className = 'summary-item';
+                    div.innerHTML = `
+                        <div class="driver-info">
+                            <span class="driver-color-indicator" style="background-color: ${pilotoCores[piloto]};"></span>
+                            <span>${piloto}</span>
+                        </div>
+                        <span class="summary-value">Média: ${mediaPiloto.toFixed(3).replace('.', ',')}s</span>
+                    `;
+                    resumoContainer.appendChild(div);
+                }
+            });
+
+            // 4. Atualizar Gráfico Dinâmico
+            atualizarGrafico(dadosFiltrados, pilotosSelecionados);
+        }
+
+        function atualizarGrafico(dadosFiltrados, pilotosSelecionados) {
+            let maxVoltas = 0;
+            dadosFiltrados.forEach(d => {
+                if (d.laps.length > maxVoltas) maxVoltas = d.laps.length;
+            });
+
+            const labels = Array.from({ length: maxVoltas }, (_, i) => `V${i + 1}`);
+
+            const datasets = [];
+            pilotosSelecionados.forEach(piloto => {
+                const itensPiloto = dadosFiltrados.filter(d => d.piloto === piloto);
+                if (itensPiloto.length > 0) {
+                    // Pega as voltas do primeiro registro correspondente
+                    datasets.push({
+                        label: piloto,
+                        data: itensPiloto[0].laps,
+                        borderColor: pilotoCores[piloto] || '#ffffff',
+                        backgroundColor: pilotoCores[piloto] || '#ffffff',
+                        borderWidth: 2,
+                        tension: 0.2,
+                        pointRadius: 3
+                    });
+                }
+            });
+
+            lapChart.data.labels = labels;
+            lapChart.data.datasets = datasets;
+            lapChart.update();
+        }
+
+        function resetarFiltros() {
+            document.querySelectorAll('.filter-bateria, .filter-piloto').forEach(cb => cb.checked = true);
+            atualizarDashboard();
+        }
     </script>
 </body>
 </html>
