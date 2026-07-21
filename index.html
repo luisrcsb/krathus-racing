@@ -3,117 +3,566 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manutenção - Krathus Racing</title>
+    <title>Krathus Racing - Central de Telemetria</title>
+    <!-- Chart.js para renderizar o gráfico de linhas de evolução de ritmo -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body {
+        :root {
+            --bg-body: #0d111a;
+            --bg-card: #151c28;
+            --bg-card-header: #1c2638;
+            --bg-input: #1c263b;
+            --border-card: #222d42;
+            --text-title: #ffffff;
+            --text-main: #d0d7e3;
+            --text-muted: #8492a6;
+            --accent-red: #e63946;
+            --accent-green: #2ec4b6;
+            --accent-gold: #ffb703;
+            --accent-blue: #3a86ff;
+        }
+
+        * {
+            box-sizing: border-box;
             margin: 0;
-            padding: 20px;
-            background-color: #0b0f19;
-            color: #e6edf3;
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .container {
-            max-width: 750px;
-            width: 100%;
-            background: #111827;
-            border: 1px solid #1f2937;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
-            overflow: hidden;
-        }
-        .banner-vermelho {
-            background-color: #dc2626;
-            color: #ffffff;
-            padding: 24px 20px;
-            font-size: 1.8rem;
-            font-weight: bold;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            text-align: center;
-            box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.2);
-        }
-        .conteudo {
-            padding: 30px 40px;
-        }
-        h2 {
-            color: #f0883e;
-            font-size: 1.3rem;
-            margin-top: 25px;
-            margin-bottom: 10px;
-            border-bottom: 1px solid #1f2937;
-            padding-bottom: 8px;
-        }
-        p {
-            line-height: 1.6;
-            margin-bottom: 15px;
-            color: #9ca3af;
-            font-size: 1rem;
-        }
-        ul {
-            list-style-type: none;
             padding: 0;
-            margin-bottom: 20px;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         }
-        li {
-            margin-bottom: 10px;
-            color: #9ca3af;
-            line-height: 1.5;
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            padding: 24px;
         }
-        a {
-            color: #38bdf8;
-            text-decoration: none;
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
-        a:hover {
-            text-decoration: underline;
+
+        /* Top Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-card);
+            padding: 20px 24px;
+            border-radius: 12px;
+            border: 1px solid var(--border-card);
         }
-        .footer {
+
+        .brand-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-title h1 {
+            font-size: 1.5rem;
+            color: var(--text-title);
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .brand-title p {
             font-size: 0.85rem;
-            color: #6b7280;
-            border-top: 1px solid #1f2937;
-            padding-top: 15px;
-            margin-top: 25px;
-            text-align: center;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-red);
+            color: #fff;
+        }
+
+        .btn-secondary {
+            background-color: #2b384e;
+            color: var(--text-main);
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Filter Section */
+        .filters-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 12px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-group label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .select-input {
+            background: var(--bg-input);
+            border: 1px solid var(--border-card);
+            color: var(--text-main);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        /* KPI Cards Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .kpi-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 12px;
+            padding: 18px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .kpi-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .kpi-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text-title);
+            margin: 8px 0 4px 0;
+        }
+
+        .kpi-value.green {
+            color: var(--accent-green);
+        }
+
+        .kpi-subtext {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Middle Grid: Chart & Summary */
+        .middle-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-title);
+            margin-bottom: 16px;
+        }
+
+        .card-header::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background-color: var(--accent-red);
+            border-radius: 2px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 280px;
+            width: 100%;
+        }
+
+        /* Driver Summary List */
+        .summary-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .summary-item {
+            background: var(--bg-input);
+            padding: 14px 16px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .driver-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+
+        .driver-color-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .summary-value {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+        }
+
+        /* Table Section */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background-color: var(--bg-card-header);
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            padding: 12px 16px;
+            font-weight: 700;
+            border-bottom: 1px solid var(--border-card);
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-card);
+        }
+
+        tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .pos-badge {
+            background: var(--accent-gold);
+            color: #000;
+            font-weight: bold;
+            font-size: 0.8rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .session-badge {
+            background: #1d3557;
+            color: var(--accent-blue);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .text-green {
+            color: var(--accent-green);
+            font-weight: 700;
+        }
+
+        @media (max-width: 1024px) {
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .middle-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="banner-vermelho">
-            Em manutenção. Novidades em breve.
-        </div>
-        <div class="conteudo">
-            <p>A Central de Telemetria e Análise Dinâmica da <strong>Krathus Racing</strong> está temporariamente indisponível para melhorias estruturais no processamento e na importação de dados de desempenho.</p>
-            
-            <h2>🏁 Krathus Racing - Central de Telemetria e Analytics</h2>
-            <p>Central oficial de telemetria, cronometragem e análise técnica da Krathus Racing. A plataforma processa dados do software de cronometragem ZRound para corridas de automodelismo 1/28 (Mini-Z / WLtoys), realizando limpeza de dados de transponder, tratamento de voltas fantasmas e geração de relatórios de desempenho.</p>
 
-            <h2>🚀 Recursos do Dashboard</h2>
-            <ul>
-                <li>⏱️ <strong>Análise de Tempos de Volta:</strong> Visualização gráfica e em tabela dos tempos por volta de cada piloto.</li>
-                <li>🎯 <strong>Tratamento de Anomalias:</strong> Identificação e expurgo transparente de voltas fantasmas e retenções extremas.</li>
-                <li>🔍 <strong>Filtros Multissessões:</strong> Filtragem por Etapa, Tipo de Sessão (Treino/Corrida), Bateria específica e Piloto.</li>
-                <li>📊 <strong>Gráficos Dinâmicos:</strong> Visual comparativo de ritmo entre concorrentes usando Chart.js.</li>
-                <li>📱 <strong>Interface Responsiva:</strong> Visual moderno otimizado para celulares, tablets e computadores.</li>
-            </ul>
-
-            <h2>🔗 Acesse o Aplicativo</h2>
-            <p>O site está publicado e disponível nas páginas do GitHub: 👉 <a href="https://luisrcsb.github.io/krathus-racing/" target="_blank">https://luisrcsb.github.io/krathus-racing/</a></p>
-
-            <h2>🛠️ Tecnologias Utilizadas</h2>
-            <ul>
-                <li>🎨 <strong>HTML5 & CSS3:</strong> Design em Dark Mode inspirado em displays corporativos de automobilismo.</li>
-                <li>⚡ <strong>JavaScript (ES6):</strong> Manipulação dinâmica de dados e filtros em tempo real.</li>
-                <li>📈 <strong>Chart.js:</strong> Biblioteca para renderização dos gráficos de evolução de voltas.</li>
-            </ul>
-
-            <div class="footer">
-                &copy; 2026 Krathus Racing. Todos os direitos reservados.
+    <div class="dashboard-container">
+        <!-- Top Navigation / Header -->
+        <header class="header">
+            <div class="brand-title">
+                <div>
+                    <h1>🏁 KRATHUS RACING</h1>
+                    <p>Central Multissessões de Telemetria e Análise Dinâmica 100% Automatizada</p>
+                </div>
             </div>
-        </div>
+            <div class="header-actions">
+                <button class="btn btn-primary">+ Adicionar Arquivo / Prova</button>
+                <button class="btn btn-secondary">🔄 Resetar Filtros</button>
+            </div>
+        </header>
+
+        <!-- Filters Block -->
+        <section class="filters-card">
+            <div class="filter-group">
+                <label for="select-sessao">SESSÃO / BATERIA</label>
+                <select id="select-sessao" class="select-input">
+                    <option value="todas">Todas as Baterias</option>
+                    <option value="bateria1">Corrida - Bateria 1 (17/07 23:17)</option>
+                    <option value="bateria2">Corrida - Bateria 2 (17/07 23:39)</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="select-piloto">PILOTO</label>
+                <select id="select-piloto" class="select-input">
+                    <option value="todos">Todos os Pilotos</option>
+                    <option value="DJ">DJ</option>
+                    <option value="Ronaldo">Ronaldo</option>
+                    <option value="Raphael">Raphael</option>
+                </select>
+            </div>
+        </section>
+
+        <!-- KPI Cards Summary -->
+        <section class="kpi-grid">
+            <div class="kpi-card">
+                <span class="kpi-label">Vencedor Selecionado</span>
+                <div class="kpi-value">Múltiplas Sessões</div>
+                <span class="kpi-subtext">2 baterias carregadas</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-label">Melhor Volta Legítima</span>
+                <div class="kpi-value green">10,898s</div>
+                <span class="kpi-subtext">DJ (Corrida - Bateria 1)</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-label">Voltas Válidas Analisadas</span>
+                <div class="kpi-value">143</div>
+                <span class="kpi-subtext">Total calculado</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-label">Média Global do Grid</span>
+                <div class="kpi-value">13,980s</div>
+                <span class="kpi-subtext">Consistência do grid</span>
+            </div>
+        </section>
+
+        <!-- Dynamic Chart & Selection Summary -->
+        <section class="middle-grid">
+            <div class="card">
+                <div class="card-header">Evolução do Ritmo (Lap Times)</div>
+                <div class="chart-container">
+                    <canvas id="lapChart"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">Resumo da Seleção</div>
+                <div class="summary-list">
+                    <div class="summary-item">
+                        <div class="driver-info">
+                            <span class="driver-color-indicator" style="background-color: #2ec4b6;"></span>
+                            <span>DJ</span>
+                        </div>
+                        <span class="summary-value">Média: 12,984s</span>
+                    </div>
+                    <div class="summary-item">
+                        <div class="driver-info">
+                            <span class="driver-color-indicator" style="background-color: #ffb703;"></span>
+                            <span>Ronaldo</span>
+                        </div>
+                        <span class="summary-value">Média: 14,020s</span>
+                    </div>
+                    <div class="summary-item">
+                        <div class="driver-info">
+                            <span class="driver-color-indicator" style="background-color: #e63946;"></span>
+                            <span>Raphael</span>
+                        </div>
+                        <span class="summary-value">Média: 16,402s</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Automated Classification Table -->
+        <section class="card">
+            <div class="card-header">Classificação Calculada Automatizada</div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>POS</th>
+                            <th>PILOTO</th>
+                            <th>SESSÃO</th>
+                            <th>VOLTAS VÁLIDAS</th>
+                            <th>TEMPO TOTAL</th>
+                            <th>MELHOR VOLTA</th>
+                            <th>MÉDIA (S)</th>
+                            <th>DESVIO PADRÃO (S)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="pos-badge">1º</span></td>
+                            <td><strong>DJ</strong></td>
+                            <td><span class="session-badge">Corrida - Bateria 1 (17/07 23:17)</span></td>
+                            <td>29 / 29</td>
+                            <td>06:11,204</td>
+                            <td class="text-green">10,898s (V20)</td>
+                            <td>12,800s</td>
+                            <td>±1,682s</td>
+                        </tr>
+                        <tr>
+                            <td><span class="pos-badge">1º</span></td>
+                            <td><strong>DJ</strong></td>
+                            <td><span class="session-badge">Corrida - Bateria 2 (17/07 23:39)</span></td>
+                            <td>28 / 28</td>
+                            <td>06:08,702</td>
+                            <td class="text-green">11,723s (V07)</td>
+                            <td>13,168s</td>
+                            <td>±1,586s</td>
+                        </tr>
+                        <tr>
+                            <td><span class="pos-badge" style="background:#c0c0c0;">2º</span></td>
+                            <td><strong>Ronaldo</strong></td>
+                            <td><span class="session-badge">Corrida - Bateria 1 (17/07 23:17)</span></td>
+                            <td>26 / 26</td>
+                            <td>06:07,083</td>
+                            <td class="text-green">11,703s (V12)</td>
+                            <td>14,119s</td>
+                            <td>±1,871s</td>
+                        </tr>
+                        <tr>
+                            <td><span class="pos-badge" style="background:#c0c0c0;">2º</span></td>
+                            <td><strong>Ronaldo</strong></td>
+                            <td><span class="session-badge">Corrida - Bateria 2 (17/07 23:39)</span></td>
+                            <td>26 / 26</td>
+                            <td>06:01,941</td>
+                            <td class="text-green">11,434s (V21)</td>
+                            <td>13,921s</td>
+                            <td>±4,382s</td>
+                        </tr>
+                        <tr>
+                            <td><span class="pos-badge" style="background:#cd7f32;">3º</span></td>
+                            <td><strong>Raphael</strong></td>
+                            <td><span class="session-badge">Corrida - Bateria 1 (17/07 23:17)</span></td>
+                            <td>9 / 10</td>
+                            <td>06:08,180</td>
+                            <td class="text-green">11,603s (V06)</td>
+                            <td>18,120s</td>
+                            <td>±9,450s</td>
+                        </tr>
+                        <tr>
+                            <td><span class="pos-badge" style="background:#cd7f32;">3º</span></td>
+                            <td><strong>Raphael</strong></td>
+                            <td><span class="session-badge">Corrida - Bateria 2 (17/07 23:39)</span></td>
+                            <td>25 / 25</td>
+                            <td>06:07,078</td>
+                            <td class="text-green">11,873s (V07)</td>
+                            <td>14,683s</td>
+                            <td>±1,865s</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
     </div>
+
+    <!-- Chart Configuration Script -->
+    <script>
+        const ctx = document.getElementById('lapChart').getContext('2d');
+        const lapChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15', 'V16', 'V17', 'V18', 'V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28', 'V29'],
+                datasets: [
+                    {
+                        label: 'DJ',
+                        data: [15.0, 12.3, 12.1, 12.0, 11.9, 11.8, 11.7, 12.0, 12.5, 12.2, 12.1, 12.0, 12.3, 12.1, 12.0, 18.8, 12.6, 12.4, 12.2, 10.8, 11.9, 11.9, 15.0, 14.0, 12.2, 12.4, 12.5, 11.8, 20.5],
+                        borderColor: '#2ec4b6',
+                        backgroundColor: '#2ec4b6',
+                        borderWidth: 2,
+                        tension: 0.2,
+                        pointRadius: 3
+                    },
+                    {
+                        label: 'Ronaldo',
+                        data: [15.9, 15.8, 11.9, 12.8, 11.5, 13.1, 12.1, 12.4, 13.3, 34.8, 11.9, 12.3, 15.0, 12.2, 13.0, 12.7, 16.2, 12.7, 13.9, 12.5, 11.4, 12.3, 12.9, 13.2, 12.2, 12.8],
+                        borderColor: '#ffb703',
+                        backgroundColor: '#ffb703',
+                        borderWidth: 2,
+                        tension: 0.2,
+                        pointRadius: 3
+                    },
+                    {
+                        label: 'Raphael',
+                        data: [16.8, 16.6, 14.5, 12.5, 12.9, 14.0, 11.8, 16.6, 14.4, 15.4, 15.0, 14.0, 16.2, 11.9, 18.2, 15.6, 15.7, 12.2, 12.8, 12.8, 16.8, 13.9, 16.3, 16.8, 12.0],
+                        borderColor: '#e63946',
+                        backgroundColor: '#e63946',
+                        borderWidth: 2,
+                        tension: 0.2,
+                        pointRadius: 3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: { color: '#8492a6' }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: '#1c2638' },
+                        ticks: { color: '#8492a6' }
+                    },
+                    y: {
+                        grid: { color: '#1c2638' },
+                        ticks: { color: '#8492a6' },
+                        min: 10,
+                        max: 22
+                    }
+                }
+            }
+        });
+    </script>
 </body>
 </html>
