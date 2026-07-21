@@ -1,3 +1,892 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Krathus Racing - Central de Telemetria & Analytics</title>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0d0f17;
+            --bg-card: #161926;
+            --bg-card-hover: #1f2335;
+            --accent-red: #e63946;
+            --accent-red-hover: #c82333;
+            --accent-green: #2ecc71;
+            --accent-yellow: #f1c40f;
+            --accent-blue: #3498db;
+            --accent-purple: #9b59b6;
+            --text-main: #f8f9fa;
+            --text-muted: #a0a5b5;
+            --border-color: #262a3d;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, #161926 0%, #0d0f17 100%);
+            border-left: 5px solid var(--accent-red);
+            padding: 20px 24px;
+            border-radius: 10px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            border-right: 1px solid var(--border-color);
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .brand h1 {
+            font-size: 1.9rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand h1 span {
+            color: var(--accent-red);
+        }
+
+        .brand p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn {
+            background-color: var(--accent-red);
+            color: white;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-red-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--bg-card-hover);
+            border-color: var(--text-muted);
+        }
+
+        /* Filter Panel */
+        .filter-panel {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .filter-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .filter-group label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-group select, .filter-group input {
+            background-color: #0f111a;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .filter-group select:focus, .filter-group input:focus {
+            border-color: var(--accent-red);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 18px;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background-color: var(--border-color);
+        }
+
+        .card.winner::before { background-color: var(--accent-yellow); }
+        .card.fastest::before { background-color: var(--accent-green); }
+        .card.laps::before { background-color: var(--accent-blue); }
+        .card.avg::before { background-color: var(--accent-purple); }
+
+        .card-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .card-value {
+            font-size: 1.6rem;
+            font-weight: bold;
+        }
+
+        .card-sub {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Layout Grid */
+        .grid-two-col {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 992px) {
+            .grid-two-col {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chart-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        /* CRUCIAL: RIGID CHART BOX TO PREVENT STRETCHING */
+        .chart-box {
+            position: relative;
+            width: 100%;
+            height: 250px !important;
+            max-height: 250px !important;
+            overflow: hidden;
+        }
+
+        .chart-box canvas {
+            max-height: 250px !important;
+            height: 250px !important;
+            width: 100% !important;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+
+        .section-title::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 18px;
+            background-color: var(--accent-red);
+            border-radius: 2px;
+        }
+
+        /* Table Styling */
+        .table-container {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow-x: auto;
+            margin-bottom: 24px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background-color: #1a1d2c;
+            color: var(--text-muted);
+            padding: 12px 16px;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.78rem;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: var(--bg-card-hover);
+        }
+
+        /* Badges */
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .badge-p1 { background-color: #f1c40f22; color: #f1c40f; border: 1px solid #f1c40f; }
+        .badge-p2 { background-color: #e67e2222; color: #e67e22; border: 1px solid #e67e22; }
+        .badge-p3 { background-color: #95a5a622; color: #95a5a6; border: 1px solid #95a5a6; }
+        .badge-session { background-color: #3498db22; color: #3498db; border: 1px solid #3498db; }
+
+        .fastest-lap-val {
+            color: var(--accent-green);
+            font-weight: bold;
+        }
+
+        .ghost-lap {
+            color: #e74c3c;
+            text-decoration: line-through;
+            font-size: 0.8rem;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .drop-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s;
+            margin-bottom: 16px;
+        }
+
+        .drop-zone:hover {
+            border-color: var(--accent-red);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="brand">
+                <h1>🏁 KRATHUS <span>RACING</span></h1>
+                <p>Central Multissessões de Telemetria, Cronometragem e Análise de Desempenho</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn" onclick="openImportModal()">➕ Adicionar Prova / Bateria</button>
+                <button class="btn btn-outline" onclick="resetFilters()">🔄 Resetar Filtros</button>
+            </div>
+        </header>
+
+        <!-- Multi-Filter Panel -->
+        <div class="filter-panel">
+            <div class="filter-title">🔍 Filtros Dinâmicos de Consulta</div>
+            <div class="filter-grid">
+                <div class="filter-group">
+                    <label for="filterEvent">Evento / Etapa</label>
+                    <select id="filterEvent" onchange="applyFilters()">
+                        <option value="ALL">Todas as Etapas</option>
+                        <option value="Etapa 1 - Julho">Etapa 1 - Julho 2026</option>
+                        <option value="Etapa 2 - Agosto">Etapa 2 - Agosto 2026</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filterType">Tipo de Sessão</label>
+                    <select id="filterType" onchange="applyFilters()">
+                        <option value="ALL">Todos os Tipos</option>
+                        <option value="Treino">Treino Livre / Treino Oficial</option>
+                        <option value="Corrida">Baterias de Corrida</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filterSession">Sessão / Bateria</label>
+                    <select id="filterSession" onchange="applyFilters()">
+                        <option value="ALL">Todas as Baterias/Sessões</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filterDriver">Piloto</label>
+                    <select id="filterDriver" onchange="applyFilters()">
+                        <option value="ALL">Todos os Pilotos</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="searchNotes">Busca em Observações</label>
+                    <input type="text" id="searchNotes" placeholder="Ex: ultrapassagem, erro..." oninput="applyFilters()">
+                </div>
+            </div>
+        </div>
+
+        <!-- Dynamic Key Metrics Cards -->
+        <div class="stats-grid">
+            <div class="card winner">
+                <div class="card-title">Líder / Vencedor Selecionado</div>
+                <div class="card-value" id="cardWinner" style="color: var(--accent-yellow);">--</div>
+                <div class="card-sub" id="cardWinnerSub">Filtre por sessão</div>
+            </div>
+            <div class="card fastest">
+                <div class="card-title">Melhor Volta Legítima</div>
+                <div class="card-value" id="cardFastest" style="color: var(--accent-green);">--</div>
+                <div class="card-sub" id="cardFastestSub">Sem dados</div>
+            </div>
+            <div class="card laps">
+                <div class="card-title">Voltas Válidas Analisadas</div>
+                <div class="card-value" id="cardTotalLaps" style="color: var(--accent-blue);">0</div>
+                <div class="card-sub" id="cardLapsSub">Total acumulado na seleção</div>
+            </div>
+            <div class="card avg">
+                <div class="card-title">Média de Ritmo Médio</div>
+                <div class="card-value" id="cardAvgPace" style="color: var(--accent-purple);">--</div>
+                <div class="card-sub">Consistência do grid filtrado</div>
+            </div>
+        </div>
+
+        <!-- Visual Chart + Quick Summary -->
+        <div class="grid-two-col">
+            <div class="chart-card">
+                <div class="section-header">
+                    <div class="section-title">📊 Evolução e Comparativo de Ritmo (Lap Times)</div>
+                </div>
+                <div class="chart-box">
+                    <canvas id="lapChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="section-header">
+                    <div class="section-title">🎯 Resumo de Desempenho</div>
+                </div>
+                <div id="driverSummaryList" style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
+                </div>
+            </div>
+        </div>
+
+        <!-- Classification Table -->
+        <div class="section-header">
+            <div class="section-title">🏆 Classificação Geral / Resumo da Seleção</div>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Pos</th>
+                        <th>Nº</th>
+                        <th>Piloto</th>
+                        <th>Sessão</th>
+                        <th>Voltas Válidas</th>
+                        <th>Tempo Total</th>
+                        <th>Melhor Volta</th>
+                        <th>Média (s)</th>
+                        <th>Desvio Padrão</th>
+                    </tr>
+                </thead>
+                <tbody id="classificationTableBody">
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Lap Times Detail Table -->
+        <div class="section-header">
+            <div class="section-title">⏱️ Registro Completo de Voltas e Telemetria (Lap-by-Lap)</div>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sessão</th>
+                        <th>Volta</th>
+                        <th>Piloto</th>
+                        <th>Tempo da Volta</th>
+                        <th>Líder na Volta</th>
+                        <th>Posição</th>
+                        <th>Evento / Troca / Nota de Telemetria</th>
+                    </tr>
+                </thead>
+                <tbody id="lapTableBody">
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            Krathus Racing &copy; 2026 — Plataforma de Telemetria e Análise de Automodelismo | Desenvolvido para cronometragem ZRound.
+        </footer>
+    </div>
+
+    <!-- Modal Adicionar Bateria -->
+    <div class="modal-overlay" id="importModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>➕ Adicionar Nova Sessão / Arquivo</h3>
+                <button class="modal-close" onclick="closeImportModal()">&times;</button>
+            </div>
+            <div class="drop-zone" onclick="document.getElementById('fileInput').click()">
+                <p>📁 Clique ou arraste o arquivo do ZRound aqui (.json, .csv, .txt)</p>
+                <input type="file" id="fileInput" style="display:none" onchange="handleFileUpload(event)">
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-muted); text-align: center;">
+                Ou adicione uma sessão rápida de teste pré-configurada para ver a filtragem funcionar.
+            </p>
+            <div style="margin-top: 16px; display: flex; justify-content: flex-end; gap: 10px;">
+                <button class="btn btn-outline" onclick="closeImportModal()">Cancelar</button>
+                <button class="btn" onclick="addSampleSession()">Simular Nova Bateria (Bateria 2)</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const database = {
+            drivers: ["DJ", "Ronaldo", "Raphael"],
+            sessions: [
+                {
+                    id: "Bateria_1_170726",
+                    name: "Corrida - Bateria 1 (17/07)",
+                    event: "Etapa 1 - Julho",
+                    type: "Corrida",
+                    date: "17/07/2026 23:17:21",
+                    winner: "DJ",
+                    bestLapOverall: { driver: "DJ", time: 10.898, lap: 20 },
+                    drivers: [
+                        { name: "DJ", number: "02", pos: 1, validLaps: 29, totalTime: "06:11,204", gap: "Líder", bestLap: "10,898 (V20)", avg: 12.800, stdDev: 1.712 },
+                        { name: "Ronaldo", number: "01", pos: 2, validLaps: 26, totalTime: "06:07,083", gap: "+3 Voltas", bestLap: "11,703 (V12)", avg: 14.119, stdDev: 1.908 },
+                        { name: "Raphael", number: "03", pos: 3, validLaps: 10, totalTime: "06:08,208", gap: "+19 Voltas", bestLap: "11,603 (V06)*", avg: 18.124, stdDev: 10.145 }
+                    ],
+                    laps: [
+                        { lap: 1, driver: "DJ", time: 14.629, pos: "P2", leader: "Ronaldo", event: "Largada. Cai para P2." },
+                        { lap: 1, driver: "Ronaldo", time: 16.499, pos: "P1", leader: "Ronaldo", event: "Largada. Assume P1." },
+                        { lap: 1, driver: "Raphael", time: 18.892, pos: "P3", leader: "Ronaldo", event: "Largada. Ritmo inicial." },
+
+                        { lap: 2, driver: "DJ", time: 12.638, pos: "P1", leader: "DJ", event: "TROCA P1! Ultrapassa Ronaldo por ritmo." },
+                        { lap: 2, driver: "Ronaldo", time: 12.136, pos: "P2", leader: "DJ", event: "Perde P1 para DJ." },
+                        { lap: 2, driver: "Raphael", time: 18.404, pos: "P3", leader: "DJ", event: "P3 mantida." },
+
+                        { lap: 3, driver: "DJ", time: 12.218, pos: "P1", leader: "DJ", event: "Ritmo constante." },
+                        { lap: 3, driver: "Ronaldo", time: 15.613, pos: "P2", leader: "DJ", event: "Pequeno desvio na curva 3." },
+                        { lap: 3, driver: "Raphael", time: 205.100, pos: "P3", leader: "DJ", event: "INCIDENTE GRAVE! Paralisação (03:25,1)." },
+
+                        { lap: 6, driver: "DJ", time: 12.716, pos: "P1", leader: "DJ", event: "Constante em 12.7s." },
+                        { lap: 6, driver: "Ronaldo", time: 11.782, pos: "P2", leader: "DJ", event: "Volta forte de recuperação." },
+                        { lap: 6, driver: "Raphael", time: 11.603, pos: "P3", leader: "DJ", event: "MELHOR VOLTA VÁLIDA DE RAPHAEL (11,603s)." },
+
+                        { lap: 8, driver: "DJ", time: 11.966, pos: "P1", leader: "DJ", event: "Forte na liderança." },
+                        { lap: 8, driver: "Ronaldo", time: 15.030, pos: "P2", leader: "DJ", event: "Oscilação de ritmo." },
+                        { lap: 8, driver: "Raphael", time: 43.997, pos: "P3", leader: "DJ", event: "Erro/Parada. Fantasma de 09,967s descartado." },
+
+                        { lap: 12, driver: "DJ", time: 12.574, pos: "P1", leader: "DJ", event: "Administrando P1." },
+                        { lap: 12, driver: "Ronaldo", time: 11.703, pos: "P2", leader: "DJ", event: "MELHOR VOLTA DE RONALDO (11,703s)." },
+
+                        { lap: 20, driver: "DJ", time: 10.898, pos: "P1", leader: "DJ", event: "MELHOR VOLTA ABSOLUTA DA PROVA! (10,898s)." },
+                        { lap: 20, driver: "Ronaldo", time: 12.131, pos: "P2", leader: "DJ", event: "Mantém P2." },
+
+                        { lap: 29, driver: "DJ", time: 20.560, pos: "P1", leader: "DJ", event: "VOLTA DA VITÓRIA! Cruza em P1." }
+                    ]
+                }
+            ]
+        };
+
+        let myChart = null;
+
+        function initFilters() {
+            const sessionSelect = document.getElementById('filterSession');
+            const driverSelect = document.getElementById('filterDriver');
+
+            sessionSelect.innerHTML = '<option value="ALL">Todas as Baterias/Sessões</option>';
+            database.sessions.forEach(s => {
+                sessionSelect.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+            });
+
+            driverSelect.innerHTML = '<option value="ALL">Todos os Pilotos</option>';
+            database.drivers.forEach(d => {
+                driverSelect.innerHTML += `<option value="${d}">${d}</option>`;
+            });
+        }
+
+        function applyFilters() {
+            const eventVal = document.getElementById('filterEvent').value;
+            const typeVal = document.getElementById('filterType').value;
+            const sessionVal = document.getElementById('filterSession').value;
+            const driverVal = document.getElementById('filterDriver').value;
+            const searchVal = document.getElementById('searchNotes').value.toLowerCase();
+
+            let filteredSessions = database.sessions.filter(s => {
+                if (eventVal !== 'ALL' && s.event !== eventVal) return false;
+                if (typeVal !== 'ALL' && s.type !== typeVal) return false;
+                if (sessionVal !== 'ALL' && s.id !== sessionVal) return false;
+                return true;
+            });
+
+            let classRows = [];
+            let allLaps = [];
+
+            filteredSessions.forEach(s => {
+                s.drivers.forEach(d => {
+                    if (driverVal === 'ALL' || d.name === driverVal) {
+                        classRows.push({ ...d, sessionName: s.name, sessionId: s.id });
+                    }
+                });
+
+                s.laps.forEach(l => {
+                    if ((driverVal === 'ALL' || l.driver === driverVal) &&
+                        (searchVal === '' || l.event.toLowerCase().includes(searchVal) || l.driver.toLowerCase().includes(searchVal))) {
+                        allLaps.push({ ...l, sessionName: s.name, sessionId: s.id });
+                    }
+                });
+            });
+
+            updateCards(filteredSessions, classRows, allLaps);
+            renderClassificationTable(classRows);
+            renderLapsTable(allLaps);
+            renderChart(allLaps);
+            renderSummaryList(classRows);
+        }
+
+        function updateCards(sessions, drivers, laps) {
+            const cardWinner = document.getElementById('cardWinner');
+            const cardWinnerSub = document.getElementById('cardWinnerSub');
+            const cardFastest = document.getElementById('cardFastest');
+            const cardFastestSub = document.getElementById('cardFastestSub');
+            const cardTotalLaps = document.getElementById('cardTotalLaps');
+            const cardAvgPace = document.getElementById('cardAvgPace');
+
+            if (sessions.length === 1) {
+                cardWinner.innerText = `${sessions[0].winner}`;
+                cardWinnerSub.innerText = `${sessions[0].name}`;
+            } else if (sessions.length > 1) {
+                cardWinner.innerText = "Múltiplas Sessões";
+                cardWinnerSub.innerText = `${sessions.length} baterias carregadas`;
+            } else {
+                cardWinner.innerText = "--";
+                cardWinnerSub.innerText = "Nenhuma sessão encontrada";
+            }
+
+            const validLaps = laps.filter(l => l.time < 60);
+            cardTotalLaps.innerText = validLaps.length;
+
+            if (validLaps.length > 0) {
+                const best = validLaps.reduce((prev, curr) => prev.time < curr.time ? prev : curr);
+                cardFastest.innerText = `${best.time.toFixed(3).replace('.', ',')}s`;
+                cardFastestSub.innerText = `Piloto: ${best.driver} (${best.sessionName})`;
+
+                const sumTime = validLaps.reduce((acc, curr) => acc + curr.time, 0);
+                const avgPace = sumTime / validLaps.length;
+                cardAvgPace.innerText = `${avgPace.toFixed(3).replace('.', ',')}s`;
+            } else {
+                cardFastest.innerText = "--";
+                cardFastestSub.innerText = "Sem laps no filtro";
+                cardAvgPace.innerText = "--";
+            }
+        }
+
+        function renderClassificationTable(drivers) {
+            const tbody = document.getElementById('classificationTableBody');
+            tbody.innerHTML = '';
+
+            if (drivers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color: var(--text-muted);">Nenhum resultado encontrado para os filtros selecionados.</td></tr>';
+                return;
+            }
+
+            drivers.sort((a, b) => a.pos - b.pos);
+
+            drivers.forEach(d => {
+                let badgeClass = 'badge-session';
+                if (d.pos === 1) badgeClass = 'badge-p1';
+                else if (d.pos === 2) badgeClass = 'badge-p2';
+                else if (d.pos === 3) badgeClass = 'badge-p3';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><span class="badge ${badgeClass}">${d.pos}º</span></td>
+                        <td>${d.number}</td>
+                        <td><strong>${d.name}</strong></td>
+                        <td><span class="badge badge-session">${d.sessionName}</span></td>
+                        <td>${d.validLaps}</td>
+                        <td>${d.totalTime}</td>
+                        <td><span class="fastest-lap-val">${d.bestLap}</span></td>
+                        <td>${d.avg.toFixed(3).replace('.', ',')}s</td>
+                        <td>${d.stdDev.toFixed(3).replace('.', ',')}s</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderLapsTable(laps) {
+            const tbody = document.getElementById('lapTableBody');
+            tbody.innerHTML = '';
+
+            if (laps.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color: var(--text-muted);">Nenhum tempo de volta encontrado com estes critérios.</td></tr>';
+                return;
+            }
+
+            laps.forEach(l => {
+                const isOutlier = l.time > 60;
+                const displayTime = isOutlier ? `<span class="ghost-lap">${l.time.toFixed(3).replace('.', ',')}s (Retenção)</span>` : `${l.time.toFixed(3).replace('.', ',')}s`;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><small>${l.sessionName}</small></td>
+                        <td><strong>V${String(l.lap).padStart(2, '0')}</strong></td>
+                        <td><strong>${l.driver}</strong></td>
+                        <td>${displayTime}</td>
+                        <td>${l.leader}</td>
+                        <td><span class="badge badge-p1">${l.pos}</span></td>
+                        <td>${l.event}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderSummaryList(drivers) {
+            const container = document.getElementById('driverSummaryList');
+            container.innerHTML = '';
+
+            const uniqueDrivers = [...new Set(drivers.map(d => d.name))];
+
+            uniqueDrivers.forEach(name => {
+                const driverStats = drivers.filter(d => d.name === name);
+                const avgVal = (driverStats.reduce((acc, c) => acc + c.avg, 0) / driverStats.length).toFixed(3).replace('.', ',');
+
+                container.innerHTML += `
+                    <div style="background-color: var(--bg-dark); padding: 12px; border-radius: 6px; border-left: 4px solid var(--accent-red);">
+                        <div style="font-weight: bold; display: flex; justify-content: space-between;">
+                            <span>🏎️ ${name}</span>
+                            <span style="color: var(--accent-yellow); font-size: 0.85rem;">Média: ${avgVal}s</span>
+                        </div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">
+                            Sessões disputadas: ${driverStats.length}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function renderChart(laps) {
+            const ctx = document.getElementById('lapChart').getContext('2d');
+            const chartLaps = laps.filter(l => l.time < 30);
+
+            // Get unique ordered lap numbers
+            const lapNumbers = [...new Set(chartLaps.map(l => l.lap))].sort((a,b) => a - b);
+            const labels = lapNumbers.map(n => `V${n}`);
+
+            const drivers = [...new Set(chartLaps.map(l => l.driver))];
+            const colors = { 'DJ': '#2ecc71', 'Ronaldo': '#f1c40f', 'Raphael': '#e63946' };
+
+            const datasets = drivers.map(driver => {
+                const driverLaps = chartLaps.filter(l => l.driver === driver);
+                const dataPoints = lapNumbers.map(lapNum => {
+                    const found = driverLaps.find(l => l.lap === lapNum);
+                    return found ? found.time : null;
+                });
+
+                return {
+                    label: driver,
+                    data: dataPoints,
+                    borderColor: colors[driver] || '#3498db',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    spanGaps: true,
+                    tension: 0.1,
+                    pointRadius: 3
+                };
+            });
+
+            if (myChart) myChart.destroy();
+
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: { labels, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false, // Strictly obey parent box height
+                    aspectRatio: 2.5,
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Volta', color: '#a0a5b5', font: { size: 11 } },
+                            ticks: { color: '#a0a5b5', font: { size: 10 } },
+                            grid: { color: '#262a3d' }
+                        },
+                        y: {
+                            title: { display: true, text: 'Tempo (s)', color: '#a0a5b5', font: { size: 11 } },
+                            ticks: { color: '#a0a5b5', font: { size: 10 } },
+                            grid: { color: '#262a3d' }
+                        }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#f8f9fa', boxWidth: 12, font: { size: 11 } } }
+                    }
+                }
+            });
+        }
+
+        function resetFilters() {
+            document.getElementById('filterEvent').value = 'ALL';
+            document.getElementById('filterType').value = 'ALL';
+            document.getElementById('filterSession').value = 'ALL';
+            document.getElementById('filterDriver').value = 'ALL';
+            document.getElementById('searchNotes').value = '';
+            applyFilters();
+        }
+
+        function openImportModal() {
+            document.getElementById('importModal').style.display = 'flex';
+        }
+
+        function closeImportModal() {
+            document.getElementById('importModal').style.display = 'none';
+        }
+
+        function addSampleSession() {
+            const newSession = {
+                id: "Bateria_2_170726",
                 name: "Corrida - Bateria 2 (17/07)",
                 event: "Etapa 1 - Julho",
                 type: "Corrida",
