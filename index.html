@@ -1,22 +1,45 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<link rel="stylesheet" type="text/css" href="../../zround.css" media="screen"/>
-<title>Resultados del Campeonato - ZRound Manager</title>
-  <SCRIPT>
-   function op() {
-   	  return;
-   }
-  </SCRIPT>
-</head>
-<frameset cols="200,*" onResize="if (navigator.family == 'nn4') window.location.reload()"> 
-  <frame src="carreras.html" noresize="noresize" name="treeframe" />
-  <FRAMESET rows="80,*" onResize="if (navigator.family == 'nn4') window.location.reload()"> 
-    <frame src="titulo.html" name="topFrame" scrolling="No" noresize="noresize" title="topFrame" />
-    <frame src="clasificacion.html" name="basefrm"/>
-  </frameset> 
-</frameset>
-<noframes><body>
+                name: "Corrida - Bateria 2 (17/07)",
+                event: "Etapa 1 - Julho",
+                type: "Corrida",
+                date: "17/07/2026 23:45:00",
+                winner: "Ronaldo",
+                bestLapOverall: { driver: "Ronaldo", time: 11.210, lap: 15 },
+                drivers: [
+                    { name: "Ronaldo", number: "01", pos: 1, validLaps: 28, totalTime: "06:05,110", gap: "Líder", bestLap: "11,210 (V15)", avg: 13.040, stdDev: 1.450 },
+                    { name: "DJ", number: "02", pos: 2, validLaps: 28, totalTime: "06:08,450", gap: "+3.340s", bestLap: "11,350 (V18)", avg: 13.150, stdDev: 1.620 },
+                    { name: "Raphael", number: "03", pos: 3, validLaps: 25, totalTime: "06:10,000", gap: "+3 Voltas", bestLap: "11,890 (V10)", avg: 14.800, stdDev: 2.100 }
+                ],
+                laps: [
+                    { lap: 1, driver: "Ronaldo", time: 13.200, pos: "P1", leader: "Ronaldo", event: "Largada perfeita de Ronaldo." },
+                    { lap: 1, driver: "DJ", time: 13.800, pos: "P2", leader: "Ronaldo", event: "Segura P2." },
+                    { lap: 1, driver: "Raphael", time: 15.100, pos: "P3", leader: "Ronaldo", event: "P3 constante." },
+                    { lap: 10, driver: "Ronaldo", time: 11.800, pos: "P1", leader: "Ronaldo", event: "Mantém liderança." },
+                    { lap: 10, driver: "Raphael", time: 11.890, pos: "P3", leader: "Ronaldo", event: "MELHOR VOLTA DE RAPHAEL NA BATERIA 2." },
+                    { lap: 15, driver: "Ronaldo", time: 11.210, pos: "P1", leader: "Ronaldo", event: "MELHOR VOLTA DA BATERIA 2 (Ronaldo)." },
+                    { lap: 18, driver: "DJ", time: 11.350, pos: "P2", leader: "Ronaldo", event: "Pico de ataque de DJ." }
+                ]
+            };
+
+            database.sessions.push(newSession);
+            initFilters();
+            document.getElementById('filterSession').value = newSession.id;
+            applyFilters();
+            closeImportModal();
+            alert("Sessão 'Bateria 2' adicionada com sucesso!");
+        }
+
+        function handleFileUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                alert(`Arquivo "${file.name}" recebido com sucesso!`);
+                addSampleSession();
+            }
+        }
+
+        window.onload = function() {
+            initFilters();
+            applyFilters();
+        };
+    </script>
 </body>
-</noframes></html>
+</html>
