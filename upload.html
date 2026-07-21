@@ -11,6 +11,7 @@
             --bg-dark: #0d0f17;
             --bg-card: #161926;
             --accent-red: #e63946;
+            --accent-red-hover: #c82333;
             --text-main: #f8f9fa;
             --text-muted: #a0a5b5;
             --border-color: #262a3d;
@@ -21,7 +22,9 @@
         h2 { margin-bottom: 20px; font-size: 1.2rem; color: var(--accent-red); }
         input[type="password"] { width: 100%; padding: 10px; margin-bottom: 15px; background: #0f111a; border: 1px solid var(--border-color); color: #fff; border-radius: 6px; outline: none; text-align: center; }
         .btn { background-color: var(--accent-red); color: white; padding: 10px 18px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; width: 100%; transition: 0.2s; }
-        .btn:hover { background-color: #c82333; }
+        .btn:hover { background-color: var(--accent-red-hover); }
+        .btn-danger { background-color: #8b0000; margin-top: 10px; }
+        .btn-danger:hover { background-color: #a80000; }
         .drop-zone { border: 2px dashed var(--border-color); border-radius: 8px; padding: 25px; text-align: center; cursor: pointer; margin-top: 15px; }
         #uploadSection { display: none; }
     </style>
@@ -37,12 +40,14 @@
 
         <div id="uploadSection">
             <h2>➕ Upload Universal ZRound</h2>
-            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">Envie arquivos <strong>.HTML</strong>, <strong>.PDF</strong> ou <strong>.JSON</strong>. O sistema processa tudo automaticamente!</p>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">Envie arquivos <strong>.HTML</strong>, <strong>.PDF</strong> ou <strong>.JSON</strong> para atualizar a telemetria.</p>
             <div class="drop-zone" onclick="document.getElementById('fileInput').click()">
                 <p>📁 Clique aqui para selecionar o arquivo</p>
                 <input type="file" id="fileInput" accept=".html,.htm,.pdf,.json" style="display:none" onchange="handleUniversalUpload(event)">
             </div>
-            <button class="btn" style="background: transparent; border: 1px solid var(--border-color); margin-top: 15px;" onclick="location.href='index.html'">Voltar ao Início</button>
+            
+            <button class="btn btn-danger" onclick="resetDatabase()">🗑️ Limpar / Resetar Todos os Resultados</button>
+            <button class="btn" style="background: transparent; border: 1px solid var(--border-color); margin-top: 10px;" onclick="location.href='index.html'">Voltar ao Início</button>
         </div>
     </div>
 
@@ -51,7 +56,7 @@
 
         function checkPassword() {
             const pass = document.getElementById('accessPassword').value;
-            if (pass === "805721") {
+            if (pass === "krathus2026") {
                 document.getElementById('authSection').style.display = 'none';
                 document.getElementById('uploadSection').style.display = 'block';
             } else {
@@ -70,29 +75,22 @@
             try {
                 let sessionData = null;
 
-                // 1. SE FOR ARQUIVO JSON
                 if (fileName.endsWith('.json')) {
                     const content = await file.text();
                     const parsed = JSON.parse(content);
                     const newSessions = Array.isArray(parsed) ? parsed : [parsed];
                     salvarNoNavegador(newSessions);
                     return;
-                }
-
-                // 2. SE FOR ARQUIVO HTML (.html ou .htm)
-                else if (fileName.endsWith('.html') || fileName.endsWith('.htm')) {
+                } else if (fileName.endsWith('.html') || fileName.endsWith('.htm')) {
                     const htmlContent = await file.text();
                     const parser = new DOMParser();
                     const doc = parser.parseFromString(htmlContent, 'text/html');
 
                     let laps = [];
-                    // Extração inteligente de tabelas do HTML do ZRound
                     const rows = doc.querySelectorAll('tr');
                     rows.forEach(row => {
                         const cols = row.querySelectorAll('td');
-                        if (cols.length >= 2) {
-                            // Mapeia colunas caso encontre dados legíveis na tabela
-                        }
+                        if (cols.length >= 2) {}
                     });
 
                     sessionData = {
@@ -105,10 +103,7 @@
                             { sessionName: `Corrida ZRound (${file.name})`, lap: 1, driver: "Piloto Exemplo HTML", time: 4.250, event: "" }
                         ]
                     };
-                }
-
-                // 3. SE FOR ARQUIVO PDF
-                else if (fileName.endsWith('.pdf')) {
+                } else if (fileName.endsWith('.pdf')) {
                     const arrayBuffer = await file.arrayBuffer();
                     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
                     
@@ -153,6 +148,13 @@
 
             localStorage.setItem('krathus_db_sessions', JSON.stringify(existingData));
             alert("🚀 Arquivo processado e salvo com sucesso neste computador!");
+        }
+
+        function resetDatabase() {
+            if (confirm("Tem certeza que deseja apagar todas as baterias e resultados salvos neste navegador?")) {
+                localStorage.removeItem('krathus_db_sessions');
+                alert("🗑️ Todos os dados foram resetados com sucesso!");
+            }
         }
     </script>
 </body>
