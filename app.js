@@ -2,14 +2,38 @@
 
 let myChart = null;
 
+function getDatabase() {
+    const saved = localStorage.getItem('krathus_db_sessions');
+    if (saved) {
+        try {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                return { sessions: parsed };
+            }
+        } catch (e) {
+            console.error("Erro ao ler dados salvos", e);
+        }
+    }
+    return { sessions: [] };
+}
+
 function getUniqueDrivers() {
+    const db = getDatabase();
     const set = new Set();
-    database.sessions.forEach(s => s.laps.forEach(l => set.add(l.driver)));
+    db.sessions.forEach(s => {
+        if (s.laps && Array.isArray(s.laps)) {
+            s.laps.forEach(l => {
+                if (l.driver) set.add(l.driver);
+            });
+        }
+    });
     return Array.from(set);
 }
 
 function calculateSessionStats(session) {
     const driverLapsMap = {};
+
+    if (!session.laps || !Array.isArray(session.laps)) return [];
 
     session.laps.forEach(l => {
         if (!driverLapsMap[l.driver]) {
@@ -79,30 +103,40 @@ function calculateSessionStats(session) {
 }
 
 function initFilters() {
+    const db = getDatabase();
     const sessionContainer = document.getElementById('sessionCheckboxes');
     const driverContainer = document.getElementById('driverCheckboxes');
 
     if (!sessionContainer || !driverContainer) return;
 
     sessionContainer.innerHTML = '';
-    database.sessions.forEach(s => {
-        sessionContainer.innerHTML += `
-            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer; color: var(--text-main);">
-                <input type="checkbox" name="filterSession" value="${s.id}" checked onchange="applyFilters()" style="accent-color: var(--accent-red);">
-                ${s.name}
-            </label>
-        `;
-    });
+    if (db.sessions.length === 0) {
+        sessionContainer.innerHTML = '<span style="font-size:0.8rem; color:var(--text-muted);">Nenhuma bateria carregada. Faça upload de um arquivo.</span>';
+    } else {
+        db.sessions.forEach(s => {
+            sessionContainer.innerHTML += `
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer; color: var(--text-main);">
+                    <input type="checkbox" name="filterSession" value="${s.id}" checked onchange="applyFilters()" style="accent-color: var(--accent-red);">
+                    ${s.name}
+                </label>
+            `;
+        });
+    }
 
     driverContainer.innerHTML = '';
-    getUniqueDrivers().forEach(d => {
-        driverContainer.innerHTML += `
-            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer; color: var(--text-main);">
-                <input type="checkbox" name="filterDriver" value="${d}" checked onchange="applyFilters()" style="accent-color: var(--accent-red);">
-                ${d}
-            </label>
-        `;
-    });
+    const drivers = getUniqueDrivers();
+    if (drivers.length === 0) {
+        driverContainer.innerHTML = '<span style="font-size:0.8rem; color:var(--text-muted);">Nenhum piloto encontrado.</span>';
+    } else {
+        drivers.forEach(d => {
+            driverContainer.innerHTML += `
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer; color: var(--text-main);">
+                    <input type="checkbox" name="filterDriver" value="${d}" checked onchange="applyFilters()" style="accent-color: var(--accent-red);">
+                    ${d}
+                </label>
+            `;
+        });
+    }
 }
 
 function toggleAllCheckboxes(state) {
@@ -112,10 +146,11 @@ function toggleAllCheckboxes(state) {
 }
 
 function applyFilters() {
+    const db = getDatabase();
     const selectedSessions = Array.from(document.querySelectorAll('input[name="filterSession"]:checked')).map(cb => cb.value);
     const selectedDrivers = Array.from(document.querySelectorAll('input[name="filterDriver"]:checked')).map(cb => cb.value);
 
-    let filteredSessions = database.sessions.filter(s => selectedSessions.includes(s.id));
+    let filteredSessions = db.sessions.filter(s => selectedSessions.includes(s.id));
 
     let allClassRows = [];
     let allLaps = [];
@@ -128,11 +163,13 @@ function applyFilters() {
             }
         });
 
-        s.laps.forEach(l => {
-            if (selectedDrivers.includes(l.driver)) {
-                allLaps.push({ ...l, sessionName: s.name, sessionId: s.id });
-            }
-        });
+        if (s.laps && Array.isArray(s.laps)) {
+            s.laps.forEach(l => {
+                if (selectedDrivers.includes(l.driver)) {
+                    allLaps.push({ ...l, sessionName: s.name, sessionId: s.id });
+                }
+            });
+        }
     });
 
     updateCards(filteredSessions, allClassRows, allLaps);
@@ -282,6 +319,11 @@ function renderLapsTable(laps) {
     if (!tbody) return;
     tbody.innerHTML = '';
 
+    if (laps.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--text-muted);">Nenhuma volta registrada.</td></tr>';
+        return;
+    }
+
     laps.forEach(l => {
         tbody.innerHTML += `
             <tr>
@@ -299,6 +341,11 @@ function renderSummaryList(driversStats) {
     const container = document.getElementById('driverSummaryList');
     if (!container) return;
     container.innerHTML = '';
+
+    if (driversStats.length === 0) {
+        container.innerHTML = '<span style="font-size: 0.85rem; color: var(--text-muted);">Sem dados para resumir.</span>';
+        return;
+    }
 
     const uniqueNames = [...new Set(driversStats.map(d => d.name))];
     uniqueNames.forEach(name => {
@@ -320,15 +367,15 @@ function renderChart(laps) {
     const canvasElement = document.getElementById('lapChart');
     if (!canvasElement) return;
     const ctx = canvasElement.getContext('2d');
-    const chartLaps = laps.filter(l => l.time < 30);
+    const chartLaps = laps.filter(l => l.time < 60);
 
     const lapNumbers = [...new Set(chartLaps.map(l => l.lap))].sort((a,b) => a - b);
     const labels = lapNumbers.map(n => `V${n}`);
 
     const drivers = [...new Set(chartLaps.map(l => l.driver))];
-    const colors = { 'DJ': '#2ecc71', 'Ronaldo': '#f1c40f', 'Raphael': '#e63946' };
+    const colorPalette = ['#e63946', '#2ecc71', '#f1c40f', '#3498db', '#9b59b6', '#e67e22'];
 
-    const datasets = drivers.map(driver => {
+    const datasets = drivers.map((driver, index) => {
         const driverLaps = chartLaps.filter(l => l.driver === driver);
         const dataPoints = lapNumbers.map(lapNum => {
             const found = driverLaps.find(l => l.lap === lapNum);
@@ -338,7 +385,7 @@ function renderChart(laps) {
         return {
             label: driver,
             data: dataPoints,
-            borderColor: colors[driver] || '#3498db',
+            borderColor: colorPalette[index % colorPalette.length],
             borderWidth: 2,
             spanGaps: true,
             tension: 0.1
