@@ -9,7 +9,7 @@ function getUniqueDrivers() {
     return Array.from(set);
 }
 
-// CÁLCULO AUTOMÁTICO DE METRICAS POR SESSÃO
+// CÁLCULO AUTOMÁTICO DE MÉTRICAS POR SESSÃO
 function calculateSessionStats(session) {
     const driverLapsMap = {};
 
@@ -42,7 +42,7 @@ function calculateSessionStats(session) {
             }
         });
 
-        // Média e Desvio Padrão
+        // Média e Desvio Padrão (Consistência)
         const sumValid = validLaps.reduce((acc, l) => acc + l.time, 0);
         const avg = validLaps.length > 0 ? sumValid / validLaps.length : 0;
 
@@ -50,6 +50,9 @@ function calculateSessionStats(session) {
             ? validLaps.reduce((acc, l) => acc + Math.pow(l.time - avg, 2), 0) / validLaps.length 
             : 0;
         const stdDev = Math.sqrt(variance);
+
+        // Identifica eventos e incidentes do piloto nesta sessão
+        const driverEvents = laps.filter(l => l.event && l.event.trim() !== '');
 
         driverStats.push({
             name: driver,
@@ -60,7 +63,8 @@ function calculateSessionStats(session) {
             bestLap: bestLapObj.time < 999 ? `${bestLapObj.time.toFixed(3).replace('.',',')}s (V${String(bestLapObj.lap).padStart(2,'0')})` : '--',
             bestLapTime: bestLapObj.time,
             avg: avg,
-            stdDev: stdDev
+            stdDev: stdDev,
+            events: driverEvents
         });
     });
 
@@ -192,6 +196,7 @@ function renderClassificationTable(driversStats) {
     });
 }
 
+// ANÁLISE INDIVIDUAL DETALHADA COM AVALIAÇÃO DE CONSISTÊNCIA E RESUMO DA CORRIDA
 function renderDriverRaceAnalysis(filteredSessions, selectedDriver) {
     const container = document.getElementById('driverAnalysisContainer');
     container.innerHTML = '';
@@ -203,8 +208,8 @@ function renderDriverRaceAnalysis(filteredSessions, selectedDriver) {
     uniqueDrivers.forEach(driverName => {
         let driverHtml = `
             <div style="background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; margin-bottom: 20px;">
-                <h3 style="color: var(--accent-red); margin-bottom: 12px;">🏎️ Análise de Desempenho: <strong>${driverName}</strong></h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px;">
+                <h3 style="color: var(--accent-red); margin-bottom: 12px;">🏎️ Análise de Desempenho e Consistência: <strong>${driverName}</strong></h3>
+                <div style="display: flex; flex-direction: column; gap: 16px;">
         `;
 
         let count = 0;
@@ -214,20 +219,47 @@ function renderDriverRaceAnalysis(filteredSessions, selectedDriver) {
             if (!dData) return;
             count++;
 
+            // Avaliação automática de consistência baseada no Desvio Padrão
+            let consistencyText = "";
+            let consistencyColor = "var(--accent-green)";
+            if (dData.stdDev < 1.0) {
+                consistencyText = "Excepcional! Ritmo extremamente constante e previsível em voltas limpas.";
+            } else if (dData.stdDev < 2.5) {
+                consistencyText = "Boa consistência, mantendo um bom padrão de pilotagem com pequenas variações de traçado.";
+            } else {
+                consistencyText = "Oscilação acentuada no ritmo, indicando voltas sob influência de tráfego, pequenos erros ou incidentes em pista.";
+                consistencyColor = "var(--accent-yellow)";
+            }
+
+            // Resumo dinâmico do que aconteceu na corrida
+            let summaryText = `Encerrou a bateria na <strong>${dData.pos}ª posição</strong> completando ${dData.validLaps} voltas válidas de um total de ${dData.totalLaps} voltas registradas. `;
+            if (dData.events.length > 0) {
+                summaryText += `Durante a prova, registrou os seguintes marcos/incidentes: <em>` + dData.events.map(e => `[Volta ${e.lap}: ${e.event}]`).join(' ') + `</em>. `;
+            } else {
+                summaryText += `Manteve uma pilotagem limpa sem nenhum incidente grave reportado na telemetria. `;
+            }
+            summaryText += `Seu ritmo médio foi de <strong>${dData.avg.toFixed(3).replace('.',',')}s</strong> com melhor marca pessoal de <strong>${dData.bestLap}</strong>.`;
+
             driverHtml += `
-                <div style="background-color: var(--bg-dark); border: 1px solid var(--border-color); border-left: 4px solid ${dData.pos === 1 ? 'var(--accent-yellow)' : 'var(--accent-blue)'}; padding: 16px; border-radius: 8px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <span style="font-weight: bold; color: #fff;">🏁 ${session.name}</span>
+                <div style="background-color: var(--bg-dark); border: 1px solid var(--border-color); border-left: 4px solid ${dData.pos === 1 ? 'var(--accent-yellow)' : 'var(--accent-blue)'}; padding: 18px; border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span style="font-weight: bold; color: #fff; font-size: 1.05rem;">🏁 ${session.name} (${session.event})</span>
                         <span class="badge ${dData.pos === 1 ? 'badge-p1' : (dData.pos === 2 ? 'badge-p2' : 'badge-p3')}">${dData.pos}º Lugar</span>
                     </div>
-                    <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">
-                        ⏱️ Tempo Total: ${dData.totalTimeFormatted} (${dData.gap})
+                    
+                    <div style="font-size: 0.9rem; color: var(--text-main); line-height: 1.5; margin-bottom: 12px; background: #121520; padding: 12px; border-radius: 6px; border: 1px solid #1f2335;">
+                        <strong>📝 Resumo da Corrida:</strong> ${summaryText}
                     </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.85rem; background: #141722; padding: 10px; border-radius: 6px;">
+
+                    <div style="font-size: 0.9rem; color: var(--text-main); line-height: 1.4; margin-bottom: 12px; background: #121520; padding: 12px; border-radius: 6px; border: 1px solid #1f2335;">
+                        <strong>🎯 Análise de Consistência:</strong> <span style="color: ${consistencyColor};">${consistencyText}</span> (Desvio Padrão: <strong>±${dData.stdDev.toFixed(3).replace('.',',')}s</strong>)
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; font-size: 0.85rem; background: #161926; padding: 10px; border-radius: 6px;">
+                        <div>⏱️ <strong>Tempo Total:</strong> ${dData.totalTimeFormatted}</div>
+                        <div>📊 <strong>Gap / Diferença:</strong> ${dData.gap}</div>
                         <div>🚀 <strong>Melhor Volta:</strong> <span style="color: var(--accent-green);">${dData.bestLap}</span></div>
-                        <div>📊 <strong>Média:</strong> ${dData.avg.toFixed(3).replace('.',',')}s</div>
-                        <div>🔄 <strong>Voltas:</strong> ${dData.validLaps}</div>
-                        <div>📈 <strong>Desvio:</strong> ±${dData.stdDev.toFixed(3).replace('.',',')}s</div>
+                        <div>📈 <strong>Média de Giro:</strong> ${dData.avg.toFixed(3).replace('.',',')}s</div>
                     </div>
                 </div>
             `;
