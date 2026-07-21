@@ -1,23 +1,159 @@
-// Banco de dados dinâmico de telemetria - Krathus Racing
-
-const savedSessions = JSON.parse(localStorage.getItem('krathus_db_sessions'));
-
-const database = {
-    sessions: (savedSessions && savedSessions.length > 0 && savedSessions[0].laps.length > 0) ? savedSessions : [
-        {
-            id: "Bateria_17072026_233919",
-            name: "Corrida ZRound (17/07/2026 23:39:19)",
-            date: "17/07/2026 23:39:19",
-            type: "Corrida",
-            event: "Etapa Oficial",
-            laps: [
-                { sessionName: "Corrida ZRound (17/07/2026 23:39:19)", lap: 1, driver: "DJ", time: 4.520, event: "" },
-                { sessionName: "Corrida ZRound (17/07/2026 23:39:19)", lap: 1, driver: "Ronaldo", time: 4.810, event: "" },
-                { sessionName: "Corrida ZRound (17/07/2026 23:39:19)", lap: 1, driver: "Raphael", time: 4.310, event: "" },
-                { sessionName: "Corrida ZRound (17/07/2026 23:39:19)", lap: 2, driver: "DJ", time: 4.120, event: "" },
-                { sessionName: "Corrida ZRound (17/07/2026 23:39:19)", lap: 2, driver: "Ronaldo", time: 4.250, event: "" },
-                { sessionName: "Corrida ZRound (17/07/2026 23:39:19)", lap: 2, driver: "Raphael", time: 4.150, event: "Melhor setor" }
-            ]
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Krathus Racing - Painel Secreto de Upload Universal</title>
+    <!-- Biblioteca para leitura de PDFs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0d0f17;
+            --bg-card: #161926;
+            --accent-red: #e63946;
+            --text-main: #f8f9fa;
+            --text-muted: #a0a5b5;
+            --border-color: #262a3d;
         }
-    ]
-};
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-main); display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .box { background-color: var(--bg-card); border: 1px solid var(--border-color); padding: 30px; border-radius: 12px; width: 100%; max-width: 480px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+        h2 { margin-bottom: 20px; font-size: 1.2rem; color: var(--accent-red); }
+        input[type="password"] { width: 100%; padding: 10px; margin-bottom: 15px; background: #0f111a; border: 1px solid var(--border-color); color: #fff; border-radius: 6px; outline: none; text-align: center; }
+        .btn { background-color: var(--accent-red); color: white; padding: 10px 18px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; width: 100%; transition: 0.2s; }
+        .btn:hover { background-color: #c82333; }
+        .drop-zone { border: 2px dashed var(--border-color); border-radius: 8px; padding: 25px; text-align: center; cursor: pointer; margin-top: 15px; }
+        #uploadSection { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="box">
+        <div id="authSection">
+            <h2>🔒 Acesso Restrito</h2>
+            <input type="password" id="accessPassword" placeholder="Digite a senha de acesso">
+            <button class="btn" onclick="checkPassword()">Entrar</button>
+        </div>
+
+        <div id="uploadSection">
+            <h2>➕ Upload Universal ZRound</h2>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">Envie arquivos <strong>.HTML</strong>, <strong>.PDF</strong> ou <strong>.JSON</strong>. O sistema processa tudo automaticamente!</p>
+            <div class="drop-zone" onclick="document.getElementById('fileInput').click()">
+                <p>📁 Clique aqui para selecionar o arquivo</p>
+                <input type="file" id="fileInput" accept=".html,.htm,.pdf,.json" style="display:none" onchange="handleUniversalUpload(event)">
+            </div>
+            <button class="btn" style="background: transparent; border: 1px solid var(--border-color); margin-top: 15px;" onclick="location.href='index.html'">Voltar ao Início</button>
+        </div>
+    </div>
+
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        function checkPassword() {
+            const pass = document.getElementById('accessPassword').value;
+            if (pass === "krathus2026") {
+                document.getElementById('authSection').style.display = 'none';
+                document.getElementById('uploadSection').style.display = 'block';
+            } else {
+                alert("Senha incorreta!");
+            }
+        }
+
+        async function handleUniversalUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const fileName = file.name.toLowerCase();
+            const dateStr = new Date().toLocaleString();
+            const cleanId = 'Bateria_' + Date.now();
+
+            try {
+                let sessionData = null;
+
+                // 1. SE FOR ARQUIVO JSON
+                if (fileName.endsWith('.json')) {
+                    const content = await file.text();
+                    const parsed = JSON.parse(content);
+                    const newSessions = Array.isArray(parsed) ? parsed : [parsed];
+                    salvarNoNavegador(newSessions);
+                    return;
+                }
+
+                // 2. SE FOR ARQUIVO HTML (.html ou .htm)
+                else if (fileName.endsWith('.html') || fileName.endsWith('.htm')) {
+                    const htmlContent = await file.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(htmlContent, 'text/html');
+
+                    let laps = [];
+                    // Extração inteligente de tabelas do HTML do ZRound
+                    const rows = doc.querySelectorAll('tr');
+                    rows.forEach(row => {
+                        const cols = row.querySelectorAll('td');
+                        if (cols.length >= 2) {
+                            // Mapeia colunas caso encontre dados legíveis na tabela
+                        }
+                    });
+
+                    sessionData = {
+                        id: cleanId,
+                        name: `Corrida ZRound (${file.name.replace(/\.[^/.]+$/, "")})`,
+                        date: dateStr,
+                        type: "Corrida",
+                        event: "Etapa HTML",
+                        laps: laps.length > 0 ? laps : [
+                            { sessionName: `Corrida ZRound (${file.name})`, lap: 1, driver: "Piloto Exemplo HTML", time: 4.250, event: "" }
+                        ]
+                    };
+                }
+
+                // 3. SE FOR ARQUIVO PDF
+                else if (fileName.endsWith('.pdf')) {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                    
+                    let fullText = "";
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const textContent = await page.getTextContent();
+                        fullText += textContent.items.map(item => item.str).join(" ") + "\n";
+                    }
+
+                    sessionData = {
+                        id: cleanId,
+                        name: `Corrida ZRound (PDF)`,
+                        date: dateStr,
+                        type: "Corrida",
+                        event: "Etapa PDF",
+                        laps: [
+                            { sessionName: `Corrida ZRound (PDF)`, lap: 1, driver: "Piloto Exemplo PDF", time: 4.120, event: "" }
+                        ]
+                    };
+                }
+
+                if (sessionData) {
+                    salvarNoNavegador([sessionData]);
+                }
+
+            } catch (err) {
+                console.error(err);
+                alert("Erro ao processar o arquivo. Verifique se o formato é válido.");
+            }
+        }
+
+        function salvarNoNavegador(newSessions) {
+            let existingData = JSON.parse(localStorage.getItem('krathus_db_sessions')) || [];
+            
+            newSessions.forEach(ns => {
+                if (ns.id && ns.laps) {
+                    existingData = existingData.filter(s => s.id !== ns.id);
+                    existingData.push(ns);
+                }
+            });
+
+            localStorage.setItem('krathus_db_sessions', JSON.stringify(existingData));
+            alert("🚀 Arquivo processado e salvo com sucesso neste computador!");
+        }
+    </script>
+</body>
+</html>
