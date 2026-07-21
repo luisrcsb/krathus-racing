@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Krathus Racing - Central de Telemetria</title>
-    <!-- Chart.js para renderizar o gráfico de linhas de evolução de ritmo -->
+    <!-- Chart.js para renderizar os gráficos de evolução de ritmo (Lap by Lap) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -194,7 +194,13 @@
             color: var(--text-muted);
         }
 
-        /* Middle Grid: Chart & Summary */
+        /* Container para Múltiplos Gráficos Sessão a Sessão */
+        .charts-container-group {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
         .middle-grid {
             display: grid;
             grid-template-columns: 2fr 1fr;
@@ -401,7 +407,7 @@
             <div class="kpi-card">
                 <span class="kpi-label">Voltas Válidas Analisadas</span>
                 <div class="kpi-value" id="kpi-total-voltas">143</div>
-                <span class="kpi-subtext">Total calculado</span>
+                <span class="kpi-subtext">Total calculated</span>
             </div>
             <div class="kpi-card">
                 <span class="kpi-label">Média Global do Grid</span>
@@ -410,21 +416,10 @@
             </div>
         </section>
 
-        <!-- Gráficos e Resumo -->
-        <section class="middle-grid">
-            <div class="card">
-                <div class="card-header">Evolução do Ritmo (Lap Times)</div>
-                <div class="chart-container">
-                    <canvas id="lapChart"></canvas>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-header">Resumo da Seleção</div>
-                <div class="summary-list" id="resumo-pilotos">
-                    <!-- Gerado dinamicamente via JS -->
-                </div>
-            </div>
-        </section>
+        <!-- Container para N Gráficos Dinâmicos (1 Por Sessão Ativa) -->
+        <div id="charts-group" class="charts-container-group">
+            <!-- Renderizado dinamicamente pelo JS -->
+        </div>
 
         <!-- Tabela de Classificação -->
         <section class="card">
@@ -451,9 +446,8 @@
         </section>
     </div>
 
-    <!-- Script de Lógica e Filtragem Dinâmica -->
+    <!-- Script de Lógica e Renderização N-Gráficos Lap-by-Lap -->
     <script>
-        // Dados Brutos da Aplicação
         const dadosBase = [
             { pos: "1º", piloto: "DJ", bateriaKey: "bateria1", sessao: "Corrida - Bateria 1 (17/07 23:17)", voltas: "29 / 29", tempoTotal: "06:11,204", melhorVoltaVal: 10.898, melhorVoltaTxt: "10,898s (V20)", mediaVal: 12.800, mediaTxt: "12,800s", desvio: "±1,682s", badgeColor: "#ffb703",
               laps: [15.0, 12.3, 12.1, 12.0, 11.9, 11.8, 11.7, 12.0, 12.5, 12.2, 12.1, 12.0, 12.3, 12.1, 12.0, 18.8, 12.6, 12.4, 12.2, 10.898, 11.9, 11.9, 15.0, 14.0, 12.2, 12.4, 12.5, 11.8, 20.5] },
@@ -480,37 +474,16 @@
             "Raphael": "#e63946"
         };
 
-        let lapChart;
+        let chartInstances = [];
 
-        // Inicialização
         document.addEventListener("DOMContentLoaded", () => {
-            inicializarGrafico();
             atualizarDashboard();
         });
 
-        function inicializarGrafico() {
-            const ctx = document.getElementById('lapChart').getContext('2d');
-            lapChart = new Chart(ctx, {
-                type: 'line',
-                data: { labels: [], datasets: [] },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: '#8492a6' } } },
-                    scales: {
-                        x: { grid: { color: '#1c2638' }, ticks: { color: '#8492a6' } },
-                        y: { grid: { color: '#1c2638' }, ticks: { color: '#8492a6' }, min: 10, max: 36 }
-                    }
-                }
-            });
-        }
-
         function atualizarDashboard() {
-            // Obter seleções das caixas de marcação
             const bateriasSelecionadas = Array.from(document.querySelectorAll('.filter-bateria:checked')).map(cb => cb.value);
             const pilotosSelecionados = Array.from(document.querySelectorAll('.filter-piloto:checked')).map(cb => cb.value);
 
-            // Filtrar os dados
             const dadosFiltrados = dadosBase.filter(item => 
                 bateriasSelecionadas.includes(item.bateriaKey) && 
                 pilotosSelecionados.includes(item.piloto)
@@ -539,27 +512,23 @@
                 });
             }
 
-            // 2. Atualizar Métricas / KPIs
+            // 2. Atualizar KPIs
             if (dadosFiltrados.length > 0) {
-                // Vencedor
                 if (bateriasSelecionadas.length === 1) {
                     document.getElementById('kpi-vencedor').innerText = dadosFiltrados[0].piloto;
                     document.getElementById('kpi-vencedor-sub').innerText = "Vencedor da sessão";
                 } else {
                     document.getElementById('kpi-vencedor').innerText = "Múltiplas Sessões";
-                    document.getElementById('kpi-vencedor-sub').innerText = `${bateriasSelecionadas.length} baterias selecionadas`;
+                    document.getElementById('kpi-vencedor-sub').innerText = `${bateriasSelecionadas.length} baterias carregadas`;
                 }
 
-                // Melhor Volta
                 let melhorVoltaGeral = dadosFiltrados.reduce((prev, curr) => prev.melhorVoltaVal < curr.melhorVoltaVal ? prev : curr);
                 document.getElementById('kpi-melhor-volta').innerText = `${melhorVoltaGeral.melhorVoltaVal.toFixed(3).replace('.', ',')}s`;
                 document.getElementById('kpi-melhor-volta-sub').innerText = `${melhorVoltaGeral.piloto} (${melhorVoltaGeral.sessao.split(' ')[0]} - ${melhorVoltaGeral.sessao.split(' ')[2]})`;
 
-                // Total de Voltas
                 let totalVoltas = dadosFiltrados.reduce((sum, item) => sum + parseInt(item.voltas.split('/')[0]), 0);
                 document.getElementById('kpi-total-voltas').innerText = totalVoltas;
 
-                // Média Global
                 let mediaGlobal = dadosFiltrados.reduce((sum, item) => sum + item.mediaVal, 0) / dadosFiltrados.length;
                 document.getElementById('kpi-media-global').innerText = `${mediaGlobal.toFixed(3).replace('.', ',')}s`;
             } else {
@@ -571,59 +540,117 @@
                 document.getElementById('kpi-media-global').innerText = "--";
             }
 
-            // 3. Atualizar Resumo por Piloto
-            const resumoContainer = document.getElementById('resumo-pilotos');
-            resumoContainer.innerHTML = '';
-
-            pilotosSelecionados.forEach(piloto => {
-                const itensPiloto = dadosFiltrados.filter(i => i.piloto === piloto);
-                if (itensPiloto.length > 0) {
-                    const mediaPiloto = itensPiloto.reduce((sum, i) => sum + i.mediaVal, 0) / itensPiloto.length;
-                    const div = document.createElement('div');
-                    div.className = 'summary-item';
-                    div.innerHTML = `
-                        <div class="driver-info">
-                            <span class="driver-color-indicator" style="background-color: ${pilotoCores[piloto]};"></span>
-                            <span>${piloto}</span>
-                        </div>
-                        <span class="summary-value">Média: ${mediaPiloto.toFixed(3).replace('.', ',')}s</span>
-                    `;
-                    resumoContainer.appendChild(div);
-                }
-            });
-
-            // 4. Atualizar Gráfico Dinâmico
-            atualizarGrafico(dadosFiltrados, pilotosSelecionados);
+            // 3. Gerar 1 Gráfico Lap-by-Lap Por Sessão Selecionada
+            renderizarGraficosPorSessao(bateriasSelecionadas, pilotosSelecionados);
         }
 
-        function atualizarGrafico(dadosFiltrados, pilotosSelecionados) {
-            let maxVoltas = 0;
-            dadosFiltrados.forEach(d => {
-                if (d.laps.length > maxVoltas) maxVoltas = d.laps.length;
+        function renderizarGraficosPorSessao(bateriasSelecionadas, pilotosSelecionados) {
+            // Destrói as instâncias anteriores para garantir performance sem leaks de memória
+            chartInstances.forEach(chart => chart.destroy());
+            chartInstances = [];
+
+            const containerGrupo = document.getElementById('charts-group');
+            containerGrupo.innerHTML = '';
+
+            if (bateriasSelecionadas.length === 0 || pilotosSelecionados.length === 0) return;
+
+            bateriasSelecionadas.forEach((bateriaKey) => {
+                const dadosSessao = dadosBase.filter(d => d.bateriaKey === bateriaKey && pilotosSelecionados.includes(d.piloto));
+                if (dadosSessao.length === 0) return;
+
+                const nomeSessao = dadosSessao[0].sessao;
+                const chartId = `chart-${bateriaKey}`;
+
+                // Estrutura HTML do bloco de cada sessão (Gráfico à esquerda + Resumo à direita)
+                const section = document.createElement('section');
+                section.className = 'middle-grid';
+                section.innerHTML = `
+                    <div class="card">
+                        <div class="card-header">Evolução do Ritmo (Lap Times - Lap by Lap) - ${nomeSessao}</div>
+                        <div class="chart-container">
+                            <canvas id="${chartId}"></canvas>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">Resumo da Seleção</div>
+                        <div class="summary-list" id="resumo-${bateriaKey}">
+                        </div>
+                    </div>
+                `;
+
+                containerGrupo.appendChild(section);
+
+                // Preenche o quadro lateral de resumo da sessão
+                const resumoList = document.getElementById(`resumo-${bateriaKey}`);
+                dadosSessao.forEach(d => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'summary-item';
+                    itemDiv.innerHTML = `
+                        <div class="driver-info">
+                            <span class="driver-color-indicator" style="background-color: ${pilotoCores[d.piloto]};"></span>
+                            <span>${d.piloto}</span>
+                        </div>
+                        <span class="summary-value">Média: ${d.mediaTxt}</span>
+                    `;
+                    resumoList.appendChild(itemDiv);
+                });
+
+                // Calcula o maior número de voltas para montar o eixo X (V1, V2, V3...)
+                let maxVoltas = 0;
+                dadosSessao.forEach(d => {
+                    if (d.laps.length > maxVoltas) maxVoltas = d.laps.length;
+                });
+
+                const labelsLapByLap = Array.from({ length: maxVoltas }, (_, i) => `V${i + 1}`);
+
+                // Datasets com as voltas individuais de cada piloto participante
+                const datasets = dadosSessao.map(d => ({
+                    label: d.piloto,
+                    data: d.laps,
+                    borderColor: pilotoCores[d.piloto] || '#ffffff',
+                    backgroundColor: pilotoCores[d.piloto] || '#ffffff',
+                    borderWidth: 2,
+                    tension: 0.2,
+                    pointRadius: 3
+                }));
+
+                // Inicializa o Chart.js para o Canvas desta sessão
+                const ctx = document.getElementById(chartId).getContext('2d');
+                const newChart = new Chart(ctx, {
+                    type: 'line',
+                    data: { labels: labelsLapByLap, datasets },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { labels: { color: '#8492a6' } },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return ` ${context.dataset.label}: ${context.raw.toFixed(3).replace('.', ',')}s`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { color: '#1c2638' },
+                                ticks: { color: '#8492a6' },
+                                title: { display: true, text: 'Volta a Volta (Lap to Lap)', color: '#8492a6' }
+                            },
+                            y: {
+                                grid: { color: '#1c2638' },
+                                ticks: { color: '#8492a6' },
+                                min: 10,
+                                max: 36,
+                                title: { display: true, text: 'Tempo da Volta (s)', color: '#8492a6' }
+                            }
+                        }
+                    }
+                });
+
+                chartInstances.push(newChart);
             });
-
-            const labels = Array.from({ length: maxVoltas }, (_, i) => `V${i + 1}`);
-
-            const datasets = [];
-            pilotosSelecionados.forEach(piloto => {
-                const itensPiloto = dadosFiltrados.filter(d => d.piloto === piloto);
-                if (itensPiloto.length > 0) {
-                    // Pega as voltas do primeiro registro correspondente
-                    datasets.push({
-                        label: piloto,
-                        data: itensPiloto[0].laps,
-                        borderColor: pilotoCores[piloto] || '#ffffff',
-                        backgroundColor: pilotoCores[piloto] || '#ffffff',
-                        borderWidth: 2,
-                        tension: 0.2,
-                        pointRadius: 3
-                    });
-                }
-            });
-
-            lapChart.data.labels = labels;
-            lapChart.data.datasets = datasets;
-            lapChart.update();
         }
 
         function resetarFiltros() {
