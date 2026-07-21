@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Krathus Racing - Central de Telemetria</title>
+    <title>Krathus Racing - Central de Telemetria & Analytics</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -47,11 +47,7 @@
         .btn-outline:hover { background-color: var(--bg-card-hover); }
 
         .filter-panel { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; margin-bottom: 24px; }
-        .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
-        .filter-group { display: flex; flex-direction: column; gap: 6px; }
-        .filter-group label { font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
-        .filter-group select, .filter-group input { background-color: #0f111a; border: 1px solid var(--border-color); color: var(--text-main); padding: 10px; border-radius: 6px; outline: none; }
-
+        
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
         .card { background-color: var(--bg-card); border: 1px solid var(--border-color); padding: 18px; border-radius: 8px; position: relative; }
         .card-title { font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
@@ -79,12 +75,6 @@
         .badge-p2 { background-color: #e67e2222; color: #e67e22; border: 1px solid #e67e22; }
         .badge-p3 { background-color: #95a5a622; color: #95a5a6; border: 1px solid #95a5a6; }
         .badge-session { background-color: #3498db22; color: #3498db; border: 1px solid #3498db; }
-
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; }
-        .modal { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; width: 90%; max-width: 500px; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-        .modal-close { background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; }
-        .drop-zone { border: 2px dashed var(--border-color); border-radius: 8px; padding: 30px; text-align: center; cursor: pointer; margin-bottom: 16px; }
         footer { text-align: center; padding: 20px; color: var(--text-muted); font-size: 0.85rem; border-top: 1px solid var(--border-color); margin-top: 40px; }
     </style>
 </head>
@@ -94,14 +84,14 @@
         <header>
             <div class="brand">
                 <h1>🏁 KRATHUS <span>RACING</span></h1>
-                <p>Central de Telemetria e Análise Dinâmica</p>
+                <p>Central Multissessões de Telemetria e Análise Dinâmica 100% Automatizada</p>
             </div>
             <div class="header-actions">
                 <button class="btn btn-outline" onclick="resetFilters()">🔄 Resetar Filtros</button>
             </div>
         </header>
 
-<div class="filter-panel">
+        <div class="filter-panel">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <h3 style="font-size: 0.95rem; text-transform: uppercase; color: var(--text-muted);">🎯 Filtros Dinâmicos por Múltipla Escolha</h3>
                 <div>
@@ -111,23 +101,18 @@
             </div>
             
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
-                <!-- Filtro de Sessões -->
                 <div class="filter-group">
-                    <label style="margin-bottom: 8px; display: block;">Sessões / Baterias</label>
-                    <div id="sessionCheckboxes" style="background-color: #0f111a; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
-                        <!-- Gerado dinamicamente via JS -->
-                    </div>
+                    <label style="margin-bottom: 8px; display: block; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Sessões / Baterias</label>
+                    <div id="sessionCheckboxes" style="background-color: #0f111a; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;"></div>
                 </div>
 
-                <!-- Filtro de Pilotos -->
                 <div class="filter-group">
-                    <label style="margin-bottom: 8px; display: block;">Pilotos</label>
-                    <div id="driverCheckboxes" style="background-color: #0f111a; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
-                        <!-- Gerado dinamicamente via JS -->
-                    </div>
+                    <label style="margin-bottom: 8px; display: block; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Pilotos</label>
+                    <div id="driverCheckboxes" style="background-color: #0f111a; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;"></div>
                 </div>
             </div>
         </div>
+
         <div class="stats-grid">
             <div class="card">
                 <div class="card-title">Vencedor Selecionado</div>
@@ -188,21 +173,7 @@
             </table>
         </div>
 
-        <footer>Krathus Racing &copy; 2026 — Plataforma Automatizada de Telemetria.</footer>
-    </div>
-
-    <div class="modal-overlay" id="importModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h3>➕ Importar Dados ZRound (.json ou PDF)</h3>
-                <button class="modal-close" onclick="closeImportModal()">&times;</button>
-            </div>
-            <div class="drop-zone" onclick="document.getElementById('fileInput').click()">
-                <p>📁 Clique aqui para selecionar o arquivo JSON ou TXT de telemetria</p>
-                <input type="file" id="fileInput" style="display:none" onchange="handleFileUpload(event)">
-            </div>
-            <button class="btn btn-outline" style="width:100%" onclick="closeImportModal()">Fechar</button>
-        </div>
+        <footer>Krathus Racing &copy; 2026 — Plataforma Automatizada de Telemetria ZRound.</footer>
     </div>
 
     <script src="database.js"></script>
