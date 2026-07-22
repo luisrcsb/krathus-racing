@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Krathus Racing - Central de Telemetria</title>
-    <!-- Chart.js para renderizar os gráficos de evolução de ritmo -->
+    <!-- Chart.js para renderizar os gráficos de evolução de ritmo e posições -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -156,7 +156,7 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
-            max-height: 140px;
+            max-height: 150px;
             overflow-y: auto;
         }
 
@@ -275,6 +275,59 @@
             position: relative;
             height: 280px;
             width: 100%;
+        }
+
+        /* Caixa de Análise do Gráfico de Posição */
+        .position-analysis-container {
+            margin-top: 20px;
+            background: var(--bg-input);
+            border-left: 4px solid var(--accent-gold);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .position-analysis-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .position-log-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .position-log-item {
+            background: rgba(21, 28, 40, 0.5);
+            padding: 10px 14px;
+            border-radius: 6px;
+            border: 1px solid var(--border-card);
+        }
+
+        .tag-gain {
+            color: var(--accent-green);
+            font-weight: 700;
+        }
+
+        .tag-loss {
+            color: var(--accent-red);
+            font-weight: 700;
+        }
+
+        .tag-neutral {
+            color: var(--accent-gold);
+            font-weight: 700;
         }
 
         /* Driver Summary List */
@@ -547,6 +600,19 @@
                 padding: 8px 12px !important;
             }
 
+            .position-analysis-container {
+                background: #f8fafc !important;
+                border-left-color: #000000 !important;
+                border-top: 1px solid #e2e8f0 !important;
+                border-right: 1px solid #e2e8f0 !important;
+                border-bottom: 1px solid #e2e8f0 !important;
+            }
+
+            .position-log-item {
+                background: #ffffff !important;
+                border-color: #cbd5e1 !important;
+            }
+
             table {
                 font-size: 0.8rem !important;
             }
@@ -680,7 +746,11 @@
                     <div class="checkbox-container">
                         <label class="checkbox-item">
                             <input type="checkbox" value="mod-grafico" class="filter-modulo" checked onchange="atualizarDashboard()">
-                            📈 Evolução de Ritmo (Gráfico & Resumo)
+                            📈 Evolução de Ritmo (Lap Times - Lap by Lap)
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" value="mod-grafico-posicao" class="filter-modulo" checked onchange="atualizarDashboard()">
+                            📊 Posição Volta a Volta (Race Position)
                         </label>
                         <label class="checkbox-item">
                             <input type="checkbox" value="mod-classificacao-analise" class="filter-modulo" checked onchange="atualizarDashboard()">
@@ -753,22 +823,28 @@
     <script>
         const dadosBase = [
             { pos: "1º", piloto: "DJ", bateriaKey: "bateria1", sessao: "Corrida - Bateria 1 (17/07 23:17)", voltas: "29 / 29", tempoTotal: "06:11,204", melhorVoltaVal: 10.898, melhorVoltaTxt: "10,898s (V20)", mediaVal: 12.800, mediaTxt: "12,800s", desvio: "±1,682s", desvioVal: 1.682, badgeColor: "#ffb703",
-              laps: [15.0, 12.3, 12.1, 12.0, 11.9, 11.8, 11.7, 12.0, 12.5, 12.2, 12.1, 12.0, 12.3, 12.1, 12.0, 18.8, 12.6, 12.4, 12.2, 10.898, 11.9, 11.9, 15.0, 14.0, 12.2, 12.4, 12.5, 11.8, 20.5] },
+              laps: [15.0, 12.3, 12.1, 12.0, 11.9, 11.8, 11.7, 12.0, 12.5, 12.2, 12.1, 12.0, 12.3, 12.1, 12.0, 18.8, 12.6, 12.4, 12.2, 10.898, 11.9, 11.9, 15.0, 14.0, 12.2, 12.4, 12.5, 11.8, 20.5],
+              positions: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] },
             
             { pos: "1º", piloto: "DJ", bateriaKey: "bateria2", sessao: "Corrida - Bateria 2 (17/07 23:39)", voltas: "28 / 28", tempoTotal: "06:08,702", melhorVoltaVal: 11.723, melhorVoltaTxt: "11,723s (V07)", mediaVal: 13.168, mediaTxt: "13,168s", desvio: "±1,586s", desvioVal: 1.586, badgeColor: "#ffb703",
-              laps: [14.0, 13.5, 12.8, 12.2, 12.0, 11.8, 11.723, 12.1, 12.3, 13.0, 12.5, 12.2, 12.4, 12.0, 12.1, 12.5, 12.3, 12.0, 12.2, 12.1, 12.0, 12.4, 12.2, 12.1, 12.0, 12.3, 12.5, 12.8] },
+              laps: [14.0, 13.5, 12.8, 12.2, 12.0, 11.8, 11.723, 12.1, 12.3, 13.0, 12.5, 12.2, 12.4, 12.0, 12.1, 12.5, 12.3, 12.0, 12.2, 12.1, 12.0, 12.4, 12.2, 12.1, 12.0, 12.3, 12.5, 12.8],
+              positions: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] },
 
             { pos: "2º", piloto: "Ronaldo", bateriaKey: "bateria1", sessao: "Corrida - Bateria 1 (17/07 23:17)", voltas: "26 / 26", tempoTotal: "06:07,083", melhorVoltaVal: 11.703, melhorVoltaTxt: "11,703s (V12)", mediaVal: 14.119, mediaTxt: "14,119s", desvio: "±1,871s", desvioVal: 1.871, badgeColor: "#c0c0c0",
-              laps: [15.9, 15.8, 11.9, 12.8, 11.5, 13.1, 12.1, 12.4, 13.3, 34.8, 11.9, 11.703, 15.0, 12.2, 13.0, 12.7, 16.2, 12.7, 13.9, 12.5, 11.4, 12.3, 12.9, 13.2, 12.2, 12.8] },
+              laps: [15.9, 15.8, 11.9, 12.8, 11.5, 13.1, 12.1, 12.4, 13.3, 34.8, 11.9, 11.703, 15.0, 12.2, 13.0, 12.7, 16.2, 12.7, 13.9, 12.5, 11.4, 12.3, 12.9, 13.2, 12.2, 12.8],
+              positions: [2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2] },
 
             { pos: "2º", piloto: "Ronaldo", bateriaKey: "bateria2", sessao: "Corrida - Bateria 2 (17/07 23:39)", voltas: "26 / 26", tempoTotal: "06:01,941", melhorVoltaVal: 11.434, melhorVoltaTxt: "11,434s (V21)", mediaVal: 13.921, mediaTxt: "13,921s", desvio: "±4,382s", desvioVal: 4.382, badgeColor: "#c0c0c0",
-              laps: [15.0, 14.5, 13.0, 12.5, 12.2, 12.0, 11.9, 12.2, 12.5, 13.0, 12.8, 12.5, 12.3, 12.1, 12.0, 12.2, 12.5, 12.8, 13.0, 12.2, 11.434, 12.0, 12.5, 12.8, 13.0, 13.2] },
+              laps: [15.0, 14.5, 13.0, 12.5, 12.2, 12.0, 11.9, 12.2, 12.5, 13.0, 12.8, 12.5, 12.3, 12.1, 12.0, 12.2, 12.5, 12.8, 13.0, 12.2, 11.434, 12.0, 12.5, 12.8, 13.0, 13.2],
+              positions: [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2] },
 
             { pos: "3º", piloto: "Raphael", bateriaKey: "bateria1", sessao: "Corrida - Bateria 1 (17/07 23:17)", voltas: "9 / 10", tempoTotal: "06:08,180", melhorVoltaVal: 11.603, melhorVoltaTxt: "11,603s (V06)", mediaVal: 18.120, mediaTxt: "18,120s", desvio: "±9,450s", desvioVal: 9.450, badgeColor: "#cd7f32",
-              laps: [16.8, 16.6, 14.5, 12.5, 12.9, 11.603, 11.8, 16.6, 14.4] },
+              laps: [16.8, 16.6, 14.5, 12.5, 12.9, 11.603, 11.8, 16.6, 14.4],
+              positions: [3, 3, 3, 3, 3, 3, 3, 3, 3] },
 
             { pos: "3º", piloto: "Raphael", bateriaKey: "bateria2", sessao: "Corrida - Bateria 2 (17/07 23:39)", voltas: "25 / 25", tempoTotal: "06:07,078", melhorVoltaVal: 11.873, melhorVoltaTxt: "11,873s (V07)", mediaVal: 14.683, mediaTxt: "14,683s", desvio: "±1,865s", desvioVal: 1.865, badgeColor: "#cd7f32",
-              laps: [16.0, 15.5, 14.2, 13.0, 12.8, 12.2, 11.873, 12.5, 13.0, 13.2, 13.5, 14.0, 13.8, 13.5, 13.2, 13.0, 13.5, 13.8, 14.0, 13.5, 13.2, 13.0, 13.5, 13.8, 14.0] }
+              laps: [16.0, 15.5, 14.2, 13.0, 12.8, 12.2, 11.873, 12.5, 13.0, 13.2, 13.5, 14.0, 13.8, 13.5, 13.2, 13.0, 13.5, 13.8, 14.0, 13.5, 13.2, 13.0, 13.5, 13.8, 14.0],
+              positions: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3] }
         ];
 
         const pilotoCores = {
@@ -843,12 +919,14 @@
 
                 const nomeSessao = dadosSessao[0].sessao;
                 const chartId = `chart-${bateriaKey}`;
+                const chartPosId = `chart-pos-${bateriaKey}`;
 
                 const sessionBlock = document.createElement('div');
                 sessionBlock.className = 'session-block';
 
                 let htmlConteudoBlock = '';
 
+                // MÓDULO 1: Gráfico de Evolução de Ritmo (Tempos)
                 if (modulosSelecionados.includes('mod-grafico')) {
                     htmlConteudoBlock += `
                         <div class="middle-grid">
@@ -866,6 +944,26 @@
                     `;
                 }
 
+                // MÓDULO: Gráfico de Posição Volta a Volta + Análise Textual
+                if (modulosSelecionados.includes('mod-grafico-posicao')) {
+                    htmlConteudoBlock += `
+                        <div class="card">
+                            <div class="card-header">Evolução de Posição em Pista (Race Position History) - ${nomeSessao}</div>
+                            <div class="chart-container">
+                                <canvas id="${chartPosId}"></canvas>
+                            </div>
+                            <!-- COMENTÁRIOS DE ANÁLISE VOLTA A VOLTA ABAIXO DO GRÁFICO -->
+                            <div class="position-analysis-container">
+                                <div class="position-analysis-title">
+                                    📝 Relatório de Disputa & Trocas de Posição Volta a Volta
+                                </div>
+                                <div class="position-log-list" id="pos-logs-${bateriaKey}"></div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // MÓDULO UNIFICADO: Classificação & Análise de Consistência
                 if (modulosSelecionados.includes('mod-classificacao-analise')) {
                     htmlConteudoBlock += `
                         <div class="card">
@@ -891,6 +989,7 @@
                     `;
                 }
 
+                // MÓDULO: Tabela Geral Volta a Volta
                 if (modulosSelecionados.includes('mod-tabela-geral')) {
                     htmlConteudoBlock += `
                         <div class="card">
@@ -912,6 +1011,7 @@
                 sessionBlock.innerHTML = htmlConteudoBlock;
                 mainContainer.appendChild(sessionBlock);
 
+                // Renderizar Gráfico de Tempos
                 if (modulosSelecionados.includes('mod-grafico')) {
                     const resumoList = document.getElementById(`resumo-${bateriaKey}`);
                     dadosSessao.forEach(d => {
@@ -961,6 +1061,114 @@
                     chartInstances.push(newChart);
                 }
 
+                // Renderizar Gráfico de Posição + Análise do Relatório Volta a Volta
+                if (modulosSelecionados.includes('mod-grafico-posicao')) {
+                    let maxVoltasPos = 0;
+                    dadosSessao.forEach(d => { if (d.positions.length > maxVoltasPos) maxVoltasPos = d.positions.length; });
+
+                    const labelsPos = Array.from({ length: maxVoltasPos }, (_, i) => `V${i + 1}`);
+                    const datasetsPos = dadosSessao.map(d => ({
+                        label: d.piloto,
+                        data: d.positions,
+                        borderColor: pilotoCores[d.piloto] || '#ffffff',
+                        backgroundColor: pilotoCores[d.piloto] || '#ffffff',
+                        borderWidth: 3,
+                        stepped: false,
+                        tension: 0.2,
+                        pointRadius: 4
+                    }));
+
+                    const ctxPos = document.getElementById(chartPosId).getContext('2d');
+                    const newChartPos = new Chart(ctxPos, {
+                        type: 'line',
+                        data: { labels: labelsPos, datasets: datasetsPos },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { labels: { color: '#8492a6' } },
+                                tooltip: { callbacks: { label: (c) => ` ${c.dataset.label}: ${c.raw}º Lugar` } }
+                            },
+                            scales: {
+                                x: { grid: { color: '#1c2638' }, ticks: { color: '#8492a6' }, title: { display: true, text: 'Volta a Volta', color: '#8492a6' } },
+                                y: { 
+                                    reverse: true,
+                                    min: 1,
+                                    max: 3,
+                                    grid: { color: '#1c2638' }, 
+                                    ticks: { 
+                                        color: '#8492a6',
+                                        stepSize: 1,
+                                        callback: (val) => `${val}º` 
+                                    }, 
+                                    title: { display: true, text: 'Posição na Corrida', color: '#8492a6' } 
+                                }
+                            }
+                        }
+                    });
+                    chartInstances.push(newChartPos);
+
+                    // Geração do Comentário e Análise do Relatório Volta a Volta
+                    const logsContainer = document.getElementById(`pos-logs-${bateriaKey}`);
+                    let logsHTML = "";
+
+                    // 1. Largada (Volta 1)
+                    let largadaInfo = dadosSessao.map(d => `<strong>${d.piloto}</strong> (${d.positions[0]}º)`).join(", ");
+                    logsHTML += `
+                        <div class="position-log-item">
+                            🏎️ <strong>Largada & Primeiro Lançamento (Volta 1):</strong> O grid cruzou a primeira volta com ${largadaInfo}.
+                        </div>
+                    `;
+
+                    // 2. Análise de Trocas Volta a Volta
+                    let trocasDetectadas = [];
+                    for (let v = 1; v < maxVoltasPos; v++) {
+                        dadosSessao.forEach(d => {
+                            if (v < d.positions.length) {
+                                let posAnterior = d.positions[v - 1];
+                                let posAtual = d.positions[v];
+
+                                if (posAtual < posAnterior) {
+                                    let diff = posAnterior - posAtual;
+                                    trocasDetectadas.push(`
+                                        <div class="position-log-item">
+                                            ⚡ <strong>Volta ${v + 1}:</strong> <span class="tag-gain">Ganho de Posição!</span> <strong>${d.piloto}</strong> ultrapassou e subiu do ${posAnterior}º para o ${posAtual}º lugar (+${diff} pos).
+                                        </div>
+                                    `);
+                                } else if (posAtual > posAnterior) {
+                                    let diff = posAtual - posAnterior;
+                                    trocasDetectadas.push(`
+                                        <div class="position-log-item">
+                                            ⚠️ <strong>Volta ${v + 1}:</strong> <span class="tag-loss">Perda de Posição!</span> <strong>${d.piloto}</strong> cometeu uma pequena escapada ou sofreu ultrapassagem, caindo do ${posAnterior}º para o ${posAtual}º lugar (-${diff} pos).
+                                        </div>
+                                    `);
+                                }
+                            }
+                        });
+                    }
+
+                    if (trocasDetectadas.length > 0) {
+                        logsHTML += trocasDetectadas.join("");
+                    } else {
+                        logsHTML += `
+                            <div class="position-log-item">
+                                🔒 <strong>Estabilidade de Liderança:</strong> Não foram registradas ultrapassagens diretas entre as voltas decorridas. Todos os pilotos mantiveram suas posições com ritmo constante do início ao fim.
+                            </div>
+                        `;
+                    }
+
+                    // 3. Resultado Final
+                    let resultadoFinalInfo = dadosSessao.map(d => `<strong>${d.piloto}</strong> em ${d.pos}`).join(", ");
+                    logsHTML += `
+                        <div class="position-log-item">
+                            🏁 <strong>Bandeirada Final:</strong> A sessão encerrou-se com ${resultadoFinalInfo}.
+                        </div>
+                    `;
+
+                    logsContainer.innerHTML = logsHTML;
+                }
+
+                // Renderizar Tabela Unificada
                 if (modulosSelecionados.includes('mod-classificacao-analise')) {
                     const tabelaCorpo = document.getElementById(`tabela-unificada-${bateriaKey}`);
                     dadosSessao.forEach(item => {
@@ -1007,6 +1215,7 @@
                     });
                 }
 
+                // Renderizar Tabela Geral
                 if (modulosSelecionados.includes('mod-tabela-geral')) {
                     const headerLap = document.getElementById(`head-lapbyLap-${bateriaKey}`);
                     const bodyLap = document.getElementById(`body-lapbyLap-${bateriaKey}`);
