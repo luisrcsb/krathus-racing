@@ -97,6 +97,15 @@
             color: var(--text-main);
         }
 
+        .btn-pdf {
+            background-color: #10b981;
+            color: #ffffff;
+            font-size: 1rem;
+            padding: 12px 24px;
+            align-self: flex-end;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+
         .btn:hover {
             opacity: 0.9;
         }
@@ -209,6 +218,7 @@
             border: 1px solid var(--border-card);
             border-radius: 14px;
             padding: 20px;
+            page-break-after: always;
         }
 
         .middle-grid {
@@ -406,6 +416,25 @@
             border: 1px solid var(--accent-green);
         }
 
+        /* Regras para Impressão e PDF Clean */
+        @media print {
+            body {
+                background-color: #0d111a !important;
+                color: #e6edf3 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                padding: 0;
+            }
+            .header-actions, .filters-card, .btn-pdf {
+                display: none !important;
+            }
+            .session-block {
+                border: none !important;
+                background: transparent !important;
+                padding: 0 !important;
+            }
+        }
+
         @media (max-width: 1024px) {
             .filters-card {
                 grid-template-columns: 1fr;
@@ -470,7 +499,6 @@
                 </div>
             </div>
 
-            <!-- Novo Grupo de Checkboxes: Módulos Analíticos -->
             <div class="filter-group">
                 <label class="group-title">MÓDULOS / RECURSOS VISÍVEIS</label>
                 <div class="checkbox-container">
@@ -524,7 +552,7 @@
         </div>
     </div>
 
-    <!-- Script de Lógica e Renderização Módulos Flexíveis -->
+    <!-- Script de Lógica e Geração do PDF -->
     <script>
         const dadosBase = [
             { pos: "1º", piloto: "DJ", bateriaKey: "bateria1", sessao: "Corrida - Bateria 1 (17/07 23:17)", voltas: "29 / 29", tempoTotal: "06:11,204", melhorVoltaVal: 10.898, melhorVoltaTxt: "10,898s (V20)", mediaVal: 12.800, mediaTxt: "12,800s", desvio: "±1,682s", desvioVal: 1.682, badgeColor: "#ffb703",
@@ -624,7 +652,6 @@
 
                 let htmlConteudoBlock = '';
 
-                // MÓDULO 1: Gráfico & Resumo
                 if (modulosSelecionados.includes('mod-grafico')) {
                     htmlConteudoBlock += `
                         <div class="middle-grid">
@@ -642,7 +669,6 @@
                     `;
                 }
 
-                // MÓDULO 2: Classificação Calculada
                 if (modulosSelecionados.includes('mod-classificacao')) {
                     htmlConteudoBlock += `
                         <div class="card">
@@ -668,7 +694,6 @@
                     `;
                 }
 
-                // MÓDULO 3: Análise de Consistência
                 if (modulosSelecionados.includes('mod-analise')) {
                     htmlConteudoBlock += `
                         <div class="card">
@@ -678,7 +703,6 @@
                     `;
                 }
 
-                // MÓDULO 4: Tabela Geral Volta a Volta
                 if (modulosSelecionados.includes('mod-tabela-geral')) {
                     htmlConteudoBlock += `
                         <div class="card">
@@ -697,10 +721,17 @@
                     `;
                 }
 
+                // Botão de Gerar Relatório PDF no final de cada sessão
+                htmlConteudoBlock += `
+                    <button class="btn btn-pdf" onclick="gerarRelatorioPDF()">
+                        📄 Gerar Relatório PDF (${nomeSessao})
+                    </button>
+                `;
+
                 sessionBlock.innerHTML = htmlConteudoBlock;
                 mainContainer.appendChild(sessionBlock);
 
-                // Preenchimento Módulo 1 (Resumo & Gráfico)
+                // Preenchimentos dos Módulos Ativos
                 if (modulosSelecionados.includes('mod-grafico')) {
                     const resumoList = document.getElementById(`resumo-${bateriaKey}`);
                     dadosSessao.forEach(d => {
@@ -717,9 +748,7 @@
                     });
 
                     let maxVoltas = 0;
-                    dadosSessao.forEach(d => {
-                        if (d.laps.length > maxVoltas) maxVoltas = d.laps.length;
-                    });
+                    dadosSessao.forEach(d => { if (d.laps.length > maxVoltas) maxVoltas = d.laps.length; });
 
                     const labelsLapByLap = Array.from({ length: maxVoltas }, (_, i) => `V${i + 1}`);
                     const datasets = dadosSessao.map(d => ({
@@ -741,13 +770,7 @@
                             maintainAspectRatio: false,
                             plugins: {
                                 legend: { labels: { color: '#8492a6' } },
-                                tooltip: {
-                                    callbacks: {
-                                        label: function(context) {
-                                            return ` ${context.dataset.label}: ${context.raw.toFixed(3).replace('.', ',')}s`;
-                                        }
-                                    }
-                                }
+                                tooltip: { callbacks: { label: (c) => ` ${c.dataset.label}: ${c.raw.toFixed(3).replace('.', ',')}s` } }
                             },
                             scales: {
                                 x: { grid: { color: '#1c2638' }, ticks: { color: '#8492a6' }, title: { display: true, text: 'Volta a Volta (Lap to Lap)', color: '#8492a6' } },
@@ -758,7 +781,6 @@
                     chartInstances.push(newChart);
                 }
 
-                // Preenchimento Módulo 2 (Tabela Classificação)
                 if (modulosSelecionados.includes('mod-classificacao')) {
                     const tabelaCorpo = document.getElementById(`tabela-${bateriaKey}`);
                     dadosSessao.forEach(item => {
@@ -777,7 +799,6 @@
                     });
                 }
 
-                // Preenchimento Módulo 3 (Análise Consistência)
                 if (modulosSelecionados.includes('mod-analise')) {
                     const analiseGrid = document.getElementById(`analise-${bateriaKey}`);
                     dadosSessao.forEach(d => {
@@ -822,7 +843,6 @@
                     });
                 }
 
-                // Preenchimento Módulo 4 (Tabela Geral)
                 if (modulosSelecionados.includes('mod-tabela-geral')) {
                     const headerLap = document.getElementById(`head-lapbyLap-${bateriaKey}`);
                     const bodyLap = document.getElementById(`body-lapbyLap-${bateriaKey}`);
@@ -834,9 +854,7 @@
                     });
 
                     let maxVoltas = 0;
-                    dadosSessao.forEach(d => {
-                        if (d.laps.length > maxVoltas) maxVoltas = d.laps.length;
-                    });
+                    dadosSessao.forEach(d => { if (d.laps.length > maxVoltas) maxVoltas = d.laps.length; });
 
                     for (let i = 0; i < maxVoltas; i++) {
                         const tr = document.createElement('tr');
@@ -868,6 +886,11 @@
         function resetarFiltros() {
             document.querySelectorAll('.filter-bateria, .filter-piloto, .filter-modulo').forEach(cb => cb.checked = true);
             atualizarDashboard();
+        }
+
+        // Função para acionar o salvamento/impressão em PDF
+        function gerarRelatorioPDF() {
+            window.print();
         }
     </script>
 </body>
