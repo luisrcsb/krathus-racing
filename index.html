@@ -240,12 +240,6 @@
             padding: 20px;
         }
 
-        .middle-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 20px;
-        }
-
         .card {
             background: var(--bg-card);
             border: 1px solid var(--border-card);
@@ -323,46 +317,6 @@
         .tag-loss {
             color: var(--accent-red);
             font-weight: 700;
-        }
-
-        .tag-neutral {
-            color: var(--accent-gold);
-            font-weight: 700;
-        }
-
-        /* Driver Summary List */
-        .summary-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .summary-item {
-            background: var(--bg-input);
-            padding: 14px 16px;
-            border-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .driver-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 600;
-        }
-
-        .driver-color-indicator {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-        }
-
-        .summary-value {
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: var(--accent-gold);
         }
 
         /* Table Section */
@@ -595,11 +549,6 @@
                 background-color: #000000 !important;
             }
 
-            .summary-item {
-                background: #f3f4f6 !important;
-                padding: 8px 12px !important;
-            }
-
             .position-analysis-container {
                 background: #f8fafc !important;
                 border-left-color: #000000 !important;
@@ -682,9 +631,6 @@
             }
             .kpi-grid {
                 grid-template-columns: repeat(2, 1fr);
-            }
-            .middle-grid {
-                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -926,25 +872,19 @@
 
                 let htmlConteudoBlock = '';
 
-                // MÓDULO 1: Gráfico de Evolução de Ritmo (Tempos)
+                // MÓDULO 1: Gráfico de Evolução de Ritmo (Tempos em Largura Total)
                 if (modulosSelecionados.includes('mod-grafico')) {
                     htmlConteudoBlock += `
-                        <div class="middle-grid">
-                            <div class="card">
-                                <div class="card-header">Evolução do Ritmo (Lap Times - Lap by Lap) - ${nomeSessao}</div>
-                                <div class="chart-container">
-                                    <canvas id="${chartId}"></canvas>
-                                </div>
-                            </div>
-                            <div class="card">
-                                <div class="card-header">Resumo da Seleção</div>
-                                <div class="summary-list" id="resumo-${bateriaKey}"></div>
+                        <div class="card">
+                            <div class="card-header">Evolução do Ritmo (Lap Times - Lap by Lap) - ${nomeSessao}</div>
+                            <div class="chart-container">
+                                <canvas id="${chartId}"></canvas>
                             </div>
                         </div>
                     `;
                 }
 
-                // MÓDULO: Gráfico de Posição Volta a Volta + Análise Textual
+                // MÓDULO 2: Gráfico de Posição Volta a Volta + Análise Textual
                 if (modulosSelecionados.includes('mod-grafico-posicao')) {
                     htmlConteudoBlock += `
                         <div class="card">
@@ -989,7 +929,7 @@
                     `;
                 }
 
-                // MÓDULO: Tabela Geral Volta a Volta
+                // MÓDULO 4: Tabela Geral Volta a Volta
                 if (modulosSelecionados.includes('mod-tabela-geral')) {
                     htmlConteudoBlock += `
                         <div class="card">
@@ -1013,20 +953,6 @@
 
                 // Renderizar Gráfico de Tempos
                 if (modulosSelecionados.includes('mod-grafico')) {
-                    const resumoList = document.getElementById(`resumo-${bateriaKey}`);
-                    dadosSessao.forEach(d => {
-                        const itemDiv = document.createElement('div');
-                        itemDiv.className = 'summary-item';
-                        itemDiv.innerHTML = `
-                            <div class="driver-info">
-                                <span class="driver-color-indicator" style="background-color: ${pilotoCores[d.piloto]};"></span>
-                                <span>${d.piloto}</span>
-                            </div>
-                            <span class="summary-value">Média: ${d.mediaTxt}</span>
-                        `;
-                        resumoList.appendChild(itemDiv);
-                    });
-
                     let maxVoltas = 0;
                     dadosSessao.forEach(d => { if (d.laps.length > maxVoltas) maxVoltas = d.laps.length; });
 
