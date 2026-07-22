@@ -404,7 +404,7 @@
             border: 1px solid var(--accent-green);
         }
 
-        /* Estilo do Rodapé com Logotipos */
+        /* Estilo do Rodapé com Logotipos e Metadados */
         .footer-container {
             background: var(--bg-card);
             border: 1px solid var(--border-card);
@@ -415,6 +415,30 @@
             align-items: center;
             gap: 16px;
             margin-top: 10px;
+        }
+
+        .footer-meta-info {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            background: var(--bg-input);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--border-card);
+        }
+
+        .footer-meta-info span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .footer-meta-info strong {
+            color: var(--text-main);
         }
 
         .footer-logos {
@@ -443,13 +467,16 @@
             width: 100%;
         }
 
-        /* REGRAS EXCLUSIVAS DE IMPRESSÃO / GERADOR DE PDF */
+        /* REGRAS DE IMPRESSÃO - TEXTO 100% PRETO */
         @media print {
-            body {
-                background-color: #ffffff !important;
-                color: #1f2937 !important;
+            body, body * {
+                color: #000000 !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
+            }
+
+            body {
+                background-color: #ffffff !important;
                 padding: 10px !important;
                 font-size: 11px !important;
             }
@@ -464,18 +491,12 @@
 
             .header {
                 background: #ffffff !important;
-                border: 1px solid #e5e7eb !important;
+                border: 1px solid #d1d5db !important;
                 padding: 12px 16px !important;
-                color: #111827 !important;
             }
 
             .brand-title h1 {
-                color: #111827 !important;
                 font-size: 1.2rem !important;
-            }
-
-            .brand-title p {
-                color: #6b7280 !important;
             }
 
             .kpi-grid {
@@ -484,27 +505,17 @@
 
             .kpi-card {
                 background: #f9fafb !important;
-                border: 1px solid #e5e7eb !important;
+                border: 1px solid #d1d5db !important;
                 padding: 10px 12px !important;
             }
 
             .kpi-label {
-                color: #6b7280 !important;
                 font-size: 0.65rem !important;
             }
 
             .kpi-value {
-                color: #111827 !important;
                 font-size: 1.2rem !important;
                 margin: 4px 0 !important;
-            }
-
-            .kpi-value.green {
-                color: #059669 !important;
-            }
-
-            .kpi-subtext {
-                color: #6b7280 !important;
             }
 
             .session-block {
@@ -517,28 +528,23 @@
 
             .card {
                 background: #ffffff !important;
-                border: 1px solid #e5e7eb !important;
+                border: 1px solid #d1d5db !important;
                 padding: 12px !important;
                 border-radius: 6px !important;
             }
 
             .card-header {
-                color: #111827 !important;
                 font-size: 0.9rem !important;
                 margin-bottom: 10px !important;
             }
 
             .card-header::before {
-                background-color: #dc2626 !important;
+                background-color: #000000 !important;
             }
 
             .summary-item {
                 background: #f3f4f6 !important;
                 padding: 8px 12px !important;
-            }
-
-            .summary-value {
-                color: #b45309 !important;
             }
 
             table {
@@ -547,14 +553,12 @@
 
             th {
                 background-color: #f3f4f6 !important;
-                color: #374151 !important;
                 padding: 8px 10px !important;
-                border-bottom: 1px solid #d1d5db !important;
+                border-bottom: 1px solid #9ca3af !important;
             }
 
             td {
                 padding: 6px 10px !important;
-                color: #1f2937 !important;
             }
 
             .sub-row td {
@@ -562,40 +566,38 @@
                 border-bottom: 1px solid #d1d5db !important;
             }
 
-            .session-badge {
-                background: #e0f2fe !important;
-                color: #0369a1 !important;
-            }
-
-            .pos-badge {
-                background: #fef08a !important;
-                color: #854d0e !important;
+            .session-badge, .pos-badge {
+                background: #f3f4f6 !important;
+                border: 1px solid #d1d5db !important;
             }
 
             .analysis-subrow-box {
-                background: #f3f4f6 !important;
-                border-left-color: #2563eb !important;
-                color: #1f2937 !important;
+                background: #f8fafc !important;
+                border-left-color: #000000 !important;
+                border-top: 1px solid #e2e8f0 !important;
+                border-right: 1px solid #e2e8f0 !important;
+                border-bottom: 1px solid #e2e8f0 !important;
             }
 
             .analysis-subrow-box strong.title {
-                color: #1d4ed8 !important;
+                font-weight: 800 !important;
             }
 
             .fastest-lap-highlight {
-                background-color: #d1fae5 !important;
-                color: #047857 !important;
-                border-color: #10b981 !important;
-            }
-
-            .text-green {
-                color: #047857 !important;
+                background-color: #f1f5f9 !important;
+                border: 1px solid #000000 !important;
+                font-weight: bold !important;
             }
 
             .footer-container {
                 background: #ffffff !important;
-                border: 1px solid #e5e7eb !important;
+                border: 1px solid #d1d5db !important;
                 padding: 12px 16px !important;
+            }
+
+            .footer-meta-info {
+                background: #f3f4f6 !important;
+                border: 1px solid #d1d5db !important;
             }
 
             .footer-logo-img {
@@ -604,8 +606,7 @@
             }
 
             .footer-copyright {
-                color: #4b5563 !important;
-                border-top: 1px solid #e5e7eb !important;
+                border-top: 1px solid #d1d5db !important;
             }
         }
 
@@ -729,14 +730,21 @@
             <!-- Gerado dinamicamente via JS -->
         </div>
 
-        <!-- Rodapé com Logotipos e Copyright -->
+        <!-- Rodapé com Logotipos, Metadados e Copyright -->
         <footer class="footer-container">
+            <div class="footer-meta-info">
+                <span>📌 Versão Atual: <strong>v1.2.0</strong></span>
+                <span>•</span>
+                <span>🟢 Status: <strong>Estável / Produção</strong></span>
+                <span>•</span>
+                <span>🏎️ Compatibilidade: <strong>MYLAPS Sports Timing & ZRound Suite</strong></span>
+            </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS Sports Timing" class="footer-logo-img">
                 <img src="https://www.zround.com/wp-content/uploads/2020/05/zround_logo_web.png" alt="ZRound Suite" class="footer-logo-img">
             </div>
             <div class="footer-copyright">
-                &copy; 2026 Krathus Racing. Todos os direitos reservados.
+                &copy; 2026 Krathus Racing - Central de Telemetria e Análise Dinâmica. Todos os direitos reservados.
             </div>
         </footer>
     </div>
