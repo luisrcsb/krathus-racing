@@ -97,18 +97,24 @@
             color: var(--text-main);
         }
 
+        /* Botão do PDF com Alto Contraste */
         .btn-pdf-global {
-            background-color: #10b981;
+            background: linear-gradient(135deg, #ff5722 0%, #e63946 100%);
             color: #ffffff;
             font-size: 0.95rem;
-            padding: 12px 20px;
+            padding: 12px 24px;
             font-weight: 700;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 15px rgba(255, 87, 34, 0.4);
             width: fit-content;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
-        .btn:hover {
-            opacity: 0.9;
+        .btn-pdf-global:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 87, 34, 0.6);
+            opacity: 1;
         }
 
         /* Filter Section */
@@ -420,9 +426,7 @@
             width: 100%;
         }
 
-        /* ========================================================
-           REGRAS EXCLUSIVAS DE IMPRESSÃO / GERADOR DE PDF COMPACTO
-           ======================================================== */
+        /* REGRAS EXCLUSIVAS DE IMPRESSÃO / GERADOR DE PDF */
         @media print {
             body {
                 background-color: #ffffff !important;
