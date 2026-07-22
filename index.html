@@ -111,7 +111,7 @@
             opacity: 0.9;
         }
 
-        /* Filter Section com 3 Colunas */
+        /* Filter Section */
         .filters-card {
             background: var(--bg-card);
             border: 1px solid var(--border-card);
@@ -232,7 +232,6 @@
             border: 1px solid var(--border-card);
             border-radius: 14px;
             padding: 20px;
-            page-break-after: always;
         }
 
         .middle-grid {
@@ -365,7 +364,6 @@
             font-weight: 700;
         }
 
-        /* Estilo da Célula de Análise Unificada na Tabela */
         .analysis-inline-box {
             background: var(--bg-input);
             border-left: 3px solid var(--accent-blue);
@@ -376,7 +374,6 @@
             line-height: 1.4;
         }
 
-        /* Destaque da Melhor Volta na Tabela Comparativa */
         .fastest-lap-highlight {
             background-color: rgba(46, 196, 182, 0.15) !important;
             color: var(--accent-green) !important;
@@ -386,22 +383,148 @@
             border: 1px solid var(--accent-green);
         }
 
-        /* Regras para Impressão e PDF */
+        /* ========================================================
+           REGRAS EXCLUSIVAS DE IMPRESSÃO / GERADOR DE PDF COMPACTO
+           ======================================================== */
         @media print {
             body {
-                background-color: #0d111a !important;
-                color: #e6edf3 !important;
+                background-color: #ffffff !important;
+                color: #1f2937 !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
-                padding: 0;
+                padding: 10px !important;
+                font-size: 11px !important;
             }
+
+            .dashboard-container {
+                gap: 12px !important;
+            }
+
+            /* Oculta elementos interativos que não devem sair no PDF */
             .header-actions, .filters-card, .btn-pdf-global {
                 display: none !important;
             }
+
+            .header {
+                background: #ffffff !important;
+                border: 1px solid #e5e7eb !important;
+                padding: 12px 16px !important;
+                color: #111827 !important;
+            }
+
+            .brand-title h1 {
+                color: #111827 !important;
+                font-size: 1.2rem !important;
+            }
+
+            .brand-title p {
+                color: #6b7280 !important;
+            }
+
+            .kpi-grid {
+                gap: 8px !important;
+            }
+
+            .kpi-card {
+                background: #f9fafb !important;
+                border: 1px solid #e5e7eb !important;
+                padding: 10px 12px !important;
+            }
+
+            .kpi-label {
+                color: #6b7280 !important;
+                font-size: 0.65rem !important;
+            }
+
+            .kpi-value {
+                color: #111827 !important;
+                font-size: 1.2rem !important;
+                margin: 4px 0 !important;
+            }
+
+            .kpi-value.green {
+                color: #059669 !important;
+            }
+
+            .kpi-subtext {
+                color: #6b7280 !important;
+            }
+
             .session-block {
-                border: none !important;
                 background: transparent !important;
+                border: none !important;
                 padding: 0 !important;
+                gap: 12px !important;
+                page-break-after: always;
+            }
+
+            .card {
+                background: #ffffff !important;
+                border: 1px solid #e5e7eb !important;
+                padding: 12px !important;
+                border-radius: 6px !important;
+            }
+
+            .card-header {
+                color: #111827 !important;
+                font-size: 0.9rem !important;
+                margin-bottom: 10px !important;
+            }
+
+            .card-header::before {
+                background-color: #dc2626 !important;
+            }
+
+            .summary-item {
+                background: #f3f4f6 !important;
+                padding: 8px 12px !important;
+            }
+
+            .summary-value {
+                color: #b45309 !important;
+            }
+
+            table {
+                font-size: 0.8rem !important;
+            }
+
+            th {
+                background-color: #f3f4f6 !important;
+                color: #374151 !important;
+                padding: 8px 10px !important;
+                border-bottom: 1px solid #d1d5db !important;
+            }
+
+            td {
+                padding: 6px 10px !important;
+                border-bottom: 1px solid #e5e7eb !important;
+                color: #1f2937 !important;
+            }
+
+            .session-badge {
+                background: #e0f2fe !important;
+                color: #0369a1 !important;
+            }
+
+            .pos-badge {
+                background: #fef08a !important;
+                color: #854d0e !important;
+            }
+
+            .analysis-inline-box {
+                background: #f3f4f6 !important;
+                border-left-color: #2563eb !important;
+                color: #1f2937 !important;
+            }
+
+            .fastest-lap-highlight {
+                background-color: #d1fae5 !important;
+                color: #047857 !important;
+                border-color: #10b981 !important;
+            }
+
+            .text-green {
+                color: #047857 !important;
             }
         }
 
@@ -435,7 +558,7 @@
             </div>
         </header>
 
-        <!-- Filtros com Checkboxes Atualizados (Sessões, Pilotos e Módulos Unificados) -->
+        <!-- Filtros com Checkboxes -->
         <section class="filters-card">
             <div class="filters-grid">
                 <div class="filter-group">
@@ -489,7 +612,6 @@
                 </div>
             </div>
 
-            <!-- Botão do PDF Completo -->
             <div class="filters-footer">
                 <button class="btn btn-pdf-global" onclick="gerarRelatorioPDF()">
                     📄 Gerar Relatório PDF Completo
@@ -512,7 +634,7 @@
             <div class="kpi-card">
                 <span class="kpi-label">Voltas Válidas Analisadas</span>
                 <div class="kpi-value" id="kpi-total-voltas">143</div>
-                <span class="kpi-subtext">Total calculado</span>
+                <span class="kpi-subtext">Total calculated</span>
             </div>
             <div class="kpi-card">
                 <span class="kpi-label">Média Global do Grid</span>
@@ -627,7 +749,6 @@
 
                 let htmlConteudoBlock = '';
 
-                // MÓDULO 1: Gráfico & Resumo
                 if (modulosSelecionados.includes('mod-grafico')) {
                     htmlConteudoBlock += `
                         <div class="middle-grid">
@@ -645,7 +766,6 @@
                     `;
                 }
 
-                // MÓDULO 2 UNIFICADO: Classificação & Análise de Consistência
                 if (modulosSelecionados.includes('mod-classificacao-analise')) {
                     htmlConteudoBlock += `
                         <div class="card">
@@ -672,7 +792,6 @@
                     `;
                 }
 
-                // MÓDULO 3: Tabela Geral Volta a Volta
                 if (modulosSelecionados.includes('mod-tabela-geral')) {
                     htmlConteudoBlock += `
                         <div class="card">
@@ -694,7 +813,6 @@
                 sessionBlock.innerHTML = htmlConteudoBlock;
                 mainContainer.appendChild(sessionBlock);
 
-                // Preenchimento do Módulo 1 (Gráfico)
                 if (modulosSelecionados.includes('mod-grafico')) {
                     const resumoList = document.getElementById(`resumo-${bateriaKey}`);
                     dadosSessao.forEach(d => {
@@ -744,7 +862,6 @@
                     chartInstances.push(newChart);
                 }
 
-                // Preenchimento do Módulo 2 Unificado (Classificação + Análise em Tabela)
                 if (modulosSelecionados.includes('mod-classificacao-analise')) {
                     const tabelaCorpo = document.getElementById(`tabela-unificada-${bateriaKey}`);
                     dadosSessao.forEach(item => {
@@ -776,7 +893,6 @@
                     });
                 }
 
-                // Preenchimento do Módulo 3 (Tabela Geral Volta a Volta)
                 if (modulosSelecionados.includes('mod-tabela-geral')) {
                     const headerLap = document.getElementById(`head-lapbyLap-${bateriaKey}`);
                     const bodyLap = document.getElementById(`body-lapbyLap-${bateriaKey}`);
