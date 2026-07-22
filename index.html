@@ -406,15 +406,17 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 32px;
+            gap: 28px;
             flex-wrap: wrap;
         }
 
         .footer-logo-img {
-            height: 32px;
+            height: 36px;
             width: auto;
             object-fit: contain;
-            filter: brightness(0.9) contrast(1.1);
+            border-radius: 4px;
+            padding: 3px 6px;
+            background: #ffffff;
         }
 
         .footer-copyright {
@@ -573,6 +575,11 @@
                 padding: 12px 16px !important;
             }
 
+            .footer-logo-img {
+                background: transparent !important;
+                padding: 0 !important;
+            }
+
             .footer-copyright {
                 color: #4b5563 !important;
                 border-top: 1px solid #e5e7eb !important;
@@ -702,7 +709,7 @@
         <!-- Rodapé com Logotipos e Copyright -->
         <footer class="footer-container">
             <div class="footer-logos">
-                <img src="https://www.mylaps.com/wp-content/uploads/2023/07/mylaps-rebrand-1024x576.png" alt="MYLAPS Sports Timing" class="footer-logo-img">
+                <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS Sports Timing" class="footer-logo-img">
                 <img src="https://www.zround.com/wp-content/uploads/2020/05/zround_logo_web.png" alt="ZRound Suite" class="footer-logo-img">
             </div>
             <div class="footer-copyright">
