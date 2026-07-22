@@ -194,11 +194,21 @@
             color: var(--text-muted);
         }
 
-        /* Container para Múltiplos Gráficos Sessão a Sessão */
-        .charts-container-group {
+        /* Container de Sessões / Baterias */
+        .session-blocks-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .session-block {
             display: flex;
             flex-direction: column;
             gap: 20px;
+            background: rgba(21, 28, 40, 0.4);
+            border: 1px solid var(--border-card);
+            border-radius: 14px;
+            padding: 20px;
         }
 
         .middle-grid {
@@ -392,7 +402,7 @@
             </div>
         </section>
 
-        <!-- Cards de Métricas -->
+        <!-- Cards de Métricas Gerais -->
         <section class="kpi-grid">
             <div class="kpi-card">
                 <span class="kpi-label">Vencedor Selecionado</span>
@@ -407,7 +417,7 @@
             <div class="kpi-card">
                 <span class="kpi-label">Voltas Válidas Analisadas</span>
                 <div class="kpi-value" id="kpi-total-voltas">143</div>
-                <span class="kpi-subtext">Total calculated</span>
+                <span class="kpi-subtext">Total calculado</span>
             </div>
             <div class="kpi-card">
                 <span class="kpi-label">Média Global do Grid</span>
@@ -416,37 +426,13 @@
             </div>
         </section>
 
-        <!-- Container para N Gráficos Dinâmicos (1 Por Sessão Ativa) -->
-        <div id="charts-group" class="charts-container-group">
-            <!-- Renderizado dinamicamente pelo JS -->
+        <!-- Container Ondes os Blocos de Cada Sessão Serão Gerados -->
+        <div id="sessions-container" class="session-blocks-container">
+            <!-- Gerado dinamicamente via JS: Gráfico + Resumo + Tabela por Sessão -->
         </div>
-
-        <!-- Tabela de Classificação -->
-        <section class="card">
-            <div class="card-header">Classificação Calculada Automatizada</div>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>POS</th>
-                            <th>PILOTO</th>
-                            <th>SESSÃO</th>
-                            <th>VOLTAS VÁLIDAS</th>
-                            <th>TEMPO TOTAL</th>
-                            <th>MELHOR VOLTA</th>
-                            <th>MÉDIA (S)</th>
-                            <th>DESVIO PADRÃO (S)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabela-corpo">
-                        <!-- Gerado dinamicamente via JS -->
-                    </tbody>
-                </table>
-            </div>
-        </section>
     </div>
 
-    <!-- Script de Lógica e Renderização N-Gráficos Lap-by-Lap -->
+    <!-- Script de Lógica e Renderização por Sessão -->
     <script>
         const dadosBase = [
             { pos: "1º", piloto: "DJ", bateriaKey: "bateria1", sessao: "Corrida - Bateria 1 (17/07 23:17)", voltas: "29 / 29", tempoTotal: "06:11,204", melhorVoltaVal: 10.898, melhorVoltaTxt: "10,898s (V20)", mediaVal: 12.800, mediaTxt: "12,800s", desvio: "±1,682s", badgeColor: "#ffb703",
@@ -489,37 +475,14 @@
                 pilotosSelecionados.includes(item.piloto)
             );
 
-            // 1. Atualizar Tabela
-            const tabelaCorpo = document.getElementById('tabela-corpo');
-            tabelaCorpo.innerHTML = '';
-
-            if (dadosFiltrados.length === 0) {
-                tabelaCorpo.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 20px; color: var(--text-muted);">Nenhum dado encontrado para os filtros selecionados.</td></tr>`;
-            } else {
-                dadosFiltrados.forEach(item => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td><span class="pos-badge" style="background:${item.badgeColor};">${item.pos}</span></td>
-                        <td><strong>${item.piloto}</strong></td>
-                        <td><span class="session-badge">${item.sessao}</span></td>
-                        <td>${item.voltas}</td>
-                        <td>${item.tempoTotal}</td>
-                        <td class="text-green">${item.melhorVoltaTxt}</td>
-                        <td>${item.mediaTxt}</td>
-                        <td>${item.desvio}</td>
-                    `;
-                    tabelaCorpo.appendChild(tr);
-                });
-            }
-
-            // 2. Atualizar KPIs
+            // 1. Atualizar KPIs do Topo
             if (dadosFiltrados.length > 0) {
                 if (bateriasSelecionadas.length === 1) {
                     document.getElementById('kpi-vencedor').innerText = dadosFiltrados[0].piloto;
                     document.getElementById('kpi-vencedor-sub').innerText = "Vencedor da sessão";
                 } else {
                     document.getElementById('kpi-vencedor').innerText = "Múltiplas Sessões";
-                    document.getElementById('kpi-vencedor-sub').innerText = `${bateriasSelecionadas.length} baterias carregadas`;
+                    document.getElementById('kpi-vencedor-sub').innerText = `${bateriasSelecionadas.length} baterias selecionadas`;
                 }
 
                 let melhorVoltaGeral = dadosFiltrados.reduce((prev, curr) => prev.melhorVoltaVal < curr.melhorVoltaVal ? prev : curr);
@@ -540,19 +503,22 @@
                 document.getElementById('kpi-media-global').innerText = "--";
             }
 
-            // 3. Gerar 1 Gráfico Lap-by-Lap Por Sessão Selecionada
-            renderizarGraficosPorSessao(bateriasSelecionadas, pilotosSelecionados);
+            // 2. Renderizar Blocos Completos por Sessão (Gráfico + Resumo + Tabela)
+            renderizarSessõesCompletas(bateriasSelecionadas, pilotosSelecionados);
         }
 
-        function renderizarGraficosPorSessao(bateriasSelecionadas, pilotosSelecionados) {
-            // Destrói as instâncias anteriores para garantir performance sem leaks de memória
+        function renderizarSessõesCompletas(bateriasSelecionadas, pilotosSelecionados) {
+            // Destrói os gráficos antigos
             chartInstances.forEach(chart => chart.destroy());
             chartInstances = [];
 
-            const containerGrupo = document.getElementById('charts-group');
-            containerGrupo.innerHTML = '';
+            const mainContainer = document.getElementById('sessions-container');
+            mainContainer.innerHTML = '';
 
-            if (bateriasSelecionadas.length === 0 || pilotosSelecionados.length === 0) return;
+            if (bateriasSelecionadas.length === 0 || pilotosSelecionados.length === 0) {
+                mainContainer.innerHTML = `<div class="card" style="text-align:center; padding: 30px; color: var(--text-muted);">Nenhuma sessão ou piloto selecionado.</div>`;
+                return;
+            }
 
             bateriasSelecionadas.forEach((bateriaKey) => {
                 const dadosSessao = dadosBase.filter(d => d.bateriaKey === bateriaKey && pilotosSelecionados.includes(d.piloto));
@@ -561,26 +527,50 @@
                 const nomeSessao = dadosSessao[0].sessao;
                 const chartId = `chart-${bateriaKey}`;
 
-                // Estrutura HTML do bloco de cada sessão (Gráfico à esquerda + Resumo à direita)
-                const section = document.createElement('section');
-                section.className = 'middle-grid';
-                section.innerHTML = `
-                    <div class="card">
-                        <div class="card-header">Evolução do Ritmo (Lap Times - Lap by Lap) - ${nomeSessao}</div>
-                        <div class="chart-container">
-                            <canvas id="${chartId}"></canvas>
+                // Cria o container do bloco completo da sessão
+                const sessionBlock = document.createElement('div');
+                sessionBlock.className = 'session-block';
+
+                // Estrutura interna: Gráfico + Resumo em cima, Tabela embaixo
+                sessionBlock.innerHTML = `
+                    <div class="middle-grid">
+                        <div class="card">
+                            <div class="card-header">Evolução do Ritmo (Lap Times - Lap by Lap) - ${nomeSessao}</div>
+                            <div class="chart-container">
+                                <canvas id="${chartId}"></canvas>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">Resumo da Seleção</div>
+                            <div class="summary-list" id="resumo-${bateriaKey}"></div>
                         </div>
                     </div>
+
                     <div class="card">
-                        <div class="card-header">Resumo da Seleção</div>
-                        <div class="summary-list" id="resumo-${bateriaKey}">
+                        <div class="card-header">Classificação Calculada Automatizada - ${nomeSessao}</div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>POS</th>
+                                        <th>PILOTO</th>
+                                        <th>SESSÃO</th>
+                                        <th>VOLTAS VÁLIDAS</th>
+                                        <th>TEMPO TOTAL</th>
+                                        <th>MELHOR VOLTA</th>
+                                        <th>MÉDIA (S)</th>
+                                        <th>DESVIO PADRÃO (S)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabela-${bateriaKey}"></tbody>
+                            </table>
                         </div>
                     </div>
                 `;
 
-                containerGrupo.appendChild(section);
+                mainContainer.appendChild(sessionBlock);
 
-                // Preenche o quadro lateral de resumo da sessão
+                // Preenche o Resumo Lateral da Sessão
                 const resumoList = document.getElementById(`resumo-${bateriaKey}`);
                 dadosSessao.forEach(d => {
                     const itemDiv = document.createElement('div');
@@ -595,7 +585,24 @@
                     resumoList.appendChild(itemDiv);
                 });
 
-                // Calcula o maior número de voltas para montar o eixo X (V1, V2, V3...)
+                // Preenche a Tabela Exclusiva da Sessão
+                const tabelaCorpo = document.getElementById(`tabela-${bateriaKey}`);
+                dadosSessao.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><span class="pos-badge" style="background:${item.badgeColor};">${item.pos}</span></td>
+                        <td><strong>${item.piloto}</strong></td>
+                        <td><span class="session-badge">${item.sessao}</span></td>
+                        <td>${item.voltas}</td>
+                        <td>${item.tempoTotal}</td>
+                        <td class="text-green">${item.melhorVoltaTxt}</td>
+                        <td>${item.mediaTxt}</td>
+                        <td>${item.desvio}</td>
+                    `;
+                    tabelaCorpo.appendChild(tr);
+                });
+
+                // Monta os dados do Gráfico da Sessão
                 let maxVoltas = 0;
                 dadosSessao.forEach(d => {
                     if (d.laps.length > maxVoltas) maxVoltas = d.laps.length;
@@ -603,7 +610,6 @@
 
                 const labelsLapByLap = Array.from({ length: maxVoltas }, (_, i) => `V${i + 1}`);
 
-                // Datasets com as voltas individuais de cada piloto participante
                 const datasets = dadosSessao.map(d => ({
                     label: d.piloto,
                     data: d.laps,
@@ -614,7 +620,7 @@
                     pointRadius: 3
                 }));
 
-                // Inicializa o Chart.js para o Canvas desta sessão
+                // Inicializa o Chart.js para o gráfico desta bateria
                 const ctx = document.getElementById(chartId).getContext('2d');
                 const newChart = new Chart(ctx, {
                     type: 'line',
