@@ -307,7 +307,7 @@
         }
 
         td {
-            padding: 14px 16px;
+            padding: 12px 16px;
             border-bottom: 1px solid var(--border-card);
         }
 
@@ -340,7 +340,7 @@
             font-weight: 700;
         }
 
-        /* Estilos da Nova Seção de Análise Volta a Volta */
+        /* Estilos da Seção de Análise */
         .analysis-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -394,6 +394,16 @@
             padding: 10px;
             border-radius: 6px;
             border-left: 3px solid var(--accent-blue);
+        }
+
+        /* Estilos para Destaque da Melhor Volta na Tabela Comparativa */
+        .fastest-lap-highlight {
+            background-color: rgba(46, 196, 182, 0.15) !important;
+            color: var(--accent-green) !important;
+            font-weight: bold;
+            border-radius: 4px;
+            padding: 4px 8px;
+            border: 1px solid var(--accent-green);
         }
 
         @media (max-width: 1024px) {
@@ -620,10 +630,25 @@
                         </div>
                     </div>
 
-                    <!-- Nova Seção: Análise Volta a Volta e Consistência -->
                     <div class="card">
                         <div class="card-header">Análise de Consistência e Variação Volta a Volta</div>
                         <div class="analysis-grid" id="analise-${bateriaKey}"></div>
+                    </div>
+
+                    <!-- Nova Seção: Tabela Comparativa de Todas as Voltas Lado a Lado -->
+                    <div class="card">
+                        <div class="card-header">Tabela Geral Volta a Volta (Grid Comparativo) - ${nomeSessao}</div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr id="head-lapbyLap-${bateriaKey}">
+                                        <th>VOLTA</th>
+                                        <!-- Pilotos renderizados via JS -->
+                                    </tr>
+                                </thead>
+                                <tbody id="body-lapbyLap-${bateriaKey}"></tbody>
+                            </table>
+                        </div>
                     </div>
                 `;
 
@@ -661,22 +686,20 @@
                     tabelaCorpo.appendChild(tr);
                 });
 
-                // Preenche a Nova Seção de Análise Volta a Volta
+                // Preenche a Análise Volta a Volta
                 const analiseGrid = document.getElementById(`analise-${bateriaKey}`);
                 dadosSessao.forEach(d => {
                     let piorVoltaVal = Math.max(...d.laps);
                     let piorVoltaIdx = d.laps.indexOf(piorVoltaVal) + 1;
-                    
                     let melhorVoltaIdx = d.laps.indexOf(d.melhorVoltaVal) + 1;
 
-                    // Diagnóstico técnico baseado no desvio padrão
                     let diagnostico = "";
                     if (d.desvioVal <= 1.7) {
-                        diagnostico = `<strong>Alta Consistência:</strong> Ritmo muito constante durante a prova. Variação mínima entre as voltas, mantendo uma linha limpa.`;
+                        diagnostico = `<strong>Alta Consistência:</strong> Ritmo constante durante a prova. Variação mínima entre as voltas.`;
                     } else if (d.desvioVal <= 4.0) {
-                        diagnostico = `<strong>Média Variabilidade:</strong> Apresentou ritmo forte, porém com pequenas oscilações de tráfego ou erros pontuais de curva.`;
+                        diagnostico = `<strong>Média Variabilidade:</strong> Ritmo forte com pequenas oscilações de tráfego.`;
                     } else {
-                        diagnostico = `<strong>Alta Oscilação / Incidente:</strong> Perda significativa de tempo observada na Volta ${piorVoltaIdx} (${piorVoltaVal.toFixed(3)}s), indicando toque ou retenção na pista.`;
+                        diagnostico = `<strong>Alta Oscilação / Incidente:</strong> Perda de tempo na Volta ${piorVoltaIdx} (${piorVoltaVal.toFixed(3)}s), indicando toque ou retenção.`;
                     }
 
                     const cardDiv = document.createElement('div');
@@ -701,19 +724,51 @@
                             <span>Variação (Desvio Padrão):</span>
                             <span class="val">${d.desvio}</span>
                         </div>
-                        <div class="analysis-feedback">
-                            ${diagnostico}
-                        </div>
+                        <div class="analysis-feedback">${diagnostico}</div>
                     `;
                     analiseGrid.appendChild(cardDiv);
                 });
 
-                // Monta os dados do Gráfico da Sessão
+                // Renderiza a Nova Tabela Geral Volta a Volta (Grid Comparativo)
+                const headerLap = document.getElementById(`head-lapbyLap-${bateriaKey}`);
+                const bodyLap = document.getElementById(`body-lapbyLap-${bateriaKey}`);
+
+                dadosSessao.forEach(d => {
+                    const th = document.createElement('th');
+                    th.innerHTML = `<span style="color:${pilotoCores[d.piloto] || '#fff'}">●</span> ${d.piloto}`;
+                    headerLap.appendChild(th);
+                });
+
                 let maxVoltas = 0;
                 dadosSessao.forEach(d => {
                     if (d.laps.length > maxVoltas) maxVoltas = d.laps.length;
                 });
 
+                for (let i = 0; i < maxVoltas; i++) {
+                    const tr = document.createElement('tr');
+                    let htmlLinha = `<td><strong>Volta ${i + 1}</strong></td>`;
+
+                    dadosSessao.forEach(d => {
+                        if (i < d.laps.length) {
+                            const tempo = d.laps[i];
+                            const isFastest = (tempo === d.melhorVoltaVal);
+                            const tempoFormatado = tempo.toFixed(3).replace('.', ',') + 's';
+
+                            if (isFastest) {
+                                htmlLinha += `<td><span class="fastest-lap-highlight">⚡ ${tempoFormatado}</span></td>`;
+                            } else {
+                                htmlLinha += `<td>${tempoFormatado}</td>`;
+                            }
+                        } else {
+                            htmlLinha += `<td style="color:var(--text-muted);">-</td>`;
+                        }
+                    });
+
+                    tr.innerHTML = htmlLinha;
+                    bodyLap.appendChild(tr);
+                }
+
+                // Monta os dados do Gráfico da Sessão
                 const labelsLapByLap = Array.from({ length: maxVoltas }, (_, i) => `V${i + 1}`);
 
                 const datasets = dadosSessao.map(d => ({
