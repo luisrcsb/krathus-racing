@@ -101,14 +101,14 @@
             opacity: 0.9;
         }
 
-        /* Filter Section com Checkboxes */
+        /* Filter Section com 3 Colunas de Checkboxes */
         .filters-card {
             background: var(--bg-card);
             border: 1px solid var(--border-card);
             border-radius: 12px;
             padding: 20px;
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1.2fr;
             gap: 20px;
         }
 
@@ -142,7 +142,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             color: var(--text-main);
             cursor: pointer;
         }
@@ -396,7 +396,7 @@
             border-left: 3px solid var(--accent-blue);
         }
 
-        /* Estilos para Destaque da Melhor Volta na Tabela Comparativa */
+        /* Destaque da Melhor Volta na Tabela Comparativa */
         .fastest-lap-highlight {
             background-color: rgba(46, 196, 182, 0.15) !important;
             color: var(--accent-green) !important;
@@ -407,6 +407,9 @@
         }
 
         @media (max-width: 1024px) {
+            .filters-card {
+                grid-template-columns: 1fr;
+            }
             .kpi-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
@@ -433,7 +436,7 @@
             </div>
         </header>
 
-        <!-- Filtros em Checkboxes -->
+        <!-- Filtros com Checkboxes (Sessões, Pilotos e Módulos) -->
         <section class="filters-card">
             <div class="filter-group">
                 <label class="group-title">SESSÃO / BATERIA</label>
@@ -463,6 +466,29 @@
                     <label class="checkbox-item">
                         <input type="checkbox" value="Raphael" class="filter-piloto" checked onchange="atualizarDashboard()">
                         Raphael
+                    </label>
+                </div>
+            </div>
+
+            <!-- Novo Grupo de Checkboxes: Módulos Analíticos -->
+            <div class="filter-group">
+                <label class="group-title">MÓDULOS / RECURSOS VISÍVEIS</label>
+                <div class="checkbox-container">
+                    <label class="checkbox-item">
+                        <input type="checkbox" value="mod-grafico" class="filter-modulo" checked onchange="atualizarDashboard()">
+                        📈 Evolução de Ritmo (Gráfico)
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" value="mod-classificacao" class="filter-modulo" checked onchange="atualizarDashboard()">
+                        🏆 Classificação Calculada
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" value="mod-analise" class="filter-modulo" checked onchange="atualizarDashboard()">
+                        🔍 Análise de Consistência
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" value="mod-tabela-geral" class="filter-modulo" checked onchange="atualizarDashboard()">
+                        ⏱️ Tabela Geral Volta a Volta
                     </label>
                 </div>
             </div>
@@ -498,7 +524,7 @@
         </div>
     </div>
 
-    <!-- Script de Lógica e Renderização por Sessão -->
+    <!-- Script de Lógica e Renderização Módulos Flexíveis -->
     <script>
         const dadosBase = [
             { pos: "1º", piloto: "DJ", bateriaKey: "bateria1", sessao: "Corrida - Bateria 1 (17/07 23:17)", voltas: "29 / 29", tempoTotal: "06:11,204", melhorVoltaVal: 10.898, melhorVoltaTxt: "10,898s (V20)", mediaVal: 12.800, mediaTxt: "12,800s", desvio: "±1,682s", desvioVal: 1.682, badgeColor: "#ffb703",
@@ -535,6 +561,7 @@
         function atualizarDashboard() {
             const bateriasSelecionadas = Array.from(document.querySelectorAll('.filter-bateria:checked')).map(cb => cb.value);
             const pilotosSelecionados = Array.from(document.querySelectorAll('.filter-piloto:checked')).map(cb => cb.value);
+            const modulosSelecionados = Array.from(document.querySelectorAll('.filter-modulo:checked')).map(cb => cb.value);
 
             const dadosFiltrados = dadosBase.filter(item => 
                 bateriasSelecionadas.includes(item.bateriaKey) && 
@@ -569,19 +596,19 @@
                 document.getElementById('kpi-media-global').innerText = "--";
             }
 
-            // 2. Renderizar Blocos Completos por Sessão
-            renderizarSessõesCompletas(bateriasSelecionadas, pilotosSelecionados);
+            // 2. Renderizar Blocos Dinâmicos por Sessão
+            renderizarSessõesCompletas(bateriasSelecionadas, pilotosSelecionados, modulosSelecionados);
         }
 
-        function renderizarSessõesCompletas(bateriasSelecionadas, pilotosSelecionados) {
+        function renderizarSessõesCompletas(bateriasSelecionadas, pilotosSelecionados, modulosSelecionados) {
             chartInstances.forEach(chart => chart.destroy());
             chartInstances = [];
 
             const mainContainer = document.getElementById('sessions-container');
             mainContainer.innerHTML = '';
 
-            if (bateriasSelecionadas.length === 0 || pilotosSelecionados.length === 0) {
-                mainContainer.innerHTML = `<div class="card" style="text-align:center; padding: 30px; color: var(--text-muted);">Nenhuma sessão ou piloto selecionado.</div>`;
+            if (bateriasSelecionadas.length === 0 || pilotosSelecionados.length === 0 || modulosSelecionados.length === 0) {
+                mainContainer.innerHTML = `<div class="card" style="text-align:center; padding: 30px; color: var(--text-muted);">Nenhuma sessão, piloto ou módulo ativado.</div>`;
                 return;
             }
 
@@ -595,232 +622,251 @@
                 const sessionBlock = document.createElement('div');
                 sessionBlock.className = 'session-block';
 
-                sessionBlock.innerHTML = `
-                    <div class="middle-grid">
-                        <div class="card">
-                            <div class="card-header">Evolução do Ritmo (Lap Times - Lap by Lap) - ${nomeSessao}</div>
-                            <div class="chart-container">
-                                <canvas id="${chartId}"></canvas>
+                let htmlConteudoBlock = '';
+
+                // MÓDULO 1: Gráfico & Resumo
+                if (modulosSelecionados.includes('mod-grafico')) {
+                    htmlConteudoBlock += `
+                        <div class="middle-grid">
+                            <div class="card">
+                                <div class="card-header">Evolução do Ritmo (Lap Times - Lap by Lap) - ${nomeSessao}</div>
+                                <div class="chart-container">
+                                    <canvas id="${chartId}"></canvas>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="card-header">Resumo da Seleção</div>
+                                <div class="summary-list" id="resumo-${bateriaKey}"></div>
                             </div>
                         </div>
-                        <div class="card">
-                            <div class="card-header">Resumo da Seleção</div>
-                            <div class="summary-list" id="resumo-${bateriaKey}"></div>
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-header">Classificação Calculada Automatizada - ${nomeSessao}</div>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>POS</th>
-                                        <th>PILOTO</th>
-                                        <th>SESSÃO</th>
-                                        <th>VOLTAS VÁLIDAS</th>
-                                        <th>TEMPO TOTAL</th>
-                                        <th>MELHOR VOLTA</th>
-                                        <th>MÉDIA (S)</th>
-                                        <th>DESVIO PADRÃO (S)</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tabela-${bateriaKey}"></tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-header">Análise de Consistência e Variação Volta a Volta</div>
-                        <div class="analysis-grid" id="analise-${bateriaKey}"></div>
-                    </div>
-
-                    <!-- Nova Seção: Tabela Comparativa de Todas as Voltas Lado a Lado -->
-                    <div class="card">
-                        <div class="card-header">Tabela Geral Volta a Volta (Grid Comparativo) - ${nomeSessao}</div>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr id="head-lapbyLap-${bateriaKey}">
-                                        <th>VOLTA</th>
-                                        <!-- Pilotos renderizados via JS -->
-                                    </tr>
-                                </thead>
-                                <tbody id="body-lapbyLap-${bateriaKey}"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                `;
-
-                mainContainer.appendChild(sessionBlock);
-
-                // Preenche o Resumo Lateral
-                const resumoList = document.getElementById(`resumo-${bateriaKey}`);
-                dadosSessao.forEach(d => {
-                    const itemDiv = document.createElement('div');
-                    itemDiv.className = 'summary-item';
-                    itemDiv.innerHTML = `
-                        <div class="driver-info">
-                            <span class="driver-color-indicator" style="background-color: ${pilotoCores[d.piloto]};"></span>
-                            <span>${d.piloto}</span>
-                        </div>
-                        <span class="summary-value">Média: ${d.mediaTxt}</span>
                     `;
-                    resumoList.appendChild(itemDiv);
-                });
-
-                // Preenche a Tabela da Sessão
-                const tabelaCorpo = document.getElementById(`tabela-${bateriaKey}`);
-                dadosSessao.forEach(item => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td><span class="pos-badge" style="background:${item.badgeColor};">${item.pos}</span></td>
-                        <td><strong>${item.piloto}</strong></td>
-                        <td><span class="session-badge">${item.sessao}</span></td>
-                        <td>${item.voltas}</td>
-                        <td>${item.tempoTotal}</td>
-                        <td class="text-green">${item.melhorVoltaTxt}</td>
-                        <td>${item.mediaTxt}</td>
-                        <td>${item.desvio}</td>
-                    `;
-                    tabelaCorpo.appendChild(tr);
-                });
-
-                // Preenche a Análise Volta a Volta
-                const analiseGrid = document.getElementById(`analise-${bateriaKey}`);
-                dadosSessao.forEach(d => {
-                    let piorVoltaVal = Math.max(...d.laps);
-                    let piorVoltaIdx = d.laps.indexOf(piorVoltaVal) + 1;
-                    let melhorVoltaIdx = d.laps.indexOf(d.melhorVoltaVal) + 1;
-
-                    let diagnostico = "";
-                    if (d.desvioVal <= 1.7) {
-                        diagnostico = `<strong>Alta Consistência:</strong> Ritmo constante durante a prova. Variação mínima entre as voltas.`;
-                    } else if (d.desvioVal <= 4.0) {
-                        diagnostico = `<strong>Média Variabilidade:</strong> Ritmo forte com pequenas oscilações de tráfego.`;
-                    } else {
-                        diagnostico = `<strong>Alta Oscilação / Incidente:</strong> Perda de tempo na Volta ${piorVoltaIdx} (${piorVoltaVal.toFixed(3)}s), indicando toque ou retenção.`;
-                    }
-
-                    const cardDiv = document.createElement('div');
-                    cardDiv.className = 'analysis-card';
-                    cardDiv.innerHTML = `
-                        <div class="analysis-card-header">
-                            <div class="analysis-driver-name">
-                                <span class="driver-color-indicator" style="background-color: ${pilotoCores[d.piloto]};"></span>
-                                ${d.piloto}
-                            </div>
-                            <span class="pos-badge" style="background:${d.badgeColor};">${d.pos}</span>
-                        </div>
-                        <div class="analysis-stat-row">
-                            <span>Melhor Volta:</span>
-                            <span class="val text-green">${d.melhorVoltaVal.toFixed(3).replace('.', ',')}s (Volta ${melhorVoltaIdx})</span>
-                        </div>
-                        <div class="analysis-stat-row">
-                            <span>Maior Tempo de Volta:</span>
-                            <span class="val">${piorVoltaVal.toFixed(3).replace('.', ',')}s (Volta ${piorVoltaIdx})</span>
-                        </div>
-                        <div class="analysis-stat-row">
-                            <span>Variação (Desvio Padrão):</span>
-                            <span class="val">${d.desvio}</span>
-                        </div>
-                        <div class="analysis-feedback">${diagnostico}</div>
-                    `;
-                    analiseGrid.appendChild(cardDiv);
-                });
-
-                // Renderiza a Nova Tabela Geral Volta a Volta (Grid Comparativo)
-                const headerLap = document.getElementById(`head-lapbyLap-${bateriaKey}`);
-                const bodyLap = document.getElementById(`body-lapbyLap-${bateriaKey}`);
-
-                dadosSessao.forEach(d => {
-                    const th = document.createElement('th');
-                    th.innerHTML = `<span style="color:${pilotoCores[d.piloto] || '#fff'}">●</span> ${d.piloto}`;
-                    headerLap.appendChild(th);
-                });
-
-                let maxVoltas = 0;
-                dadosSessao.forEach(d => {
-                    if (d.laps.length > maxVoltas) maxVoltas = d.laps.length;
-                });
-
-                for (let i = 0; i < maxVoltas; i++) {
-                    const tr = document.createElement('tr');
-                    let htmlLinha = `<td><strong>Volta ${i + 1}</strong></td>`;
-
-                    dadosSessao.forEach(d => {
-                        if (i < d.laps.length) {
-                            const tempo = d.laps[i];
-                            const isFastest = (tempo === d.melhorVoltaVal);
-                            const tempoFormatado = tempo.toFixed(3).replace('.', ',') + 's';
-
-                            if (isFastest) {
-                                htmlLinha += `<td><span class="fastest-lap-highlight">⚡ ${tempoFormatado}</span></td>`;
-                            } else {
-                                htmlLinha += `<td>${tempoFormatado}</td>`;
-                            }
-                        } else {
-                            htmlLinha += `<td style="color:var(--text-muted);">-</td>`;
-                        }
-                    });
-
-                    tr.innerHTML = htmlLinha;
-                    bodyLap.appendChild(tr);
                 }
 
-                // Monta os dados do Gráfico da Sessão
-                const labelsLapByLap = Array.from({ length: maxVoltas }, (_, i) => `V${i + 1}`);
+                // MÓDULO 2: Classificação Calculada
+                if (modulosSelecionados.includes('mod-classificacao')) {
+                    htmlConteudoBlock += `
+                        <div class="card">
+                            <div class="card-header">Classificação Calculada Automatizada - ${nomeSessao}</div>
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>POS</th>
+                                            <th>PILOTO</th>
+                                            <th>SESSÃO</th>
+                                            <th>VOLTAS VÁLIDAS</th>
+                                            <th>TEMPO TOTAL</th>
+                                            <th>MELHOR VOLTA</th>
+                                            <th>MÉDIA (S)</th>
+                                            <th>DESVIO PADRÃO (S)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabela-${bateriaKey}"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                }
 
-                const datasets = dadosSessao.map(d => ({
-                    label: d.piloto,
-                    data: d.laps,
-                    borderColor: pilotoCores[d.piloto] || '#ffffff',
-                    backgroundColor: pilotoCores[d.piloto] || '#ffffff',
-                    borderWidth: 2,
-                    tension: 0.2,
-                    pointRadius: 3
-                }));
+                // MÓDULO 3: Análise de Consistência
+                if (modulosSelecionados.includes('mod-analise')) {
+                    htmlConteudoBlock += `
+                        <div class="card">
+                            <div class="card-header">Análise de Consistência e Variação Volta a Volta</div>
+                            <div class="analysis-grid" id="analise-${bateriaKey}"></div>
+                        </div>
+                    `;
+                }
 
-                const ctx = document.getElementById(chartId).getContext('2d');
-                const newChart = new Chart(ctx, {
-                    type: 'line',
-                    data: { labels: labelsLapByLap, datasets },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { labels: { color: '#8492a6' } },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        return ` ${context.dataset.label}: ${context.raw.toFixed(3).replace('.', ',')}s`;
+                // MÓDULO 4: Tabela Geral Volta a Volta
+                if (modulosSelecionados.includes('mod-tabela-geral')) {
+                    htmlConteudoBlock += `
+                        <div class="card">
+                            <div class="card-header">Tabela Geral Volta a Volta (Grid Comparativo) - ${nomeSessao}</div>
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr id="head-lapbyLap-${bateriaKey}">
+                                            <th>VOLTA</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="body-lapbyLap-${bateriaKey}"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                sessionBlock.innerHTML = htmlConteudoBlock;
+                mainContainer.appendChild(sessionBlock);
+
+                // Preenchimento Módulo 1 (Resumo & Gráfico)
+                if (modulosSelecionados.includes('mod-grafico')) {
+                    const resumoList = document.getElementById(`resumo-${bateriaKey}`);
+                    dadosSessao.forEach(d => {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'summary-item';
+                        itemDiv.innerHTML = `
+                            <div class="driver-info">
+                                <span class="driver-color-indicator" style="background-color: ${pilotoCores[d.piloto]};"></span>
+                                <span>${d.piloto}</span>
+                            </div>
+                            <span class="summary-value">Média: ${d.mediaTxt}</span>
+                        `;
+                        resumoList.appendChild(itemDiv);
+                    });
+
+                    let maxVoltas = 0;
+                    dadosSessao.forEach(d => {
+                        if (d.laps.length > maxVoltas) maxVoltas = d.laps.length;
+                    });
+
+                    const labelsLapByLap = Array.from({ length: maxVoltas }, (_, i) => `V${i + 1}`);
+                    const datasets = dadosSessao.map(d => ({
+                        label: d.piloto,
+                        data: d.laps,
+                        borderColor: pilotoCores[d.piloto] || '#ffffff',
+                        backgroundColor: pilotoCores[d.piloto] || '#ffffff',
+                        borderWidth: 2,
+                        tension: 0.2,
+                        pointRadius: 3
+                    }));
+
+                    const ctx = document.getElementById(chartId).getContext('2d');
+                    const newChart = new Chart(ctx, {
+                        type: 'line',
+                        data: { labels: labelsLapByLap, datasets },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { labels: { color: '#8492a6' } },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return ` ${context.dataset.label}: ${context.raw.toFixed(3).replace('.', ',')}s`;
+                                        }
                                     }
                                 }
-                            }
-                        },
-                        scales: {
-                            x: {
-                                grid: { color: '#1c2638' },
-                                ticks: { color: '#8492a6' },
-                                title: { display: true, text: 'Volta a Volta (Lap to Lap)', color: '#8492a6' }
                             },
-                            y: {
-                                grid: { color: '#1c2638' },
-                                ticks: { color: '#8492a6' },
-                                min: 10,
-                                max: 36,
-                                title: { display: true, text: 'Tempo da Volta (s)', color: '#8492a6' }
+                            scales: {
+                                x: { grid: { color: '#1c2638' }, ticks: { color: '#8492a6' }, title: { display: true, text: 'Volta a Volta (Lap to Lap)', color: '#8492a6' } },
+                                y: { grid: { color: '#1c2638' }, ticks: { color: '#8492a6' }, min: 10, max: 36, title: { display: true, text: 'Tempo da Volta (s)', color: '#8492a6' } }
                             }
                         }
-                    }
-                });
+                    });
+                    chartInstances.push(newChart);
+                }
 
-                chartInstances.push(newChart);
+                // Preenchimento Módulo 2 (Tabela Classificação)
+                if (modulosSelecionados.includes('mod-classificacao')) {
+                    const tabelaCorpo = document.getElementById(`tabela-${bateriaKey}`);
+                    dadosSessao.forEach(item => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td><span class="pos-badge" style="background:${item.badgeColor};">${item.pos}</span></td>
+                            <td><strong>${item.piloto}</strong></td>
+                            <td><span class="session-badge">${item.sessao}</span></td>
+                            <td>${item.voltas}</td>
+                            <td>${item.tempoTotal}</td>
+                            <td class="text-green">${item.melhorVoltaTxt}</td>
+                            <td>${item.mediaTxt}</td>
+                            <td>${item.desvio}</td>
+                        `;
+                        tabelaCorpo.appendChild(tr);
+                    });
+                }
+
+                // Preenchimento Módulo 3 (Análise Consistência)
+                if (modulosSelecionados.includes('mod-analise')) {
+                    const analiseGrid = document.getElementById(`analise-${bateriaKey}`);
+                    dadosSessao.forEach(d => {
+                        let piorVoltaVal = Math.max(...d.laps);
+                        let piorVoltaIdx = d.laps.indexOf(piorVoltaVal) + 1;
+                        let melhorVoltaIdx = d.laps.indexOf(d.melhorVoltaVal) + 1;
+
+                        let diagnostico = "";
+                        if (d.desvioVal <= 1.7) {
+                            diagnostico = `<strong>Alta Consistência:</strong> Ritmo constante durante a prova. Variação mínima entre as voltas.`;
+                        } else if (d.desvioVal <= 4.0) {
+                            diagnostico = `<strong>Média Variabilidade:</strong> Ritmo forte com pequenas oscilações de tráfego.`;
+                        } else {
+                            diagnostico = `<strong>Alta Oscilação / Incidente:</strong> Perda de tempo na Volta ${piorVoltaIdx} (${piorVoltaVal.toFixed(3)}s), indicando toque ou retenção.`;
+                        }
+
+                        const cardDiv = document.createElement('div');
+                        cardDiv.className = 'analysis-card';
+                        cardDiv.innerHTML = `
+                            <div class="analysis-card-header">
+                                <div class="analysis-driver-name">
+                                    <span class="driver-color-indicator" style="background-color: ${pilotoCores[d.piloto]};"></span>
+                                    ${d.piloto}
+                                </div>
+                                <span class="pos-badge" style="background:${d.badgeColor};">${d.pos}</span>
+                            </div>
+                            <div class="analysis-stat-row">
+                                <span>Melhor Volta:</span>
+                                <span class="val text-green">${d.melhorVoltaVal.toFixed(3).replace('.', ',')}s (Volta ${melhorVoltaIdx})</span>
+                            </div>
+                            <div class="analysis-stat-row">
+                                <span>Maior Tempo de Volta:</span>
+                                <span class="val">${piorVoltaVal.toFixed(3).replace('.', ',')}s (Volta ${piorVoltaIdx})</span>
+                            </div>
+                            <div class="analysis-stat-row">
+                                <span>Variação (Desvio Padrão):</span>
+                                <span class="val">${d.desvio}</span>
+                            </div>
+                            <div class="analysis-feedback">${diagnostico}</div>
+                        `;
+                        analiseGrid.appendChild(cardDiv);
+                    });
+                }
+
+                // Preenchimento Módulo 4 (Tabela Geral)
+                if (modulosSelecionados.includes('mod-tabela-geral')) {
+                    const headerLap = document.getElementById(`head-lapbyLap-${bateriaKey}`);
+                    const bodyLap = document.getElementById(`body-lapbyLap-${bateriaKey}`);
+
+                    dadosSessao.forEach(d => {
+                        const th = document.createElement('th');
+                        th.innerHTML = `<span style="color:${pilotoCores[d.piloto] || '#fff'}">●</span> ${d.piloto}`;
+                        headerLap.appendChild(th);
+                    });
+
+                    let maxVoltas = 0;
+                    dadosSessao.forEach(d => {
+                        if (d.laps.length > maxVoltas) maxVoltas = d.laps.length;
+                    });
+
+                    for (let i = 0; i < maxVoltas; i++) {
+                        const tr = document.createElement('tr');
+                        let htmlLinha = `<td><strong>Volta ${i + 1}</strong></td>`;
+
+                        dadosSessao.forEach(d => {
+                            if (i < d.laps.length) {
+                                const tempo = d.laps[i];
+                                const isFastest = (tempo === d.melhorVoltaVal);
+                                const tempoFormatado = tempo.toFixed(3).replace('.', ',') + 's';
+
+                                if (isFastest) {
+                                    htmlLinha += `<td><span class="fastest-lap-highlight">⚡ ${tempoFormatado}</span></td>`;
+                                } else {
+                                    htmlLinha += `<td>${tempoFormatado}</td>`;
+                                }
+                            } else {
+                                htmlLinha += `<td style="color:var(--text-muted);">-</td>`;
+                            }
+                        });
+
+                        tr.innerHTML = htmlLinha;
+                        bodyLap.appendChild(tr);
+                    }
+                }
             });
         }
 
         function resetarFiltros() {
-            document.querySelectorAll('.filter-bateria, .filter-piloto').forEach(cb => cb.checked = true);
+            document.querySelectorAll('.filter-bateria, .filter-piloto, .filter-modulo').forEach(cb => cb.checked = true);
             atualizarDashboard();
         }
     </script>
