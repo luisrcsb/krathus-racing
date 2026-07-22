@@ -341,8 +341,13 @@
             vertical-align: middle;
         }
 
-        tbody tr:hover {
-            background-color: rgba(255, 255, 255, 0.02);
+        .main-row td {
+            border-bottom: none !important;
+        }
+
+        .sub-row td {
+            padding: 0 16px 16px 16px !important;
+            border-bottom: 1px solid var(--border-card) !important;
         }
 
         .pos-badge {
@@ -370,14 +375,24 @@
             font-weight: 700;
         }
 
-        .analysis-inline-box {
-            background: var(--bg-input);
-            border-left: 3px solid var(--accent-blue);
-            padding: 8px 12px;
-            border-radius: 4px;
-            font-size: 0.83rem;
+        /* Caixa de Análise Extensa e Destacada em Sub-linha */
+        .analysis-subrow-box {
+            background: rgba(28, 38, 59, 0.6);
+            border-left: 4px solid var(--accent-blue);
+            border-radius: 6px;
+            padding: 12px 16px;
+            font-size: 0.86rem;
             color: var(--text-main);
-            line-height: 1.4;
+            line-height: 1.5;
+        }
+
+        .analysis-subrow-box strong.title {
+            color: var(--accent-blue);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            display: block;
+            margin-bottom: 4px;
         }
 
         .fastest-lap-highlight {
@@ -539,8 +554,12 @@
 
             td {
                 padding: 6px 10px !important;
-                border-bottom: 1px solid #e5e7eb !important;
                 color: #1f2937 !important;
+            }
+
+            .sub-row td {
+                padding: 0 10px 10px 10px !important;
+                border-bottom: 1px solid #d1d5db !important;
             }
 
             .session-badge {
@@ -553,10 +572,14 @@
                 color: #854d0e !important;
             }
 
-            .analysis-inline-box {
+            .analysis-subrow-box {
                 background: #f3f4f6 !important;
                 border-left-color: #2563eb !important;
                 color: #1f2937 !important;
+            }
+
+            .analysis-subrow-box strong.title {
+                color: #1d4ed8 !important;
             }
 
             .fastest-lap-highlight {
@@ -850,8 +873,7 @@
                                             <th>TEMPO TOTAL</th>
                                             <th>MELHOR VOLTA</th>
                                             <th>MÉDIA (S)</th>
-                                            <th>DESVIO (S)</th>
-                                            <th>ANÁLISE DE RITMO & CONSISTÊNCIA</th>
+                                            <th>DESVIO PADRÃO</th>
                                         </tr>
                                     </thead>
                                     <tbody id="tabela-unificada-${bateriaKey}"></tbody>
@@ -936,18 +958,21 @@
                     dadosSessao.forEach(item => {
                         let piorVoltaVal = Math.max(...item.laps);
                         let piorVoltaIdx = item.laps.indexOf(piorVoltaVal) + 1;
+                        let melhorVoltaIdx = item.laps.indexOf(item.melhorVoltaVal) + 1;
 
                         let diagnostico = "";
                         if (item.desvioVal <= 1.7) {
-                            diagnostico = `<strong>Alta Consistência:</strong> Ritmo limpo e constante na pista. Variação mínima de tempos.`;
+                            diagnostico = `<strong>Alta Consistência e Ritmo de Corrida:</strong> O piloto manteve uma tocada extremamente limpa e homogênea ao longo da bateria. Teve sua melhor passagem na Volta ${melhorVoltaIdx} (${item.melhorVoltaVal.toFixed(3).replace('.', ',')}s) e apresentou baixíssima variação de tempos, demonstrando excelente acerto de chassi/pneus e regularidade total sem incidentes significativos.`;
                         } else if (item.desvioVal <= 4.0) {
-                            diagnostico = `<strong>Média Variabilidade:</strong> Bom ritmo com pequenas perdas de tráfego.`;
+                            diagnostico = `<strong>Média Variabilidade com Ritmo Forte:</strong> O piloto demonstrou picos de velocidade alta (melhor volta de ${item.melhorVoltaVal.toFixed(3).replace('.', ',')}s na Volta ${melhorVoltaIdx}), porém registrou pequenas oscilações de tempo durante disputas de posição ou ultrapassagens em tráfego, elevando ligeiramente o desvio padrão.`;
                         } else {
-                            diagnostico = `<strong>Alta Oscilação:</strong> Queda de tempo na Volta ${piorVoltaIdx} (${piorVoltaVal.toFixed(3)}s), indicando toque ou retenção.`;
+                            diagnostico = `<strong>Alta Oscilação / Ocorrência de Incidente:</strong> O piloto sofreu uma perda severa de tempo na Volta ${piorVoltaIdx} (${piorVoltaVal.toFixed(3).replace('.', ',')}s), o que indica toque no guardrail, capotamento ou retenção por tráfego lento. Apesar do imprevisto, recuperou o ritmo para registrar ${item.melhorVoltaVal.toFixed(3).replace('.', ',')}s na Volta ${melhorVoltaIdx}.`;
                         }
 
-                        const tr = document.createElement('tr');
-                        tr.innerHTML = `
+                        // Linha 1: Dados numéricos
+                        const trMain = document.createElement('tr');
+                        trMain.className = 'main-row';
+                        trMain.innerHTML = `
                             <td><span class="pos-badge" style="background:${item.badgeColor};">${item.pos}</span></td>
                             <td><strong>${item.piloto}</strong></td>
                             <td><span class="session-badge">${item.sessao}</span></td>
@@ -956,9 +981,21 @@
                             <td class="text-green">${item.melhorVoltaTxt}</td>
                             <td>${item.mediaTxt}</td>
                             <td>${item.desvio}</td>
-                            <td><div class="analysis-inline-box">${diagnostico}</div></td>
                         `;
-                        tabelaCorpo.appendChild(tr);
+                        tabelaCorpo.appendChild(trMain);
+
+                        // Linha 2: Análise estendida logo abaixo do piloto
+                        const trSub = document.createElement('tr');
+                        trSub.className = 'sub-row';
+                        trSub.innerHTML = `
+                            <td colspan="8">
+                                <div class="analysis-subrow-box">
+                                    <strong class="title">🔍 Diagnostic Telemetry Analysis - ${item.piloto}</strong>
+                                    ${diagnostico}
+                                </div>
+                            </td>
+                        `;
+                        tabelaCorpo.appendChild(trSub);
                     });
                 }
 
