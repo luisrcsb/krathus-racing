@@ -340,6 +340,62 @@
             font-weight: 700;
         }
 
+        /* Estilos da Nova Seção de Análise Volta a Volta */
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            margin-top: 8px;
+        }
+
+        .analysis-card {
+            background: var(--bg-input);
+            border: 1px solid var(--border-card);
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .analysis-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-card);
+            padding-bottom: 8px;
+        }
+
+        .analysis-driver-name {
+            font-size: 1rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .analysis-stat-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .analysis-stat-row span.val {
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .analysis-feedback {
+            font-size: 0.85rem;
+            line-height: 1.4;
+            color: var(--text-main);
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 6px;
+            border-left: 3px solid var(--accent-blue);
+        }
+
         @media (max-width: 1024px) {
             .kpi-grid {
                 grid-template-columns: repeat(2, 1fr);
@@ -426,31 +482,31 @@
             </div>
         </section>
 
-        <!-- Container Ondes os Blocos de Cada Sessão Serão Gerados -->
+        <!-- Container Onde os Blocos de Cada Sessão Serão Gerados -->
         <div id="sessions-container" class="session-blocks-container">
-            <!-- Gerado dinamicamente via JS: Gráfico + Resumo + Tabela por Sessão -->
+            <!-- Gerado dinamicamente via JS -->
         </div>
     </div>
 
     <!-- Script de Lógica e Renderização por Sessão -->
     <script>
         const dadosBase = [
-            { pos: "1º", piloto: "DJ", bateriaKey: "bateria1", sessao: "Corrida - Bateria 1 (17/07 23:17)", voltas: "29 / 29", tempoTotal: "06:11,204", melhorVoltaVal: 10.898, melhorVoltaTxt: "10,898s (V20)", mediaVal: 12.800, mediaTxt: "12,800s", desvio: "±1,682s", badgeColor: "#ffb703",
+            { pos: "1º", piloto: "DJ", bateriaKey: "bateria1", sessao: "Corrida - Bateria 1 (17/07 23:17)", voltas: "29 / 29", tempoTotal: "06:11,204", melhorVoltaVal: 10.898, melhorVoltaTxt: "10,898s (V20)", mediaVal: 12.800, mediaTxt: "12,800s", desvio: "±1,682s", desvioVal: 1.682, badgeColor: "#ffb703",
               laps: [15.0, 12.3, 12.1, 12.0, 11.9, 11.8, 11.7, 12.0, 12.5, 12.2, 12.1, 12.0, 12.3, 12.1, 12.0, 18.8, 12.6, 12.4, 12.2, 10.898, 11.9, 11.9, 15.0, 14.0, 12.2, 12.4, 12.5, 11.8, 20.5] },
             
-            { pos: "1º", piloto: "DJ", bateriaKey: "bateria2", sessao: "Corrida - Bateria 2 (17/07 23:39)", voltas: "28 / 28", tempoTotal: "06:08,702", melhorVoltaVal: 11.723, melhorVoltaTxt: "11,723s (V07)", mediaVal: 13.168, mediaTxt: "13,168s", desvio: "±1,586s", badgeColor: "#ffb703",
+            { pos: "1º", piloto: "DJ", bateriaKey: "bateria2", sessao: "Corrida - Bateria 2 (17/07 23:39)", voltas: "28 / 28", tempoTotal: "06:08,702", melhorVoltaVal: 11.723, melhorVoltaTxt: "11,723s (V07)", mediaVal: 13.168, mediaTxt: "13,168s", desvio: "±1,586s", desvioVal: 1.586, badgeColor: "#ffb703",
               laps: [14.0, 13.5, 12.8, 12.2, 12.0, 11.8, 11.723, 12.1, 12.3, 13.0, 12.5, 12.2, 12.4, 12.0, 12.1, 12.5, 12.3, 12.0, 12.2, 12.1, 12.0, 12.4, 12.2, 12.1, 12.0, 12.3, 12.5, 12.8] },
 
-            { pos: "2º", piloto: "Ronaldo", bateriaKey: "bateria1", sessao: "Corrida - Bateria 1 (17/07 23:17)", voltas: "26 / 26", tempoTotal: "06:07,083", melhorVoltaVal: 11.703, melhorVoltaTxt: "11,703s (V12)", mediaVal: 14.119, mediaTxt: "14,119s", desvio: "±1,871s", badgeColor: "#c0c0c0",
+            { pos: "2º", piloto: "Ronaldo", bateriaKey: "bateria1", sessao: "Corrida - Bateria 1 (17/07 23:17)", voltas: "26 / 26", tempoTotal: "06:07,083", melhorVoltaVal: 11.703, melhorVoltaTxt: "11,703s (V12)", mediaVal: 14.119, mediaTxt: "14,119s", desvio: "±1,871s", desvioVal: 1.871, badgeColor: "#c0c0c0",
               laps: [15.9, 15.8, 11.9, 12.8, 11.5, 13.1, 12.1, 12.4, 13.3, 34.8, 11.9, 11.703, 15.0, 12.2, 13.0, 12.7, 16.2, 12.7, 13.9, 12.5, 11.4, 12.3, 12.9, 13.2, 12.2, 12.8] },
 
-            { pos: "2º", piloto: "Ronaldo", bateriaKey: "bateria2", sessao: "Corrida - Bateria 2 (17/07 23:39)", voltas: "26 / 26", tempoTotal: "06:01,941", melhorVoltaVal: 11.434, melhorVoltaTxt: "11,434s (V21)", mediaVal: 13.921, mediaTxt: "13,921s", desvio: "±4,382s", badgeColor: "#c0c0c0",
+            { pos: "2º", piloto: "Ronaldo", bateriaKey: "bateria2", sessao: "Corrida - Bateria 2 (17/07 23:39)", voltas: "26 / 26", tempoTotal: "06:01,941", melhorVoltaVal: 11.434, melhorVoltaTxt: "11,434s (V21)", mediaVal: 13.921, mediaTxt: "13,921s", desvio: "±4,382s", desvioVal: 4.382, badgeColor: "#c0c0c0",
               laps: [15.0, 14.5, 13.0, 12.5, 12.2, 12.0, 11.9, 12.2, 12.5, 13.0, 12.8, 12.5, 12.3, 12.1, 12.0, 12.2, 12.5, 12.8, 13.0, 12.2, 11.434, 12.0, 12.5, 12.8, 13.0, 13.2] },
 
-            { pos: "3º", piloto: "Raphael", bateriaKey: "bateria1", sessao: "Corrida - Bateria 1 (17/07 23:17)", voltas: "9 / 10", tempoTotal: "06:08,180", melhorVoltaVal: 11.603, melhorVoltaTxt: "11,603s (V06)", mediaVal: 18.120, mediaTxt: "18,120s", desvio: "±9,450s", badgeColor: "#cd7f32",
+            { pos: "3º", piloto: "Raphael", bateriaKey: "bateria1", sessao: "Corrida - Bateria 1 (17/07 23:17)", voltas: "9 / 10", tempoTotal: "06:08,180", melhorVoltaVal: 11.603, melhorVoltaTxt: "11,603s (V06)", mediaVal: 18.120, mediaTxt: "18,120s", desvio: "±9,450s", desvioVal: 9.450, badgeColor: "#cd7f32",
               laps: [16.8, 16.6, 14.5, 12.5, 12.9, 11.603, 11.8, 16.6, 14.4] },
 
-            { pos: "3º", piloto: "Raphael", bateriaKey: "bateria2", sessao: "Corrida - Bateria 2 (17/07 23:39)", voltas: "25 / 25", tempoTotal: "06:07,078", melhorVoltaVal: 11.873, melhorVoltaTxt: "11,873s (V07)", mediaVal: 14.683, mediaTxt: "14,683s", desvio: "±1,865s", badgeColor: "#cd7f32",
+            { pos: "3º", piloto: "Raphael", bateriaKey: "bateria2", sessao: "Corrida - Bateria 2 (17/07 23:39)", voltas: "25 / 25", tempoTotal: "06:07,078", melhorVoltaVal: 11.873, melhorVoltaTxt: "11,873s (V07)", mediaVal: 14.683, mediaTxt: "14,683s", desvio: "±1,865s", desvioVal: 1.865, badgeColor: "#cd7f32",
               laps: [16.0, 15.5, 14.2, 13.0, 12.8, 12.2, 11.873, 12.5, 13.0, 13.2, 13.5, 14.0, 13.8, 13.5, 13.2, 13.0, 13.5, 13.8, 14.0, 13.5, 13.2, 13.0, 13.5, 13.8, 14.0] }
         ];
 
@@ -503,12 +559,11 @@
                 document.getElementById('kpi-media-global').innerText = "--";
             }
 
-            // 2. Renderizar Blocos Completos por Sessão (Gráfico + Resumo + Tabela)
+            // 2. Renderizar Blocos Completos por Sessão
             renderizarSessõesCompletas(bateriasSelecionadas, pilotosSelecionados);
         }
 
         function renderizarSessõesCompletas(bateriasSelecionadas, pilotosSelecionados) {
-            // Destrói os gráficos antigos
             chartInstances.forEach(chart => chart.destroy());
             chartInstances = [];
 
@@ -527,11 +582,9 @@
                 const nomeSessao = dadosSessao[0].sessao;
                 const chartId = `chart-${bateriaKey}`;
 
-                // Cria o container do bloco completo da sessão
                 const sessionBlock = document.createElement('div');
                 sessionBlock.className = 'session-block';
 
-                // Estrutura interna: Gráfico + Resumo em cima, Tabela embaixo
                 sessionBlock.innerHTML = `
                     <div class="middle-grid">
                         <div class="card">
@@ -566,11 +619,17 @@
                             </table>
                         </div>
                     </div>
+
+                    <!-- Nova Seção: Análise Volta a Volta e Consistência -->
+                    <div class="card">
+                        <div class="card-header">Análise de Consistência e Variação Volta a Volta</div>
+                        <div class="analysis-grid" id="analise-${bateriaKey}"></div>
+                    </div>
                 `;
 
                 mainContainer.appendChild(sessionBlock);
 
-                // Preenche o Resumo Lateral da Sessão
+                // Preenche o Resumo Lateral
                 const resumoList = document.getElementById(`resumo-${bateriaKey}`);
                 dadosSessao.forEach(d => {
                     const itemDiv = document.createElement('div');
@@ -585,7 +644,7 @@
                     resumoList.appendChild(itemDiv);
                 });
 
-                // Preenche a Tabela Exclusiva da Sessão
+                // Preenche a Tabela da Sessão
                 const tabelaCorpo = document.getElementById(`tabela-${bateriaKey}`);
                 dadosSessao.forEach(item => {
                     const tr = document.createElement('tr');
@@ -600,6 +659,53 @@
                         <td>${item.desvio}</td>
                     `;
                     tabelaCorpo.appendChild(tr);
+                });
+
+                // Preenche a Nova Seção de Análise Volta a Volta
+                const analiseGrid = document.getElementById(`analise-${bateriaKey}`);
+                dadosSessao.forEach(d => {
+                    let piorVoltaVal = Math.max(...d.laps);
+                    let piorVoltaIdx = d.laps.indexOf(piorVoltaVal) + 1;
+                    
+                    let melhorVoltaIdx = d.laps.indexOf(d.melhorVoltaVal) + 1;
+
+                    // Diagnóstico técnico baseado no desvio padrão
+                    let diagnostico = "";
+                    if (d.desvioVal <= 1.7) {
+                        diagnostico = `<strong>Alta Consistência:</strong> Ritmo muito constante durante a prova. Variação mínima entre as voltas, mantendo uma linha limpa.`;
+                    } else if (d.desvioVal <= 4.0) {
+                        diagnostico = `<strong>Média Variabilidade:</strong> Apresentou ritmo forte, porém com pequenas oscilações de tráfego ou erros pontuais de curva.`;
+                    } else {
+                        diagnostico = `<strong>Alta Oscilação / Incidente:</strong> Perda significativa de tempo observada na Volta ${piorVoltaIdx} (${piorVoltaVal.toFixed(3)}s), indicando toque ou retenção na pista.`;
+                    }
+
+                    const cardDiv = document.createElement('div');
+                    cardDiv.className = 'analysis-card';
+                    cardDiv.innerHTML = `
+                        <div class="analysis-card-header">
+                            <div class="analysis-driver-name">
+                                <span class="driver-color-indicator" style="background-color: ${pilotoCores[d.piloto]};"></span>
+                                ${d.piloto}
+                            </div>
+                            <span class="pos-badge" style="background:${d.badgeColor};">${d.pos}</span>
+                        </div>
+                        <div class="analysis-stat-row">
+                            <span>Melhor Volta:</span>
+                            <span class="val text-green">${d.melhorVoltaVal.toFixed(3).replace('.', ',')}s (Volta ${melhorVoltaIdx})</span>
+                        </div>
+                        <div class="analysis-stat-row">
+                            <span>Maior Tempo de Volta:</span>
+                            <span class="val">${piorVoltaVal.toFixed(3).replace('.', ',')}s (Volta ${piorVoltaIdx})</span>
+                        </div>
+                        <div class="analysis-stat-row">
+                            <span>Variação (Desvio Padrão):</span>
+                            <span class="val">${d.desvio}</span>
+                        </div>
+                        <div class="analysis-feedback">
+                            ${diagnostico}
+                        </div>
+                    `;
+                    analiseGrid.appendChild(cardDiv);
                 });
 
                 // Monta os dados do Gráfico da Sessão
@@ -620,7 +726,6 @@
                     pointRadius: 3
                 }));
 
-                // Inicializa o Chart.js para o gráfico desta bateria
                 const ctx = document.getElementById(chartId).getContext('2d');
                 const newChart = new Chart(ctx, {
                     type: 'line',
