@@ -239,11 +239,11 @@
                     Este sistema processa e exibe dados oficiais de telemetria das baterias de automodelismo 1/28 4x4. Utilize os filtros acima para selecionar sessões, alternar pilotos e customizar os módulos de gráficos, posições e tabelas detalhadas.
                 </div>
                 <div class="changelog-box">
-                    <div class="changelog-header">🚀 O que há de novo na Versão 3.6.2:</div>
+                    <div class="changelog-header">🚀 O que há de novo na Versão 3.6.3:</div>
                     <ul class="changelog-list">
-                        <li><strong>Correção Absoluta no Relatório de Ultrapassagens:</strong> Ajuste cirúrgico na matriz de mapeamento para impedir que um piloto perca posições para si mesmo, identificando precisamente o adversário direto que assumiu o posto (ex: Ronaldo superando o DJ).</li>
-                        <li><strong>Aviso de Orientação Mobile:</strong> Tela inteligente para orientar o uso do celular na horizontal (modo paisagem).</li>
-                        <li><strong>Laudo Técnico Avançado de Consistência:</strong> Análise estatística detalhada por desvio padrão e picos de perda de ritmo.</li>
+                        <li><strong>Relatório Completo de Grid nas Ultrapassagens:</strong> Correção para que o relatório de posições analise e liste todos os pilotos da bateria, e não apenas os selecionados nos filtros visuais.</li>
+                        <li><strong>Mapeamento Preciso de Adversários:</strong> Eliminação de logs redundantes para que cada troca de posição reflita exatamente quem ganhou e quem perdeu o posto.</li>
+                        <li><strong>Aviso de Orientação Mobile e Laudos de Consistência:</strong> Suporte completo integrado.</li>
                     </ul>
                 </div>
             </section>
@@ -251,7 +251,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v3.6.2 (Correção de Mapeamento de Oponentes)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v3.6.3 (Relatório de Ultrapassagens Abrangente para Todo o Grid)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -613,19 +613,18 @@
                             if (arr[v]) posNaVoltaAtual[arr[v]] = d.piloto;
                         });
 
-                        dadosSessao.forEach(d => {
+                        // CORREÇÃO: Analisa todos os pilotos da bateria (todosDaBateria) para o relatório completo de ultrapassagens
+                        todosDaBateria.forEach(d => {
                             let arrPos = matrizPosicoesGeral[d.piloto] || [];
                             let pAnt = arrPos[v-1] || 0;
                             let pAtu = arrPos[v] || 0;
 
                             if (pAnt > 0 && pAtu > 0) {
                                 if (pAtu < pAnt) {
-                                    // GANHOU POSIÇÃO
                                     let posGanhas = pAnt - pAtu;
                                     let superados = [];
                                     for (let p = pAnt - 1; p >= pAtu; p--) {
                                         let pilotoSuperado = posNaVoltaAnterior[p];
-                                        // Garante que não cite a si mesmo e que o piloto exista
                                         if (pilotoSuperado && pilotoSuperado !== d.piloto) {
                                             superados.push(`${pilotoSuperado} (${p}º)`);
                                         }
@@ -635,12 +634,10 @@
                                     logsHtml += `<div class="position-log-item">🔥 <span style="color:${obterCorPiloto(d.piloto)}"><strong>${d.piloto}</strong></span> ganhou <span class="tag-gain">${posGanhas} posição(ões)</span> na <strong>Volta ${v+1}</strong> (saltou de ${pAnt}º para a <span class="tag-gain">${pAtu}ª posição</span>)${superadosTxt}.</div>`;
                                 } 
                                 else if (pAtu > pAnt) {
-                                    // PERDEU POSIÇÃO
                                     let posPerdidas = pAtu - pAnt;
                                     let beneficiados = [];
                                     for (let p = pAnt + 1; p <= pAtu; p++) {
                                         let pilotoBeneficiado = posNaVoltaAtual[p];
-                                        // Garante que não cite a si mesmo e que o piloto exista
                                         if (pilotoBeneficiado && pilotoBeneficiado !== d.piloto) {
                                             beneficiados.push(`${pilotoBeneficiado} (${p}º)`);
                                         }
