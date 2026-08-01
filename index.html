@@ -182,7 +182,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v3.1.0 (Banco de Dados JS Separado)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v3.2.0 (Laudo Técnico Detalhado de Consistência)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -521,8 +521,31 @@
                         let stdDevCalc = Math.sqrt(variancia);
                         let desvioTxt = `±${stdDevCalc.toFixed(3).replace('.',',')}s`;
 
-                        let nivelConstancia = stdDevCalc < 1.2 ? "🟢 Alta Constância" : (stdDevCalc < 3.5 ? "🟡 Constância Moderada" : "🔴 Baixa Constância");
-                        let diagnosticoCausas = stdDevCalc < 1.2 ? "Excelente controle e traçado limpo." : "Oscilações perceptíveis de ritmo.";
+                        // LAUDO TÉCNICO AVANÇADO E DETALHADO DE CONSISTÊNCIA
+                        let nivelConstancia = "";
+                        let diagnosticoCausas = "";
+
+                        if (stdDevCalc < 1.2) {
+                            nivelConstancia = "🟢 Alta Constância (Ritmo Exemplar / Padrão Metrônomo)";
+                            diagnosticoCausas = "O piloto demonstrou um controle de pilotagem impecável e alta maturidade no traçado. A baixíssima oscilação de tempo por volta indica repetibilidade exata de frenagem, aceleração progressiva sem perda de tração e pilotagem limpa longe das muretas.";
+                        } else if (stdDevCalc >= 1.2 && stdDevCalc < 3.5) {
+                            nivelConstancia = "🟡 Constância Moderada (Oscilações Intermitentes e Desgaste)";
+                            diagnosticoCausas = "O ritmo geral foi competitivo, mas pontuado por variações perceptíveis de desempenho. O desvio padrão nesta faixa aponta para pequenas escapadas de frente/traseira ao forçar o limite de aderência do piso, freadas ligeiramente intempestivas ou micro-tráfego na pista.";
+                        } else {
+                            nivelConstancia = "🔴 Baixa Constância (Instabilidade Crítica e Recuperações)";
+                            diagnosticoCausas = "O índice de variação indica uma bateria de alto risco ou com eventos severos de perda de tempo. O comportamento aponta para rodadas completas, capotamentos, batidas fortes nas barreiras ou tempo excessivo gasto em manobras de recuperação de pista.";
+                        }
+
+                        let voltasLentas = [];
+                        laps.forEach((t, idx) => {
+                            if (t > mediaVal + (stdDevCalc * 1.5) && t > 12.0) {
+                                voltasLentas.push(`Volta ${idx+1} (${t.toFixed(3).replace('.',',')}s)`);
+                            }
+                        });
+
+                        let alertaVoltas = voltasLentas.length > 0 
+                            ? `<br>⚠️ <strong>Análise de Pontos Críticos:</strong> Picos significativos de perda de tempo isolados nos giros: <strong>${voltasLentas.slice(0, 5).join(', ')}</strong>. Estes registros evidenciam falhas pontuais de traçado ou incidentes isolados de prova.`
+                            : `<br>✨ <strong>Fluidez de Prova:</strong> O piloto não apresentou discrepâncias graves ou voltas excessivamente penalizadas; o tempo perdido foi linear e distribuído de forma homogênea.`;
 
                         tbody.innerHTML += `
                             <tr class="main-row">
@@ -537,9 +560,10 @@
                             <tr class="sub-row">
                                 <td colspan="7">
                                     <div class="analysis-subrow-box">
-                                        <strong class="title">🔍 Laudo de Consistência - ${item.piloto}</strong>
-                                        <strong>Avaliação:</strong> ${nivelConstancia}<br>
-                                        <strong>Diagnóstico:</strong> ${diagnosticoCausas}
+                                        <strong class="title">🔍 Laudo Técnico Avançado de Consistência - ${item.piloto}</strong>
+                                        <strong>Avaliação de Ritmo:</strong> ${nivelConstancia}<br>
+                                        <strong>Diagnóstico de Comportamento:</strong> ${diagnosticoCausas}
+                                        ${alertaVoltas}
                                     </div>
                                 </td>
                             </tr>
