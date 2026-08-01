@@ -37,6 +37,10 @@
         .btn-text-action:hover { text-decoration: underline; }
 
         .btn-pdf-global { background: linear-gradient(135deg, #ff5722 0%, #e63946 100%); color: #ffffff; font-size: 0.95rem; padding: 12px 24px; font-weight: 700; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 4px 15px rgba(255, 87, 34, 0.4); width: fit-content; }
+        
+        .btn-share { background: rgba(58, 134, 255, 0.15); color: var(--accent-blue); border: 1px solid var(--accent-blue); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.2s; }
+        .btn-share:hover { background: rgba(58, 134, 255, 0.3); }
+
         .tab-content { display: flex; flex-direction: column; gap: 20px; }
 
         .filters-card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 18px; }
@@ -57,9 +61,9 @@
         .kpi-value.green { color: var(--accent-green); }
         .kpi-subtext { font-size: 0.8rem; color: var(--text-muted); }
 
-        .session-block-header { background: linear-gradient(135deg, var(--bg-card-header) 0%, var(--bg-card) 100%); border: 1px solid var(--border-card); border-left: 5px solid var(--accent-red); border-radius: 10px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .session-block-header { background: linear-gradient(135deg, var(--bg-card-header) 0%, var(--bg-card) 100%); border: 1px solid var(--border-card); border-left: 5px solid var(--accent-red); border-radius: 10px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; flex-wrap: wrap; gap: 10px; }
         .session-block-title { font-size: 1.15rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 10px; }
-        .session-block-meta { font-size: 0.85rem; color: var(--text-muted); display: flex; gap: 15px; align-items: center; }
+        .session-block-meta { font-size: 0.85rem; color: var(--text-muted); display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
         .session-winner-tag { background: rgba(255, 183, 3, 0.15); color: var(--accent-gold); border: 1px solid var(--accent-gold); padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; }
 
         .session-blocks-container { display: flex; flex-direction: column; gap: 30px; }
@@ -99,7 +103,7 @@
         @media print {
             body, body * { color: #000000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             body { background-color: #ffffff !important; padding: 10px !important; font-size: 11px !important; }
-            .header-actions, .filters-card, .btn-pdf-global { display: none !important; }
+            .header-actions, .filters-card, .btn-pdf-global, .btn-share { display: none !important; }
             .header { background: #ffffff !important; border: 1px solid #d1d5db !important; }
             .kpi-card { background: #f9fafb !important; border: 1px solid #d1d5db !important; }
             .card { background: #ffffff !important; border: 1px solid #d1d5db !important; }
@@ -182,7 +186,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v3.2.0 (Laudo Técnico Detalhado de Consistência)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v3.3.0 (Com Botão de Compartilhamento por Corrida)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -354,6 +358,39 @@
             renderizarSessõesCompletas(dadosBase, bateriasSelecionadas, pilotosSelecionados, modulosSelecionados);
         }
 
+        // Função para compartilhar a corrida específica
+        window.compartilharCorrida = function(bateriaKey, nomeSessao, vencedor) {
+            let dadosBase = obterTodosDadosConsolidados();
+            let itensBateria = dadosBase.filter(d => d.bateriaKey === bateriaKey);
+            
+            let textoResumo = `🏁 *KRATHUS RACING - TELEMETRIA* 🏁\n`;
+            textoResumo += `📅 Sessão: *${nomeSessao}*\n`;
+            textoResumo += `🏆 Vencedor: *${vencedor}*\n\n`;
+            textoResumo += `📊 *Classificação:* \n`;
+            
+            // Ordena por posição
+            itensBateria.sort((a, b) => (parseInt(a.pos) || 99) - (parseInt(b.pos) || 99));
+            itensBateria.forEach(d => {
+                textoResumo += `${d.pos} - ${d.piloto} (${d.voltasTotais} voltas | Melhor: ${d.melhorVoltaTxt})\n`;
+            });
+            
+            textoResumo += `\n_Confira todos os gráficos e detalhes no painel Krathus Racing!_`;
+
+            if (navigator.share) {
+                navigator.share({
+                    title: `Krathus Racing - ${nomeSessao}`,
+                    text: textoResumo,
+                    url: window.location.href
+                }).catch(() => {});
+            } else {
+                navigator.clipboard.writeText(textoResumo).then(() => {
+                    alert(`📋 Resumo da bateria "${nomeSessao}" copiado para a área de transferência! Cole no WhatsApp ou Telegram.`);
+                }).catch(() => {
+                    alert("Não foi possível compartilhar automaticamente.");
+                });
+            }
+        };
+
         function renderizarSessõesCompletas(dadosBase, bateriasSelecionadas, pilotosSelecionados, modulosSelecionados) {
             chartInstances.forEach(chart => chart.destroy());
             chartInstances = [];
@@ -395,6 +432,7 @@
                         <div class="session-block-title">🏁 Sessão / Bateria: ${nomeSessao}</div>
                         <div class="session-block-meta">
                             <span class="session-winner-tag">🏆 Vencedor: <strong>${nomeVencedorSessao}</strong></span>
+                            <button class="btn-share" onclick="compartilharCorrida('${bateriaKey}', '${nomeSessao}', '${nomeVencedorSessao}')">🔗 Compartilhar</button>
                         </div>
                     </div>
                 `;
@@ -521,7 +559,6 @@
                         let stdDevCalc = Math.sqrt(variancia);
                         let desvioTxt = `±${stdDevCalc.toFixed(3).replace('.',',')}s`;
 
-                        // LAUDO TÉCNICO AVANÇADO E DETALHADO DE CONSISTÊNCIA
                         let nivelConstancia = "";
                         let diagnosticoCausas = "";
 
