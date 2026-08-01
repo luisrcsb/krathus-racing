@@ -43,6 +43,14 @@
 
         .tab-content { display: flex; flex-direction: column; gap: 20px; }
 
+        /* Welcome / Info Card */
+        .welcome-card { background: linear-gradient(135deg, var(--bg-card) 0%, rgba(28, 38, 56, 0.7) 100%); border: 1px solid var(--border-card); border-left: 5px solid var(--accent-blue); border-radius: 12px; padding: 22px 24px; display: flex; flex-direction: column; gap: 12px; }
+        .welcome-title { font-size: 1.1rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 8px; }
+        .welcome-text { font-size: 0.9rem; color: var(--text-main); line-height: 1.6; }
+        .changelog-box { background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 12px 16px; margin-top: 4px; display: flex; flex-direction: column; gap: 6px; }
+        .changelog-header { font-size: 0.78rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase; letter-spacing: 0.5px; }
+        .changelog-list { font-size: 0.85rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 4px; padding-left: 16px; }
+
         .filters-card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 18px; }
         .filters-grid { display: grid; grid-template-columns: 1fr 1fr 1.3fr; gap: 20px; }
         .filter-group { display: flex; flex-direction: column; gap: 12px; }
@@ -104,7 +112,7 @@
         @media print {
             body, body * { color: #000000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             body { background-color: #ffffff !important; padding: 10px !important; font-size: 11px !important; }
-            .header-actions, .filters-card, .btn-pdf-global, .btn-share { display: none !important; }
+            .header-actions, .filters-card, .btn-pdf-global, .btn-share, .welcome-card { display: none !important; }
             .header { background: #ffffff !important; border: 1px solid #d1d5db !important; }
             .kpi-card { background: #f9fafb !important; border: 1px solid #d1d5db !important; }
             .card { background: #ffffff !important; border: 1px solid #d1d5db !important; }
@@ -119,7 +127,7 @@
         <header class="header">
             <div class="brand-title">
                 <h1>🏁 KRATHUS RACING</h1>
-                <p>Central de Telemetria (Banco de Dados Externo)</p>
+                <p>Central de Telemetria e Análise de Desempenho</p>
             </div>
             <div class="header-actions">
                 <button class="btn btn-secondary" onclick="resetarFiltros()">🔄 Resetar Filtros</button>
@@ -127,6 +135,23 @@
         </header>
 
         <div id="tab-telemetria" class="tab-content">
+            <!-- BLOCO DE BOAS-VINDAS E INFORMAÇÕES DO SISTEMA -->
+            <section class="welcome-card">
+                <div class="welcome-title">📊 Bem-vindo à Central de Telemetria Krathus Racing</div>
+                <div class="welcome-text">
+                    Este sistema processa e exibe dados oficiais de telemetria das baterias de automodelismo 1/28 4x4. Utilize os filtros abaixo para selecionar sessões, alternar pilotos e customizar os módulos de gráficos, posições e tabelas detalhadas.
+                </div>
+                <div class="changelog-box">
+                    <div class="changelog-header">🚀 O que há de novo na Versão 3.5.0:</div>
+                    <ul class="changelog-list">
+                        <li><strong>Banco de Dados Externo (`banco-de-dados.js`):</strong> Organização modular para facilitar atualizações de novas baterias.</li>
+                        <li><strong>Relatório Cirúrgico de Ultrapassagens:</strong> Identificação exata de quem superou quem e quantas posições foram ganhas/perdidas volta a volta.</li>
+                        <li><strong>Laudo Técnico Avançado de Consistência:</strong> Análise detalhada por desvio padrão e picos de perda de ritmo.</li>
+                        <li><strong>Compartilhamento por Corrida:</strong> Botão dedicado em cada cabeçalho de bateria para gerar resumos instantâneos.</li>
+                    </ul>
+                </div>
+            </section>
+
             <section class="filters-card">
                 <div class="filters-grid">
                     <div class="filter-group">
@@ -193,7 +218,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v3.5.0 (Relatório Cirúrgico de Ultrapassagens)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v3.5.0 (Painel Informativo e Changelog Integrado)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -476,7 +501,6 @@
                     }));
                 }
 
-                // MATRIZ DE POSIÇÕES DE TODOS OS PILOTOS DA BATERIA
                 let maxVPos = Math.max(...todosDaBateria.map(d => d.laps ? d.laps.length : 0));
                 let matrizPosicoesGeral = {};
                 todosDaBateria.forEach(d => { matrizPosicoesGeral[d.piloto] = []; });
@@ -497,8 +521,6 @@
                         }
                     });
 
-                    acumuladosVolta.sort((a, b) => b.voltas !== a.voltas ? b.voltas - a.voltas : a.tempoAcumulado - a.tempoAcumulado);
-                    // Correção na ordenação (b.voltas - a.voltas decrescente, a.tempo - b.tempo crescente)
                     acumuladosVolta.sort((a, b) => {
                         if (b.voltas !== a.voltas) return b.voltas - a.voltas;
                         return a.tempoAcumulado - b.tempoAcumulado;
@@ -545,12 +567,10 @@
                         }
                     }));
 
-                    // RELATÓRIO CIRÚRGICO DE ULTRAPASSAGENS VOLTA A VOLTA
                     const logsContainer = document.getElementById(`pos-logs-${bateriaKey}`);
                     let logsHtml = '';
                     
                     for (let v = 1; v < maxVPos; v++) {
-                        // Mapeia quem estava em qual posição na volta anterior (v-1) e na volta atual (v)
                         let posNaVoltaAnterior = {};
                         let posNaVoltaAtual = {};
 
@@ -560,7 +580,6 @@
                             if (arr[v]) posNaVoltaAtual[arr[v]] = d.piloto;
                         });
 
-                        // Analisa cada piloto da sessão selecionada
                         dadosSessao.forEach(d => {
                             let arrPos = matrizPosicoesGeral[d.piloto] || [];
                             let pAnt = arrPos[v-1] || 0;
@@ -568,10 +587,8 @@
 
                             if (pAnt > 0 && pAtu > 0) {
                                 if (pAtu < pAnt) {
-                                    // GANHOU POSIÇÃO
                                     let posGanhas = pAnt - pAtu;
                                     let superados = [];
-                                    // Descobre exatamente quem estava nessas posições na volta anterior
                                     for (let p = pAnt - 1; p >= pAtu; p--) {
                                         if (posNaVoltaAnterior[p]) {
                                             superados.push(`${posNaVoltaAnterior[p]} (${p}º)`);
@@ -582,10 +599,8 @@
                                     logsHtml += `<div class="position-log-item">🔥 <span style="color:${obterCorPiloto(d.piloto)}"><strong>${d.piloto}</strong></span> ganhou <span class="tag-gain">${posGanhas} posição(ões)</span> na <strong>Volta ${v+1}</strong> (saltou de ${pAnt}º para a <span class="tag-gain">${pAtu}ª posição</span>)${superadosTxt}.</div>`;
                                 } 
                                 else if (pAtu > pAnt) {
-                                    // PERDEU POSIÇÃO
                                     let posPerdidas = pAtu - pAnt;
                                     let beneficiados = [];
-                                    // Descobre quem assumiu as posições ou para quem perdeu
                                     for (let p = pAnt + 1; p <= pAtu; p++) {
                                         if (posNaVoltaAtual[p]) {
                                             beneficiados.push(`${posNaVoltaAtual[p]} (${p}º)`);
