@@ -50,7 +50,6 @@
             100% { transform: rotate(0deg); }
         }
 
-        /* Ativa o aviso se a tela for estreita e estiver em modo retrato */
         @media screen and (max-width: 768px) and (orientation: portrait) {
             #mobile-orientation-warning { display: flex; }
         }
@@ -72,7 +71,8 @@
 
         .tab-content { display: flex; flex-direction: column; gap: 20px; }
 
-        .welcome-card { background: linear-gradient(135deg, var(--bg-card) 0%, rgba(28, 38, 56, 0.7) 100%); border: 1px solid var(--border-card); border-left: 5px solid var(--accent-blue); border-radius: 12px; padding: 22px 24px; display: flex; flex-direction: column; gap: 12px; }
+        /* Welcome / Info Card (Movido para o final) */
+        .welcome-card { background: linear-gradient(135deg, var(--bg-card) 0%, rgba(28, 38, 56, 0.7) 100%); border: 1px solid var(--border-card); border-left: 5px solid var(--accent-blue); border-radius: 12px; padding: 22px 24px; display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
         .welcome-title { font-size: 1.1rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 8px; }
         .welcome-text { font-size: 0.9rem; color: var(--text-main); line-height: 1.6; }
         .changelog-box { background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 12px 16px; margin-top: 4px; display: flex; flex-direction: column; gap: 6px; }
@@ -170,22 +170,6 @@
         </header>
 
         <div id="tab-telemetria" class="tab-content">
-            <section class="welcome-card">
-                <div class="welcome-title">📊 Bem-vindo à Central de Telemetria Krathus Racing</div>
-                <div class="welcome-text">
-                    Este sistema processa e exibe dados oficiais de telemetria das baterias de automodelismo 1/28 4x4. Utilize os filtros abaixo para selecionar sessões, alternar pilotos e customizar os módulos de gráficos, posições e tabelas detalhadas.
-                </div>
-                <div class="changelog-box">
-                    <div class="changelog-header">🚀 O que há de novo na Versão 3.6.0:</div>
-                    <ul class="changelog-list">
-                        <li><strong>Aviso de Orientação Mobile:</strong> Tela inteligente para orientar o uso do celular na horizontal (modo paisagem).</li>
-                        <li><strong>Relatório Cirúrgico de Ultrapassagens:</strong> Identificação exata de quem superou quem volta a volta.</li>
-                        <li><strong>Laudo Técnico Avançado de Consistência:</strong> Análise detalhada por desvio padrão e picos de perda de ritmo.</li>
-                        <li><strong>Compartilhamento por Corrida:</strong> Botão dedicado em cada cabeçalho de bateria.</li>
-                    </ul>
-                </div>
-            </section>
-
             <section class="filters-card">
                 <div class="filters-grid">
                     <div class="filter-group">
@@ -248,11 +232,28 @@
             </section>
 
             <div id="sessions-container" class="session-blocks-container"></div>
+
+            <!-- BLOCO DE BOAS-VINDAS E INFORMAÇÕES DO SISTEMA (MOVIDO PARA O FINAL) -->
+            <section class="welcome-card">
+                <div class="welcome-title">📊 Sobre a Central de Telemetria Krathus Racing</div>
+                <div class="welcome-text">
+                    Este sistema processa e exibe dados oficiais de telemetria das baterias de automodelismo 1/28 4x4. Utilize os filtros acima para selecionar sessões, alternar pilotos e customizar os módulos de gráficos, posições e tabelas detalhadas.
+                </div>
+                <div class="changelog-box">
+                    <div class="changelog-header">🚀 O que há de novo na Versão 3.6.0:</div>
+                    <ul class="changelog-list">
+                        <li><strong>Aviso de Orientação Mobile:</strong> Tela inteligente para orientar o uso do celular na horizontal (modo paisagem).</li>
+                        <li><strong>Relatório Cirúrgico de Ultrapassagens:</strong> Identificação exata de quem superou quem volta a volta.</li>
+                        <li><strong>Laudo Técnico Avançado de Consistência:</strong> Análise detalhada por desvio padrão e picos de perda de ritmo.</li>
+                        <li><strong>Compartilhamento por Corrida:</strong> Botão dedicado em cada cabeçalho de bateria.</li>
+                    </ul>
+                </div>
+            </section>
         </div>
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v3.6.0 (Aviso de Orientação Mobile Integrado)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v3.6.0 (Seção Informativa Posicionada no Rodapé)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -736,7 +737,7 @@
             atualizarDashboard();
         }
 
-        function gerarRelatorioPDF() { window.print(); }
+        function gerarRelatórioPDF() { window.print(); }
     </script>
 </body>
 </html>
