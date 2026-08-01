@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Krathus Racing - Central de Telemetria via PDF</title>
+    <title>Krathus Racing - Central de Telemetria Multi-PDF</title>
     <!-- Chart.js para renderizar os gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- PDF.js para extrair texto de arquivos PDF direto no navegador -->
@@ -142,12 +142,16 @@
                 <div class="filters-grid">
                     <div class="filter-group">
                         <label class="group-title">SESSÕES / BATERIAS</label>
-                        <div class="checkbox-container" id="filtro-baterias-container"></div>
+                        <div class="checkbox-container" id="filtro-baterias-container">
+                            <span style="font-size:0.85rem; color: var(--text-muted);">Nenhum PDF carregado.</span>
+                        </div>
                     </div>
 
                     <div class="filter-group">
                         <label class="group-title">PILOTOS</label>
-                        <div class="checkbox-container" id="filtro-pilotos-container"></div>
+                        <div class="checkbox-container" id="filtro-pilotos-container">
+                            <span style="font-size:0.85rem; color: var(--text-muted);">Nenhum PDF carregado.</span>
+                        </div>
                     </div>
 
                     <div class="filter-group">
@@ -171,7 +175,7 @@
                 <div class="kpi-card">
                     <span class="kpi-label">Vencedor Selecionado</span>
                     <div class="kpi-value" id="kpi-vencedor">--</div>
-                    <span class="kpi-subtext" id="kpi-vencedor-sub">Múltiplas Sessões</span>
+                    <span class="kpi-subtext" id="kpi-vencedor-sub">Aguardando dados</span>
                 </div>
                 <div class="kpi-card">
                     <span class="kpi-label">Melhor Volta Legítima</span>
@@ -190,7 +194,11 @@
                 </div>
             </section>
 
-            <div id="sessions-container" class="session-blocks-container"></div>
+            <div id="sessions-container" class="session-blocks-container">
+                <div class="card" style="text-align:center; padding: 40px; color: var(--text-muted);">
+                    Nenhum relatório de prova carregado. Vá na aba <strong>"📂 Gerenciar PDFs"</strong> para enviar os seus arquivos.
+                </div>
+            </div>
         </div>
 
         <!-- ABA 2: GERENCIADOR DE PDFS -->
@@ -198,11 +206,10 @@
             <div class="card">
                 <div class="card-header">📂 Upload em Lote de Relatórios em PDF</div>
                 <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem;">
-                    Você pode selecionar <strong>vários arquivos PDF de uma vez só</strong> no seu computador. Todos serão processados e adicionados ao histórico para comparativo.
+                    Selecione <strong>vários arquivos PDF de uma vez só</strong> no seu computador. Todos serão processados e adicionados ao histórico para comparativo.
                 </p>
 
                 <div style="background: var(--bg-input); border: 2px dashed var(--border-card); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 24px;">
-                    <!-- Atributo 'multiple' ativado para upload de vários arquivos -->
                     <input type="file" id="file-input" accept=".pdf" multiple style="display: none;" onchange="processarUploadMultiploPDF(event)">
                     <button class="btn btn-primary" style="margin: 0 auto;" onclick="document.getElementById('file-input').click()">📁 Selecionar Vários PDFs de Prova</button>
                 </div>
@@ -226,7 +233,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v1.2.0 (Multi-PDF Engine)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v1.2.0 (Clean State)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -250,11 +257,6 @@
             }
         }
 
-        const dadosPadrao = [
-            { pos: "1º", piloto: "DJ", bateriaKey: "bateria_1", sessao: "Bateria 1 (Exemplo)", voltas: "20 / 20", tempoTotal: "04:12,100", melhorVoltaVal: 11.200, melhorVoltaTxt: "11,200s (V05)", mediaVal: 12.600, mediaTxt: "12,600s", desvio: "±1,200s", desvioVal: 1.2, badgeColor: "#ffb703", laps: [13.0, 12.5, 12.0, 11.8, 11.2, 11.5, 12.1, 12.2, 12.5, 12.0], positions: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1] },
-            { pos: "2º", piloto: "Ronaldo", bateriaKey: "bateria_1", sessao: "Bateria 1 (Exemplo)", voltas: "20 / 20", tempoTotal: "04:15,300", melhorVoltaVal: 11.400, melhorVoltaTxt: "11,400s (V08)", mediaVal: 12.900, mediaTxt: "12,900s", desvio: "±1,400s", desvioVal: 1.4, badgeColor: "#c0c0c0", laps: [14.0, 13.0, 12.5, 12.1, 12.0, 11.9, 11.8, 11.4, 12.2, 12.5], positions: [2, 2, 2, 2, 2, 2, 2, 2, 2, 2] }
-        ];
-
         const pilotoCores = { "DJ": "#2ec4b6", "Ronaldo": "#ffb703", "Raphael": "#e63946", "Piloto1": "#3a86ff", "Piloto2": "#ff006e" };
         let chartInstances = [];
 
@@ -263,12 +265,11 @@
         });
 
         function inicializarSistema() {
+            // Inicializa limpo se não houver dados salvos anteriormente
             let salvos = localStorage.getItem('krathus_multi_pdfs');
             if (!salvos) {
-                let iniciais = [
-                    { id: 1, nome: "exemplo_bateria_1.pdf", data: "18/07/2026 02:00", tamanho: "25 KB", dados: dadosPadrao }
-                ];
-                localStorage.setItem('krathus_multi_pdfs', JSON.stringify(iniciais));
+                localStorage.setItem('krathus_multi_pdfs', JSON.stringify([]));
+                localStorage.setItem('krathus_dados_ativos', JSON.stringify([]));
             }
             atualizarConsolidadoGeral();
             gerarFiltrosDinamicos();
@@ -276,7 +277,6 @@
             atualizarContadorArquivos();
         }
 
-        // Retorna a união de todos os dados de todos os PDFs salvos no histórico (permitindo o comparativo multibateria)
         function obterTodosDadosConsolidados() {
             let lista = JSON.parse(localStorage.getItem('krathus_multi_pdfs') || '[]');
             let consolidado = [];
@@ -285,7 +285,7 @@
                     consolidado = consolidado.concat(arq.dados);
                 }
             });
-            return consolidado.length > 0 ? consolidado : dadosPadrao;
+            return consolidado;
         }
 
         function atualizarContadorArquivos() {
@@ -293,7 +293,6 @@
             document.getElementById('contador-arquivos').innerText = lista.length;
         }
 
-        // Processamento em Lote de Múltiplos PDFs
         async function processarUploadMultiploPDF(event) {
             const files = event.target.files;
             if (!files || files.length === 0) return;
@@ -331,14 +330,14 @@
 
             localStorage.setItem('krathus_multi_pdfs', JSON.stringify(listaPdfs));
             atualizarConsolidadoGeral();
-            alert(`Processamento em lote concluído! ${files.length} arquivo(s) adicionado(s) ao sistema.`);
+            alert(`Processamento em lote concluído! ${files.length} arquivo(s) adicionado(s) com sucesso.`);
             
             carregarListaArquivos();
             gerarFiltrosDinamicos();
             mudarAba('telemetria');
             atualizarDashboard();
             atualizarContadorArquivos();
-            event.target.value = ''; // Limpa o input
+            event.target.value = '';
         }
 
         function atualizarConsolidadoGeral() {
@@ -384,7 +383,7 @@
             let lista = JSON.parse(localStorage.getItem('krathus_multi_pdfs') || '[]');
             
             if (lista.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted);">Nenhum PDF carregado.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted);">Nenhum PDF carregado no sistema.</td></tr>`;
                 return;
             }
 
@@ -423,11 +422,20 @@
                 if (item.piloto) pilotosSet.add(item.piloto);
             });
 
-            document.getElementById('filtro-baterias-container').innerHTML = Object.keys(bateriasMap).map(key => `
+            const batContainer = document.getElementById('filtro-baterias-container');
+            const pilContainer = document.getElementById('filtro-pilotos-container');
+
+            if (Object.keys(bateriasMap).length === 0) {
+                batContainer.innerHTML = `<span style="font-size:0.85rem; color: var(--text-muted);">Nenhum PDF carregado.</span>`;
+                pilContainer.innerHTML = `<span style="font-size:0.85rem; color: var(--text-muted);">Nenhum PDF carregado.</span>`;
+                return;
+            }
+
+            batContainer.innerHTML = Object.keys(bateriasMap).map(key => `
                 <label class="checkbox-item"><input type="checkbox" value="${key}" class="filter-bateria" checked onchange="atualizarDashboard()"> ${bateriasMap[key]}</label>
             `).join('');
 
-            document.getElementById('filtro-pilotos-container').innerHTML = Array.from(pilotosSet).map(piloto => `
+            pilContainer.innerHTML = Array.from(pilotosSet).map(piloto => `
                 <label class="checkbox-item"><input type="checkbox" value="${piloto}" class="filter-piloto" checked onchange="atualizarDashboard()"> ${piloto}</label>
             `).join('');
         }
@@ -473,6 +481,11 @@
 
             const mainContainer = document.getElementById('sessions-container');
             mainContainer.innerHTML = '';
+
+            if (dadosBase.length === 0) {
+                mainContainer.innerHTML = `<div class="card" style="text-align:center; padding: 40px; color: var(--text-muted);">Nenhum relatório de prova carregado. Vá na aba <strong>"📂 Gerenciar PDFs"</strong> para enviar os seus arquivos.</div>`;
+                return;
+            }
 
             if (bateriasSelecionadas.length === 0 || pilotosSelecionados.length === 0 || modulosSelecionados.length === 0) {
                 mainContainer.innerHTML = `<div class="card" style="text-align:center; padding: 30px; color: var(--text-muted);">Nenhum filtro ou módulo selecionado.</div>`;
