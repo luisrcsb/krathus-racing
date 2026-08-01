@@ -72,7 +72,7 @@
 
         .position-analysis-container { margin-top: 20px; background: var(--bg-input); border-left: 4px solid var(--accent-gold); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
         .position-analysis-title { font-size: 0.85rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase; letter-spacing: 0.5px; }
-        .position-log-list { display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; line-height: 1.5; }
+        .position-log-list { display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; line-height: 1.5; max-height: 180px; overflow-y: auto; }
         .position-log-item { background: rgba(21, 28, 40, 0.5); padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border-card); }
         .tag-gain { color: var(--accent-green); font-weight: 700; }
 
@@ -165,7 +165,7 @@
                 </div>
             </section>
 
-            <!-- KPIs Atualizados -->
+            <!-- KPIs -->
             <section class="kpi-grid">
                 <div class="kpi-card">
                     <span class="kpi-label">Piloto com Mais Vitórias</span>
@@ -228,7 +228,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v1.3.2 (KPIs Avançados)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v1.3.3 (Race Position Fix)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -320,7 +320,7 @@
                                 pos: item.pos || "1º",
                                 piloto: nomePilotoReal,
                                 bateriaKey: item.bateriaKey || "bat_" + file.name.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase(),
-                                sessao: item.sessao || file.name.replace('.json', ''),
+                                sessao: item.sessao || file.name.path || file.name.replace('.json', ''),
                                 voltasTotais: laps.length,
                                 tempoTotal: item.tempoTotal || "02:00,000",
                                 melhorVoltaVal: item.melhorVoltaVal || melhor,
@@ -331,7 +331,7 @@
                                 desvioVal: item.desvioVal || 0.5,
                                 badgeColor: item.badgeColor || "#ffb703",
                                 laps: laps,
-                                positions: item.positions || laps.map((_, idx) => 1)
+                                positions: item.positions || []
                             };
                         });
 
@@ -440,12 +440,10 @@
             );
 
             if (dadosFiltrados.length > 0) {
-                // 1. Piloto com mais vitórias nas sessões selecionadas
                 const vitoriasContador = {};
                 bateriasSelecionadas.forEach(batKey => {
                     const itensBateria = dadosBase.filter(d => d.bateriaKey === batKey);
                     if (itensBateria.length > 0) {
-                        // Encontra o vencedor da sessão (quem tem pos "1º" ou menor tempo/maior voltas)
                         let vencedorSessao = itensBateria.reduce((prev, curr) => {
                             let posPrev = parseInt(prev.pos) || 99;
                             let posCurr = parseInt(curr.pos) || 99;
@@ -470,7 +468,6 @@
                 document.getElementById('kpi-vencedor').innerText = maisVitoriasPiloto !== "--" ? maisVitoriasPiloto : "Nenhum";
                 document.getElementById('kpi-vencedor-sub').innerText = maxVitorias > 0 ? `${maxVitorias} vitória(s) nas sessões` : "Sem vitórias no filtro";
 
-                // 2. Melhor Volta Geral (com indicação da volta e da sessão)
                 let melhorVoltaGlobalVal = 999999;
                 let melhorVoltaObj = null;
                 let melhorVoltaNum = 0;
@@ -495,11 +492,9 @@
                     document.getElementById('kpi-melhor-volta-sub').innerText = "Aguardando dados";
                 }
 
-                // 3. Total de Voltas Válidas Analisadas
                 let totalVoltas = dadosFiltrados.reduce((sum, item) => sum + (item.laps ? item.laps.length : 0), 0);
                 document.getElementById('kpi-total-voltas').innerText = totalVoltas;
 
-                // 4. Média Global de todas as sessões marcadas
                 let somaMedias = 0;
                 let contadorMedias = 0;
                 dadosFiltrados.forEach(item => {
@@ -557,7 +552,7 @@
                     html += `<div class="card"><div class="card-header">Evolução de Ritmo (Lap Times - Total) - ${nomeSessao}</div><div class="chart-container"><canvas id="${chartId}"></canvas></div></div>`;
                 }
                 if (modulosSelecionados.includes('mod-grafico-posicao')) {
-                    html += `<div class="card"><div class="card-header">Evolução de Posição - ${nomeSessao}</div><div class="chart-container"><canvas id="${chartPosId}"></canvas></div><div class="position-analysis-container"><div class="position-analysis-title">📝 Relatório de Disputa</div><div class="position-log-list" id="pos-logs-${bateriaKey}"></div></div></div>`;
+                    html += `<div class="card"><div class="card-header">📊 Posição Volta a Volta (Race Position) - ${nomeSessao}</div><div class="chart-container"><canvas id="${chartPosId}"></canvas></div><div class="position-analysis-container"><div class="position-analysis-title">📝 Relatório de Disputas e Trocas de Posição</div><div class="position-log-list" id="pos-logs-${bateriaKey}"></div></div></div>`;
                 }
                 if (modulosSelecionados.includes('mod-classificacao-analise')) {
                     html += `<div class="card"><div class="card-header">Classificação & Consistência - ${nomeSessao}</div><div class="table-container"><table><thead><tr><th>POS</th><th>PILOTO</th><th>SESSÃO</th><th>TOTAL DE VOLTAS</th><th>MELHOR</th><th>MÉDIA</th><th>DESVIO</th></tr></thead><tbody id="tabela-unificada-${bateriaKey}"></tbody></table></div></div>`;
@@ -569,6 +564,7 @@
                 sessionBlock.innerHTML = html;
                 mainContainer.appendChild(sessionBlock);
 
+                // 1. Gráfico de Ritmo
                 if (modulosSelecionados.includes('mod-grafico')) {
                     let maxV = Math.max(...dadosSessao.map(d => d.laps ? d.laps.length : 0));
                     const labels = Array.from({ length: maxV }, (_, i) => `V${i+1}`);
@@ -587,25 +583,103 @@
                     }));
                 }
 
+                // 2. Gráfico de Posição Volta a Volta (Race Position) com cálculo dinâmico de tempo acumulado por volta
                 if (modulosSelecionados.includes('mod-grafico-posicao')) {
-                    let maxVPos = Math.max(...dadosSessao.map(d => d.positions ? d.positions.length : 0));
-                    const labelsPos = Array.from({ length: maxVPos }, (_, i) => `V${i+1}`);
-                    const datasetsPos = dadosSessao.map(d => ({
-                        label: d.piloto,
-                        data: d.positions || [],
-                        borderColor: obterCorPiloto(d.piloto),
-                        backgroundColor: obterCorPiloto(d.piloto),
-                        borderWidth: 3,
-                        tension: 0.2
-                    }));
+                    // Descobre o número máximo de voltas na sessão
+                    let maxVPos = Math.max(...dadosSessao.map(d => d.laps ? d.laps.length : 0));
+                    const labelsPos = Array.from({ length: maxVPos }, (_, i) => `Volta ${i+1}`);
+
+                    // Para cada volta, calcula o tempo acumulado de cada piloto para determinar a posição exata (menor tempo acumulado = 1º lugar)
+                    let matrizPosicoes = {};
+                    dadosSessao.forEach(d => { matrizPosicoes[d.piloto] = []; });
+
+                    let logsTrocas = [];
+
+                    for (let v = 0; v < maxVPos; v++) {
+                        let acumuladosVolta = [];
+                        dadosSessao.forEach(d => {
+                            if (d.laps && v < d.laps.length) {
+                                // Soma os tempos da volta 0 até a volta v
+                                let somaAteV = 0;
+                                for (let k = 0; k <= v; k++) { somaAteV += d.laps[k]; }
+                                acumuladosVolta.push({ piloto: d.piloto, tempoAcumulado: somaAteV });
+                            }
+                        });
+
+                        // Ordena pelo menor tempo acumulado (líder da prova na volta v)
+                        acumuladosVolta.sort((a, b) => a.tempoAcumulado - b.tempoAcumulado);
+
+                        acumuladosVolta.forEach((item, posIndex) => {
+                            let posicaoReal = posIndex + 1;
+                            matrizPosicoes[item.piloto].push(posicaoReal);
+                        });
+                    }
+
+                    const datasetsPos = dadosSessao.map(d => {
+                        // Se o JSON já trouxer positions preenchidas e compatíveis, usa elas, senão usa a calculada por tempo acumulado
+                        let posData = (d.positions && d.positions.length === maxVPos) ? d.positions : (matrizPosicoes[d.piloto] || []);
+                        return {
+                            label: d.piloto,
+                            data: posData,
+                            borderColor: obterCorPiloto(d.piloto),
+                            backgroundColor: obterCorPiloto(d.piloto),
+                            borderWidth: 3,
+                            tension: 0.1,
+                            stepped: false
+                        };
+                    });
+
                     chartInstances.push(new Chart(document.getElementById(chartPosId).getContext('2d'), {
                         type: 'line',
                         data: { labels: labelsPos, datasets: datasetsPos },
-                        options: { responsive: true, maintainAspectRatio: false, scales: { y: { reverse: true, min: 1 } } }
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    reverse: true, // Inverte para que o 1º lugar fique no topo do gráfico
+                                    min: 1,
+                                    max: dadosSessao.length + 0.5,
+                                    ticks: {
+                                        stepSize: 1,
+                                        callback: function(value) {
+                                            if (Number.isInteger(value)) return `${value}º`;
+                                        },
+                                        color: '#8492a6'
+                                    },
+                                    grid: { color: 'rgba(255, 255, 255, 0.05)' }
+                                },
+                                x: {
+                                    ticks: { color: '#8492a6' },
+                                    grid: { color: 'rgba(255, 255, 255, 0.05)' }
+                                }
+                            },
+                            plugins: {
+                                legend: { labels: { color: '#8492a6' } }
+                            }
+                        }
                     }));
 
+                    // Gera o relatório dinâmico de disputas baseado na matriz calculada
                     const logsContainer = document.getElementById(`pos-logs-${bateriaKey}`);
-                    logsContainer.innerHTML = `<div class="position-log-item">🏎️ <strong>Análise de posições carregada integralmente via JSON.</strong></div>`;
+                    let logsHtml = '';
+                    
+                    for (let v = 1; v < maxVPos; v++) {
+                        dadosSessao.forEach(d => {
+                            let posAnterior = (matrizPosicoes[d.piloto] && matrizPosicoes[d.piloto][v-1]) ? matrizPosicoes[d.piloto][v-1] : 0;
+                            let posAtual = (matrizPosicoes[d.piloto] && matrizPosicoes[d.piloto][v]) ? matrizPosicoes[d.piloto][v] : 0;
+                            
+                            if (posAnterior > 0 && posAtual > 0 && posAtual < posAnterior) {
+                                let posGanhas = posAnterior - posAtual;
+                                logsHtml += `<div class="position-log-item">🔥 <span style="color:${obterCorPiloto(d.piloto)}"><strong>${d.piloto}</strong></span> ganhou ${posGanhas} posição(ões) na <strong>Volta ${v+1}</strong> (assumiu a <span class="tag-gain">${posAtual}ª posição</span>).</div>`;
+                            }
+                        });
+                    }
+
+                    if (logsHtml === '') {
+                        logsHtml = `<div class="position-log-item">🏎️ Prova estável sem ultrapassagens registradas entre as voltas monitoradas.</div>`;
+                    }
+                    logsContainer.innerHTML = logsHtml;
                 }
 
                 if (modulosSelecionados.includes('mod-classificacao-analise')) {
