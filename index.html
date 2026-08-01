@@ -210,7 +210,7 @@
             </div>
         </div>
 
-        <!-- ABA 2: GERENCIADOR DE JSONS -->
+        <!-- ABA 2: GERENCIADOR DE JSONS (PROTEGIDA POR SENHA) -->
         <div id="tab-arquivos" class="tab-content">
             <div class="card">
                 <div class="card-header">📂 Upload em Lote de Arquivos JSON</div>
@@ -242,7 +242,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v1.3.8 (Filters & Clear Selection)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v1.3.9 (Password Protected Upload)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -253,7 +253,18 @@
     </div>
 
     <script>
+        // SENHA DE ACESSO À ABA DE UPLOAD/GERENCIAMENTO (Altere aqui se desejar)
+        const SENHA_ADMIN = "1234";
+
         function mudarAba(abaId) {
+            if (abaId === 'arquivos') {
+                let senhaDigitada = prompt("🔒 Digite a senha de acesso para gerenciar os arquivos JSON:");
+                if (senhaDigitada !== SENHA_ADMIN) {
+                    alert("❌ Senha incorreta! Acesso negado.");
+                    return; // Interrompe e não muda de aba
+                }
+            }
+
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
             if (abaId === 'telemetria') {
@@ -434,7 +445,6 @@
                 return;
             }
 
-            // Ordena as baterias em ordem decrescente (da última para a primeira)
             const bateriasKeysOrdenadas = Object.keys(bateriasMap).reverse();
 
             batContainer.innerHTML = bateriasKeysOrdenadas.map(key => `
@@ -558,7 +568,6 @@
                 return;
             }
 
-            // Exibe as baterias selecionadas na ordem decrescente (da última para a primeira selecionada)
             const bateriasOrdenadasExibicao = [...bateriasSelecionadas].reverse();
 
             bateriasOrdenadasExibicao.forEach((bateriaKey) => {
@@ -608,7 +617,6 @@
                 sessionBlock.innerHTML = html;
                 mainContainer.appendChild(sessionBlock);
 
-                // 1. Gráfico de Ritmo
                 if (modulosSelecionados.includes('mod-grafico')) {
                     let maxV = Math.max(...dadosSessao.map(d => d.laps ? d.laps.length : 0));
                     const labels = Array.from({ length: maxV }, (_, i) => `V${i+1}`);
@@ -627,7 +635,6 @@
                     }));
                 }
 
-                // 2. Gráfico de Posição
                 if (modulosSelecionados.includes('mod-grafico-posicao')) {
                     let maxVPos = Math.max(...todosDaBateria.map(d => d.laps ? d.laps.length : 0));
                     const labelsPos = Array.from({ length: maxVPos }, (_, i) => `Volta ${i+1}`);
@@ -729,7 +736,6 @@
                     logsContainer.innerHTML = logsHtml;
                 }
 
-                // 3. Classificação & Consistência
                 if (modulosSelecionados.includes('mod-classificacao-analise')) {
                     const tbody = document.getElementById(`tabela-unificada-${bateriaKey}`);
                     dadosSessao.forEach(item => {
@@ -789,7 +795,6 @@
                     });
                 }
 
-                // 4. Tabela Geral Volta a Volta
                 if (modulosSelecionados.includes('mod-tabela-geral')) {
                     const headerLap = document.getElementById(`head-lapbyLap-${bateriaKey}`);
                     const bodyLap = document.getElementById(`body-lapbyLap-${bateriaKey}`);
