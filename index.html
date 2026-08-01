@@ -6,6 +6,31 @@
     <title>Krathus Racing - Central de Telemetria</title>
     <!-- Chart.js para renderizar os gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Firebase SDKs (Modular v10 via CDN com suporte a Firestore e Analytics) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+        import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDCTkeIa6QsY2zYs8S__HlIwcY-zcuhZCA",
+            authDomain: "krathus-telemetria.firebaseapp.com",
+            projectId: "krathus-telemetria",
+            storageBucket: "krathus-telemetria.firebasestorage.app",
+            messagingSenderId: "1051581039922",
+            appId: "1:1051581039922:web:d8ae00eb4ab45fa3d5432b",
+            measurementId: "G-JPR41S7CZ3"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const db = getFirestore(app);
+
+        // Expondo as funções do Firebase globalmente para o restante do script do dashboard
+        window.db = db;
+        window.dbFns = { collection, doc, setDoc, deleteDoc, onSnapshot, getDocs };
+        window.dispatchEvent(new Event('firebase-pronto'));
+    </script>
     <style>
         :root {
             --bg-body: #0d111a;
@@ -152,14 +177,14 @@
                             <button class="btn-text-action" onclick="limparSelecaoBaterias()">🗑️ Limpar Seleção</button>
                         </div>
                         <div class="checkbox-container" id="filtro-baterias-container">
-                            <span style="font-size:0.85rem; color: var(--text-muted);">Nenhum arquivo JSON carregado.</span>
+                            <span style="font-size:0.85rem; color: var(--text-muted);">Conectando à nuvem...</span>
                         </div>
                     </div>
 
                     <div class="filter-group">
                         <label class="group-title">PILOTOS</label>
                         <div class="checkbox-container" id="filtro-pilotos-container">
-                            <span style="font-size:0.85rem; color: var(--text-muted);">Nenhum arquivo JSON carregado.</span>
+                            <span style="font-size:0.85rem; color: var(--text-muted);">Conectando à nuvem...</span>
                         </div>
                     </div>
 
@@ -205,7 +230,7 @@
 
             <div id="sessions-container" class="session-blocks-container">
                 <div class="card" style="text-align:center; padding: 40px; color: var(--text-muted);">
-                    Nenhum arquivo JSON carregado. Vá na aba <strong>"📂 Gerenciar JSONs"</strong> para enviar os seus arquivos de prova.
+                    Sincronizando dados em tempo real com a nuvem...
                 </div>
             </div>
         </div>
@@ -213,9 +238,9 @@
         <!-- ABA 2: GERENCIADOR DE JSONS (PROTEGIDA POR SENHA) -->
         <div id="tab-arquivos" class="tab-content">
             <div class="card">
-                <div class="card-header">📂 Upload em Lote de Arquivos JSON</div>
+                <div class="card-header">📂 Upload em Lote de Arquivos JSON (Nuvem Firebase)</div>
                 <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem;">
-                    Selecione <strong>vários arquivos JSON de uma vez só</strong> no seu computador. Todos os pilotos reais contidos nos relatórios serão listados e consolidados.
+                    Selecione <strong>vários arquivos JSON de uma vez só</strong>. Eles serão sincronizados automaticamente com o banco de dados e ficarão acessíveis em qualquer dispositivo.
                 </p>
 
                 <div style="background: var(--bg-input); border: 2px dashed var(--border-card); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 24px;">
@@ -223,7 +248,7 @@
                     <button class="btn btn-primary" style="margin: 0 auto;" onclick="document.getElementById('file-input').click()">📁 Selecionar Vários Arquivos JSON</button>
                 </div>
 
-                <div class="card-header" style="font-size: 0.9rem; margin-top: 10px;">Histórico de JSONs Carregados</div>
+                <div class="card-header" style="font-size: 0.9rem; margin-top: 10px;">Histórico de JSONs na Nuvem</div>
                 <div class="table-container">
                     <table>
                         <thead>
@@ -242,7 +267,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v1.4.3 (Strict Reversed Order)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v2.1.0 (Firebase Modular SDK Sync)</strong></span><span>•</span><span>🟢 Status: <strong>Conectado ao Firebase</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -254,6 +279,7 @@
 
     <script>
         const SENHA_ADMIN = "1234";
+        let listaJsonsCache = [];
 
         function mudarAba(abaId) {
             if (abaId === 'arquivos') {
@@ -287,27 +313,36 @@
 
         let chartInstances = [];
 
-        document.addEventListener("DOMContentLoaded", () => {
-            inicializarSistema();
+        window.addEventListener('firebase-pronto', () => {
+            sincronizarDadosDaNuvem();
         });
 
-        function inicializarSistema() {
-            let salvos = localStorage.getItem('krathus_multi_jsons');
-            if (!salvos) {
-                localStorage.setItem('krathus_multi_jsons', JSON.stringify([]));
-                localStorage.setItem('krathus_dados_ativos', JSON.stringify([]));
-            }
-            atualizarConsolidadoGeral();
-            gerarFiltrosDinamicos();
-            atualizarDashboard();
-            atualizarContadorArquivos();
+        function sincronizarDadosDaNuvem() {
+            const { collection, onSnapshot } = window.dbFns;
+            const db = window.db;
+
+            onSnapshot(collection(db, "krathus_telemetria_jsons"), (snapshot) => {
+                listaJsonsCache = [];
+                snapshot.forEach((doc) => {
+                    listaJsonsCache.push(doc.data());
+                });
+
+                // Ordena do mais recente para o mais antigo pelo ID
+                listaJsonsCache.sort((a, b) => b.id - a.id);
+
+                atualizarContadorArquivos();
+                carregarListaArquivos();
+                gerarFiltrosDinamicos();
+                atualizarDashboard();
+            }, (error) => {
+                console.error("Erro ao sincronizar com o Firebase Firestore:", error);
+                document.getElementById('sessions-container').innerHTML = `<div class="card" style="text-align:center; padding: 40px; color: var(--accent-red);">⚠️ Erro de conexão com a Nuvem. Verifique o console do navegador.</div>`;
+            });
         }
 
         function obterTodosDadosConsolidados() {
-            let lista = JSON.parse(localStorage.getItem('krathus_multi_jsons') || '[]');
             let consolidado = [];
-            // Consolida mantendo a ordem natural (do primeiro ao último)
-            lista.forEach(arq => {
+            listaJsonsCache.forEach(arq => {
                 if (arq.dados && Array.isArray(arq.dados)) {
                     consolidado = consolidado.concat(arq.dados);
                 }
@@ -316,15 +351,16 @@
         }
 
         function atualizarContadorArquivos() {
-            let lista = JSON.parse(localStorage.getItem('krathus_multi_jsons') || '[]');
-            document.getElementById('contador-arquivos').innerText = lista.length;
+            document.getElementById('contador-arquivos').innerText = listaJsonsCache.length;
         }
 
         async function processarUploadMultiploJSON(event) {
             const files = event.target.files;
             if (!files || files.length === 0) return;
 
-            let listaJsons = JSON.parse(localStorage.getItem('krathus_multi_jsons') || '[]');
+            const { doc, setDoc } = window.dbFns;
+            const db = window.db;
+            let novosItensCount = 0;
 
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
@@ -360,14 +396,17 @@
                             };
                         });
 
+                        let uniqueId = Date.now() + i;
                         let novoJson = {
-                            id: Date.now() + i,
+                            id: uniqueId,
                             nome: file.name,
                             data: new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}),
                             tamanho: (file.size / 1024).toFixed(1) + ' KB',
                             dados: dadosProcessados
                         };
-                        listaJsons.push(novoJson);
+
+                        await setDoc(doc(db, "krathus_telemetria_jsons", String(uniqueId)), novoJson);
+                        novosItensCount++;
                     }
                 } catch (err) {
                     console.error(`Erro ao ler o arquivo JSON ${file.name}:`, err);
@@ -375,61 +414,49 @@
                 }
             }
 
-            localStorage.setItem('krathus_multi_jsons', JSON.stringify(listaJsons));
-            atualizarConsolidadoGeral();
-            alert(`Upload em lote concluído! ${files.length} arquivo(s) JSON processado(s) com sucesso.`);
+            if (novosItensCount > 0) {
+                alert(`Upload em lote concluído! ${novosItensCount} arquivo(s) enviado(s) para a nuvem com sucesso.`);
+            }
             
-            carregarListaArquivos();
-            gerarFiltrosDinamicos();
             mudarAba('telemetria');
-            atualizarDashboard();
-            atualizarContadorArquivos();
             event.target.value = '';
-        }
-
-        function atualizarConsolidadoGeral() {
-            let consolidado = obterTodosDadosConsolidados();
-            localStorage.setItem('krathus_dados_ativos', JSON.stringify(consolidado));
         }
 
         function carregarListaArquivos() {
             let tbody = document.getElementById('tabela-arquivos-lista');
-            let lista = JSON.parse(localStorage.getItem('krathus_multi_jsons') || '[]');
             
-            if (lista.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted);">Nenhum arquivo JSON carregado no sistema.</td></tr>`;
+            if (listaJsonsCache.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted);">Nenhum arquivo JSON na nuvem.</td></tr>`;
                 return;
             }
 
-            let listaInvertida = [...lista].reverse();
-
-            tbody.innerHTML = listaInvertida.map(arq => `
+            tbody.innerHTML = listaJsonsCache.map(arq => `
                 <tr>
                     <td><strong>📄 ${arq.nome}</strong></td>
                     <td>${arq.data}</td>
                     <td>${arq.tamanho}</td>
                     <td style="text-align: right;">
-                        <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem; display: inline-flex;" onclick="removerJSON(${arq.id})">🗑️ Excluir</button>
+                        <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem; display: inline-flex;" onclick="removerJSON('${arq.id}')">🗑️ Excluir</button>
                     </td>
                 </tr>
             `).join('');
         }
 
-        function removerJSON(id) {
-            if (confirm("Deseja remover este arquivo JSON do histórico?")) {
-                let lista = JSON.parse(localStorage.getItem('krathus_multi_jsons') || '[]');
-                lista = lista.filter(a => a.id !== id);
-                localStorage.setItem('krathus_multi_jsons', JSON.stringify(lista));
-                atualizarConsolidadoGeral();
-                carregarListaArquivos();
-                gerarFiltrosDinamicos();
-                atualizarDashboard();
-                atualizarContadorArquivos();
+        async function removerJSON(id) {
+            if (confirm("Deseja remover este arquivo JSON da nuvem?")) {
+                try {
+                    const { doc, deleteDoc } = window.dbFns;
+                    await deleteDoc(doc(window.db, "krathus_telemetria_jsons", String(id)));
+                    alert("Arquivo removido com sucesso!");
+                } catch (err) {
+                    console.error("Erro ao excluir arquivo:", err);
+                    alert("Erro ao excluir o arquivo da nuvem.");
+                }
             }
         }
 
         function gerarFiltrosDinamicos() {
-            let dados = JSON.parse(localStorage.getItem('krathus_dados_ativos') || '[]');
+            let dados = obterTodosDadosConsolidados();
             const bateriasMap = {};
             const pilotosSet = new Set();
 
@@ -444,13 +471,13 @@
             const pilContainer = document.getElementById('filtro-pilotos-container');
 
             if (Object.keys(bateriasMap).length === 0) {
-                batContainer.innerHTML = `<span style="font-size:0.85rem; color: var(--text-muted);">Nenhum arquivo JSON carregado.</span>`;
-                pilContainer.innerHTML = `<span style="font-size:0.85rem; color: var(--text-muted);">Nenhum arquivo JSON carregado.</span>`;
+                batContainer.innerHTML = `<span style="font-size:0.85rem; color: var(--text-muted);">Nenhum dado na nuvem.</span>`;
+                pilContainer.innerHTML = `<span style="font-size:0.85rem; color: var(--text-muted);">Nenhum dado na nuvem.</span>`;
                 return;
             }
 
-            // Inverte a ordem das chaves para que a última sessão fique no topo da lista de seleção
-            const bateriasKeysOrdenadas = Object.keys(bateriasMap).reverse();
+            // Ordem decrescente (da última para a primeira sessão)
+            const bateriasKeysOrdenadas = Object.keys(bateriasMap);
 
             batContainer.innerHTML = bateriasKeysOrdenadas.map(key => `
                 <label class="checkbox-item"><input type="checkbox" value="${key}" class="filter-bateria" checked onchange="atualizarDashboard()"> ${bateriasMap[key]}</label>
@@ -467,7 +494,7 @@
         }
 
         function atualizarDashboard() {
-            let dadosBase = JSON.parse(localStorage.getItem('krathus_dados_ativos') || '[]');
+            let dadosBase = obterTodosDadosConsolidados();
             const bateriasSelecionadas = Array.from(document.querySelectorAll('.filter-bateria:checked')).map(cb => cb.value);
             const pilotosSelecionados = Array.from(document.querySelectorAll('.filter-piloto:checked')).map(cb => cb.value);
             const modulosSelecionados = Array.from(document.querySelectorAll('.filter-modulo:checked')).map(cb => cb.value);
@@ -564,7 +591,7 @@
             mainContainer.innerHTML = '';
 
             if (dadosBase.length === 0) {
-                mainContainer.innerHTML = `<div class="card" style="text-align:center; padding: 40px; color: var(--text-muted);">Nenhum arquivo JSON de prova carregado. Vá na aba <strong>"📂 Gerenciar JSONs"</strong> para enviar os seus arquivos.</div>`;
+                mainContainer.innerHTML = `<div class="card" style="text-align:center; padding: 40px; color: var(--text-muted);">Nenhum arquivo JSON na nuvem. Vá na aba <strong>"📂 Gerenciar JSONs"</strong> para enviar os seus arquivos.</div>`;
                 return;
             }
 
@@ -573,8 +600,8 @@
                 return;
             }
 
-            // Inverte a ordem das baterias selecionadas para que a última apareça primeiro (no topo) na página principal
-            const bateriasOrdenadasExibicao = [...bateriasSelecionadas].reverse();
+            // Exibe do último para o primeiro na página principal
+            const bateriasOrdenadasExibicao = [...bateriasSelecionadas];
 
             bateriasOrdenadasExibicao.forEach((bateriaKey) => {
                 const dadosSessao = dadosBase.filter(d => d.bateriaKey === bateriaKey && pilotosSelecionados.includes(d.piloto));
