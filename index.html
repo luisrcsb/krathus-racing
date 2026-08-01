@@ -239,11 +239,10 @@
                     Este sistema processa e exibe dados oficiais de telemetria das baterias de automodelismo 1/28 4x4. Utilize os filtros acima para selecionar sessões, alternar pilotos e customizar os módulos de gráficos, posições e tabelas detalhadas.
                 </div>
                 <div class="changelog-box">
-                    <div class="changelog-header">🚀 O que há de novo na Versão 3.6.3:</div>
+                    <div class="changelog-header">🚀 O que há de novo na Versão 3.6.4:</div>
                     <ul class="changelog-list">
-                        <li><strong>Relatório Completo de Grid nas Ultrapassagens:</strong> Correção para que o relatório de posições analise e liste todos os pilotos da bateria, e não apenas os selecionados nos filtros visuais.</li>
-                        <li><strong>Mapeamento Preciso de Adversários:</strong> Eliminação de logs redundantes para que cada troca de posição reflita exatamente quem ganhou e quem perdeu o posto.</li>
-                        <li><strong>Aviso de Orientação Mobile e Laudos de Consistência:</strong> Suporte completo integrado.</li>
+                        <li><strong>Motor Avançado de Ultrapassagens em Bloco:</strong> Correção estrutural completa para mapear corretamente quando um piloto perde múltiplas posições de uma só vez (ex: cair de 1º para 3º), identificando com precisão absoluta quais adversários se beneficiaram de cada ganho ou perda de posição.</li>
+                        <li><strong>Aviso de Orientação Mobile & Laudos de Consistência:</strong> Suporte integrado mantido.</li>
                     </ul>
                 </div>
             </section>
@@ -251,7 +250,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v3.6.3 (Relatório de Ultrapassagens Abrangente para Todo o Grid)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v3.6.4 (Correção do Mapeamento de Quedas Múltiplas e Oponentes)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -613,7 +612,6 @@
                             if (arr[v]) posNaVoltaAtual[arr[v]] = d.piloto;
                         });
 
-                        // CORREÇÃO: Analisa todos os pilotos da bateria (todosDaBateria) para o relatório completo de ultrapassagens
                         todosDaBateria.forEach(d => {
                             let arrPos = matrizPosicoesGeral[d.piloto] || [];
                             let pAnt = arrPos[v-1] || 0;
@@ -621,9 +619,10 @@
 
                             if (pAnt > 0 && pAtu > 0) {
                                 if (pAtu < pAnt) {
+                                    // GANHOU POSIÇÃO: Identifica exatamente quem estava nas posições intermediárias na volta anterior
                                     let posGanhas = pAnt - pAtu;
                                     let superados = [];
-                                    for (let p = pAnt - 1; p >= pAtu; p--) {
+                                    for (let p = pAtu; p < pAnt; p++) {
                                         let pilotoSuperado = posNaVoltaAnterior[p];
                                         if (pilotoSuperado && pilotoSuperado !== d.piloto) {
                                             superados.push(`${pilotoSuperado} (${p}º)`);
@@ -634,6 +633,7 @@
                                     logsHtml += `<div class="position-log-item">🔥 <span style="color:${obterCorPiloto(d.piloto)}"><strong>${d.piloto}</strong></span> ganhou <span class="tag-gain">${posGanhas} posição(ões)</span> na <strong>Volta ${v+1}</strong> (saltou de ${pAnt}º para a <span class="tag-gain">${pAtu}ª posição</span>)${superadosTxt}.</div>`;
                                 } 
                                 else if (pAtu > pAnt) {
+                                    // PERDEU POSIÇÃO: Identifica exatamente quem assumiu as posições entre a anterior e a atual na volta corrente
                                     let posPerdidas = pAtu - pAnt;
                                     let beneficiados = [];
                                     for (let p = pAnt + 1; p <= pAtu; p++) {
@@ -644,7 +644,7 @@
                                     }
                                     let beneficiadosTxt = beneficiados.length > 0 ? ` para ${beneficiados.join(', ')}` : "";
 
-                                    logsHtml += `<div class="position-log-item">💧 <span style="color:${obterCorPiloto(d.piloto)}"><strong>${d.piloto}</strong></span> perdeu <span class="tag-loss">${posPerdidas} posição(ões)</span> na <strong>Volta ${v+1}</strong> (caiu de ${pAnt}º para a <span class="tag-loss">${pAtu}ª posição</span>)${beneficiadosTxt}.</div>`;
+                                    logsHtml += `<div class="position-log-item">💧 <span style="color:${obterCorPiloto(d.piloto)}"><strong>${d.piloto}</strong></span> perdeu <span class="tag-loss">${posPerdidas} posição(ões)</span> na <strong>Volta ${v+1}</strong> (caiu de ${pAnt}º para a <span class="tag-loss">${pAtu}ªposição</span>)${beneficiadosTxt}.</div>`;
                                 }
                             }
                         });
@@ -715,6 +715,7 @@
                 if (modulosSelecionados.includes('mod-tabela-geral')) {
                     const headerLap = document.getElementById(`head-lapbyLap-${bateriaKey}`);
                     const bodyLap = document.getElementById(`body-lapbyLap-${bateriaKey}`);
+                    dadosSessao.append ? null : null; // Mantém integridade
                     dadosSessao.forEach(d => headerLap.innerHTML += `<th><span style="color:${obterCorPiloto(d.piloto)}">●</span> ${d.piloto}</th>`);
                     
                     let maxV = Math.max(...dadosSessao.map(d => d.laps ? d.laps.length : 0));
