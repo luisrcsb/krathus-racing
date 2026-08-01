@@ -4,33 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Krathus Racing - Central de Telemetria</title>
-    <!-- Chart.js para renderizar os gráficos -->
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Firebase SDKs (Modular v10 via CDN com suporte a Firestore e Analytics) -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
-        import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDCTkeIa6QsY2zYs8S__HlIwcY-zcuhZCA",
-            authDomain: "krathus-telemetria.firebaseapp.com",
-            projectId: "krathus-telemetria",
-            storageBucket: "krathus-telemetria.firebasestorage.app",
-            messagingSenderId: "1051581039922",
-            appId: "1:1051581039922:web:d8ae00eb4ab45fa3d5432b",
-            measurementId: "G-JPR41S7CZ3"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
-        const db = getFirestore(app);
-
-        // Expondo as funções do Firebase globalmente para o restante do script do dashboard
-        window.db = db;
-        window.dbFns = { collection, doc, setDoc, deleteDoc, onSnapshot, getDocs };
-        window.dispatchEvent(new Event('firebase-pronto'));
-    </script>
     <style>
         :root {
             --bg-body: #0d111a;
@@ -51,29 +26,19 @@
         body { background-color: var(--bg-body); color: var(--text-main); padding: 24px; }
         .dashboard-container { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
 
-        /* Top Header & Abas */
         .header { display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 20px 24px; border-radius: 12px; border: 1px solid var(--border-card); }
         .brand-title h1 { font-size: 1.5rem; color: var(--text-title); letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
         .brand-title p { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
 
-        .nav-tabs { display: flex; gap: 8px; background: var(--bg-input); padding: 6px; border-radius: 10px; border: 1px solid var(--border-card); }
-        .tab-btn { background: transparent; border: none; color: var(--text-muted); padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; }
-        .tab-btn.active { background: var(--accent-red); color: #fff; }
-        .tab-btn:hover:not(.active) { color: var(--text-main); background: rgba(255, 255, 255, 0.05); }
-
         .header-actions { display: flex; gap: 12px; }
         .btn { padding: 10px 18px; border-radius: 8px; border: none; font-weight: 600; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: opacity 0.2s; }
-        .btn-primary { background-color: var(--accent-red); color: #fff; }
         .btn-secondary { background-color: #2b384e; color: var(--text-main); }
         .btn-text-action { background: transparent; border: none; color: var(--accent-blue); font-size: 0.78rem; font-weight: 600; cursor: pointer; padding: 0; text-align: left; }
         .btn-text-action:hover { text-decoration: underline; }
 
         .btn-pdf-global { background: linear-gradient(135deg, #ff5722 0%, #e63946 100%); color: #ffffff; font-size: 0.95rem; padding: 12px 24px; font-weight: 700; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 4px 15px rgba(255, 87, 34, 0.4); width: fit-content; }
+        .tab-content { display: flex; flex-direction: column; gap: 20px; }
 
-        .tab-content { display: none; flex-direction: column; gap: 20px; }
-        .tab-content.active { display: flex; }
-
-        /* Filtros */
         .filters-card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 18px; }
         .filters-grid { display: grid; grid-template-columns: 1fr 1fr 1.3fr; gap: 20px; }
         .filter-group { display: flex; flex-direction: column; gap: 12px; }
@@ -85,7 +50,6 @@
         .checkbox-item input[type="checkbox"] { accent-color: var(--accent-red); width: 16px; height: 16px; cursor: pointer; }
         .filters-footer { border-top: 1px solid var(--border-card); padding-top: 15px; display: flex; justify-content: flex-end; }
 
-        /* KPIs */
         .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
         .kpi-card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; justify-content: space-between; }
         .kpi-label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
@@ -93,7 +57,6 @@
         .kpi-value.green { color: var(--accent-green); }
         .kpi-subtext { font-size: 0.8rem; color: var(--text-muted); }
 
-        /* Cabeçalho da Bateria */
         .session-block-header { background: linear-gradient(135deg, var(--bg-card-header) 0%, var(--bg-card) 100%); border: 1px solid var(--border-card); border-left: 5px solid var(--accent-red); border-radius: 10px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
         .session-block-title { font-size: 1.15rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 10px; }
         .session-block-meta { font-size: 0.85rem; color: var(--text-muted); display: flex; gap: 15px; align-items: center; }
@@ -136,7 +99,7 @@
         @media print {
             body, body * { color: #000000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             body { background-color: #ffffff !important; padding: 10px !important; font-size: 11px !important; }
-            .header-actions, .filters-card, .nav-tabs, .btn-pdf-global { display: none !important; }
+            .header-actions, .filters-card, .btn-pdf-global { display: none !important; }
             .header { background: #ffffff !important; border: 1px solid #d1d5db !important; }
             .kpi-card { background: #f9fafb !important; border: 1px solid #d1d5db !important; }
             .card { background: #ffffff !important; border: 1px solid #d1d5db !important; }
@@ -148,27 +111,17 @@
 <body>
 
     <div class="dashboard-container">
-        <!-- Header com Abas -->
         <header class="header">
             <div class="brand-title">
-                <div>
-                    <h1>🏁 KRATHUS RACING</h1>
-                    <p>Central de Telemetria</p>
-                </div>
+                <h1>🏁 KRATHUS RACING</h1>
+                <p>Central de Telemetria (Banco de Dados Externo)</p>
             </div>
-            
-            <div class="nav-tabs">
-                <button class="tab-btn active" onclick="mudarAba('telemetria')">📊 Telemetria</button>
-                <button class="tab-btn" onclick="mudarAba('arquivos')">📂 Gerenciar JSONs (<span id="contador-arquivos">0</span>)</button>
-            </div>
-
             <div class="header-actions">
                 <button class="btn btn-secondary" onclick="resetarFiltros()">🔄 Resetar Filtros</button>
             </div>
         </header>
 
-        <!-- ABA 1: TELEMETRIA -->
-        <div id="tab-telemetria" class="tab-content active">
+        <div id="tab-telemetria" class="tab-content">
             <section class="filters-card">
                 <div class="filters-grid">
                     <div class="filter-group">
@@ -176,16 +129,12 @@
                             <label class="group-title">SESSÕES / BATERIAS</label>
                             <button class="btn-text-action" onclick="limparSelecaoBaterias()">🗑️ Limpar Seleção</button>
                         </div>
-                        <div class="checkbox-container" id="filtro-baterias-container">
-                            <span style="font-size:0.85rem; color: var(--text-muted);">Conectando à nuvem...</span>
-                        </div>
+                        <div class="checkbox-container" id="filtro-baterias-container"></div>
                     </div>
 
                     <div class="filter-group">
                         <label class="group-title">PILOTOS</label>
-                        <div class="checkbox-container" id="filtro-pilotos-container">
-                            <span style="font-size:0.85rem; color: var(--text-muted);">Conectando à nuvem...</span>
-                        </div>
+                        <div class="checkbox-container" id="filtro-pilotos-container"></div>
                     </div>
 
                     <div class="filter-group">
@@ -228,46 +177,12 @@
                 </div>
             </section>
 
-            <div id="sessions-container" class="session-blocks-container">
-                <div class="card" style="text-align:center; padding: 40px; color: var(--text-muted);">
-                    Sincronizando dados em tempo real com a nuvem...
-                </div>
-            </div>
-        </div>
-
-        <!-- ABA 2: GERENCIADOR DE JSONS (PROTEGIDA POR SENHA) -->
-        <div id="tab-arquivos" class="tab-content">
-            <div class="card">
-                <div class="card-header">📂 Upload em Lote de Arquivos JSON (Nuvem Firebase)</div>
-                <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem;">
-                    Selecione <strong>vários arquivos JSON de uma vez só</strong>. Eles serão sincronizados automaticamente com o banco de dados e ficarão acessíveis em qualquer dispositivo.
-                </p>
-
-                <div style="background: var(--bg-input); border: 2px dashed var(--border-card); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 24px;">
-                    <input type="file" id="file-input" accept=".json" multiple style="display: none;" onchange="processarUploadMultiploJSON(event)">
-                    <button class="btn btn-primary" style="margin: 0 auto;" onclick="document.getElementById('file-input').click()">📁 Selecionar Vários Arquivos JSON</button>
-                </div>
-
-                <div class="card-header" style="font-size: 0.9rem; margin-top: 10px;">Histórico de JSONs na Nuvem</div>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Nome do Arquivo JSON</th>
-                                <th>Data de Envio</th>
-                                <th>Tamanho</th>
-                                <th style="text-align: right;">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabela-arquivos-lista"></tbody>
-                    </table>
-                </div>
-            </div>
+            <div id="sessions-container" class="session-blocks-container"></div>
         </div>
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v2.1.0 (Firebase Modular SDK Sync)</strong></span><span>•</span><span>🟢 Status: <strong>Conectado ao Firebase</strong></span>
+                <span>📌 Versão Atual: <strong>v3.1.0 (Banco de Dados JS Separado)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -277,182 +192,32 @@
         </footer>
     </div>
 
+    <!-- IMPORTAÇÃO DO BANCO DE DADOS -->
+    <script src="banco-de-dados.js"></script>
+
     <script>
-        const SENHA_ADMIN = "1234";
-        let listaJsonsCache = [];
-
-        function mudarAba(abaId) {
-            if (abaId === 'arquivos') {
-                let senhaDigitada = prompt("🔒 Digite a senha de acesso para gerenciar os arquivos JSON:");
-                if (senhaDigitada !== SENHA_ADMIN) {
-                    alert("❌ Senha incorreta! Acesso negado.");
-                    return;
-                }
-            }
-
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            if (abaId === 'telemetria') {
-                document.getElementById('tab-telemetria').classList.add('active');
-                document.querySelectorAll('.tab-btn')[0].classList.add('active');
-            } else {
-                document.getElementById('tab-arquivos').classList.add('active');
-                document.querySelectorAll('.tab-btn')[1].classList.add('active');
-                carregarListaArquivos();
-            }
-        }
-
-        const coresPaleta = ["#2ec4b6", "#ffb703", "#e63946", "#3a86ff", "#ff006e", "#8338ec", "#38bdf8", "#fb8500", "#52b788"];
-        function obterCorPiloto(nome) {
-            let hash = 0;
-            for (let i = 0; i < nome.length; i++) {
-                hash = nome.charCodeAt(i) + ((hash << 5) - hash);
-            }
-            return coresPaleta[Math.abs(hash) % coresPaleta.length];
-        }
-
         let chartInstances = [];
 
-        window.addEventListener('firebase-pronto', () => {
-            sincronizarDadosDaNuvem();
-        });
-
-        function sincronizarDadosDaNuvem() {
-            const { collection, onSnapshot } = window.dbFns;
-            const db = window.db;
-
-            onSnapshot(collection(db, "krathus_telemetria_jsons"), (snapshot) => {
-                listaJsonsCache = [];
-                snapshot.forEach((doc) => {
-                    listaJsonsCache.push(doc.data());
-                });
-
-                // Ordena do mais recente para o mais antigo pelo ID
+        document.addEventListener("DOMContentLoaded", () => {
+            if (typeof listaJsonsCache !== 'undefined') {
                 listaJsonsCache.sort((a, b) => b.id - a.id);
-
-                atualizarContadorArquivos();
-                carregarListaArquivos();
                 gerarFiltrosDinamicos();
                 atualizarDashboard();
-            }, (error) => {
-                console.error("Erro ao sincronizar com o Firebase Firestore:", error);
-                document.getElementById('sessions-container').innerHTML = `<div class="card" style="text-align:center; padding: 40px; color: var(--accent-red);">⚠️ Erro de conexão com a Nuvem. Verifique o console do navegador.</div>`;
-            });
-        }
+            } else {
+                console.error("Erro: banco-de-dados.js não encontrado.");
+            }
+        });
 
         function obterTodosDadosConsolidados() {
             let consolidado = [];
-            listaJsonsCache.forEach(arq => {
-                if (arq.dados && Array.isArray(arq.dados)) {
-                    consolidado = consolidado.concat(arq.dados);
-                }
-            });
-            return consolidado;
-        }
-
-        function atualizarContadorArquivos() {
-            document.getElementById('contador-arquivos').innerText = listaJsonsCache.length;
-        }
-
-        async function processarUploadMultiploJSON(event) {
-            const files = event.target.files;
-            if (!files || files.length === 0) return;
-
-            const { doc, setDoc } = window.dbFns;
-            const db = window.db;
-            let novosItensCount = 0;
-
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                try {
-                    const textoConteudo = await file.text();
-                    const conteudoJSON = JSON.parse(textoConteudo);
-
-                    if (Array.isArray(conteudoJSON) && conteudoJSON.length > 0) {
-                        let dadosProcessados = conteudoJSON.map(item => {
-                            let laps = item.laps || [];
-                            let melhor = laps.length > 0 ? Math.min(...laps) : 0;
-                            let soma = laps.reduce((a, b) => a + b, 0);
-                            let media = laps.length > 0 ? soma / laps.length : 0;
-                            
-                            let nomePilotoReal = item.piloto || item.name || item.competitor || item.driver || "Piloto Desconhecido";
-
-                            return {
-                                pos: item.pos || "1º",
-                                piloto: nomePilotoReal,
-                                bateriaKey: item.bateriaKey || "bat_" + file.name.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase(),
-                                sessao: item.sessao || file.name.replace('.json', ''),
-                                voltasTotais: laps.length,
-                                tempoTotal: item.tempoTotal || "02:00,000",
-                                melhorVoltaVal: item.melhorVoltaVal || melhor,
-                                melhorVoltaTxt: item.melhorVoltaTxt || `${melhor.toFixed(3).replace('.',',')}s`,
-                                mediaVal: item.mediaVal || media,
-                                mediaTxt: item.mediaTxt || `${media.toFixed(3).replace('.',',')}s`,
-                                desvio: item.desvio || "±0,500s",
-                                desvioVal: item.desvioVal || 0.5,
-                                badgeColor: item.badgeColor || "#ffb703",
-                                laps: laps,
-                                positions: item.positions || []
-                            };
-                        });
-
-                        let uniqueId = Date.now() + i;
-                        let novoJson = {
-                            id: uniqueId,
-                            nome: file.name,
-                            data: new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}),
-                            tamanho: (file.size / 1024).toFixed(1) + ' KB',
-                            dados: dadosProcessados
-                        };
-
-                        await setDoc(doc(db, "krathus_telemetria_jsons", String(uniqueId)), novoJson);
-                        novosItensCount++;
+            if (typeof listaJsonsCache !== 'undefined') {
+                listaJsonsCache.forEach(arq => {
+                    if (arq.dados && Array.isArray(arq.dados)) {
+                        consolidado = consolidado.concat(arq.dados);
                     }
-                } catch (err) {
-                    console.error(`Erro ao ler o arquivo JSON ${file.name}:`, err);
-                    alert(`Erro ao processar o arquivo ${file.name}. Verifique se a estrutura JSON é válida.`);
-                }
+                });
             }
-
-            if (novosItensCount > 0) {
-                alert(`Upload em lote concluído! ${novosItensCount} arquivo(s) enviado(s) para a nuvem com sucesso.`);
-            }
-            
-            mudarAba('telemetria');
-            event.target.value = '';
-        }
-
-        function carregarListaArquivos() {
-            let tbody = document.getElementById('tabela-arquivos-lista');
-            
-            if (listaJsonsCache.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted);">Nenhum arquivo JSON na nuvem.</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = listaJsonsCache.map(arq => `
-                <tr>
-                    <td><strong>📄 ${arq.nome}</strong></td>
-                    <td>${arq.data}</td>
-                    <td>${arq.tamanho}</td>
-                    <td style="text-align: right;">
-                        <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem; display: inline-flex;" onclick="removerJSON('${arq.id}')">🗑️ Excluir</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        async function removerJSON(id) {
-            if (confirm("Deseja remover este arquivo JSON da nuvem?")) {
-                try {
-                    const { doc, deleteDoc } = window.dbFns;
-                    await deleteDoc(doc(window.db, "krathus_telemetria_jsons", String(id)));
-                    alert("Arquivo removido com sucesso!");
-                } catch (err) {
-                    console.error("Erro ao excluir arquivo:", err);
-                    alert("Erro ao excluir o arquivo da nuvem.");
-                }
-            }
+            return consolidado;
         }
 
         function gerarFiltrosDinamicos() {
@@ -471,21 +236,27 @@
             const pilContainer = document.getElementById('filtro-pilotos-container');
 
             if (Object.keys(bateriasMap).length === 0) {
-                batContainer.innerHTML = `<span style="font-size:0.85rem; color: var(--text-muted);">Nenhum dado na nuvem.</span>`;
-                pilContainer.innerHTML = `<span style="font-size:0.85rem; color: var(--text-muted);">Nenhum dado na nuvem.</span>`;
+                batContainer.innerHTML = `<span style="font-size:0.85rem; color: var(--text-muted);">Banco de dados vazio.</span>`;
+                pilContainer.innerHTML = `<span style="font-size:0.85rem; color: var(--text-muted);">Banco de dados vazio.</span>`;
                 return;
             }
 
-            // Ordem decrescente (da última para a primeira sessão)
-            const bateriasKeysOrdenadas = Object.keys(bateriasMap);
-
-            batContainer.innerHTML = bateriasKeysOrdenadas.map(key => `
+            batContainer.innerHTML = Object.keys(bateriasMap).map(key => `
                 <label class="checkbox-item"><input type="checkbox" value="${key}" class="filter-bateria" checked onchange="atualizarDashboard()"> ${bateriasMap[key]}</label>
             `).join('');
 
             pilContainer.innerHTML = Array.from(pilotosSet).map(piloto => `
                 <label class="checkbox-item"><input type="checkbox" value="${piloto}" class="filter-piloto" checked onchange="atualizarDashboard()"> ${piloto}</label>
             `).join('');
+        }
+
+        const coresPaleta = ["#2ec4b6", "#ffb703", "#e63946", "#3a86ff", "#ff006e", "#8338ec", "#38bdf8", "#fb8500", "#52b788"];
+        function obterCorPiloto(nome) {
+            let hash = 0;
+            for (let i = 0; i < nome.length; i++) {
+                hash = nome.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            return coresPaleta[Math.abs(hash) % coresPaleta.length];
         }
 
         function limparSelecaoBaterias() {
@@ -591,7 +362,7 @@
             mainContainer.innerHTML = '';
 
             if (dadosBase.length === 0) {
-                mainContainer.innerHTML = `<div class="card" style="text-align:center; padding: 40px; color: var(--text-muted);">Nenhum arquivo JSON na nuvem. Vá na aba <strong>"📂 Gerenciar JSONs"</strong> para enviar os seus arquivos.</div>`;
+                mainContainer.innerHTML = `<div class="card" style="text-align:center; padding: 40px; color: var(--text-muted);">Nenhum dado encontrado no banco.</div>`;
                 return;
             }
 
@@ -600,15 +371,11 @@
                 return;
             }
 
-            // Exibe do último para o primeiro na página principal
-            const bateriasOrdenadasExibicao = [...bateriasSelecionadas];
-
-            bateriasOrdenadasExibicao.forEach((bateriaKey) => {
+            bateriasSelecionadas.forEach((bateriaKey) => {
                 const dadosSessao = dadosBase.filter(d => d.bateriaKey === bateriaKey && pilotosSelecionados.includes(d.piloto));
                 if (dadosSessao.length === 0) return;
 
                 const nomeSessao = dadosSessao[0].sessao || bateriaKey;
-                
                 let todosDaBateria = dadosBase.filter(d => d.bateriaKey === bateriaKey);
                 let vencedorSessaoObj = todosDaBateria.reduce((prev, curr) => {
                     let pPrev = parseInt(prev.pos) || 99;
@@ -625,9 +392,7 @@
                 
                 let html = `
                     <div class="session-block-header">
-                        <div class="session-block-title">
-                            🏁 Sessão / Bateria: ${nomeSessao}
-                        </div>
+                        <div class="session-block-title">🏁 Sessão / Bateria: ${nomeSessao}</div>
                         <div class="session-block-meta">
                             <span class="session-winner-tag">🏆 Vencedor: <strong>${nomeVencedorSessao}</strong></span>
                         </div>
@@ -671,7 +436,6 @@
                 if (modulosSelecionados.includes('mod-grafico-posicao')) {
                     let maxVPos = Math.max(...todosDaBateria.map(d => d.laps ? d.laps.length : 0));
                     const labelsPos = Array.from({ length: maxVPos }, (_, i) => `Volta ${i+1}`);
-
                     let matrizPosicoesGeral = {};
                     todosDaBateria.forEach(d => { matrizPosicoesGeral[d.piloto] = []; });
 
@@ -691,30 +455,21 @@
                             }
                         });
 
-                        acumuladosVolta.sort((a, b) => {
-                            if (b.voltas !== a.voltas) {
-                                return b.voltas - a.voltas;
-                            }
-                            return a.tempoAcumulado - b.tempoAcumulado;
-                        });
-
+                        acumuladosVolta.sort((a, b) => b.voltas !== a.voltas ? b.voltas - a.voltas : a.tempoAcumulado - b.tempoAcumulado);
                         acumuladosVolta.forEach((item, posIndex) => {
                             matrizPosicoesGeral[item.piloto].push(posIndex + 1);
                         });
                     }
 
-                    const datasetsPos = dadosSessao.map(d => {
-                        let posData = matrizPosicoesGeral[d.piloto] || [];
-                        return {
-                            label: d.piloto,
-                            data: posData,
-                            borderColor: obterCorPiloto(d.piloto),
-                            backgroundColor: obterCorPiloto(d.piloto),
-                            borderWidth: 3,
-                            tension: 0.1,
-                            spanGaps: true
-                        };
-                    });
+                    const datasetsPos = dadosSessao.map(d => ({
+                        label: d.piloto,
+                        data: matrizPosicoesGeral[d.piloto] || [],
+                        borderColor: obterCorPiloto(d.piloto),
+                        backgroundColor: obterCorPiloto(d.piloto),
+                        borderWidth: 3,
+                        tension: 0.1,
+                        spanGaps: true
+                    }));
 
                     chartInstances.push(new Chart(document.getElementById(chartPosId).getContext('2d'), {
                         type: 'line',
@@ -729,43 +484,31 @@
                                     max: todosDaBateria.length + 0.5,
                                     ticks: {
                                         stepSize: 1,
-                                        callback: function(value) {
-                                            if (Number.isInteger(value)) return `${value}º`;
-                                        },
+                                        callback: function(value) { if (Number.isInteger(value)) return `${value}º`; },
                                         color: '#8492a6'
                                     },
                                     grid: { color: 'rgba(255, 255, 255, 0.05)' }
                                 },
-                                x: {
-                                    ticks: { color: '#8492a6' },
-                                    grid: { color: 'rgba(255, 255, 255, 0.05)' }
-                                }
+                                x: { ticks: { color: '#8492a6' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }
                             },
-                            plugins: {
-                                legend: { labels: { color: '#8492a6' } }
-                            }
+                            plugins: { legend: { labels: { color: '#8492a6' } } }
                         }
                     }));
 
                     const logsContainer = document.getElementById(`pos-logs-${bateriaKey}`);
                     let logsHtml = '';
-                    
                     for (let v = 1; v < maxVPos; v++) {
                         dadosSessao.forEach(d => {
                             let arrPos = matrizPosicoesGeral[d.piloto] || [];
                             let posAnterior = arrPos[v-1] || 0;
                             let posAtual = arrPos[v] || 0;
-                            
                             if (posAnterior > 0 && posAtual > 0 && posAtual < posAnterior) {
                                 let posGanhas = posAnterior - posAtual;
                                 logsHtml += `<div class="position-log-item">🔥 <span style="color:${obterCorPiloto(d.piloto)}"><strong>${d.piloto}</strong></span> ganhou ${posGanhas} posição(ões) na <strong>Volta ${v+1}</strong> (assumiu a <span class="tag-gain">${posAtual}ª posição</span>).</div>`;
                             }
                         });
                     }
-
-                    if (logsHtml === '') {
-                        logsHtml = `<div class="position-log-item">🏎️ Prova estável sem ultrapassagens registradas entre as voltas monitoradas.</div>`;
-                    }
+                    if (logsHtml === '') logsHtml = `<div class="position-log-item">🏎️ Prova estável sem ultrapassagens registradas entre as voltas monitoradas.</div>`;
                     logsContainer.innerHTML = logsHtml;
                 }
 
@@ -774,35 +517,12 @@
                     dadosSessao.forEach(item => {
                         let laps = item.laps || [];
                         let mediaVal = item.mediaVal || (laps.length > 0 ? laps.reduce((a,b)=>a+b,0)/laps.length : 0);
-                        
                         let variancia = laps.length > 1 ? laps.reduce((sum, t) => sum + Math.pow(t - mediaVal, 2), 0) / laps.length : 0;
                         let stdDevCalc = Math.sqrt(variancia);
                         let desvioTxt = `±${stdDevCalc.toFixed(3).replace('.',',')}s`;
 
-                        let nivelConstancia = "";
-                        let diagnosticoCausas = "";
-
-                        if (stdDevCalc < 1.2) {
-                            nivelConstancia = "🟢 Alta Constância (Ritmo de Metrônomo)";
-                            diagnosticoCausas = "O piloto manteve uma excelente linearidade de pilotagem. Pequenas variações abaixo de 1 segundo indicam controle exemplar do acelerador, traçado limpo e ausência de saídas de traseira ou contatos nas muretas.";
-                        } else if (stdDevCalc >= 1.2 && stdDevCalc < 3.5) {
-                            nivelConstancia = "🟡 Constância Moderada (Oscilações Intermitentes)";
-                            diagnosticoCausas = "O ritmo apresentou oscilações perceptíveis. Valores de desvio nessa faixa costumam ser causados por freadas precipitadas, pequenas escapadas de frente/traseira ao forçar o limite do piso, ou leve tráfego/disputas acirradas que obrigaram a tirar o dedo.";
-                        } else {
-                            nivelConstancia = "🔴 Baixa Constância (Instabilidade Crítica de Ritmo)";
-                            diagnosticoCausas = "Desvio padrão elevado indica forte instabilidade na sessão. A causa raiz mais provável envolve erros graves de pilotagem (como capotamentos, rodadas completas ou batidas fortes nas barreiras), falhas de aderência com pneus frios/sujos, ou tempo perdido em recuperações de pista.";
-                        }
-
-                        let voltasLentas = [];
-                        laps.forEach((t, idx) => {
-                            if (t > mediaVal + (stdDevCalc * 1.5) && t > 12.0) {
-                                voltasLentas.push(`Volta ${idx+1} (${t.toFixed(3).replace('.',',')}s)`);
-                            }
-                        });
-
-                        let alertaVoltas = voltasLentas.length > 0 
-                            ? `<br>⚠️ <strong>Picos de perda de tempo detectados em:</strong> ${voltasLentas.slice(0, 4).join(', ')}. (Possível travada ou erro de traçado nestes giros).`
-                            : `<br>✨ Nenhuma volta crítica de grande discrepância foi isolada; o tempo perdido foi distribuído ao longo do percurso.`;
+                        let nivelConstancia = stdDevCalc < 1.2 ? "🟢 Alta Constância" : (stdDevCalc < 3.5 ? "🟡 Constância Moderada" : "🔴 Baixa Constância");
+                        let diagnosticoCausas = stdDevCalc < 1.2 ? "Excelente controle e traçado limpo." : "Oscilações perceptíveis de ritmo.";
 
                         tbody.innerHTML += `
                             <tr class="main-row">
@@ -817,10 +537,9 @@
                             <tr class="sub-row">
                                 <td colspan="7">
                                     <div class="analysis-subrow-box">
-                                        <strong class="title">🔍 Laudo de Consistência e Análise de Erros - ${item.piloto}</strong>
-                                        <strong>Avaliação de Ritmo:</strong> ${nivelConstancia}<br>
-                                        <strong>Diagnóstico Técnico:</strong> ${diagnosticoCausas}
-                                        ${alertaVoltas}
+                                        <strong class="title">🔍 Laudo de Consistência - ${item.piloto}</strong>
+                                        <strong>Avaliação:</strong> ${nivelConstancia}<br>
+                                        <strong>Diagnóstico:</strong> ${diagnosticoCausas}
                                     </div>
                                 </td>
                             </tr>
