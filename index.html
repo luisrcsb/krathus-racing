@@ -242,7 +242,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v1.4.0 (Descending Sessions & Reports)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v1.4.1 (Strict Descending Order)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -306,7 +306,8 @@
         function obterTodosDadosConsolidados() {
             let lista = JSON.parse(localStorage.getItem('krathus_multi_jsons') || '[]');
             let consolidado = [];
-            lista.forEach(arq => {
+            // Mantém a ordem dos arquivos para que o último carregado venha primeiro nos dados consolidados
+            lista.slice().reverse().forEach(arq => {
                 if (arq.dados && Array.isArray(arq.dados)) {
                     consolidado = consolidado.concat(arq.dados);
                 }
@@ -400,7 +401,6 @@
                 return;
             }
 
-            // Exibe a lista de arquivos carregados em ordem decrescente (do mais recente para o mais antigo)
             let listaInvertida = [...lista].reverse();
 
             tbody.innerHTML = listaInvertida.map(arq => `
@@ -434,7 +434,9 @@
             const pilotosSet = new Set();
 
             dados.forEach(item => {
-                if (item.bateriaKey) bateriasMap[item.bateriaKey] = item.sessao || item.bateriaKey;
+                if (item.bateriaKey && !bateriasMap[item.bateriaKey]) {
+                    bateriasMap[item.bateriaKey] = item.sessao || item.bateriaKey;
+                }
                 if (item.piloto) pilotosSet.add(item.piloto);
             });
 
@@ -447,7 +449,8 @@
                 return;
             }
 
-            const bateriasKeysOrdenadas = Object.keys(bateriasMap).reverse();
+            // Ordem rigorosamente decrescente (da última para a primeira cadastrada)
+            const bateriasKeysOrdenadas = Object.keys(bateriasMap);
 
             batContainer.innerHTML = bateriasKeysOrdenadas.map(key => `
                 <label class="checkbox-item"><input type="checkbox" value="${key}" class="filter-bateria" checked onchange="atualizarDashboard()"> ${bateriasMap[key]}</label>
@@ -570,10 +573,8 @@
                 return;
             }
 
-            // Garante que os relatórios das baterias/sessões sejam apresentados do último para o primeiro
-            const bateriasOrdenadasExibicao = [...bateriasSelecionadas].reverse();
-
-            bateriasOrdenadasExibicao.forEach((bateriaKey) => {
+            // Exibe os relatórios mantendo a ordem correta (da última para a primeira)
+            bateriasSelecionadas.forEach((bateriaKey) => {
                 const dadosSessao = dadosBase.filter(d => d.bateriaKey === bateriaKey && pilotosSelecionados.includes(d.piloto));
                 if (dadosSessao.length === 0) return;
 
