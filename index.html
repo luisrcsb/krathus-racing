@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Krathus Racing - Central de Telemetria</title>
-    <!-- Chart.js para renderizar os gráficos de evolução de ritmo e posições -->
+    <!-- Chart.js para renderizar os gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -43,7 +43,7 @@
             gap: 20px;
         }
 
-        /* Top Header */
+        /* Top Header & Abas de Navegação */
         .header {
             display: flex;
             justify-content: space-between;
@@ -67,6 +67,38 @@
             font-size: 0.85rem;
             color: var(--text-muted);
             margin-top: 4px;
+        }
+
+        /* Sistema de Abas */
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            background: var(--bg-input);
+            padding: 6px;
+            border-radius: 10px;
+            border: 1px solid var(--border-card);
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: var(--accent-red);
+            color: #fff;
+        }
+
+        .tab-btn:hover:not(.active) {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.05);
         }
 
         .header-actions {
@@ -97,27 +129,29 @@
             color: var(--text-main);
         }
 
-        /* Botão do PDF com Alto Contraste */
         .btn-pdf-global {
             background: linear-gradient(135deg, #ff5722 0%, #e63946 100%);
             color: #ffffff;
             font-size: 0.95rem;
             padding: 12px 24px;
             font-weight: 700;
-            letter-spacing: 0.5px;
             border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 4px 15px rgba(255, 87, 34, 0.4);
             width: fit-content;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
-        .btn-pdf-global:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 87, 34, 0.6);
-            opacity: 1;
+        /* Conteúdo das Abas */
+        .tab-content {
+            display: none;
+            flex-direction: column;
+            gap: 20px;
         }
 
-        /* Filter Section */
+        .tab-content.active {
+            display: flex;
+        }
+
+        /* Filtros e Demais Estilos */
         .filters-card {
             background: var(--bg-card);
             border: 1px solid var(--border-card);
@@ -145,7 +179,6 @@
             font-weight: 700;
             color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
         .checkbox-container {
@@ -223,7 +256,6 @@
             color: var(--text-muted);
         }
 
-        /* Container de Sessões */
         .session-blocks-container {
             display: flex;
             flex-direction: column;
@@ -271,7 +303,6 @@
             width: 100%;
         }
 
-        /* Caixa de Análise do Gráfico de Posição */
         .position-analysis-container {
             margin-top: 20px;
             background: var(--bg-input);
@@ -289,9 +320,6 @@
             color: var(--accent-gold);
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
         }
 
         .position-log-list {
@@ -309,17 +337,9 @@
             border: 1px solid var(--border-card);
         }
 
-        .tag-gain {
-            color: var(--accent-green);
-            font-weight: 700;
-        }
+        .tag-gain { color: var(--accent-green); font-weight: 700; }
+        .tag-loss { color: var(--accent-red); font-weight: 700; }
 
-        .tag-loss {
-            color: var(--accent-red);
-            font-weight: 700;
-        }
-
-        /* Table Section */
         .table-container {
             width: 100%;
             overflow-x: auto;
@@ -348,14 +368,8 @@
             vertical-align: middle;
         }
 
-        .main-row td {
-            border-bottom: none !important;
-        }
-
-        .sub-row td {
-            padding: 0 16px 16px 16px !important;
-            border-bottom: 1px solid var(--border-card) !important;
-        }
+        .main-row td { border-bottom: none !important; }
+        .sub-row td { padding: 0 16px 16px 16px !important; border-bottom: 1px solid var(--border-card) !important; }
 
         .pos-badge {
             background: var(--accent-gold);
@@ -377,12 +391,8 @@
             display: inline-block;
         }
 
-        .text-green {
-            color: var(--accent-green);
-            font-weight: 700;
-        }
+        .text-green { color: var(--accent-green); font-weight: 700; }
 
-        /* Caixa de Análise Extensa e Destacada em Sub-linha */
         .analysis-subrow-box {
             background: rgba(28, 38, 59, 0.6);
             border-left: 4px solid var(--accent-blue);
@@ -397,7 +407,6 @@
             color: var(--accent-blue);
             text-transform: uppercase;
             font-size: 0.75rem;
-            letter-spacing: 0.5px;
             display: block;
             margin-bottom: 4px;
         }
@@ -411,7 +420,7 @@
             border: 1px solid var(--accent-green);
         }
 
-        /* Estilo do Rodapé com Logotipos e Metadados */
+        /* Rodapé */
         .footer-container {
             background: var(--bg-card);
             border: 1px solid var(--border-card);
@@ -438,22 +447,11 @@
             border: 1px solid var(--border-card);
         }
 
-        .footer-meta-info span {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .footer-meta-info strong {
-            color: var(--text-main);
-        }
-
         .footer-logos {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 28px;
-            flex-wrap: wrap;
         }
 
         .footer-logo-img {
@@ -474,171 +472,27 @@
             width: 100%;
         }
 
-        /* REGRAS DE IMPRESSÃO - TEXTO 100% PRETO */
+        /* Regras de Impressão PDF */
         @media print {
             body, body * {
                 color: #000000 !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
-
-            body {
-                background-color: #ffffff !important;
-                padding: 10px !important;
-                font-size: 11px !important;
-            }
-
-            .dashboard-container {
-                gap: 12px !important;
-            }
-
-            .header-actions, .filters-card, .btn-pdf-global {
-                display: none !important;
-            }
-
-            .header {
-                background: #ffffff !important;
-                border: 1px solid #d1d5db !important;
-                padding: 12px 16px !important;
-            }
-
-            .brand-title h1 {
-                font-size: 1.2rem !important;
-            }
-
-            .kpi-grid {
-                gap: 8px !important;
-            }
-
-            .kpi-card {
-                background: #f9fafb !important;
-                border: 1px solid #d1d5db !important;
-                padding: 10px 12px !important;
-            }
-
-            .kpi-label {
-                font-size: 0.65rem !important;
-            }
-
-            .kpi-value {
-                font-size: 1.2rem !important;
-                margin: 4px 0 !important;
-            }
-
-            .session-block {
-                background: transparent !important;
-                border: none !important;
-                padding: 0 !important;
-                gap: 12px !important;
-                page-break-after: always;
-            }
-
-            .card {
-                background: #ffffff !important;
-                border: 1px solid #d1d5db !important;
-                padding: 12px !important;
-                border-radius: 6px !important;
-            }
-
-            .card-header {
-                font-size: 0.9rem !important;
-                margin-bottom: 10px !important;
-            }
-
-            .card-header::before {
-                background-color: #000000 !important;
-            }
-
-            .position-analysis-container {
-                background: #f8fafc !important;
-                border-left-color: #000000 !important;
-                border-top: 1px solid #e2e8f0 !important;
-                border-right: 1px solid #e2e8f0 !important;
-                border-bottom: 1px solid #e2e8f0 !important;
-            }
-
-            .position-log-item {
-                background: #ffffff !important;
-                border-color: #cbd5e1 !important;
-            }
-
-            table {
-                font-size: 0.8rem !important;
-            }
-
-            th {
-                background-color: #f3f4f6 !important;
-                padding: 8px 10px !important;
-                border-bottom: 1px solid #9ca3af !important;
-            }
-
-            td {
-                padding: 6px 10px !important;
-            }
-
-            .sub-row td {
-                padding: 0 10px 10px 10px !important;
-                border-bottom: 1px solid #d1d5db !important;
-            }
-
-            .session-badge, .pos-badge {
-                background: #f3f4f6 !important;
-                border: 1px solid #d1d5db !important;
-            }
-
-            .analysis-subrow-box {
-                background: #f8fafc !important;
-                border-left-color: #000000 !important;
-                border-top: 1px solid #e2e8f0 !important;
-                border-right: 1px solid #e2e8f0 !important;
-                border-bottom: 1px solid #e2e8f0 !important;
-            }
-
-            .analysis-subrow-box strong.title {
-                font-weight: 800 !important;
-            }
-
-            .fastest-lap-highlight {
-                background-color: #f1f5f9 !important;
-                border: 1px solid #000000 !important;
-                font-weight: bold !important;
-            }
-
-            .footer-container {
-                background: #ffffff !important;
-                border: 1px solid #d1d5db !important;
-                padding: 12px 16px !important;
-            }
-
-            .footer-meta-info {
-                background: #f3f4f6 !important;
-                border: 1px solid #d1d5db !important;
-            }
-
-            .footer-logo-img {
-                background: transparent !important;
-                padding: 0 !important;
-            }
-
-            .footer-copyright {
-                border-top: 1px solid #d1d5db !important;
-            }
-        }
-
-        @media (max-width: 1024px) {
-            .filters-grid {
-                grid-template-columns: 1fr;
-            }
-            .kpi-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
+            body { background-color: #ffffff !important; padding: 10px !important; font-size: 11px !important; }
+            .header-actions, .filters-card, .nav-tabs, .btn-pdf-global { display: none !important; }
+            .header { background: #ffffff !important; border: 1px solid #d1d5db !important; }
+            .kpi-card { background: #f9fafb !important; border: 1px solid #d1d5db !important; }
+            .card { background: #ffffff !important; border: 1px solid #d1d5db !important; }
+            .position-analysis-container { background: #f8fafc !important; border-left-color: #000 !important; }
+            .footer-container { background: #ffffff !important; border: 1px solid #d1d5db !important; }
         }
     </style>
 </head>
 <body>
 
     <div class="dashboard-container">
-        <!-- Header -->
+        <!-- Header com Abas de Navegação -->
         <header class="header">
             <div class="brand-title">
                 <div>
@@ -646,107 +500,153 @@
                     <p>Central de Telemetria e Análise Dinâmica</p>
                 </div>
             </div>
+            
+            <!-- Abas de Alternância -->
+            <div class="nav-tabs">
+                <button class="tab-btn active" onclick="mudarAba('telemetria')">📊 Telemetria</button>
+                <button class="tab-btn" onclick="mudarAba('arquivos')">📂 Gerenciar Arquivos</button>
+            </div>
+
             <div class="header-actions">
-                <button class="btn btn-primary" onclick="window.location.href='upload.html'">+ Adicionar Arquivo / Prova</button>
                 <button class="btn btn-secondary" onclick="resetarFiltros()">🔄 Resetar Filtros</button>
             </div>
         </header>
 
-        <!-- Filtros com Checkboxes -->
-        <section class="filters-card">
-            <div class="filters-grid">
-                <div class="filter-group">
-                    <label class="group-title">SESSÃO / BATERIA</label>
-                    <div class="checkbox-container">
-                        <label class="checkbox-item">
-                            <input type="checkbox" value="bateria1" class="filter-bateria" checked onchange="atualizarDashboard()">
-                            Corrida - Bateria 1 (17/07 23:17)
-                        </label>
-                        <label class="checkbox-item">
-                            <input type="checkbox" value="bateria2" class="filter-bateria" checked onchange="atualizarDashboard()">
-                            Corrida - Bateria 2 (17/07 23:39)
-                        </label>
+        <!-- ABA 1: TELEMETRIA -->
+        <div id="tab-telemetria" class="tab-content active">
+            <!-- Filtros com Checkboxes -->
+            <section class="filters-card">
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label class="group-title">SESSÃO / BATERIA</label>
+                        <div class="checkbox-container">
+                            <label class="checkbox-item">
+                                <input type="checkbox" value="bateria1" class="filter-bateria" checked onchange="atualizarDashboard()">
+                                Corrida - Bateria 1 (17/07 23:17)
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" value="bateria2" class="filter-bateria" checked onchange="atualizarDashboard()">
+                                Corrida - Bateria 2 (17/07 23:39)
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="group-title">PILOTO</label>
+                        <div class="checkbox-container">
+                            <label class="checkbox-item">
+                                <input type="checkbox" value="DJ" class="filter-piloto" checked onchange="atualizarDashboard()">
+                                DJ
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" value="Ronaldo" class="filter-piloto" checked onchange="atualizarDashboard()">
+                                Ronaldo
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" value="Raphael" class="filter-piloto" checked onchange="atualizarDashboard()">
+                                Raphael
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="group-title">MÓDULOS / RECURSOS VISÍVEIS</label>
+                        <div class="checkbox-container">
+                            <label class="checkbox-item">
+                                <input type="checkbox" value="mod-grafico" class="filter-modulo" checked onchange="atualizarDashboard()">
+                                📈 Evolução de Ritmo (Lap Times)
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" value="mod-grafico-posicao" class="filter-modulo" checked onchange="atualizarDashboard()">
+                                📊 Posição Volta a Volta (Race Position)
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" value="mod-classificacao-analise" class="filter-modulo" checked onchange="atualizarDashboard()">
+                                🏆 Classificação & Análise de Consistência
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" value="mod-tabela-geral" class="filter-modulo" checked onchange="atualizarDashboard()">
+                                ⏱️ Tabela Geral Volta a Volta (Grid)
+                            </label>
+                        </div>
                     </div>
                 </div>
 
-                <div class="filter-group">
-                    <label class="group-title">PILOTO</label>
-                    <div class="checkbox-container">
-                        <label class="checkbox-item">
-                            <input type="checkbox" value="DJ" class="filter-piloto" checked onchange="atualizarDashboard()">
-                            DJ
-                        </label>
-                        <label class="checkbox-item">
-                            <input type="checkbox" value="Ronaldo" class="filter-piloto" checked onchange="atualizarDashboard()">
-                            Ronaldo
-                        </label>
-                        <label class="checkbox-item">
-                            <input type="checkbox" value="Raphael" class="filter-piloto" checked onchange="atualizarDashboard()">
-                            Raphael
-                        </label>
-                    </div>
+                <div class="filters-footer">
+                    <button class="btn btn-pdf-global" onclick="gerarRelatorioPDF()">
+                        📄 Gerar Relatório PDF Completo
+                    </button>
                 </div>
+            </section>
 
-                <div class="filter-group">
-                    <label class="group-title">MÓDULOS / RECURSOS VISÍVEIS</label>
-                    <div class="checkbox-container">
-                        <label class="checkbox-item">
-                            <input type="checkbox" value="mod-grafico" class="filter-modulo" checked onchange="atualizarDashboard()">
-                            📈 Evolução de Ritmo (Lap Times - Lap by Lap)
-                        </label>
-                        <label class="checkbox-item">
-                            <input type="checkbox" value="mod-grafico-posicao" class="filter-modulo" checked onchange="atualizarDashboard()">
-                            📊 Posição Volta a Volta (Race Position)
-                        </label>
-                        <label class="checkbox-item">
-                            <input type="checkbox" value="mod-classificacao-analise" class="filter-modulo" checked onchange="atualizarDashboard()">
-                            🏆 Classificação & Análise de Consistência
-                        </label>
-                        <label class="checkbox-item">
-                            <input type="checkbox" value="mod-tabela-geral" class="filter-modulo" checked onchange="atualizarDashboard()">
-                            ⏱️ Tabela Geral Volta a Volta (Grid)
-                        </label>
-                    </div>
+            <!-- Cards de Métricas Gerais -->
+            <section class="kpi-grid">
+                <div class="kpi-card">
+                    <span class="kpi-label">Vencedor Selecionado</span>
+                    <div class="kpi-value" id="kpi-vencedor">Múltiplas Sessões</div>
+                    <span class="kpi-subtext" id="kpi-vencedor-sub">2 baterias carregadas</span>
                 </div>
-            </div>
+                <div class="kpi-card">
+                    <span class="kpi-label">Melhor Volta Legítima</span>
+                    <div class="kpi-value green" id="kpi-melhor-volta">10,898s</div>
+                    <span class="kpi-subtext" id="kpi-melhor-volta-sub">DJ (Corrida - Bateria 1)</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-label">Voltas Válidas Analisadas</span>
+                    <div class="kpi-value" id="kpi-total-voltas">143</div>
+                    <span class="kpi-subtext">Total calculated</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-label">Média Global do Grid</span>
+                    <div class="kpi-value" id="kpi-media-global">13,980s</div>
+                    <span class="kpi-subtext">Consistência do grid</span>
+                </div>
+            </section>
 
-            <div class="filters-footer">
-                <button class="btn btn-pdf-global" onclick="gerarRelatorioPDF()">
-                    📄 Gerar Relatório PDF Completo
-                </button>
+            <!-- Container para os Blocos de Cada Sessão -->
+            <div id="sessions-container" class="session-blocks-container">
+                <!-- Gerado dinamicamente via JS -->
             </div>
-        </section>
-
-        <!-- Cards de Métricas Gerais -->
-        <section class="kpi-grid">
-            <div class="kpi-card">
-                <span class="kpi-label">Vencedor Selecionado</span>
-                <div class="kpi-value" id="kpi-vencedor">Múltiplas Sessões</div>
-                <span class="kpi-subtext" id="kpi-vencedor-sub">2 baterias carregadas</span>
-            </div>
-            <div class="kpi-card">
-                <span class="kpi-label">Melhor Volta Legítima</span>
-                <div class="kpi-value green" id="kpi-melhor-volta">10,898s</div>
-                <span class="kpi-subtext" id="kpi-melhor-volta-sub">DJ (Corrida - Bateria 1)</span>
-            </div>
-            <div class="kpi-card">
-                <span class="kpi-label">Voltas Válidas Analisadas</span>
-                <div class="kpi-value" id="kpi-total-voltas">143</div>
-                <span class="kpi-subtext">Total calculated</span>
-            </div>
-            <div class="kpi-card">
-                <span class="kpi-label">Média Global do Grid</span>
-                <div class="kpi-value" id="kpi-media-global">13,980s</div>
-                <span class="kpi-subtext">Consistência do grid</span>
-            </div>
-        </section>
-
-        <!-- Container para os Blocos de Cada Sessão -->
-        <div id="sessions-container" class="session-blocks-container">
-            <!-- Gerado dinamicamente via JS -->
         </div>
 
-        <!-- Rodapé com Logotipos, Metadados e Copyright -->
+        <!-- ABA 2: GERENCIADOR DE ARQUIVOS (UPLOAD E LISTAGEM) -->
+        <div id="tab-arquivos" class="tab-content">
+            <div class="card">
+                <div class="card-header">📂 Envio e Histórico de Arquivos de Prova</div>
+                <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem;">
+                    Faça o upload de novos arquivos de cronometragem (JSON ou exports do ZRound/MYLAPS). Os arquivos enviados ficam salvos e listados permanentemente no navegador.
+                </p>
+
+                <!-- Área de Upload -->
+                <div style="background: var(--bg-input); border: 2px dashed var(--border-card); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 24px;">
+                    <input type="file" id="file-input" accept=".json,.txt,.csv" style="display: none;" onchange="processarUploadArquivo(event)">
+                    <button class="btn btn-primary" style="margin: 0 auto;" onclick="document.getElementById('file-input').click()">
+                        📁 Selecionar Arquivo do Computador
+                    </button>
+                    <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 10px;">Formatos aceitos: .JSON, .CSV, .TXT</p>
+                </div>
+
+                <!-- Tabela de Arquivos Armazenados -->
+                <div class="card-header" style="font-size: 0.9rem; margin-top: 10px;">Arquivos Carregados no Sistema</div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nome do Arquivo</th>
+                                <th>Data de Envio</th>
+                                <th>Tamanho</th>
+                                <th style="text-align: right;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-arquivos-lista">
+                            <!-- Preenchido via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rodapé -->
         <footer class="footer-container">
             <div class="footer-meta-info">
                 <span>📌 Versão Atual: <strong>v1.2.0</strong></span>
@@ -756,8 +656,8 @@
                 <span>🏎️ Compatibilidade: <strong>MYLAPS Sports Timing & ZRound Suite</strong></span>
             </div>
             <div class="footer-logos">
-                <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS Sports Timing" class="footer-logo-img">
-                <img src="https://www.zround.com/wp-content/uploads/2020/05/zround_logo_web.png" alt="ZRound Suite" class="footer-logo-img">
+                <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
+                <img src="https://www.zround.com/wp-content/uploads/2020/05/zround_logo_web.png" alt="ZRound" class="footer-logo-img">
             </div>
             <div class="footer-copyright">
                 &copy; 2026 Krathus Racing - Central de Telemetria e Análise Dinâmica. Todos os direitos reservados.
@@ -765,8 +665,24 @@
         </footer>
     </div>
 
-    <!-- Script de Lógica e Renderização -->
+    <!-- Script de Lógica, Abas, Upload e Renderização -->
     <script>
+        // Sistema de Abas
+        function mudarAba(abaId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+            if (abaId === 'telemetria') {
+                document.getElementById('tab-telemetria').classList.add('active');
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+            } else {
+                document.getElementById('tab-arquivos').classList.add('active');
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                carregarListaArquivos();
+            }
+        }
+
+        // Simulação de Dados Base de Telemetria
         const dadosBase = [
             { pos: "1º", piloto: "DJ", bateriaKey: "bateria1", sessao: "Corrida - Bateria 1 (17/07 23:17)", voltas: "29 / 29", tempoTotal: "06:11,204", melhorVoltaVal: 10.898, melhorVoltaTxt: "10,898s (V20)", mediaVal: 12.800, mediaTxt: "12,800s", desvio: "±1,682s", desvioVal: 1.682, badgeColor: "#ffb703",
               laps: [15.0, 12.3, 12.1, 12.0, 11.9, 11.8, 11.7, 12.0, 12.5, 12.2, 12.1, 12.0, 12.3, 12.1, 12.0, 18.8, 12.6, 12.4, 12.2, 10.898, 11.9, 11.9, 15.0, 14.0, 12.2, 12.4, 12.5, 11.8, 20.5],
@@ -793,29 +709,86 @@
               positions: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3] }
         ];
 
-        const pilotoCores = {
-            "DJ": "#2ec4b6",
-            "Ronaldo": "#ffb703",
-            "Raphael": "#e63946"
-        };
-
+        const pilotoCores = { "DJ": "#2ec4b6", "Ronaldo": "#ffb703", "Raphael": "#e63946" };
         let chartInstances = [];
 
         document.addEventListener("DOMContentLoaded", () => {
+            inicializarArquivosPadrao();
             atualizarDashboard();
         });
 
+        // Gerenciamento de Arquivos via LocalStorage
+        function inicializarArquivosPadrao() {
+            let salvos = localStorage.getItem('krathus_arquivos');
+            if (!salvos) {
+                let arquivosIniciais = [
+                    { id: 1, nome: "corrida_bateria_1707_oficial.json", data: "17/07/2026 23:45", tamanho: "45 KB" }
+                ];
+                localStorage.setItem('krathus_arquivos', JSON.stringify(arquivosIniciais));
+            }
+        }
+
+        function carregarListaArquivos() {
+            let tbody = document.getElementById('tabela-arquivos-lista');
+            let arquivos = JSON.parse(localStorage.getItem('krathus_arquivos') || '[]');
+            
+            if (arquivos.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted);">Nenhum arquivo carregado no sistema.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = arquivos.map(arq => `
+                <tr>
+                    <td><strong>📄 ${arq.nome}</strong></td>
+                    <td>${arq.data}</td>
+                    <td>${arq.tamanho}</td>
+                    <td style="text-align: right;">
+                        <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem; display: inline-flex;" onclick="removerArquivo(${arq.id})">🗑️ Excluir</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function processarUploadArquivo(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            let arquivos = JSON.parse(localStorage.getItem('krathus_arquivos') || '[]');
+            
+            let novoArquivo = {
+                id: Date.now(),
+                nome: file.name,
+                data: new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}),
+                tamanho: (file.size / 1024).toFixed(1) + ' KB'
+            };
+
+            arquivos.push(novoArquivo);
+            localStorage.setItem('krathus_arquivos', JSON.stringify(arquivos));
+            
+            alert(`Arquivo "${file.name}" importado e listado com sucesso!`);
+            carregarListaArquivos();
+            mudarAba('telemetria');
+        }
+
+        function removerArquivo(id) {
+            if (confirm("Tem certeza que deseja remover este arquivo do histórico?")) {
+                let arquivos = JSON.parse(localStorage.getItem('krathus_arquivos') || '[]');
+                arquivos = arquivos.filter(a => a.id !== id);
+                localStorage.setItem('krathus_arquivos', JSON.stringify(arquivos));
+                carregarListaArquivos();
+            }
+        }
+
+        // Lógica de Atualização do Dashboard de Telemetria
         function atualizarDashboard() {
             const bateriasSelecionadas = Array.from(document.querySelectorAll('.filter-bateria:checked')).map(cb => cb.value);
             const pilotosSelecionados = Array.from(document.querySelectorAll('.filter-piloto:checked')).map(cb => cb.value);
             const modulosSelecionados = Array.from(document.querySelectorAll('.filter-modulo:checked')).map(cb => cb.value);
 
             const dadosFiltrados = dadosBase.filter(item => 
-                bateriasSelecionadas.includes(item.bateriaKey) && 
-                pilotosSelecionados.includes(item.piloto)
+                bateriasSelecionadas.includes(item.bateriaKey) && pilotosSelecionados.includes(item.piloto)
             );
 
-            // 1. Atualizar KPIs do Topo
             if (dadosFiltrados.length > 0) {
                 if (bateriasSelecionadas.length === 1) {
                     document.getElementById('kpi-vencedor').innerText = dadosFiltrados[0].piloto;
@@ -836,14 +809,11 @@
                 document.getElementById('kpi-media-global').innerText = `${mediaGlobal.toFixed(3).replace('.', ',')}s`;
             } else {
                 document.getElementById('kpi-vencedor').innerText = "--";
-                document.getElementById('kpi-vencedor-sub').innerText = "Nenhuma sessão";
                 document.getElementById('kpi-melhor-volta').innerText = "--";
-                document.getElementById('kpi-melhor-volta-sub').innerText = "--";
                 document.getElementById('kpi-total-voltas').innerText = "0";
                 document.getElementById('kpi-media-global').innerText = "--";
             }
 
-            // 2. Renderizar Sessões
             renderizarSessõesCompletas(bateriasSelecionadas, pilotosSelecionados, modulosSelecionados);
         }
 
@@ -869,41 +839,30 @@
 
                 const sessionBlock = document.createElement('div');
                 sessionBlock.className = 'session-block';
-
                 let htmlConteudoBlock = '';
 
-                // MÓDULO 1: Gráfico de Evolução de Ritmo (Tempos em Largura Total)
                 if (modulosSelecionados.includes('mod-grafico')) {
                     htmlConteudoBlock += `
                         <div class="card">
-                            <div class="card-header">Evolução do Ritmo (Lap Times - Lap by Lap) - ${nomeSessao}</div>
-                            <div class="chart-container">
-                                <canvas id="${chartId}"></canvas>
-                            </div>
+                            <div class="card-header">Evolução do Ritmo (Lap Times) - ${nomeSessao}</div>
+                            <div class="chart-container"><canvas id="${chartId}"></canvas></div>
                         </div>
                     `;
                 }
 
-                // MÓDULO 2: Gráfico de Posição Volta a Volta + Análise Textual
                 if (modulosSelecionados.includes('mod-grafico-posicao')) {
                     htmlConteudoBlock += `
                         <div class="card">
                             <div class="card-header">Evolução de Posição em Pista (Race Position History) - ${nomeSessao}</div>
-                            <div class="chart-container">
-                                <canvas id="${chartPosId}"></canvas>
-                            </div>
-                            <!-- COMENTÁRIOS DE ANÁLISE VOLTA A VOLTA ABAIXO DO GRÁFICO -->
+                            <div class="chart-container"><canvas id="${chartPosId}"></canvas></div>
                             <div class="position-analysis-container">
-                                <div class="position-analysis-title">
-                                    📝 Relatório de Disputa & Trocas de Posição Volta a Volta
-                                </div>
+                                <div class="position-analysis-title">📝 Relatório de Disputa & Trocas de Posição Volta a Volta</div>
                                 <div class="position-log-list" id="pos-logs-${bateriaKey}"></div>
                             </div>
                         </div>
                     `;
                 }
 
-                // MÓDULO UNIFICADO: Classificação & Análise de Consistência
                 if (modulosSelecionados.includes('mod-classificacao-analise')) {
                     htmlConteudoBlock += `
                         <div class="card">
@@ -911,16 +870,7 @@
                             <div class="table-container">
                                 <table>
                                     <thead>
-                                        <tr>
-                                            <th>POS</th>
-                                            <th>PILOTO</th>
-                                            <th>SESSÃO</th>
-                                            <th>VOLTAS VÁLIDAS</th>
-                                            <th>TEMPO TOTAL</th>
-                                            <th>MELHOR VOLTA</th>
-                                            <th>MÉDIA (S)</th>
-                                            <th>DESVIO PADRÃO</th>
-                                        </tr>
+                                        <tr><th>POS</th><th>PILOTO</th><th>SESSÃO</th><th>VOLTAS VÁLIDAS</th><th>TEMPO TOTAL</th><th>MELHOR VOLTA</th><th>MÉDIA (S)</th><th>DESVIO PADRÃO</th></tr>
                                     </thead>
                                     <tbody id="tabela-unificada-${bateriaKey}"></tbody>
                                 </table>
@@ -929,18 +879,13 @@
                     `;
                 }
 
-                // MÓDULO 4: Tabela Geral Volta a Volta
                 if (modulosSelecionados.includes('mod-tabela-geral')) {
                     htmlConteudoBlock += `
                         <div class="card">
                             <div class="card-header">Tabela Geral Volta a Volta (Grid Comparativo) - ${nomeSessao}</div>
                             <div class="table-container">
                                 <table>
-                                    <thead>
-                                        <tr id="head-lapbyLap-${bateriaKey}">
-                                            <th>VOLTA</th>
-                                        </tr>
-                                    </thead>
+                                    <thead><tr id="head-lapbyLap-${bateriaKey}"><th>VOLTA</th></tr></thead>
                                     <tbody id="body-lapbyLap-${bateriaKey}"></tbody>
                                 </table>
                             </div>
@@ -951,232 +896,84 @@
                 sessionBlock.innerHTML = htmlConteudoBlock;
                 mainContainer.appendChild(sessionBlock);
 
-                // Renderizar Gráfico de Tempos
+                // Render Gráfico de Ritmo
                 if (modulosSelecionados.includes('mod-grafico')) {
-                    let maxVoltas = 0;
-                    dadosSessao.forEach(d => { if (d.laps.length > maxVoltas) maxVoltas = d.laps.length; });
-
+                    let maxVoltas = Math.max(...dadosSessao.map(d => d.laps.length));
                     const labelsLapByLap = Array.from({ length: maxVoltas }, (_, i) => `V${i + 1}`);
                     const datasets = dadosSessao.map(d => ({
-                        label: d.piloto,
-                        data: d.laps,
-                        borderColor: pilotoCores[d.piloto] || '#ffffff',
-                        backgroundColor: pilotoCores[d.piloto] || '#ffffff',
-                        borderWidth: 2,
-                        tension: 0.2,
-                        pointRadius: 3
+                        label: d.piloto, data: d.laps, borderColor: pilotoCores[d.piloto], backgroundColor: pilotoCores[d.piloto], borderWidth: 2, tension: 0.2, pointRadius: 3
                     }));
-
                     const ctx = document.getElementById(chartId).getContext('2d');
-                    const newChart = new Chart(ctx, {
-                        type: 'line',
-                        data: { labels: labelsLapByLap, datasets },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { labels: { color: '#8492a6' } },
-                                tooltip: { callbacks: { label: (c) => ` ${c.dataset.label}: ${c.raw.toFixed(3).replace('.', ',')}s` } }
-                            },
-                            scales: {
-                                x: { grid: { color: '#1c2638' }, ticks: { color: '#8492a6' }, title: { display: true, text: 'Volta a Volta (Lap to Lap)', color: '#8492a6' } },
-                                y: { grid: { color: '#1c2638' }, ticks: { color: '#8492a6' }, min: 10, max: 36, title: { display: true, text: 'Tempo da Volta (s)', color: '#8492a6' } }
-                            }
-                        }
-                    });
-                    chartInstances.push(newChart);
+                    chartInstances.push(new Chart(ctx, {
+                        type: 'line', data: { labels: labelsLapByLap, datasets },
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#8492a6' } } }, scales: { x: { grid: { color: '#1c2638' }, ticks: { color: '#8492a6' } }, y: { grid: { color: '#1c2638' }, ticks: { color: '#8492a6' }, min: 10, max: 36 } } }
+                    }));
                 }
 
-                // Renderizar Gráfico de Posição + Análise do Relatório Volta a Volta
+                // Render Gráfico de Posição
                 if (modulosSelecionados.includes('mod-grafico-posicao')) {
-                    let maxVoltasPos = 0;
-                    dadosSessao.forEach(d => { if (d.positions.length > maxVoltasPos) maxVoltasPos = d.positions.length; });
-
+                    let maxVoltasPos = Math.max(...dadosSessao.map(d => d.positions.length));
                     const labelsPos = Array.from({ length: maxVoltasPos }, (_, i) => `V${i + 1}`);
                     const datasetsPos = dadosSessao.map(d => ({
-                        label: d.piloto,
-                        data: d.positions,
-                        borderColor: pilotoCores[d.piloto] || '#ffffff',
-                        backgroundColor: pilotoCores[d.piloto] || '#ffffff',
-                        borderWidth: 3,
-                        stepped: false,
-                        tension: 0.2,
-                        pointRadius: 4
+                        label: d.piloto, data: d.positions, borderColor: pilotoCores[d.piloto], backgroundColor: pilotoCores[d.piloto], borderWidth: 3, tension: 0.2, pointRadius: 4
+                    }));
+                    const ctxPos = document.getElementById(chartPosId).getContext('2d');
+                    chartInstances.push(new Chart(ctxPos, {
+                        type: 'line', data: { labels: labelsPos, datasets: datasetsPos },
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#8492a6' } } }, scales: { x: { grid: { color: '#1c2638' }, ticks: { color: '#8492a6' } }, y: { reverse: true, min: 1, max: 3, grid: { color: '#1c2638' }, ticks: { color: '#8492a6', stepSize: 1, callback: (val) => `${val}º` } } } }
                     }));
 
-                    const ctxPos = document.getElementById(chartPosId).getContext('2d');
-                    const newChartPos = new Chart(ctxPos, {
-                        type: 'line',
-                        data: { labels: labelsPos, datasets: datasetsPos },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { labels: { color: '#8492a6' } },
-                                tooltip: { callbacks: { label: (c) => ` ${c.dataset.label}: ${c.raw}º Lugar` } }
-                            },
-                            scales: {
-                                x: { grid: { color: '#1c2638' }, ticks: { color: '#8492a6' }, title: { display: true, text: 'Volta a Volta', color: '#8492a6' } },
-                                y: { 
-                                    reverse: true,
-                                    min: 1,
-                                    max: 3,
-                                    grid: { color: '#1c2638' }, 
-                                    ticks: { 
-                                        color: '#8492a6',
-                                        stepSize: 1,
-                                        callback: (val) => `${val}º` 
-                                    }, 
-                                    title: { display: true, text: 'Posição na Corrida', color: '#8492a6' } 
-                                }
+                    // Log de Ultrapassagens
+                    const logsContainer = document.getElementById(`pos-logs-${bateriaKey}`);
+                    let logsHTML = `<div class="position-log-item">🏎️ <strong>Largada (Volta 1):</strong> Alinhamento cruzado com sucesso.</div>`;
+                    dadosSessao.forEach(d => {
+                        for (let v = 1; v < d.positions.length; v++) {
+                            if (d.positions[v] < d.positions[v-1]) {
+                                logsHTML += `<div class="position-log-item">⚡ <strong>Volta ${v+1}:</strong> <span class="tag-gain">Ultrapassagem!</span> <strong>${d.piloto}</strong> subiu para o ${d.positions[v]}º lugar.</div>`;
                             }
                         }
                     });
-                    chartInstances.push(newChartPos);
-
-                    // Geração do Comentário e Análise do Relatório Volta a Volta
-                    const logsContainer = document.getElementById(`pos-logs-${bateriaKey}`);
-                    let logsHTML = "";
-
-                    // 1. Largada (Volta 1)
-                    let largadaInfo = dadosSessao.map(d => `<strong>${d.piloto}</strong> (${d.positions[0]}º)`).join(", ");
-                    logsHTML += `
-                        <div class="position-log-item">
-                            🏎️ <strong>Largada & Primeiro Lançamento (Volta 1):</strong> O grid cruzou a primeira volta com ${largadaInfo}.
-                        </div>
-                    `;
-
-                    // 2. Análise de Trocas Volta a Volta
-                    let trocasDetectadas = [];
-                    for (let v = 1; v < maxVoltasPos; v++) {
-                        dadosSessao.forEach(d => {
-                            if (v < d.positions.length) {
-                                let posAnterior = d.positions[v - 1];
-                                let posAtual = d.positions[v];
-
-                                if (posAtual < posAnterior) {
-                                    let diff = posAnterior - posAtual;
-                                    trocasDetectadas.push(`
-                                        <div class="position-log-item">
-                                            ⚡ <strong>Volta ${v + 1}:</strong> <span class="tag-gain">Ganho de Posição!</span> <strong>${d.piloto}</strong> ultrapassou e subiu do ${posAnterior}º para o ${posAtual}º lugar (+${diff} pos).
-                                        </div>
-                                    `);
-                                } else if (posAtual > posAnterior) {
-                                    let diff = posAtual - posAnterior;
-                                    trocasDetectadas.push(`
-                                        <div class="position-log-item">
-                                            ⚠️ <strong>Volta ${v + 1}:</strong> <span class="tag-loss">Perda de Posição!</span> <strong>${d.piloto}</strong> cometeu uma pequena escapada ou sofreu ultrapassagem, caindo do ${posAnterior}º para o ${posAtual}º lugar (-${diff} pos).
-                                        </div>
-                                    `);
-                                }
-                            }
-                        });
-                    }
-
-                    if (trocasDetectadas.length > 0) {
-                        logsHTML += trocasDetectadas.join("");
-                    } else {
-                        logsHTML += `
-                            <div class="position-log-item">
-                                🔒 <strong>Estabilidade de Liderança:</strong> Não foram registradas ultrapassagens diretas entre as voltas decorridas. Todos os pilotos mantiveram suas posições com ritmo constante do início ao fim.
-                            </div>
-                        `;
-                    }
-
-                    // 3. Resultado Final
-                    let resultadoFinalInfo = dadosSessao.map(d => `<strong>${d.piloto}</strong> em ${d.pos}`).join(", ");
-                    logsHTML += `
-                        <div class="position-log-item">
-                            🏁 <strong>Bandeirada Final:</strong> A sessão encerrou-se com ${resultadoFinalInfo}.
-                        </div>
-                    `;
-
                     logsContainer.innerHTML = logsHTML;
                 }
 
-                // Renderizar Tabela Unificada
+                // Tabela Consistência
                 if (modulosSelecionados.includes('mod-classificacao-analise')) {
                     const tabelaCorpo = document.getElementById(`tabela-unificada-${bateriaKey}`);
                     dadosSessao.forEach(item => {
-                        let piorVoltaVal = Math.max(...item.laps);
-                        let piorVoltaIdx = item.laps.indexOf(piorVoltaVal) + 1;
-                        let melhorVoltaIdx = item.laps.indexOf(item.melhorVoltaVal) + 1;
-
-                        let diagnostico = "";
-                        if (item.desvioVal <= 1.7) {
-                            diagnostico = `<strong>Alta Consistência e Ritmo de Corrida:</strong> O piloto manteve uma tocada extremamente limpa e homogênea ao longo da bateria. Teve sua melhor passagem na Volta ${melhorVoltaIdx} (${item.melhorVoltaVal.toFixed(3).replace('.', ',')}s) e apresentou baixíssima variação de tempos, demonstrando excelente acerto de chassi/pneus e regularidade total sem incidentes significativos.`;
-                        } else if (item.desvioVal <= 4.0) {
-                            diagnostico = `<strong>Média Variabilidade com Ritmo Forte:</strong> O piloto demonstrou picos de velocidade alta (melhor volta de ${item.melhorVoltaVal.toFixed(3).replace('.', ',')}s na Volta ${melhorVoltaIdx}), porém registrou pequenas oscilações de tempo durante disputas de posição ou ultrapassagens em tráfego, elevando ligeiramente o desvio padrão.`;
-                        } else {
-                            diagnostico = `<strong>Alta Oscilação / Ocorrência de Incidente:</strong> O piloto sofreu uma perda severa de tempo na Volta ${piorVoltaIdx} (${piorVoltaVal.toFixed(3).replace('.', ',')}s), o que indica toque no guardrail, capotamento ou retenção por tráfego lento. Apesar do imprevisto, recuperou o ritmo para registrar ${item.melhorVoltaVal.toFixed(3).replace('.', ',')}s na Volta ${melhorVoltaIdx}.`;
-                        }
-
-                        // Linha 1: Dados numéricos
-                        const trMain = document.createElement('tr');
-                        trMain.className = 'main-row';
-                        trMain.innerHTML = `
-                            <td><span class="pos-badge" style="background:${item.badgeColor};">${item.pos}</span></td>
-                            <td><strong>${item.piloto}</strong></td>
-                            <td><span class="session-badge">${item.sessao}</span></td>
-                            <td>${item.voltas}</td>
-                            <td>${item.tempoTotal}</td>
-                            <td class="text-green">${item.melhorVoltaTxt}</td>
-                            <td>${item.mediaTxt}</td>
-                            <td>${item.desvio}</td>
+                        let diag = item.desvioVal <= 1.7 ? "Alta consistência e ritmo homogêneo sem incidentes." : "Oscilação leve por disputas em pista.";
+                        tabelaCorpo.innerHTML += `
+                            <tr class="main-row">
+                                <td><span class="pos-badge" style="background:${item.badgeColor};">${item.pos}</span></td>
+                                <td><strong>${item.piloto}</strong></td>
+                                <td><span class="session-badge">${item.sessao}</span></td>
+                                <td>${item.voltas}</td>
+                                <td>${item.tempoTotal}</td>
+                                <td class="text-green">${item.melhorVoltaTxt}</td>
+                                <td>${item.mediaTxt}</td>
+                                <td>${item.desvio}</td>
+                            </tr>
+                            <tr class="sub-row"><td colspan="8"><div class="analysis-subrow-box"><strong class="title">🔍 Diagnóstico - ${item.piloto}</strong>${diag}</div></td></tr>
                         `;
-                        tabelaCorpo.appendChild(trMain);
-
-                        // Linha 2: Análise estendida logo abaixo do piloto
-                        const trSub = document.createElement('tr');
-                        trSub.className = 'sub-row';
-                        trSub.innerHTML = `
-                            <td colspan="8">
-                                <div class="analysis-subrow-box">
-                                    <strong class="title">🔍 Diagnostic Telemetry Analysis - ${item.piloto}</strong>
-                                    ${diagnostico}
-                                </div>
-                            </td>
-                        `;
-                        tabelaCorpo.appendChild(trSub);
                     });
                 }
 
-                // Renderizar Tabela Geral
+                // Tabela Geral
                 if (modulosSelecionados.includes('mod-tabela-geral')) {
                     const headerLap = document.getElementById(`head-lapbyLap-${bateriaKey}`);
                     const bodyLap = document.getElementById(`body-lapbyLap-${bateriaKey}`);
-
-                    dadosSessao.forEach(d => {
-                        const th = document.createElement('th');
-                        th.innerHTML = `<span style="color:${pilotoCores[d.piloto] || '#fff'}">●</span> ${d.piloto}`;
-                        headerLap.appendChild(th);
-                    });
-
-                    let maxVoltas = 0;
-                    dadosSessao.forEach(d => { if (d.laps.length > maxVoltas) maxVoltas = d.laps.length; });
-
-                    for (let i = 0; i < maxVoltas; i++) {
-                        const tr = document.createElement('tr');
-                        let htmlLinha = `<td><strong>Volta ${i + 1}</strong></td>`;
-
+                    dadosSessao.forEach(d => headerLap.innerHTML += `<th><span style="color:${pilotoCores[d.piloto]}">●</span> ${d.piloto}</th>`);
+                    
+                    let maxV = Math.max(...dadosSessao.map(d => d.laps.length));
+                    for (let i = 0; i < maxV; i++) {
+                        let linha = `<td><strong>Volta ${i+1}</strong></td>`;
                         dadosSessao.forEach(d => {
                             if (i < d.laps.length) {
-                                const tempo = d.laps[i];
-                                const isFastest = (tempo === d.melhorVoltaVal);
-                                const tempoFormatado = tempo.toFixed(3).replace('.', ',') + 's';
-
-                                if (isFastest) {
-                                    htmlLinha += `<td><span class="fastest-lap-highlight">⚡ ${tempoFormatado}</span></td>`;
-                                } else {
-                                    htmlLinha += `<td>${tempoFormatado}</td>`;
-                                }
-                            } else {
-                                htmlLinha += `<td style="color:var(--text-muted);">-</td>`;
-                            }
+                                let t = d.laps[i];
+                                let isFast = (t === d.melhorVoltaVal);
+                                linha += isFast ? `<td><span class="fastest-lap-highlight">⚡ ${t.toFixed(3).replace('.',',')}s</span></td>` : `<td>${t.toFixed(3).replace('.',',')}s</td>`;
+                            } else { linha += `<td>-</td>`; }
                         });
-
-                        tr.innerHTML = htmlLinha;
-                        bodyLap.appendChild(tr);
+                        bodyLap.innerHTML += `<tr>${linha}</tr>`;
                     }
                 }
             });
@@ -1187,9 +984,7 @@
             atualizarDashboard();
         }
 
-        function gerarRelatorioPDF() {
-            window.print();
-        }
+        function gerarRelatorioPDF() { window.print(); }
     </script>
 </body>
 </html>
