@@ -439,7 +439,4 @@ const listaJsonsCache = [
             }
         ]
     }
-]
-    }
-    // Adicione mais baterias aqui se quiser
 ];
