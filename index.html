@@ -75,9 +75,10 @@
 
         .position-analysis-container { margin-top: 20px; background: var(--bg-input); border-left: 4px solid var(--accent-gold); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
         .position-analysis-title { font-size: 0.85rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase; letter-spacing: 0.5px; }
-        .position-log-list { display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; line-height: 1.5; max-height: 180px; overflow-y: auto; }
+        .position-log-list { display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; line-height: 1.5; max-height: 200px; overflow-y: auto; }
         .position-log-item { background: rgba(21, 28, 40, 0.5); padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border-card); }
         .tag-gain { color: var(--accent-green); font-weight: 700; }
+        .tag-loss { color: var(--accent-red); font-weight: 700; }
 
         .table-container { width: 100%; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
@@ -118,7 +119,7 @@
         <header class="header">
             <div class="brand-title">
                 <h1>🏁 KRATHUS RACING</h1>
-                <p>Central de Telemetria</p>
+                <p>Central de Telemetria (Banco de Dados Externo)</p>
             </div>
             <div class="header-actions">
                 <button class="btn btn-secondary" onclick="resetarFiltros()">🔄 Resetar Filtros</button>
@@ -192,7 +193,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v3.4.0 (Limpeza Dinâmica em Todos os Filtros)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v3.5.0 (Relatório Cirúrgico de Ultrapassagens)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -445,7 +446,7 @@
                     html += `<div class="card"><div class="card-header">Evolução de Ritmo (Lap Times - Total) - ${nomeSessao}</div><div class="chart-container"><canvas id="${chartId}"></canvas></div></div>`;
                 }
                 if (modulosSelecionados.includes('mod-grafico-posicao')) {
-                    html += `<div class="card"><div class="card-header">📊 Posição Volta a Volta (Race Position) - ${nomeSessao}</div><div class="chart-container"><canvas id="${chartPosId}"></canvas></div><div class="position-analysis-container"><div class="position-analysis-title">📝 Relatório de Disputas e Trocas de Posição</div><div class="position-log-list" id="pos-logs-${bateriaKey}"></div></div></div>`;
+                    html += `<div class="card"><div class="card-header">📊 Posição Volta a Volta (Race Position) - ${nomeSessao}</div><div class="chart-container"><canvas id="${chartPosId}"></canvas></div><div class="position-analysis-container"><div class="position-analysis-title">📝 Relatório Detalhado de Ultrapassagens e Trocas de Posição</div><div class="position-log-list" id="pos-logs-${bateriaKey}"></div></div></div>`;
                 }
                 if (modulosSelecionados.includes('mod-classificacao-analise')) {
                     html += `<div class="card"><div class="card-header">Classificação & Consistência - ${nomeSessao}</div><div class="table-container"><table><thead><tr><th>POS</th><th>PILOTO</th><th>SESSÃO</th><th>TOTAL DE VOLTAS</th><th>MELHOR</th><th>MÉDIA</th><th>DESVIO</th></tr></thead><tbody id="tabela-unificada-${bateriaKey}"></tbody></table></div></div>`;
@@ -475,34 +476,41 @@
                     }));
                 }
 
-                if (modulosSelecionados.includes('mod-grafico-posicao')) {
-                    let maxVPos = Math.max(...todosDaBateria.map(d => d.laps ? d.laps.length : 0));
-                    const labelsPos = Array.from({ length: maxVPos }, (_, i) => `Volta ${i+1}`);
-                    let matrizPosicoesGeral = {};
-                    todosDaBateria.forEach(d => { matrizPosicoesGeral[d.piloto] = []; });
+                // MATRIZ DE POSIÇÕES DE TODOS OS PILOTOS DA BATERIA
+                let maxVPos = Math.max(...todosDaBateria.map(d => d.laps ? d.laps.length : 0));
+                let matrizPosicoesGeral = {};
+                todosDaBateria.forEach(d => { matrizPosicoesGeral[d.piloto] = []; });
 
-                    for (let v = 0; v < maxVPos; v++) {
-                        let acumuladosVolta = [];
-                        todosDaBateria.forEach(d => {
-                            if (d.laps && d.laps.length > 0) {
-                                let somaAteV = 0;
-                                for (let k = 0; k <= Math.min(v, d.laps.length - 1); k++) {
-                                    somaAteV += d.laps[k];
-                                }
-                                let voltasCompletadas = Math.min(v + 1, d.laps.length);
-                                if (v >= d.laps.length) {
-                                    somaAteV += (v - d.laps.length + 1) * 1000;
-                                }
-                                acumuladosVolta.push({ piloto: d.piloto, tempoAcumulado: somaAteV, voltas: voltasCompletadas });
+                for (let v = 0; v < maxVPos; v++) {
+                    let acumuladosVolta = [];
+                    todosDaBateria.forEach(d => {
+                        if (d.laps && d.laps.length > 0) {
+                            let somaAteV = 0;
+                            for (let k = 0; k <= Math.min(v, d.laps.length - 1); k++) {
+                                somaAteV += d.laps[k];
                             }
-                        });
+                            let voltasCompletadas = Math.min(v + 1, d.laps.length);
+                            if (v >= d.laps.length) {
+                                somaAteV += (v - d.laps.length + 1) * 1000;
+                            }
+                            acumuladosVolta.push({ piloto: d.piloto, tempoAcumulado: somaAteV, voltas: voltasCompletadas });
+                        }
+                    });
 
-                        acumuladosVolta.sort((a, b) => b.voltas !== a.voltas ? b.voltas - a.voltas : a.tempoAcumulado - b.tempoAcumulado);
-                        acumuladosVolta.forEach((item, posIndex) => {
-                            matrizPosicoesGeral[item.piloto].push(posIndex + 1);
-                        });
-                    }
+                    acumuladosVolta.sort((a, b) => b.voltas !== a.voltas ? b.voltas - a.voltas : a.tempoAcumulado - a.tempoAcumulado);
+                    // Correção na ordenação (b.voltas - a.voltas decrescente, a.tempo - b.tempo crescente)
+                    acumuladosVolta.sort((a, b) => {
+                        if (b.voltas !== a.voltas) return b.voltas - a.voltas;
+                        return a.tempoAcumulado - b.tempoAcumulado;
+                    });
 
+                    acumuladosVolta.forEach((item, posIndex) => {
+                        matrizPosicoesGeral[item.piloto].push(posIndex + 1);
+                    });
+                }
+
+                if (modulosSelecionados.includes('mod-grafico-posicao')) {
+                    const labelsPos = Array.from({ length: maxVPos }, (_, i) => `Volta ${i+1}`);
                     const datasetsPos = dadosSessao.map(d => ({
                         label: d.piloto,
                         data: matrizPosicoesGeral[d.piloto] || [],
@@ -537,20 +545,61 @@
                         }
                     }));
 
+                    // RELATÓRIO CIRÚRGICO DE ULTRAPASSAGENS VOLTA A VOLTA
                     const logsContainer = document.getElementById(`pos-logs-${bateriaKey}`);
                     let logsHtml = '';
+                    
                     for (let v = 1; v < maxVPos; v++) {
+                        // Mapeia quem estava em qual posição na volta anterior (v-1) e na volta atual (v)
+                        let posNaVoltaAnterior = {};
+                        let posNaVoltaAtual = {};
+
+                        todosDaBateria.forEach(d => {
+                            let arr = matrizPosicoesGeral[d.piloto] || [];
+                            if (arr[v-1]) posNaVoltaAnterior[arr[v-1]] = d.piloto;
+                            if (arr[v]) posNaVoltaAtual[arr[v]] = d.piloto;
+                        });
+
+                        // Analisa cada piloto da sessão selecionada
                         dadosSessao.forEach(d => {
                             let arrPos = matrizPosicoesGeral[d.piloto] || [];
-                            let posAnterior = arrPos[v-1] || 0;
-                            let posAtual = arrPos[v] || 0;
-                            if (posAnterior > 0 && posAtual > 0 && posAtual < posAnterior) {
-                                let posGanhas = posAnterior - posAtual;
-                                logsHtml += `<div class="position-log-item">🔥 <span style="color:${obterCorPiloto(d.piloto)}"><strong>${d.piloto}</strong></span> ganhou ${posGanhas} posição(ões) na <strong>Volta ${v+1}</strong> (assumiu a <span class="tag-gain">${posAtual}ª posição</span>).</div>`;
+                            let pAnt = arrPos[v-1] || 0;
+                            let pAtu = arrPos[v] || 0;
+
+                            if (pAnt > 0 && pAtu > 0) {
+                                if (pAtu < pAnt) {
+                                    // GANHOU POSIÇÃO
+                                    let posGanhas = pAnt - pAtu;
+                                    let superados = [];
+                                    // Descobre exatamente quem estava nessas posições na volta anterior
+                                    for (let p = pAnt - 1; p >= pAtu; p--) {
+                                        if (posNaVoltaAnterior[p]) {
+                                            superados.push(`${posNaVoltaAnterior[p]} (${p}º)`);
+                                        }
+                                    }
+                                    let superadosTxt = superados.length > 0 ? ` superando ${superados.join(', ')}` : "";
+                                    
+                                    logsHtml += `<div class="position-log-item">🔥 <span style="color:${obterCorPiloto(d.piloto)}"><strong>${d.piloto}</strong></span> ganhou <span class="tag-gain">${posGanhas} posição(ões)</span> na <strong>Volta ${v+1}</strong> (saltou de ${pAnt}º para a <span class="tag-gain">${pAtu}ª posição</span>)${superadosTxt}.</div>`;
+                                } 
+                                else if (pAtu > pAnt) {
+                                    // PERDEU POSIÇÃO
+                                    let posPerdidas = pAtu - pAnt;
+                                    let beneficiados = [];
+                                    // Descobre quem assumiu as posições ou para quem perdeu
+                                    for (let p = pAnt + 1; p <= pAtu; p++) {
+                                        if (posNaVoltaAtual[p]) {
+                                            beneficiados.push(`${posNaVoltaAtual[p]} (${p}º)`);
+                                        }
+                                    }
+                                    let beneficiadosTxt = beneficiados.length > 0 ? ` para ${beneficiados.join(', ')}` : "";
+
+                                    logsHtml += `<div class="position-log-item">💧 <span style="color:${obterCorPiloto(d.piloto)}"><strong>${d.piloto}</strong></span> perdeu <span class="tag-loss">${posPerdidas} posição(ões)</span> na <strong>Volta ${v+1}</strong> (caiu de ${pAnt}º para a <span class="tag-loss">${pAtu}ª posição</span>)${beneficiadosTxt}.</div>`;
+                                }
                             }
                         });
                     }
-                    if (logsHtml === '') logsHtml = `<div class="position-log-item">🏎️ Prova estável sem ultrapassagens registradas entre as voltas monitoradas.</div>`;
+
+                    if (logsHtml === '') logsHtml = `<div class="position-log-item">🏎️ Prova estável sem trocas de posição registradas entre as voltas monitoradas.</div>`;
                     logsContainer.innerHTML = logsHtml;
                 }
 
