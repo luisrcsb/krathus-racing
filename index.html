@@ -239,10 +239,10 @@
                     Este sistema processa e exibe dados oficiais de telemetria das baterias de automodelismo 1/28 4x4. Utilize os filtros acima para selecionar sessões, alternar pilotos e customizar os módulos de gráficos, posições e tabelas detalhadas.
                 </div>
                 <div class="changelog-box">
-                    <div class="changelog-header">🚀 O que há de novo na Versão 3.7.0:</div>
+                    <div class="changelog-header">🚀 O que há de novo na Versão 3.7.1:</div>
                     <ul class="changelog-list">
-                        <li><strong>Relatório Cronológico Volta a Volta:</strong> Relato detalhado iniciando com o encerramento da 1ª volta e documentando estritamente as trocas de posições, omitindo giros sem alterações.</li>
-                        <li><strong>Mapeamento Transicional Exato:</strong> Descrição nominal de quem perdeu posições (ex: Rafael caindo de 1º para 3º), quem se beneficiou diretamente (DJ e Ronaldo) e a nova ordem do grid.</li>
+                        <li><strong>Relatório Orquestrado de Cima para Baixo (Top-Down):</strong> A análise volta a volta agora percorre o grid estritamente da 1ª posição em diante, narrando com precisão absoluta quando um líder despenca (ex: Rafael caindo de 1º para 3º) e como os perseguidores herdaram os postos superiores (DJ e Ronaldo).</li>
+                        <li><strong>Filtro de Silêncio Estrito:</strong> Voltas sem alterações de posições continuam totalmente omitidas.</li>
                     </ul>
                 </div>
             </section>
@@ -250,7 +250,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v3.7.0 (Relatório Volta a Volta Estrito e Transicional)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v3.7.1 (Ordem Pódio Top-Down no Relatório de Ultrapassagens)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -602,22 +602,19 @@
                     const logsContainer = document.getElementById(`pos-logs-${bateriaKey}`);
                     let logsHtml = '';
                     
-                    // 1. RELATO DA 1ª VOLTA (ESTABELECIMENTO DO GRID)
+                    // 1. RELATO DA 1ª VOLTA (GRID INICIAL)
                     if (maxVPos > 0) {
                         let ordemVolta1 = [];
                         todosDaBateria.forEach(d => {
                             let arr = matrizPosicoesGeral[d.piloto] || [];
-                            if (arr[0]) {
-                                ordemVolta1.push({ piloto: d.piloto, pos: arr[0] });
-                            }
+                            if (arr[0]) ordemVolta1.push({ piloto: d.piloto, pos: arr[0] });
                         });
                         ordemVolta1.sort((a, b) => a.pos - b.pos);
-                        
                         let descVolta1 = ordemVolta1.map(item => `${item.piloto} em ${item.pos}º`).join(', ');
                         logsHtml += `<div class="position-log-item">🏁 <strong>1ª Volta:</strong> O grid se consolidou com a seguinte ordem inicial: <strong>${descVolta1}</strong>.</div>`;
                     }
 
-                    // 2. RELATO VOLTA A VOLTA DA 2ª EM DIANTE (COM FILTRO DE SILÊNCIO SE NÃO HOUVER MUDANÇAS)
+                    // 2. RELATO VOLTA A VOLTA (ORDEM ESTRITA TOP-DOWN: DO 1º COLOCADO EM DIANTE)
                     for (let v = 1; v < maxVPos; v++) {
                         let posNaVoltaAnterior = {};
                         let posNaVoltaAtual = {};
@@ -628,34 +625,44 @@
                             if (arr[v]) posNaVoltaAtual[arr[v]] = d.piloto;
                         });
 
+                        // Cria um array ordenado do 1º colocado ao último na volta ATUAL para garantir a leitura top-down
+                        let rankingAtual = [];
+                        for (let p = 1; p <= todosDaBateria.length; p++) {
+                            if (posNaVoltaAtual[p]) {
+                                rankingAtual.push({ piloto: posNaVoltaAtual[p], posAtual: p });
+                            }
+                        }
+
                         let mudancasNestaVolta = [];
 
-                        todosDaBateria.forEach(d => {
+                        rankingAtual.forEach(item => {
+                            let d = todosDaBateria.find(x => x.piloto === item.piloto);
+                            if (!d) return;
+
                             let arrPos = matrizPosicoesGeral[d.piloto] || [];
                             let pAnt = arrPos[v-1] || 0;
                             let pAtu = arrPos[v] || 0;
 
                             if (pAnt > 0 && pAtu > 0 && pAtu !== pAnt) {
                                 if (pAtu < pAnt) {
-                                    // GANHOU POSIÇÃO
+                                    // GANHOU POSIÇÃO (Subiu)
                                     let superados = [];
                                     for (let p = pAtu; p < pAnt; p++) {
                                         let pilotoSuperado = posNaVoltaAnterior[p];
                                         if (pilotoSuperado && pilotoSuperado !== d.piloto) {
-                                            superados.push(`${pilotoSuperado} (${p}º para ${p+1}º)`);
+                                            superados.push(`${pilotoSuperado} (${p}º)`);
                                         }
                                     }
                                     let superadosTxt = superados.length > 0 ? `, superando ${superados.join(', ')}` : "";
-                                    mudancasNestaVolta.append ? null : 
                                     mudancasNestaVolta.push(`🔥 <strong style="color:${obterCorPiloto(d.piloto)}">${d.piloto}</strong> avançou da <span class="tag-gain">${pAnt}ª para a ${pAtu}ª posição</span>${superadosTxt}`);
                                 } 
                                 else if (pAtu > pAnt) {
-                                    // PERDEU POSIÇÃO
+                                    // PERDEU POSIÇÃO (Caiu)
                                     let beneficiados = [];
                                     for (let p = pAnt + 1; p <= pAtu; p++) {
                                         let pilotoBeneficiado = posNaVoltaAtual[p];
                                         if (pilotoBeneficiado && pilotoBeneficiado !== d.piloto) {
-                                            beneficiados.push(`${pilotoBeneficiado}`);
+                                            beneficiados.push(`${pilotoBeneficiado} (${p}º)`);
                                         }
                                     }
                                     let beneficiadosTxt = beneficiados.length > 0 ? `, cedendo posições para ${beneficiados.join(' e ')}` : "";
@@ -664,7 +671,7 @@
                             }
                         });
 
-                        // Se houveram trocas nesta volta específica, exibe o bloco detalhado da volta
+                        // Se houveram mudanças nesta volta, exibe o bloco ordenado
                         if (mudancasNestaVolta.length > 0) {
                             logsHtml += `<div class="position-log-item">🔄 <strong>Volta ${v+1}:</strong> ${mudancasNestaVolta.join(' | ')}.</div>`;
                         }
