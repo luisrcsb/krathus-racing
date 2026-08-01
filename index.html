@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Krathus Racing - Central de Telemetria JSON V85</title>
+    <title>Krathus Racing - Central de Telemetria JSON</title>
     <!-- Chart.js para renderizar os gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -201,7 +201,7 @@
             <div class="card">
                 <div class="card-header">📂 Upload em Lote de Arquivos JSON</div>
                 <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem;">
-                    Selecione <strong>vários arquivos JSON de uma vez só</strong> no seu computador. Todos serão consolidados para o comparativo multibateria integral.
+                    Selecione <strong>vários arquivos JSON de uma vez só</strong> no seu computador. Todos os pilotos reais contidos nos relatórios serão listados e consolidados.
                 </p>
 
                 <div style="background: var(--bg-input); border: 2px dashed var(--border-card); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 24px;">
@@ -228,7 +228,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v1.3.0 (JSON Engine)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v1.3.1 (JSON Pilotos Reais)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -308,16 +308,18 @@
                     const conteudoJSON = JSON.parse(textoConteudo);
 
                     if (Array.isArray(conteudoJSON) && conteudoJSON.length > 0) {
-                        // Garante formatação correta e integral de todas as voltas de cada piloto no JSON
                         let dadosProcessados = conteudoJSON.map(item => {
                             let laps = item.laps || [];
                             let melhor = laps.length > 0 ? Math.min(...laps) : 0;
                             let soma = laps.reduce((a, b) => a + b, 0);
                             let media = laps.length > 0 ? soma / laps.length : 0;
                             
+                            // Mapeia rigidamente o nome real do piloto vindo do JSON (piloto, name, competitor, etc.)
+                            let nomePilotoReal = item.piloto || item.name || item.competitor || item.driver || "Piloto Desconhecido";
+
                             return {
                                 pos: item.pos || "1º",
-                                piloto: item.piloto || "Piloto",
+                                piloto: nomePilotoReal,
                                 bateriaKey: item.bateriaKey || "bat_" + file.name.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase(),
                                 sessao: item.sessao || file.name.replace('.json', ''),
                                 voltasTotais: laps.length,
@@ -351,7 +353,7 @@
 
             localStorage.setItem('krathus_multi_jsons', JSON.stringify(listaJsons));
             atualizarConsolidadoGeral();
-            alert(`Upload em lote concluído! ${files.length} arquivo(s) JSON processado(s) com sucesso.`);
+            alert(`Upload em lote concluído! ${files.length} arquivo(s) JSON processado(s) com os pilotos reais.`);
             
             carregarListaArquivos();
             gerarFiltrosDinamicos();
@@ -423,6 +425,7 @@
                 <label class="checkbox-item"><input type="checkbox" value="${key}" class="filter-bateria" checked onchange="atualizarDashboard()"> ${bateriasMap[key]}</label>
             `).join('');
 
+            // Lista rigorosamente todos os nomes de pilotos reais encontrados nos relatórios
             pilContainer.innerHTML = Array.from(pilotosSet).map(piloto => `
                 <label class="checkbox-item"><input type="checkbox" value="${piloto}" class="filter-piloto" checked onchange="atualizarDashboard()"> ${piloto}</label>
             `).join('');
@@ -508,7 +511,7 @@
                 sessionBlock.innerHTML = html;
                 mainContainer.appendChild(sessionBlock);
 
-                // Gráfico de Ritmo com todos os pilotos e todas as voltas
+                // Gráfico de Ritmo com todos os pilotos reais
                 if (modulosSelecionados.includes('mod-grafico')) {
                     let maxV = Math.max(...dadosSessao.map(d => d.laps ? d.laps.length : 0));
                     const labels = Array.from({ length: maxV }, (_, i) => `V${i+1}`);
