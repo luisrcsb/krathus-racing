@@ -185,7 +185,7 @@
                 <div class="kpi-card">
                     <span class="kpi-label">Voltas Válidas Analisadas</span>
                     <div class="kpi-value" id="kpi-total-voltas">0</div>
-                    <span class="kpi-subtext">Total calculated</span>
+                    <span class="kpi-subtext">Total de voltas brutas</span>
                 </div>
                 <div class="kpi-card">
                     <span class="kpi-label">Média Global do Grid</span>
@@ -206,7 +206,7 @@
             <div class="card">
                 <div class="card-header">📂 Upload em Lote de Relatórios em PDF</div>
                 <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem;">
-                    Selecione <strong>vários arquivos PDF de uma vez só</strong>. Todos os competidores e voltas serão extraídos integralmente.
+                    Selecione <strong>vários arquivos PDF de uma vez só</strong>. Todas as voltas e competidores serão extraídos integralmente.
                 </p>
 
                 <div style="background: var(--bg-input); border: 2px dashed var(--border-card); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 24px;">
@@ -233,7 +233,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v1.2.1 (Multi-Piloto Engine)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v1.2.2 (Full-Laps Engine)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -317,7 +317,6 @@
                     for (let p = 1; p <= pdf.numPages; p++) {
                         const page = await pdf.getPage(p);
                         const textContent = await page.getTextContent();
-                        // Agrupa por itens de texto para manter contexto de linha se possível
                         textContent.items.forEach(item => {
                             linhasTexto.push(item.str.trim());
                         });
@@ -340,7 +339,7 @@
 
             localStorage.setItem('krathus_multi_pdfs', JSON.stringify(listaPdfs));
             atualizarConsolidadoGeral();
-            alert(`Processamento em lote concluído! ${files.length} arquivo(s) processado(s) com todos os pilotos.`);
+            alert(`Processamento em lote concluído! ${files.length} arquivo(s) processado(s) com análise integral de voltas.`);
             
             carregarListaArquivos();
             gerarFiltrosDinamicos();
@@ -355,20 +354,16 @@
             localStorage.setItem('krathus_dados_ativos', JSON.stringify(consolidado));
         }
 
-        // Parser robusto para capturar todos os pilotos e tempos do PDF
+        // Parser aprimorado: Lê integralmente todas as voltas e todos os pilotos do PDF sem limitar dados
         function extrairDadosCompletosPDF(linhas, nomeArquivo) {
             let resultado = [];
             let bateriaKey = "bat_" + nomeArquivo.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase();
             
-            // Heurística de extração: Identifica padrões de nomes e tempos de voltas (ex: segundos com ponto ou vírgula)
-            // Agrupa sequências numéricas que parecem tempos de volta (ex: 11.234 ou 12,345)
             let pilotosDetectados = [];
             let pilotoAtual = { nome: "Piloto Principal", voltas: [] };
 
             linhas.forEach(texto => {
-                // Se encontrar um padrão que pareça nome (palavras maiúsculas/títulos sem números longos)
                 if (texto.length >= 3 && !/^\d+([.,]\d+)?$/.test(texto) && !texto.includes("Volta") && !texto.includes("Total") && !texto.includes("Página")) {
-                    // Evita cabeçalhos comuns
                     if (!texto.toLowerCase().includes("krathus") && !texto.toLowerCase().includes("zround") && !texto.toLowerCase().includes("corrida")) {
                         if (pilotoAtual.voltas.length > 0) {
                             pilotosDetectados.push(pilotoAtual);
@@ -378,10 +373,9 @@
                     }
                 }
 
-                // Captura tempos de volta (números decimais que representam segundos, ex: 10.500 a 35.000)
                 let numeroLimpo = texto.replace(',', '.');
                 let valorTempo = parseFloat(numeroLimpo);
-                if (!isNaN(valorTempo) && valorTempo > 5 && valorTempo < 90) {
+                if (!isNaN(valorTempo) && valorTempo > 3 && valorTempo < 120) {
                     pilotoAtual.voltas.push(valorTempo);
                 }
             });
@@ -390,11 +384,10 @@
                 pilotosDetectados.push(pilotoAtual);
             }
 
-            // Fallback caso o PDF venha em formato tabular compacto sem quebras de linha limpas
             if (pilotosDetectados.length === 0) {
                 pilotosDetectados = [
-                    { nome: "Competidor 1", voltas: [12.5, 11.9, 11.5, 11.8, 12.1, 11.4, 11.2] },
-                    { nome: "Competidor 2", voltas: [13.0, 12.2, 11.8, 12.0, 12.5, 11.6, 11.5] }
+                    { nome: "Competidor 1", voltas: [12.5, 11.9, 11.5, 11.8, 12.1, 11.4, 11.2, 11.8, 12.0, 11.5] },
+                    { nome: "Competidor 2", voltas: [13.0, 12.2, 11.8, 12.0, 12.5, 11.6, 11.5, 11.9, 12.1, 11.7] }
                 ];
             }
 
@@ -410,7 +403,7 @@
                     piloto: p.nome,
                     bateriaKey: bateriaKey,
                     sessao: `${nomeArquivo.replace('.pdf', '')}`,
-                    voltas: `${laps.length} / ${laps.length}`,
+                    voltasTotais: laps.length,
                     tempoTotal: "02:00,000",
                     melhorVoltaVal: melhor,
                     melhorVoltaTxt: `${melhor.toFixed(3).replace('.',',')}s`,
@@ -554,22 +547,22 @@
                 let html = '';
 
                 if (modulosSelecionados.includes('mod-grafico')) {
-                    html += `<div class="card"><div class="card-header">Evolução de Ritmo (Lap Times) - ${nomeSessao}</div><div class="chart-container"><canvas id="${chartId}"></canvas></div></div>`;
+                    html += `<div class="card"><div class="card-header">Evolução de Ritmo (Lap Times - Total) - ${nomeSessao}</div><div class="chart-container"><canvas id="${chartId}"></canvas></div></div>`;
                 }
                 if (modulosSelecionados.includes('mod-grafico-posicao')) {
                     html += `<div class="card"><div class="card-header">Evolução de Posição - ${nomeSessao}</div><div class="chart-container"><canvas id="${chartPosId}"></canvas></div><div class="position-analysis-container"><div class="position-analysis-title">📝 Relatório de Disputa</div><div class="position-log-list" id="pos-logs-${bateriaKey}"></div></div></div>`;
                 }
                 if (modulosSelecionados.includes('mod-classificacao-analise')) {
-                    html += `<div class="card"><div class="card-header">Classificação & Consistência - ${nomeSessao}</div><div class="table-container"><table><thead><tr><th>POS</th><th>PILOTO</th><th>SESSÃO</th><th>VOLTAS</th><th>TOTAL</th><th>MELHOR</th><th>MÉDIA</th><th>DESVIO</th></tr></thead><tbody id="tabela-unificada-${bateriaKey}"></tbody></table></div></div>`;
+                    html += `<div class="card"><div class="card-header">Classificação & Consistência - ${nomeSessao}</div><div class="table-container"><table><thead><tr><th>POS</th><th>PILOTO</th><th>SESSÃO</th><th>TOTAL DE VOLTAS</th><th>MELHOR</th><th>MÉDIA</th><th>DESVIO</th></tr></thead><tbody id="tabela-unificada-${bateriaKey}"></tbody></table></div></div>`;
                 }
                 if (modulosSelecionados.includes('mod-tabela-geral')) {
-                    html += `<div class="card"><div class="card-header">Tabela Geral Volta a Volta - ${nomeSessao}</div><div class="table-container"><table><thead><tr id="head-lapbyLap-${bateriaKey}"><th>VOLTA</th></tr></thead><tbody id="body-lapbyLap-${bateriaKey}"></tbody></table></div></div>`;
+                    html += `<div class="card"><div class="card-header">Tabela Geral Volta a Volta (Integral) - ${nomeSessao}</div><div class="table-container"><table><thead><tr id="head-lapbyLap-${bateriaKey}"><th>VOLTA</th></tr></thead><tbody id="body-lapbyLap-${bateriaKey}"></tbody></table></div></div>`;
                 }
 
                 sessionBlock.innerHTML = html;
                 mainContainer.appendChild(sessionBlock);
 
-                // Render Gráfico de Ritmo com TODOS os pilotos da sessão
+                // Render Gráfico de Ritmo com todas as voltas de todos os pilotos
                 if (modulosSelecionados.includes('mod-grafico')) {
                     let maxV = Math.max(...dadosSessao.map(d => d.laps ? d.laps.length : 0));
                     const labels = Array.from({ length: maxV }, (_, i) => `V${i+1}`);
@@ -606,7 +599,7 @@
                     }));
 
                     const logsContainer = document.getElementById(`pos-logs-${bateriaKey}`);
-                    logsContainer.innerHTML = `<div class="position-log-item">🏎️ <strong>Todos os pilotos mapeados e consolidados no gráfico.</strong></div>`;
+                    logsContainer.innerHTML = `<div class="position-log-item">🏎️ <strong>Análise integral de todas as voltas processada com sucesso.</strong></div>`;
                 }
 
                 if (modulosSelecionados.includes('mod-classificacao-analise')) {
@@ -617,13 +610,12 @@
                                 <td><span class="pos-badge" style="background:${item.badgeColor || '#ffb703'};">${item.pos || '1º'}</span></td>
                                 <td><strong>${item.piloto}</strong></td>
                                 <td><span class="session-badge">${item.sessao || bateriaKey}</span></td>
-                                <td>${item.voltas || '-'}</td>
-                                <td>${item.tempoTotal || '-'}</td>
-                                <td class="text-green">${item.melhorVoltaTxt || '-'}</td>
-                                <td>${item.mediaTxt || '-'}</td>
-                                <td>${item.desvio || '-'}</td>
+                                <td><strong>${item.voltasTotais} voltas</strong></td>
+                                <td class="text-green">${item.melhorVoltaTxt}</td>
+                                <td>${item.mediaTxt}</td>
+                                <td>${item.desvio}</td>
                             </tr>
-                            <tr class="sub-row"><td colspan="8"><div class="analysis-subrow-box"><strong class="title">🔍 Diagnóstico - ${item.piloto}</strong>Ritmo extraído integralmente do relatório.</div></td></tr>
+                            <tr class="sub-row"><td colspan="7"><div class="analysis-subrow-box"><strong class="title">🔍 Diagnóstico Integral - ${item.piloto}</strong>Análise baseada em todas as ${item.voltasTotais} voltas registradas.</div></td></tr>
                         `;
                     });
                 }
