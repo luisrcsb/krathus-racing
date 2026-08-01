@@ -71,7 +71,7 @@
 
         .tab-content { display: flex; flex-direction: column; gap: 20px; }
 
-        /* Welcome / Info Card (Movido para o final) */
+        /* Welcome / Info Card (No Rodapé) */
         .welcome-card { background: linear-gradient(135deg, var(--bg-card) 0%, rgba(28, 38, 56, 0.7) 100%); border: 1px solid var(--border-card); border-left: 5px solid var(--accent-blue); border-radius: 12px; padding: 22px 24px; display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
         .welcome-title { font-size: 1.1rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 8px; }
         .welcome-text { font-size: 0.9rem; color: var(--text-main); line-height: 1.6; }
@@ -233,18 +233,17 @@
 
             <div id="sessions-container" class="session-blocks-container"></div>
 
-            <!-- BLOCO DE BOAS-VINDAS E INFORMAÇÕES DO SISTEMA (MOVIDO PARA O FINAL) -->
             <section class="welcome-card">
                 <div class="welcome-title">📊 Sobre a Central de Telemetria Krathus Racing</div>
                 <div class="welcome-text">
                     Este sistema processa e exibe dados oficiais de telemetria das baterias de automodelismo 1/28 4x4. Utilize os filtros acima para selecionar sessões, alternar pilotos e customizar os módulos de gráficos, posições e tabelas detalhadas.
                 </div>
                 <div class="changelog-box">
-                    <div class="changelog-header">🚀 O que há de novo na Versão 3.6.0:</div>
+                    <div class="changelog-header">🚀 O que há de novo na Versão 3.6.1:</div>
                     <ul class="changelog-list">
+                        <li><strong>Correção Cirúrgica no Log de Ultrapassagens:</strong> Início da análise de trocas de posição validada estritamente a partir do encerramento da Volta 2 (eliminando falsos positivos da largada).</li>
                         <li><strong>Aviso de Orientação Mobile:</strong> Tela inteligente para orientar o uso do celular na horizontal (modo paisagem).</li>
-                        <li><strong>Relatório Cirúrgico de Ultrapassagens:</strong> Identificação exata de quem superou quem volta a volta.</li>
-                        <li><strong>Laudo Técnico Avançado de Consistência:</strong> Análise detalhada por desvio padrão e picos de perda de ritmo.</li>
+                        <li><strong>Laudo Técnico Avançado de Consistência:</strong> Análise estatística detalhada por desvio padrão e picos de perda de ritmo.</li>
                         <li><strong>Compartilhamento por Corrida:</strong> Botão dedicado em cada cabeçalho de bateria.</li>
                     </ul>
                 </div>
@@ -253,7 +252,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v3.6.0 (Seção Informativa Posicionada no Rodapé)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v3.6.1 (Correção no Log de Ultrapassagens)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -605,6 +604,7 @@
                     const logsContainer = document.getElementById(`pos-logs-${bateriaKey}`);
                     let logsHtml = '';
                     
+                    // CORREÇÃO: A análise de ultrapassagens começa a partir da Volta 2 (v = 1, comparando Volta 2 com Volta 1)
                     for (let v = 1; v < maxVPos; v++) {
                         let posNaVoltaAnterior = {};
                         let posNaVoltaAtual = {};
