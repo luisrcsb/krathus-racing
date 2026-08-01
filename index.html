@@ -26,6 +26,35 @@
         body { background-color: var(--bg-body); color: var(--text-main); padding: 24px; }
         .dashboard-container { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
 
+        /* AVISO DE MODO PAISAGEM PARA CELULAR (Retrato) */
+        #mobile-orientation-warning {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(13, 17, 26, 0.95);
+            z-index: 9999;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 30px;
+            gap: 20px;
+        }
+        .orientation-icon { font-size: 3.5rem; animation: rotatePhone 2s infinite ease-in-out; }
+        .orientation-title { font-size: 1.3rem; font-weight: 700; color: var(--text-title); }
+        .orientation-text { font-size: 0.9rem; color: var(--text-muted); max-width: 320px; line-height: 1.5; }
+        
+        @keyframes rotatePhone {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(90deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        /* Ativa o aviso se a tela for estreita e estiver em modo retrato */
+        @media screen and (max-width: 768px) and (orientation: portrait) {
+            #mobile-orientation-warning { display: flex; }
+        }
+
         .header { display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 20px 24px; border-radius: 12px; border: 1px solid var(--border-card); }
         .brand-title h1 { font-size: 1.5rem; color: var(--text-title); letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
         .brand-title p { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
@@ -43,7 +72,6 @@
 
         .tab-content { display: flex; flex-direction: column; gap: 20px; }
 
-        /* Welcome / Info Card */
         .welcome-card { background: linear-gradient(135deg, var(--bg-card) 0%, rgba(28, 38, 56, 0.7) 100%); border: 1px solid var(--border-card); border-left: 5px solid var(--accent-blue); border-radius: 12px; padding: 22px 24px; display: flex; flex-direction: column; gap: 12px; }
         .welcome-title { font-size: 1.1rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 8px; }
         .welcome-text { font-size: 0.9rem; color: var(--text-main); line-height: 1.6; }
@@ -123,6 +151,13 @@
 </head>
 <body>
 
+    <!-- AVISO DE ORIENTAÇÃO PARA CELULAR (MODO RETRATO) -->
+    <div id="mobile-orientation-warning">
+        <div class="orientation-icon">📱🔄</div>
+        <div class="orientation-title">Melhor Visualização em Paisagem</div>
+        <div class="orientation-text">Para analisar os gráficos de telemetria e as tabelas com conforto, por favor, vire o seu celular na horizontal.</div>
+    </div>
+
     <div class="dashboard-container">
         <header class="header">
             <div class="brand-title">
@@ -135,19 +170,18 @@
         </header>
 
         <div id="tab-telemetria" class="tab-content">
-            <!-- BLOCO DE BOAS-VINDAS E INFORMAÇÕES DO SISTEMA -->
             <section class="welcome-card">
                 <div class="welcome-title">📊 Bem-vindo à Central de Telemetria Krathus Racing</div>
                 <div class="welcome-text">
                     Este sistema processa e exibe dados oficiais de telemetria das baterias de automodelismo 1/28 4x4. Utilize os filtros abaixo para selecionar sessões, alternar pilotos e customizar os módulos de gráficos, posições e tabelas detalhadas.
                 </div>
                 <div class="changelog-box">
-                    <div class="changelog-header">🚀 O que há de novo na Versão 3.5.0:</div>
+                    <div class="changelog-header">🚀 O que há de novo na Versão 3.6.0:</div>
                     <ul class="changelog-list">
-                        <li><strong>Banco de Dados Externo (`banco-de-dados.js`):</strong> Organização modular para facilitar atualizações de novas baterias.</li>
-                        <li><strong>Relatório Cirúrgico de Ultrapassagens:</strong> Identificação exata de quem superou quem e quantas posições foram ganhas/perdidas volta a volta.</li>
+                        <li><strong>Aviso de Orientação Mobile:</strong> Tela inteligente para orientar o uso do celular na horizontal (modo paisagem).</li>
+                        <li><strong>Relatório Cirúrgico de Ultrapassagens:</strong> Identificação exata de quem superou quem volta a volta.</li>
                         <li><strong>Laudo Técnico Avançado de Consistência:</strong> Análise detalhada por desvio padrão e picos de perda de ritmo.</li>
-                        <li><strong>Compartilhamento por Corrida:</strong> Botão dedicado em cada cabeçalho de bateria para gerar resumos instantâneos.</li>
+                        <li><strong>Compartilhamento por Corrida:</strong> Botão dedicado em cada cabeçalho de bateria.</li>
                     </ul>
                 </div>
             </section>
@@ -218,7 +252,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v3.5.0 (Painel Informativo e Changelog Integrado)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v3.6.0 (Aviso de Orientação Mobile Integrado)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
