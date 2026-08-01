@@ -242,7 +242,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v1.3.9 (Password Protected Upload)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v1.4.0 (Descending Sessions & Reports)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -253,15 +253,14 @@
     </div>
 
     <script>
-        // SENHA DE ACESSO À ABA DE UPLOAD/GERENCIAMENTO (Altere aqui se desejar)
-        const SENHA_ADMIN = "facil123";
+        const SENHA_ADMIN = "1234";
 
         function mudarAba(abaId) {
             if (abaId === 'arquivos') {
                 let senhaDigitada = prompt("🔒 Digite a senha de acesso para gerenciar os arquivos JSON:");
                 if (senhaDigitada !== SENHA_ADMIN) {
                     alert("❌ Senha incorreta! Acesso negado.");
-                    return; // Interrompe e não muda de aba
+                    return;
                 }
             }
 
@@ -401,7 +400,10 @@
                 return;
             }
 
-            tbody.innerHTML = lista.map(arq => `
+            // Exibe a lista de arquivos carregados em ordem decrescente (do mais recente para o mais antigo)
+            let listaInvertida = [...lista].reverse();
+
+            tbody.innerHTML = listaInvertida.map(arq => `
                 <tr>
                     <td><strong>📄 ${arq.nome}</strong></td>
                     <td>${arq.data}</td>
@@ -568,6 +570,7 @@
                 return;
             }
 
+            // Garante que os relatórios das baterias/sessões sejam apresentados do último para o primeiro
             const bateriasOrdenadasExibicao = [...bateriasSelecionadas].reverse();
 
             bateriasOrdenadasExibicao.forEach((bateriaKey) => {
