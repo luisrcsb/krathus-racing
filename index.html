@@ -242,7 +242,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v1.4.2 (True Descending Pipeline)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v1.4.3 (Strict Reversed Order)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -306,8 +306,8 @@
         function obterTodosDadosConsolidados() {
             let lista = JSON.parse(localStorage.getItem('krathus_multi_jsons') || '[]');
             let consolidado = [];
-            // Inverte a lista de arquivos para consolidar do mais recente para o mais antigo
-            lista.slice().reverse().forEach(arq => {
+            // Consolida mantendo a ordem natural (do primeiro ao último)
+            lista.forEach(arq => {
                 if (arq.dados && Array.isArray(arq.dados)) {
                     consolidado = consolidado.concat(arq.dados);
                 }
@@ -449,8 +449,8 @@
                 return;
             }
 
-            // Garante rigorosamente que a listagem de checkboxes venha da última para a primeira
-            const bateriasKeysOrdenadas = Object.keys(bateriasMap);
+            // Inverte a ordem das chaves para que a última sessão fique no topo da lista de seleção
+            const bateriasKeysOrdenadas = Object.keys(bateriasMap).reverse();
 
             batContainer.innerHTML = bateriasKeysOrdenadas.map(key => `
                 <label class="checkbox-item"><input type="checkbox" value="${key}" class="filter-bateria" checked onchange="atualizarDashboard()"> ${bateriasMap[key]}</label>
@@ -573,8 +573,8 @@
                 return;
             }
 
-            // Garante que a renderização dos relatórios na tela principal obedeça rigorosamente à ordem decrescente (da última para a primeira)
-            const bateriasOrdenadasExibicao = [...bateriasSelecionadas];
+            // Inverte a ordem das baterias selecionadas para que a última apareça primeiro (no topo) na página principal
+            const bateriasOrdenadasExibicao = [...bateriasSelecionadas].reverse();
 
             bateriasOrdenadasExibicao.forEach((bateriaKey) => {
                 const dadosSessao = dadosBase.filter(d => d.bateriaKey === bateriaKey && pilotosSelecionados.includes(d.piloto));
