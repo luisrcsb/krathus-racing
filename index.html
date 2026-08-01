@@ -242,7 +242,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v1.4.1 (Strict Descending Order)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v1.4.2 (True Descending Pipeline)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -306,7 +306,7 @@
         function obterTodosDadosConsolidados() {
             let lista = JSON.parse(localStorage.getItem('krathus_multi_jsons') || '[]');
             let consolidado = [];
-            // Mantém a ordem dos arquivos para que o último carregado venha primeiro nos dados consolidados
+            // Inverte a lista de arquivos para consolidar do mais recente para o mais antigo
             lista.slice().reverse().forEach(arq => {
                 if (arq.dados && Array.isArray(arq.dados)) {
                     consolidado = consolidado.concat(arq.dados);
@@ -449,7 +449,7 @@
                 return;
             }
 
-            // Ordem rigorosamente decrescente (da última para a primeira cadastrada)
+            // Garante rigorosamente que a listagem de checkboxes venha da última para a primeira
             const bateriasKeysOrdenadas = Object.keys(bateriasMap);
 
             batContainer.innerHTML = bateriasKeysOrdenadas.map(key => `
@@ -573,8 +573,10 @@
                 return;
             }
 
-            // Exibe os relatórios mantendo a ordem correta (da última para a primeira)
-            bateriasSelecionadas.forEach((bateriaKey) => {
+            // Garante que a renderização dos relatórios na tela principal obedeça rigorosamente à ordem decrescente (da última para a primeira)
+            const bateriasOrdenadasExibicao = [...bateriasSelecionadas];
+
+            bateriasOrdenadasExibicao.forEach((bateriaKey) => {
                 const dadosSessao = dadosBase.filter(d => d.bateriaKey === bateriaKey && pilotosSelecionados.includes(d.piloto));
                 if (dadosSessao.length === 0) return;
 
