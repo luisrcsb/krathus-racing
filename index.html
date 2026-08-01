@@ -111,7 +111,7 @@
 
         .position-analysis-container { margin-top: 20px; background: var(--bg-input); border-left: 4px solid var(--accent-gold); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
         .position-analysis-title { font-size: 0.85rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase; letter-spacing: 0.5px; }
-        .position-log-list { display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; line-height: 1.5; max-height: 200px; overflow-y: auto; }
+        .position-log-list { display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; line-height: 1.5; max-height: 220px; overflow-y: auto; }
         .position-log-item { background: rgba(21, 28, 40, 0.5); padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border-card); }
         .tag-gain { color: var(--accent-green); font-weight: 700; }
         .tag-loss { color: var(--accent-red); font-weight: 700; }
@@ -239,10 +239,10 @@
                     Este sistema processa e exibe dados oficiais de telemetria das baterias de automodelismo 1/28 4x4. Utilize os filtros acima para selecionar sessões, alternar pilotos e customizar os módulos de gráficos, posições e tabelas detalhadas.
                 </div>
                 <div class="changelog-box">
-                    <div class="changelog-header">🚀 O que há de novo na Versão 3.6.4:</div>
+                    <div class="changelog-header">🚀 O que há de novo na Versão 3.7.0:</div>
                     <ul class="changelog-list">
-                        <li><strong>Motor Avançado de Ultrapassagens em Bloco:</strong> Correção estrutural completa para mapear corretamente quando um piloto perde múltiplas posições de uma só vez (ex: cair de 1º para 3º), identificando com precisão absoluta quais adversários se beneficiaram de cada ganho ou perda de posição.</li>
-                        <li><strong>Aviso de Orientação Mobile & Laudos de Consistência:</strong> Suporte integrado mantido.</li>
+                        <li><strong>Relatório Cronológico Volta a Volta:</strong> Relato detalhado iniciando com o encerramento da 1ª volta e documentando estritamente as trocas de posições, omitindo giros sem alterações.</li>
+                        <li><strong>Mapeamento Transicional Exato:</strong> Descrição nominal de quem perdeu posições (ex: Rafael caindo de 1º para 3º), quem se beneficiou diretamente (DJ e Ronaldo) e a nova ordem do grid.</li>
                     </ul>
                 </div>
             </section>
@@ -250,7 +250,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v3.6.4 (Correção do Mapeamento de Quedas Múltiplas e Oponentes)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v3.7.0 (Relatório Volta a Volta Estrito e Transicional)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -503,7 +503,7 @@
                     html += `<div class="card"><div class="card-header">Evolução de Ritmo (Lap Times - Total) - ${nomeSessao}</div><div class="chart-container"><canvas id="${chartId}"></canvas></div></div>`;
                 }
                 if (modulosSelecionados.includes('mod-grafico-posicao')) {
-                    html += `<div class="card"><div class="card-header">📊 Posição Volta a Volta (Race Position) - ${nomeSessao}</div><div class="chart-container"><canvas id="${chartPosId}"></canvas></div><div class="position-analysis-container"><div class="position-analysis-title">📝 Relatório Detalhado de Ultrapassagens e Trocas de Posição</div><div class="position-log-list" id="pos-logs-${bateriaKey}"></div></div></div>`;
+                    html += `<div class="card"><div class="card-header">📊 Posição Volta a Volta (Race Position) - ${nomeSessao}</div><div class="chart-container"><canvas id="${chartPosId}"></canvas></div><div class="position-analysis-container"><div class="position-analysis-title">📝 Relatório Detalhado de Ultrapassagens e Trocas de Posição (Volta a Volta)</div><div class="position-log-list" id="pos-logs-${bateriaKey}"></div></div></div>`;
                 }
                 if (modulosSelecionados.includes('mod-classificacao-analise')) {
                     html += `<div class="card"><div class="card-header">Classificação & Consistência - ${nomeSessao}</div><div class="table-container"><table><thead><tr><th>POS</th><th>PILOTO</th><th>SESSÃO</th><th>TOTAL DE VOLTAS</th><th>MELHOR</th><th>MÉDIA</th><th>DESVIO</th></tr></thead><tbody id="tabela-unificada-${bateriaKey}"></tbody></table></div></div>`;
@@ -602,6 +602,22 @@
                     const logsContainer = document.getElementById(`pos-logs-${bateriaKey}`);
                     let logsHtml = '';
                     
+                    // 1. RELATO DA 1ª VOLTA (ESTABELECIMENTO DO GRID)
+                    if (maxVPos > 0) {
+                        let ordemVolta1 = [];
+                        todosDaBateria.forEach(d => {
+                            let arr = matrizPosicoesGeral[d.piloto] || [];
+                            if (arr[0]) {
+                                ordemVolta1.push({ piloto: d.piloto, pos: arr[0] });
+                            }
+                        });
+                        ordemVolta1.sort((a, b) => a.pos - b.pos);
+                        
+                        let descVolta1 = ordemVolta1.map(item => `${item.piloto} em ${item.pos}º`).join(', ');
+                        logsHtml += `<div class="position-log-item">🏁 <strong>1ª Volta:</strong> O grid se consolidou com a seguinte ordem inicial: <strong>${descVolta1}</strong>.</div>`;
+                    }
+
+                    // 2. RELATO VOLTA A VOLTA DA 2ª EM DIANTE (COM FILTRO DE SILÊNCIO SE NÃO HOUVER MUDANÇAS)
                     for (let v = 1; v < maxVPos; v++) {
                         let posNaVoltaAnterior = {};
                         let posNaVoltaAtual = {};
@@ -612,45 +628,49 @@
                             if (arr[v]) posNaVoltaAtual[arr[v]] = d.piloto;
                         });
 
+                        let mudancasNestaVolta = [];
+
                         todosDaBateria.forEach(d => {
                             let arrPos = matrizPosicoesGeral[d.piloto] || [];
                             let pAnt = arrPos[v-1] || 0;
                             let pAtu = arrPos[v] || 0;
 
-                            if (pAnt > 0 && pAtu > 0) {
+                            if (pAnt > 0 && pAtu > 0 && pAtu !== pAnt) {
                                 if (pAtu < pAnt) {
-                                    // GANHOU POSIÇÃO: Identifica exatamente quem estava nas posições intermediárias na volta anterior
-                                    let posGanhas = pAnt - pAtu;
+                                    // GANHOU POSIÇÃO
                                     let superados = [];
                                     for (let p = pAtu; p < pAnt; p++) {
                                         let pilotoSuperado = posNaVoltaAnterior[p];
                                         if (pilotoSuperado && pilotoSuperado !== d.piloto) {
-                                            superados.push(`${pilotoSuperado} (${p}º)`);
+                                            superados.push(`${pilotoSuperado} (${p}º para ${p+1}º)`);
                                         }
                                     }
-                                    let superadosTxt = superados.length > 0 ? ` superando ${superados.join(', ')}` : "";
-                                    
-                                    logsHtml += `<div class="position-log-item">🔥 <span style="color:${obterCorPiloto(d.piloto)}"><strong>${d.piloto}</strong></span> ganhou <span class="tag-gain">${posGanhas} posição(ões)</span> na <strong>Volta ${v+1}</strong> (saltou de ${pAnt}º para a <span class="tag-gain">${pAtu}ª posição</span>)${superadosTxt}.</div>`;
+                                    let superadosTxt = superados.length > 0 ? `, superando ${superados.join(', ')}` : "";
+                                    mudancasNestaVolta.append ? null : 
+                                    mudancasNestaVolta.push(`🔥 <strong style="color:${obterCorPiloto(d.piloto)}">${d.piloto}</strong> avançou da <span class="tag-gain">${pAnt}ª para a ${pAtu}ª posição</span>${superadosTxt}`);
                                 } 
                                 else if (pAtu > pAnt) {
-                                    // PERDEU POSIÇÃO: Identifica exatamente quem assumiu as posições entre a anterior e a atual na volta corrente
-                                    let posPerdidas = pAtu - pAnt;
+                                    // PERDEU POSIÇÃO
                                     let beneficiados = [];
                                     for (let p = pAnt + 1; p <= pAtu; p++) {
                                         let pilotoBeneficiado = posNaVoltaAtual[p];
                                         if (pilotoBeneficiado && pilotoBeneficiado !== d.piloto) {
-                                            beneficiados.push(`${pilotoBeneficiado} (${p}º)`);
+                                            beneficiados.push(`${pilotoBeneficiado}`);
                                         }
                                     }
-                                    let beneficiadosTxt = beneficiados.length > 0 ? ` para ${beneficiados.join(', ')}` : "";
-
-                                    logsHtml += `<div class="position-log-item">💧 <span style="color:${obterCorPiloto(d.piloto)}"><strong>${d.piloto}</strong></span> perdeu <span class="tag-loss">${posPerdidas} posição(ões)</span> na <strong>Volta ${v+1}</strong> (caiu de ${pAnt}º para a <span class="tag-loss">${pAtu}ªposição</span>)${beneficiadosTxt}.</div>`;
+                                    let beneficiadosTxt = beneficiados.length > 0 ? `, cedendo posições para ${beneficiados.join(' e ')}` : "";
+                                    mudancasNestaVolta.push(`💧 <strong style="color:${obterCorPiloto(d.piloto)}">${d.piloto}</strong> caiu da <span class="tag-loss">${pAnt}ª para a ${pAtu}ª posição</span>${beneficiadosTxt}`);
                                 }
                             }
                         });
+
+                        // Se houveram trocas nesta volta específica, exibe o bloco detalhado da volta
+                        if (mudancasNestaVolta.length > 0) {
+                            logsHtml += `<div class="position-log-item">🔄 <strong>Volta ${v+1}:</strong> ${mudancasNestaVolta.join(' | ')}.</div>`;
+                        }
                     }
 
-                    if (logsHtml === '') logsHtml = `<div class="position-log-item">🏎️ Prova estável sem trocas de posição registradas entre as voltas monitoradas.</div>`;
+                    if (logsHtml === '') logsHtml = `<div class="position-log-item">🏎️ Prova estável sem trocas de posição registradas.</div>`;
                     logsContainer.innerHTML = logsHtml;
                 }
 
@@ -715,7 +735,6 @@
                 if (modulosSelecionados.includes('mod-tabela-geral')) {
                     const headerLap = document.getElementById(`head-lapbyLap-${bateriaKey}`);
                     const bodyLap = document.getElementById(`body-lapbyLap-${bateriaKey}`);
-                    dadosSessao.append ? null : null; // Mantém integridade
                     dadosSessao.forEach(d => headerLap.innerHTML += `<th><span style="color:${obterCorPiloto(d.piloto)}">●</span> ${d.piloto}</th>`);
                     
                     let maxV = Math.max(...dadosSessao.map(d => d.laps ? d.laps.length : 0));
