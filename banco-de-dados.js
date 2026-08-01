@@ -1,11 +1,393 @@
 const listaJsonsCache = [
     {
+        "bateriaKey": "bat_17_07_26_bateria_1",
+        "sessao": "17-07-26 Bateria (1)",
+        "id": 1784341080,
+        "dados": [
+            {
+                "pos": "1º",
+                "piloto": "DJ",
+                "bateriaKey": "bat_17_07_26_bateria_1",
+                "sessao": "17-07-26 Bateria (1)",
+                "voltasTotais": 29,
+                "tempoTotal": "06:11,204",
+                "melhorVoltaVal": 10.898,
+                "melhorVoltaTxt": "10,898s",
+                "mediaVal": 12.800,
+                "mediaTxt": "12,800s",
+                "desvioVal": 1.711,
+                "desvio": "±1,711s",
+                "badgeColor": "#ffb703",
+                "laps": [14.629, 12.638, 12.218, 12.385, 12.040, 12.716, 12.951, 11.966, 11.855, 12.668, 12.265, 12.574, 12.151, 12.730, 12.532, 13.333, 12.056, 12.311, 15.411, 10.898, 12.320, 11.678, 12.653, 12.727, 12.699, 12.412, 12.139, 11.689, 20.560]
+            },
+            {
+                "pos": "2º",
+                "piloto": "Ronaldo",
+                "bateriaKey": "bat_17_07_26_bateria_1",
+                "sessao": "17-07-26 Bateria (1)",
+                "voltasTotais": 26,
+                "tempoTotal": "06:07,083",
+                "melhorVoltaVal": 11.703,
+                "melhorVoltaTxt": "11,703s",
+                "mediaVal": 14.119,
+                "mediaTxt": "14,119s",
+                "desvioVal": 1.908,
+                "desvio": "±1,908s",
+                "badgeColor": "#2ec4b6",
+                "laps": [16.499, 12.136, 15.613, 16.191, 15.321, 11.782, 14.966, 15.030, 12.854, 13.173, 16.636, 11.703, 12.458, 12.285, 12.106, 16.119, 12.822, 14.438, 11.787, 12.131, 12.177, 16.200, 17.302, 15.951, 13.257, 16.146]
+            },
+            {
+                "pos": "3º",
+                "piloto": "Raphael",
+                "bateriaKey": "bat_17_07_26_bateria_1",
+                "sessao": "17-07-26 Bateria (1)",
+                "voltasTotais": 10,
+                "tempoTotal": "06:08,208",
+                "melhorVoltaVal": 9.967,
+                "melhorVoltaTxt": "09,967s",
+                "mediaVal": 33.473,
+                "mediaTxt": "33,473s",
+                "desvioVal": 59.991,
+                "desvio": "±59,991s",
+                "badgeColor": "#e63946",
+                "laps": [18.892, 18.404, 205.100, 14.887, 14.754, 11.603, 12.893, 43.997, 12.262, 15.388]
+            }
+        ]
+    },
+    {
+        "bateriaKey": "bat_17_07_26_bateria_2",
+        "sessao": "17-07-26 Bateria (2)",
+        "id": 1784342375,
+        "dados": [
+            {
+                "pos": "1º",
+                "piloto": "DJ",
+                "bateriaKey": "bat_17_07_26_bateria_2",
+                "sessao": "17-07-26 Bateria (2)",
+                "voltasTotais": 28,
+                "tempoTotal": "06:08,702",
+                "melhorVoltaVal": 11.723,
+                "melhorVoltaTxt": "11,723s",
+                "mediaVal": 13.168,
+                "mediaTxt": "13,168s",
+                "desvioVal": 1.615,
+                "desvio": "±1,615s",
+                "badgeColor": "#ffb703",
+                "laps": [15.031, 14.302, 11.998, 15.516, 12.733, 12.325, 11.723, 12.079, 13.147, 12.260, 13.915, 15.157, 13.812, 12.355, 12.136, 18.899, 12.689, 12.467, 12.259, 11.980, 11.900, 11.905, 15.088, 14.033, 12.223, 12.432, 12.526, 11.812]
+            },
+            {
+                "pos": "2º",
+                "piloto": "Ronaldo",
+                "bateriaKey": "bat_17_07_26_bateria_2",
+                "sessao": "17-07-26 Bateria (2)",
+                "voltasTotais": 26,
+                "tempoTotal": "06:01,941",
+                "melhorVoltaVal": 11.434,
+                "melhorVoltaTxt": "11,434s",
+                "mediaVal": 13.921,
+                "mediaTxt": "13,921s",
+                "desvioVal": 4.468,
+                "desvio": "±4,468s",
+                "badgeColor": "#2ec4b6",
+                "laps": [15.900, 15.888, 11.925, 12.857, 11.547, 13.154, 12.150, 12.424, 13.308, 34.863, 11.934, 12.308, 15.044, 12.291, 13.008, 12.784, 16.284, 12.704, 13.997, 12.521, 11.434, 12.332, 12.916, 13.286, 12.280, 12.802]
+            },
+            {
+                "pos": "3º",
+                "piloto": "Raphael",
+                "bateriaKey": "bat_17_07_26_bateria_2",
+                "sessao": "17-07-26 Bateria (2)",
+                "voltasTotais": 25,
+                "tempoTotal": "06:07,078",
+                "melhorVoltaVal": 11.873,
+                "melhorVoltaTxt": "11,873s",
+                "mediaVal": 14.683,
+                "mediaTxt": "14,683s",
+                "desvioVal": 1.903,
+                "desvio": "±1,903s",
+                "badgeColor": "#e63946",
+                "laps": [16.852, 16.665, 14.531, 12.503, 12.964, 14.023, 11.873, 16.617, 14.425, 15.493, 15.085, 14.074, 16.202, 11.965, 18.290, 15.660, 15.798, 12.246, 12.831, 12.879, 16.828, 13.985, 16.371, 16.873, 12.045]
+            }
+        ]
+    },
+    {
+        "bateriaKey": "bat_31_07_26_bateria_3",
+        "sessao": "31-07-26 Bateria (3)",
+        "id": 1785552082,
+        "dados": [
+            {
+                "pos": "1º",
+                "piloto": "Raphael",
+                "bateriaKey": "bat_31_07_26_bateria_3",
+                "sessao": "31-07-26 Bateria (3)",
+                "voltasTotais": 23,
+                "tempoTotal": "05:09,264",
+                "melhorVoltaVal": 9.187,
+                "melhorVoltaTxt": "09,187s",
+                "mediaVal": 13.446,
+                "mediaTxt": "13,446s",
+                "desvioVal": 3.829,
+                "desvio": "±3,829s",
+                "badgeColor": "#ffb703",
+                "laps": [11.668, 14.203, 13.746, 11.770, 9.187, 9.280, 10.287, 23.080, 16.419, 15.011, 16.915, 15.836, 10.813, 12.444, 12.281, 23.546, 11.042, 11.464, 12.094, 9.770, 11.893, 15.463, 11.052]
+            },
+            {
+                "pos": "2º",
+                "piloto": "Ronaldo",
+                "bateriaKey": "bat_31_07_26_bateria_3",
+                "sessao": "31-07-26 Bateria (3)",
+                "voltasTotais": 22,
+                "tempoTotal": "04:56,396",
+                "melhorVoltaVal": 9.886,
+                "melhorVoltaTxt": "09,886s",
+                "mediaVal": 13.473,
+                "mediaTxt": "13,473s",
+                "desvioVal": 4.664,
+                "desvio": "±4,664s",
+                "badgeColor": "#2ec4b6",
+                "laps": [12.701, 12.951, 21.157, 10.318, 10.916, 12.290, 17.094, 10.087, 11.238, 17.841, 11.414, 14.064, 12.377, 10.123, 11.516, 30.159, 11.162, 9.886, 11.447, 10.534, 13.763, 13.358]
+            },
+            {
+                "pos": "3º",
+                "piloto": "DJ",
+                "bateriaKey": "bat_31_07_26_bateria_3",
+                "sessao": "31-07-26 Bateria (3)",
+                "voltasTotais": 18,
+                "tempoTotal": "03:20,041",
+                "melhorVoltaVal": 10.237,
+                "melhorVoltaTxt": "10,237s",
+                "mediaVal": 11.113,
+                "mediaTxt": "11,113s",
+                "desvioVal": 0.864,
+                "desvio": "±0,864s",
+                "badgeColor": "#e63946",
+                "laps": [11.190, 10.471, 11.163, 12.767, 10.714, 12.460, 10.314, 10.447, 12.091, 10.726, 12.404, 10.564, 10.386, 10.568, 10.237, 12.274, 10.718, 10.547]
+            }
+        ]
+    },
+    {
+        "bateriaKey": "bat_31_07_26_bateria_4",
+        "sessao": "31-07-26 Bateria (4)",
+        "id": 1785552603,
+        "dados": [
+            {
+                "pos": "1º",
+                "piloto": "DJ",
+                "bateriaKey": "bat_31_07_26_bateria_4",
+                "sessao": "31-07-26 Bateria (4)",
+                "voltasTotais": 32,
+                "tempoTotal": "06:08,747",
+                "melhorVoltaVal": 10.012,
+                "melhorVoltaTxt": "10,012s",
+                "mediaVal": 11.523,
+                "mediaTxt": "11,523s",
+                "desvioVal": 1.311,
+                "desvio": "±1,311s",
+                "badgeColor": "#ffb703",
+                "laps": [10.859, 10.819, 10.257, 10.413, 10.375, 10.991, 11.105, 10.435, 10.778, 10.881, 10.012, 10.708, 10.757, 12.880, 10.604, 12.359, 10.730, 10.085, 11.128, 14.482, 14.487, 11.060, 11.363, 11.365, 12.242, 11.175, 13.044, 14.066, 12.040, 14.248, 10.817, 12.182]
+            },
+            {
+                "pos": "2º",
+                "piloto": "Ronaldo",
+                "bateriaKey": "bat_31_07_26_bateria_4",
+                "sessao": "31-07-26 Bateria (4)",
+                "voltasTotais": 31,
+                "tempoTotal": "06:01,340",
+                "melhorVoltaVal": 9.974,
+                "melhorVoltaTxt": "09,974s",
+                "mediaVal": 11.656,
+                "mediaTxt": "11,656s",
+                "desvioVal": 1.496,
+                "desvio": "±1,496s",
+                "badgeColor": "#2ec4b6",
+                "laps": [11.774, 10.294, 12.256, 10.175, 10.828, 9.974, 14.093, 11.442, 16.280, 11.695, 10.774, 10.490, 15.381, 10.706, 10.748, 11.468, 10.163, 11.640, 10.732, 11.466, 10.989, 10.816, 10.612, 13.389, 11.185, 11.584, 11.824, 11.421, 11.701, 11.464, 13.976]
+            },
+            {
+                "pos": "3º",
+                "piloto": "Raphael",
+                "bateriaKey": "bat_31_07_26_bateria_4",
+                "sessao": "31-07-26 Bateria (4)",
+                "voltasTotais": 30,
+                "tempoTotal": "06:08,281",
+                "melhorVoltaVal": 9.474,
+                "melhorVoltaTxt": "09,474s",
+                "mediaVal": 12.276,
+                "mediaTxt": "12,276s",
+                "desvioVal": 2.961,
+                "desvio": "±2,961s",
+                "badgeColor": "#e63946",
+                "laps": [10.759, 15.099, 10.682, 9.983, 12.636, 13.026, 9.857, 10.122, 12.656, 9.474, 11.570, 10.640, 10.005, 12.093, 9.589, 15.846, 10.553, 16.037, 10.509, 24.160, 10.714, 10.027, 12.278, 15.528, 14.188, 12.153, 12.109, 12.427, 10.200, 13.361]
+            }
+        ]
+    },
+    {
+        "bateriaKey": "bat_31_07_26_bateria_5",
+        "sessao": "31-07-26 Bateria (5)",
+        "id": 1785554519,
+        "dados": [
+            {
+                "pos": "1º",
+                "piloto": "DJ",
+                "bateriaKey": "bat_31_07_26_bateria_5",
+                "sessao": "31-07-26 Bateria (5)",
+                "voltasTotais": 30,
+                "tempoTotal": "06:09,931",
+                "melhorVoltaVal": 9.855,
+                "melhorVoltaTxt": "09,855s",
+                "mediaVal": 12.331,
+                "mediaTxt": "12,331s",
+                "desvioVal": 3.055,
+                "desvio": "±3,055s",
+                "badgeColor": "#ffb703",
+                "laps": [11.898, 13.260, 10.885, 11.581, 19.614, 10.646, 13.165, 13.168, 10.571, 17.027, 11.464, 10.556, 10.839, 9.855, 10.367, 13.437, 11.589, 11.504, 11.303, 13.172, 24.523, 10.824, 10.707, 11.268, 11.458, 10.917, 11.430, 10.781, 11.491, 10.631]
+            },
+            {
+                "pos": "2º",
+                "piloto": "Ronaldo",
+                "bateriaKey": "bat_31_07_26_bateria_5",
+                "sessao": "31-07-26 Bateria (5)",
+                "voltasTotais": 28,
+                "tempoTotal": "06:09,254",
+                "melhorVoltaVal": 10.091,
+                "melhorVoltaTxt": "10,091s",
+                "mediaVal": 13.188,
+                "mediaTxt": "13,188s",
+                "desvioVal": 3.873,
+                "desvio": "±3,873s",
+                "badgeColor": "#2ec4b6",
+                "laps": [15.438, 10.841, 13.482, 15.256, 12.850, 11.329, 11.459, 12.340, 11.375, 14.500, 10.916, 16.687, 11.045, 11.442, 10.091, 11.335, 13.850, 11.310, 17.501, 30.212, 11.518, 10.702, 10.884, 13.941, 14.227, 13.109, 10.611, 11.003]
+            },
+            {
+                "pos": "3º",
+                "piloto": "Raphael",
+                "bateriaKey": "bat_31_07_26_bateria_5",
+                "sessao": "31-07-26 Bateria (5)",
+                "voltasTotais": 24,
+                "tempoTotal": "05:26,851",
+                "melhorVoltaVal": 9.524,
+                "melhorVoltaTxt": "09,524s",
+                "mediaVal": 13.619,
+                "mediaTxt": "13,619s",
+                "desvioVal": 7.703,
+                "desvio": "±7,703s",
+                "badgeColor": "#e63946",
+                "laps": [12.259, 11.439, 10.561, 9.835, 27.292, 15.271, 11.171, 10.657, 11.437, 9.964, 10.388, 12.214, 12.614, 14.034, 11.854, 9.524, 14.271, 11.557, 45.678, 10.499, 10.199, 13.877, 10.368, 9.888]
+            }
+        ]
+    },
+    {
+        "bateriaKey": "bat_31_07_26_bateria_6",
+        "sessao": "31-07-26 Bateria (6)",
+        "id": 1785555197,
+        "dados": [
+            {
+                "pos": "1º",
+                "piloto": "Raphael",
+                "bateriaKey": "bat_31_07_26_bateria_6",
+                "sessao": "31-07-26 Bateria (6)",
+                "voltasTotais": 32,
+                "tempoTotal": "06:08,453",
+                "melhorVoltaVal": 9.406,
+                "melhorVoltaTxt": "09,406s",
+                "mediaVal": 11.514,
+                "mediaTxt": "11,514s",
+                "desvioVal": 3.467,
+                "desvio": "±3,467s",
+                "badgeColor": "#ffb703",
+                "laps": [11.010, 10.737, 9.687, 11.768, 11.320, 11.937, 11.814, 10.793, 11.270, 12.408, 9.978, 10.527, 12.314, 12.755, 9.837, 9.406, 9.861, 29.759, 10.535, 13.305, 10.812, 11.272, 11.503, 9.935, 10.507, 10.056, 11.240, 10.056, 10.222, 10.116, 10.083, 11.630]
+            },
+            {
+                "pos": "2º",
+                "piloto": "Ronaldo",
+                "bateriaKey": "bat_31_07_26_bateria_6",
+                "sessao": "31-07-26 Bateria (6)",
+                "voltasTotais": 31,
+                "tempoTotal": "06:01,638",
+                "melhorVoltaVal": 9.938,
+                "melhorVoltaTxt": "09,938s",
+                "mediaVal": 11.666,
+                "mediaTxt": "11,666s",
+                "desvioVal": 1.387,
+                "desvio": "±1,387s",
+                "badgeColor": "#2ec4b6",
+                "laps": [12.446, 10.340, 11.178, 10.457, 9.938, 10.366, 11.341, 15.684, 11.002, 12.038, 10.967, 10.465, 13.385, 12.860, 11.327, 10.868, 12.436, 11.414, 10.716, 10.912, 11.188, 11.039, 15.258, 12.467, 12.937, 10.553, 13.766, 10.804, 11.177, 11.256, 11.053]
+            },
+            {
+                "pos": "3º",
+                "piloto": "DJ",
+                "bateriaKey": "bat_31_07_26_bateria_6",
+                "sessao": "31-07-26 Bateria (6)",
+                "voltasTotais": 31,
+                "tempoTotal": "06:09,823",
+                "melhorVoltaVal": 9.880,
+                "melhorVoltaTxt": "09,880s",
+                "mediaVal": 11.930,
+                "mediaTxt": "11,930s",
+                "desvioVal": 1.782,
+                "desvio": "±1,782s",
+                "badgeColor": "#e63946",
+                "laps": [11.165, 9.880, 14.818, 10.275, 17.859, 10.214, 11.704, 12.405, 10.723, 10.854, 11.528, 11.433, 10.587, 11.240, 10.634, 11.804, 11.097, 10.973, 10.770, 15.896, 11.947, 12.703, 12.350, 14.022, 11.588, 12.068, 10.309, 10.693, 13.504, 13.605, 11.175]
+            }
+        ]
+    },
+    {
+        "bateriaKey": "bat_31_07_26_bateria_7",
+        "sessao": "31-07-26 Bateria (7)",
+        "id": 1785556442,
+        "dados": [
+            {
+                "pos": "1º",
+                "piloto": "DJ",
+                "bateriaKey": "bat_31_07_26_bateria_7",
+                "sessao": "31-07-26 Bateria (7)",
+                "voltasTotais": 31,
+                "tempoTotal": "06:00,194",
+                "melhorVoltaVal": 10.356,
+                "melhorVoltaTxt": "10,356s",
+                "mediaVal": 11.619,
+                "mediaTxt": "11,619s",
+                "desvioVal": 1.215,
+                "desvio": "±1,215s",
+                "badgeColor": "#ffb703",
+                "laps": [11.844, 11.418, 14.868, 12.240, 11.342, 11.204, 10.705, 11.076, 10.841, 10.605, 10.712, 14.668, 11.137, 10.802, 14.627, 11.847, 12.491, 11.103, 12.126, 11.239, 10.468, 11.790, 12.992, 12.035, 11.087, 10.527, 11.300, 10.485, 11.528, 10.731, 10.356]
+            },
+            {
+                "pos": "2º",
+                "piloto": "Ronaldo",
+                "bateriaKey": "bat_31_07_26_bateria_7",
+                "sessao": "31-07-26 Bateria (7)",
+                "voltasTotais": 31,
+                "tempoTotal": "06:10,161",
+                "melhorVoltaVal": 10.136,
+                "melhorVoltaTxt": "10,136s",
+                "mediaVal": 11.941,
+                "mediaTxt": "11,941s",
+                "desvioVal": 1.690,
+                "desvio": "±1,690s",
+                "badgeColor": "#2ec4b6",
+                "laps": [14.797, 15.797, 11.811, 11.306, 10.136, 13.812, 10.989, 11.089, 13.072, 10.564, 14.950, 11.474, 11.034, 14.481, 11.355, 15.536, 10.803, 10.830, 10.659, 11.053, 11.382, 10.317, 11.592, 10.913, 14.127, 11.300, 10.657, 10.996, 10.449, 10.627, 12.253]
+            },
+            {
+                "pos": "3º",
+                "piloto": "Raphael",
+                "bateriaKey": "bat_31_07_26_bateria_7",
+                "sessao": "31-07-26 Bateria (7)",
+                "voltasTotais": 22,
+                "tempoTotal": "06:02,788",
+                "melhorVoltaVal": 9.317,
+                "melhorVoltaTxt": "09,317s",
+                "mediaVal": 16.490,
+                "mediaTxt": "16,490s",
+                "desvioVal": 22.542,
+                "desvio": "±22,542s",
+                "badgeColor": "#e63946",
+                "laps": [12.069, 11.702, 9.847, 11.643, 9.725, 12.061, 10.062, 10.052, 9.796, 10.269, 9.965, 10.321, 10.327, 9.317, 10.542, 18.001, 18.541, 12.733, 13.502, 15.068, 116.700, 10.475]
+            }
+        ]
+    },
+    {
         "bateriaKey": "bat_31_07_26_bateria_8",
         "sessao": "31-07-26 Bateria (8)",
         "id": 1785557785,
-        "nome": "31-07-26 Bateria (8).json",
-        "data": "01/08/2026",
-        "tamanho": "2.5 KB",
         "dados": [
             {
                 "pos": "1º",
@@ -56,6 +438,8 @@ const listaJsonsCache = [
                 "laps": [11.177, 23.734, 14.951, 11.697, 11.446, 14.511, 10.319, 11.912, 11.911, 12.285, 12.312, 13.213, 11.377, 11.975, 10.870, 12.984, 19.140]
             }
         ]
+    }
+]
     }
     // Adicione mais baterias aqui se quiser
 ];
