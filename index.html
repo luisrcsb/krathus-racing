@@ -131,18 +131,24 @@
                     <div class="filter-group">
                         <div class="filter-group-header">
                             <label class="group-title">SESSÕES / BATERIAS</label>
-                            <button class="btn-text-action" onclick="limparSelecaoBaterias()">🗑️ Limpar Seleção</button>
+                            <button class="btn-text-action" onclick="limparSelecao('filter-bateria')">🗑️ Limpar Seleção</button>
                         </div>
                         <div class="checkbox-container" id="filtro-baterias-container"></div>
                     </div>
 
                     <div class="filter-group">
-                        <label class="group-title">PILOTOS</label>
+                        <div class="filter-group-header">
+                            <label class="group-title">PILOTOS</label>
+                            <button class="btn-text-action" onclick="limparSelecao('filter-piloto')">🗑️ Limpar Seleção</button>
+                        </div>
                         <div class="checkbox-container" id="filtro-pilotos-container"></div>
                     </div>
 
                     <div class="filter-group">
-                        <label class="group-title">MÓDULOS VISÍVEIS</label>
+                        <div class="filter-group-header">
+                            <label class="group-title">MÓDULOS VISÍVEIS</label>
+                            <button class="btn-text-action" onclick="limparSelecao('filter-modulo')">🗑️ Limpar Seleção</button>
+                        </div>
                         <div class="checkbox-container">
                             <label class="checkbox-item"><input type="checkbox" value="mod-grafico" class="filter-modulo" checked onchange="atualizarDashboard()"> 📈 Evolução de Ritmo (Lap Times)</label>
                             <label class="checkbox-item"><input type="checkbox" value="mod-grafico-posicao" class="filter-modulo" checked onchange="atualizarDashboard()"> 📊 Posição Volta a Volta (Race Position)</label>
@@ -186,7 +192,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v3.3.0 (Com Botão de Compartilhamento por Corrida)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v3.4.0 (Limpeza Dinâmica em Todos os Filtros)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -263,8 +269,8 @@
             return coresPaleta[Math.abs(hash) % coresPaleta.length];
         }
 
-        function limparSelecaoBaterias() {
-            document.querySelectorAll('.filter-bateria').forEach(cb => cb.checked = false);
+        function limparSelecao(classeFiltro) {
+            document.querySelectorAll(`.${classeFiltro}`).forEach(cb => cb.checked = false);
             atualizarDashboard();
         }
 
@@ -358,7 +364,6 @@
             renderizarSessõesCompletas(dadosBase, bateriasSelecionadas, pilotosSelecionados, modulosSelecionados);
         }
 
-        // Função para compartilhar a corrida específica
         window.compartilharCorrida = function(bateriaKey, nomeSessao, vencedor) {
             let dadosBase = obterTodosDadosConsolidados();
             let itensBateria = dadosBase.filter(d => d.bateriaKey === bateriaKey);
@@ -368,7 +373,6 @@
             textoResumo += `🏆 Vencedor: *${vencedor}*\n\n`;
             textoResumo += `📊 *Classificação:* \n`;
             
-            // Ordena por posição
             itensBateria.sort((a, b) => (parseInt(a.pos) || 99) - (parseInt(b.pos) || 99));
             itensBateria.forEach(d => {
                 textoResumo += `${d.pos} - ${d.piloto} (${d.voltasTotais} voltas | Melhor: ${d.melhorVoltaTxt})\n`;
@@ -384,7 +388,7 @@
                 }).catch(() => {});
             } else {
                 navigator.clipboard.writeText(textoResumo).then(() => {
-                    alert(`📋 Resumo da bateria "${nomeSessao}" copiado para a área de transferência! Cole no WhatsApp ou Telegram.`);
+                    alert(`📋 Resumo da bateria "${nomeSessao}" copiado para a área de transferência!`);
                 }).catch(() => {
                     alert("Não foi possível compartilhar automaticamente.");
                 });
