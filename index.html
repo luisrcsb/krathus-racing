@@ -3,14 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Krathus Racing - Central de Telemetria Multi-PDF</title>
+    <title>Krathus Racing - Central de Telemetria JSON V85</title>
     <!-- Chart.js para renderizar os gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- PDF.js para extrair texto de arquivos PDF direto no navegador -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script>
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-    </script>
     <style>
         :root {
             --bg-body: #0d111a;
@@ -122,13 +117,13 @@
             <div class="brand-title">
                 <div>
                     <h1>🏁 KRATHUS RACING</h1>
-                    <p>Central de Telemetria Multi-PDF</p>
+                    <p>Central de Telemetria JSON</p>
                 </div>
             </div>
             
             <div class="nav-tabs">
                 <button class="tab-btn active" onclick="mudarAba('telemetria')">📊 Telemetria</button>
-                <button class="tab-btn" onclick="mudarAba('arquivos')">📂 Gerenciar PDFs (<span id="contador-arquivos">0</span>)</button>
+                <button class="tab-btn" onclick="mudarAba('arquivos')">📂 Gerenciar JSONs (<span id="contador-arquivos">0</span>)</button>
             </div>
 
             <div class="header-actions">
@@ -143,14 +138,14 @@
                     <div class="filter-group">
                         <label class="group-title">SESSÕES / BATERIAS</label>
                         <div class="checkbox-container" id="filtro-baterias-container">
-                            <span style="font-size:0.85rem; color: var(--text-muted);">Nenhum PDF carregado.</span>
+                            <span style="font-size:0.85rem; color: var(--text-muted);">Nenhum arquivo JSON carregado.</span>
                         </div>
                     </div>
 
                     <div class="filter-group">
                         <label class="group-title">PILOTOS</label>
                         <div class="checkbox-container" id="filtro-pilotos-container">
-                            <span style="font-size:0.85rem; color: var(--text-muted);">Nenhum PDF carregado.</span>
+                            <span style="font-size:0.85rem; color: var(--text-muted);">Nenhum arquivo JSON carregado.</span>
                         </div>
                     </div>
 
@@ -196,30 +191,30 @@
 
             <div id="sessions-container" class="session-blocks-container">
                 <div class="card" style="text-align:center; padding: 40px; color: var(--text-muted);">
-                    Nenhum relatório de prova carregado. Vá na aba <strong>"📂 Gerenciar PDFs"</strong> para enviar os seus arquivos.
+                    Nenhum arquivo JSON carregado. Vá na aba <strong>"📂 Gerenciar JSONs"</strong> para enviar os seus arquivos de prova.
                 </div>
             </div>
         </div>
 
-        <!-- ABA 2: GERENCIADOR DE PDFS -->
+        <!-- ABA 2: GERENCIADOR DE JSONS -->
         <div id="tab-arquivos" class="tab-content">
             <div class="card">
-                <div class="card-header">📂 Upload em Lote de Relatórios em PDF</div>
+                <div class="card-header">📂 Upload em Lote de Arquivos JSON</div>
                 <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem;">
-                    Selecione <strong>vários arquivos PDF de uma vez só</strong>. Todas as voltas e competidores serão extraídos integralmente.
+                    Selecione <strong>vários arquivos JSON de uma vez só</strong> no seu computador. Todos serão consolidados para o comparativo multibateria integral.
                 </p>
 
                 <div style="background: var(--bg-input); border: 2px dashed var(--border-card); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 24px;">
-                    <input type="file" id="file-input" accept=".pdf" multiple style="display: none;" onchange="processarUploadMultiploPDF(event)">
-                    <button class="btn btn-primary" style="margin: 0 auto;" onclick="document.getElementById('file-input').click()">📁 Selecionar Vários PDFs de Prova</button>
+                    <input type="file" id="file-input" accept=".json" multiple style="display: none;" onchange="processarUploadMultiploJSON(event)">
+                    <button class="btn btn-primary" style="margin: 0 auto;" onclick="document.getElementById('file-input').click()">📁 Selecionar Vários Arquivos JSON</button>
                 </div>
 
-                <div class="card-header" style="font-size: 0.9rem; margin-top: 10px;">Histórico de PDFs Carregados</div>
+                <div class="card-header" style="font-size: 0.9rem; margin-top: 10px;">Histórico de JSONs Carregados</div>
                 <div class="table-container">
                     <table>
                         <thead>
                             <tr>
-                                <th>Nome do Relatório PDF</th>
+                                <th>Nome do Arquivo JSON</th>
                                 <th>Data de Envio</th>
                                 <th>Tamanho</th>
                                 <th style="text-align: right;">Ações</th>
@@ -233,7 +228,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v1.2.2 (Full-Laps Engine)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v1.3.0 (JSON Engine)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -273,9 +268,9 @@
         });
 
         function inicializarSistema() {
-            let salvos = localStorage.getItem('krathus_multi_pdfs');
+            let salvos = localStorage.getItem('krathus_multi_jsons');
             if (!salvos) {
-                localStorage.setItem('krathus_multi_pdfs', JSON.stringify([]));
+                localStorage.setItem('krathus_multi_jsons', JSON.stringify([]));
                 localStorage.setItem('krathus_dados_ativos', JSON.stringify([]));
             }
             atualizarConsolidadoGeral();
@@ -285,7 +280,7 @@
         }
 
         function obterTodosDadosConsolidados() {
-            let lista = JSON.parse(localStorage.getItem('krathus_multi_pdfs') || '[]');
+            let lista = JSON.parse(localStorage.getItem('krathus_multi_jsons') || '[]');
             let consolidado = [];
             lista.forEach(arq => {
                 if (arq.dados && Array.isArray(arq.dados)) {
@@ -296,50 +291,67 @@
         }
 
         function atualizarContadorArquivos() {
-            let lista = JSON.parse(localStorage.getItem('krathus_multi_pdfs') || '[]');
+            let lista = JSON.parse(localStorage.getItem('krathus_multi_jsons') || '[]');
             document.getElementById('contador-arquivos').innerText = lista.length;
         }
 
-        async function processarUploadMultiploPDF(event) {
+        async function processarUploadMultiploJSON(event) {
             const files = event.target.files;
             if (!files || files.length === 0) return;
 
-            let listaPdfs = JSON.parse(localStorage.getItem('krathus_multi_pdfs') || '[]');
+            let listaJsons = JSON.parse(localStorage.getItem('krathus_multi_jsons') || '[]');
 
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
                 try {
-                    const arrayBuffer = await file.arrayBuffer();
-                    const typedarray = new Uint8Array(arrayBuffer);
-                    const pdf = await pdfjsLib.getDocument(typedarray).promise;
-                    
-                    let linhasTexto = [];
-                    for (let p = 1; p <= pdf.numPages; p++) {
-                        const page = await pdf.getPage(p);
-                        const textContent = await page.getTextContent();
-                        textContent.items.forEach(item => {
-                            linhasTexto.push(item.str.trim());
+                    const textoConteudo = await file.text();
+                    const conteudoJSON = JSON.parse(textoConteudo);
+
+                    if (Array.isArray(conteudoJSON) && conteudoJSON.length > 0) {
+                        // Garante formatação correta e integral de todas as voltas de cada piloto no JSON
+                        let dadosProcessados = conteudoJSON.map(item => {
+                            let laps = item.laps || [];
+                            let melhor = laps.length > 0 ? Math.min(...laps) : 0;
+                            let soma = laps.reduce((a, b) => a + b, 0);
+                            let media = laps.length > 0 ? soma / laps.length : 0;
+                            
+                            return {
+                                pos: item.pos || "1º",
+                                piloto: item.piloto || "Piloto",
+                                bateriaKey: item.bateriaKey || "bat_" + file.name.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase(),
+                                sessao: item.sessao || file.name.replace('.json', ''),
+                                voltasTotais: laps.length,
+                                tempoTotal: item.tempoTotal || "02:00,000",
+                                melhorVoltaVal: item.melhorVoltaVal || melhor,
+                                melhorVoltaTxt: item.melhorVoltaTxt || `${melhor.toFixed(3).replace('.',',')}s`,
+                                mediaVal: item.mediaVal || media,
+                                mediaTxt: item.mediaTxt || `${media.toFixed(3).replace('.',',')}s`,
+                                desvio: item.desvio || "±0,500s",
+                                desvioVal: item.desvioVal || 0.5,
+                                badgeColor: item.badgeColor || "#ffb703",
+                                laps: laps,
+                                positions: item.positions || laps.map((_, idx) => 1)
+                            };
                         });
+
+                        let novoJson = {
+                            id: Date.now() + i,
+                            nome: file.name,
+                            data: new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}),
+                            tamanho: (file.size / 1024).toFixed(1) + ' KB',
+                            dados: dadosProcessados
+                        };
+                        listaJsons.push(novoJson);
                     }
-
-                    const dadosGerados = extrairDadosCompletosPDF(linhasTexto, file.name);
-
-                    let novoPdf = {
-                        id: Date.now() + i,
-                        nome: file.name,
-                        data: new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}),
-                        tamanho: (file.size / 1024).toFixed(1) + ' KB',
-                        dados: dadosGerados
-                    };
-                    listaPdfs.push(novoPdf);
                 } catch (err) {
-                    console.error(`Erro ao ler ${file.name}:`, err);
+                    console.error(`Erro ao ler o arquivo JSON ${file.name}:`, err);
+                    alert(`Erro ao processar o arquivo ${file.name}. Verifique se a estrutura JSON é válida.`);
                 }
             }
 
-            localStorage.setItem('krathus_multi_pdfs', JSON.stringify(listaPdfs));
+            localStorage.setItem('krathus_multi_jsons', JSON.stringify(listaJsons));
             atualizarConsolidadoGeral();
-            alert(`Processamento em lote concluído! ${files.length} arquivo(s) processado(s) com análise integral de voltas.`);
+            alert(`Upload em lote concluído! ${files.length} arquivo(s) JSON processado(s) com sucesso.`);
             
             carregarListaArquivos();
             gerarFiltrosDinamicos();
@@ -354,78 +366,12 @@
             localStorage.setItem('krathus_dados_ativos', JSON.stringify(consolidado));
         }
 
-        // Parser aprimorado: Lê integralmente todas as voltas e todos os pilotos do PDF sem limitar dados
-        function extrairDadosCompletosPDF(linhas, nomeArquivo) {
-            let resultado = [];
-            let bateriaKey = "bat_" + nomeArquivo.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase();
-            
-            let pilotosDetectados = [];
-            let pilotoAtual = { nome: "Piloto Principal", voltas: [] };
-
-            linhas.forEach(texto => {
-                if (texto.length >= 3 && !/^\d+([.,]\d+)?$/.test(texto) && !texto.includes("Volta") && !texto.includes("Total") && !texto.includes("Página")) {
-                    if (!texto.toLowerCase().includes("krathus") && !texto.toLowerCase().includes("zround") && !texto.toLowerCase().includes("corrida")) {
-                        if (pilotoAtual.voltas.length > 0) {
-                            pilotosDetectados.push(pilotoAtual);
-                        }
-                        pilotoAtual = { nome: texto, voltas: [] };
-                        return;
-                    }
-                }
-
-                let numeroLimpo = texto.replace(',', '.');
-                let valorTempo = parseFloat(numeroLimpo);
-                if (!isNaN(valorTempo) && valorTempo > 3 && valorTempo < 120) {
-                    pilotoAtual.voltas.push(valorTempo);
-                }
-            });
-
-            if (pilotoAtual.voltas.length > 0) {
-                pilotosDetectados.push(pilotoAtual);
-            }
-
-            if (pilotosDetectados.length === 0) {
-                pilotosDetectados = [
-                    { nome: "Competidor 1", voltas: [12.5, 11.9, 11.5, 11.8, 12.1, 11.4, 11.2, 11.8, 12.0, 11.5] },
-                    { nome: "Competidor 2", voltas: [13.0, 12.2, 11.8, 12.0, 12.5, 11.6, 11.5, 11.9, 12.1, 11.7] }
-                ];
-            }
-
-            pilotosDetectados.forEach((p, index) => {
-                let laps = p.voltas;
-                if (laps.length === 0) laps = [12.0, 12.1, 11.9];
-                let melhor = Math.min(...laps);
-                let soma = laps.reduce((a, b) => a + b, 0);
-                let media = soma / laps.length;
-
-                resultado.push({
-                    pos: `${index + 1}º`,
-                    piloto: p.nome,
-                    bateriaKey: bateriaKey,
-                    sessao: `${nomeArquivo.replace('.pdf', '')}`,
-                    voltasTotais: laps.length,
-                    tempoTotal: "02:00,000",
-                    melhorVoltaVal: melhor,
-                    melhorVoltaTxt: `${melhor.toFixed(3).replace('.',',')}s`,
-                    mediaVal: media,
-                    mediaTxt: `${media.toFixed(3).replace('.',',')}s`,
-                    desvio: "±0,500s",
-                    desvioVal: 0.50,
-                    badgeColor: index === 0 ? "#ffb703" : (index === 1 ? "#c0c0c0" : "#cd7f32"),
-                    laps: laps,
-                    positions: laps.map((_, idx) => index + 1)
-                });
-            });
-
-            return resultado;
-        }
-
         function carregarListaArquivos() {
             let tbody = document.getElementById('tabela-arquivos-lista');
-            let lista = JSON.parse(localStorage.getItem('krathus_multi_pdfs') || '[]');
+            let lista = JSON.parse(localStorage.getItem('krathus_multi_jsons') || '[]');
             
             if (lista.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted);">Nenhum PDF carregado no sistema.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted);">Nenhum arquivo JSON carregado no sistema.</td></tr>`;
                 return;
             }
 
@@ -435,17 +381,17 @@
                     <td>${arq.data}</td>
                     <td>${arq.tamanho}</td>
                     <td style="text-align: right;">
-                        <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem; display: inline-flex;" onclick="removerPDF(${arq.id})">🗑️ Excluir</button>
+                        <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem; display: inline-flex;" onclick="removerJSON(${arq.id})">🗑️ Excluir</button>
                     </td>
                 </tr>
             `).join('');
         }
 
-        function removerPDF(id) {
-            if (confirm("Deseja remover este PDF do histórico?")) {
-                let lista = JSON.parse(localStorage.getItem('krathus_multi_pdfs') || '[]');
+        function removerJSON(id) {
+            if (confirm("Deseja remover este arquivo JSON do histórico?")) {
+                let lista = JSON.parse(localStorage.getItem('krathus_multi_jsons') || '[]');
                 lista = lista.filter(a => a.id !== id);
-                localStorage.setItem('krathus_multi_pdfs', JSON.stringify(lista));
+                localStorage.setItem('krathus_multi_jsons', JSON.stringify(lista));
                 atualizarConsolidadoGeral();
                 carregarListaArquivos();
                 gerarFiltrosDinamicos();
@@ -468,8 +414,8 @@
             const pilContainer = document.getElementById('filtro-pilotos-container');
 
             if (Object.keys(bateriasMap).length === 0) {
-                batContainer.innerHTML = `<span style="font-size:0.85rem; color: var(--text-muted);">Nenhum PDF carregado.</span>`;
-                pilContainer.innerHTML = `<span style="font-size:0.85rem; color: var(--text-muted);">Nenhum PDF carregado.</span>`;
+                batContainer.innerHTML = `<span style="font-size:0.85rem; color: var(--text-muted);">Nenhum arquivo JSON carregado.</span>`;
+                pilContainer.innerHTML = `<span style="font-size:0.85rem; color: var(--text-muted);">Nenhum arquivo JSON carregado.</span>`;
                 return;
             }
 
@@ -525,7 +471,7 @@
             mainContainer.innerHTML = '';
 
             if (dadosBase.length === 0) {
-                mainContainer.innerHTML = `<div class="card" style="text-align:center; padding: 40px; color: var(--text-muted);">Nenhum relatório de prova carregado. Vá na aba <strong>"📂 Gerenciar PDFs"</strong> para enviar os seus arquivos.</div>`;
+                mainContainer.innerHTML = `<div class="card" style="text-align:center; padding: 40px; color: var(--text-muted);">Nenhum arquivo JSON de prova carregado. Vá na aba <strong>"📂 Gerenciar JSONs"</strong> para enviar os seus arquivos.</div>`;
                 return;
             }
 
@@ -562,7 +508,7 @@
                 sessionBlock.innerHTML = html;
                 mainContainer.appendChild(sessionBlock);
 
-                // Render Gráfico de Ritmo com todas as voltas de todos os pilotos
+                // Gráfico de Ritmo com todos os pilotos e todas as voltas
                 if (modulosSelecionados.includes('mod-grafico')) {
                     let maxV = Math.max(...dadosSessao.map(d => d.laps ? d.laps.length : 0));
                     const labels = Array.from({ length: maxV }, (_, i) => `V${i+1}`);
@@ -599,7 +545,7 @@
                     }));
 
                     const logsContainer = document.getElementById(`pos-logs-${bateriaKey}`);
-                    logsContainer.innerHTML = `<div class="position-log-item">🏎️ <strong>Análise integral de todas as voltas processada com sucesso.</strong></div>`;
+                    logsContainer.innerHTML = `<div class="position-log-item">🏎️ <strong>Análise de posições carregada integralmente via JSON.</strong></div>`;
                 }
 
                 if (modulosSelecionados.includes('mod-classificacao-analise')) {
@@ -615,7 +561,7 @@
                                 <td>${item.mediaTxt}</td>
                                 <td>${item.desvio}</td>
                             </tr>
-                            <tr class="sub-row"><td colspan="7"><div class="analysis-subrow-box"><strong class="title">🔍 Diagnóstico Integral - ${item.piloto}</strong>Análise baseada em todas as ${item.voltasTotais} voltas registradas.</div></td></tr>
+                            <tr class="sub-row"><td colspan="7"><div class="analysis-subrow-box"><strong class="title">🔍 Diagnóstico Integral - ${item.piloto}</strong>Análise baseada em todas as ${item.voltasTotais} voltas registradas no arquivo JSON.</div></td></tr>
                         `;
                     });
                 }
