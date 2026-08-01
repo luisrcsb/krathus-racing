@@ -165,27 +165,27 @@
                 </div>
             </section>
 
-            <!-- KPIs -->
+            <!-- KPIs Atualizados -->
             <section class="kpi-grid">
                 <div class="kpi-card">
-                    <span class="kpi-label">Vencedor Selecionado</span>
+                    <span class="kpi-label">Piloto com Mais Vitórias</span>
                     <div class="kpi-value" id="kpi-vencedor">--</div>
                     <span class="kpi-subtext" id="kpi-vencedor-sub">Aguardando dados</span>
                 </div>
                 <div class="kpi-card">
-                    <span class="kpi-label">Melhor Volta Legítima</span>
+                    <span class="kpi-label">Melhor Volta Geral</span>
                     <div class="kpi-value green" id="kpi-melhor-volta">--</div>
                     <span class="kpi-subtext" id="kpi-melhor-volta-sub">--</span>
                 </div>
                 <div class="kpi-card">
                     <span class="kpi-label">Voltas Válidas Analisadas</span>
                     <div class="kpi-value" id="kpi-total-voltas">0</div>
-                    <span class="kpi-subtext">Total de voltas brutas</span>
+                    <span class="kpi-subtext">Total nas sessões marcadas</span>
                 </div>
                 <div class="kpi-card">
                     <span class="kpi-label">Média Global do Grid</span>
                     <div class="kpi-value" id="kpi-media-global">--</div>
-                    <span class="kpi-subtext">Consistência do grid</span>
+                    <span class="kpi-subtext">Média geral das sessões</span>
                 </div>
             </section>
 
@@ -228,7 +228,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v1.3.1 (JSON Pilotos Reais)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v1.3.2 (KPIs Avançados)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -314,7 +314,6 @@
                             let soma = laps.reduce((a, b) => a + b, 0);
                             let media = laps.length > 0 ? soma / laps.length : 0;
                             
-                            // Mapeia rigidamente o nome real do piloto vindo do JSON (piloto, name, competitor, etc.)
                             let nomePilotoReal = item.piloto || item.name || item.competitor || item.driver || "Piloto Desconhecido";
 
                             return {
@@ -353,7 +352,7 @@
 
             localStorage.setItem('krathus_multi_jsons', JSON.stringify(listaJsons));
             atualizarConsolidadoGeral();
-            alert(`Upload em lote concluído! ${files.length} arquivo(s) JSON processado(s) com os pilotos reais.`);
+            alert(`Upload em lote concluído! ${files.length} arquivo(s) JSON processado(s) com sucesso.`);
             
             carregarListaArquivos();
             gerarFiltrosDinamicos();
@@ -425,7 +424,6 @@
                 <label class="checkbox-item"><input type="checkbox" value="${key}" class="filter-bateria" checked onchange="atualizarDashboard()"> ${bateriasMap[key]}</label>
             `).join('');
 
-            // Lista rigorosamente todos os nomes de pilotos reais encontrados nos relatórios
             pilContainer.innerHTML = Array.from(pilotosSet).map(piloto => `
                 <label class="checkbox-item"><input type="checkbox" value="${piloto}" class="filter-piloto" checked onchange="atualizarDashboard()"> ${piloto}</label>
             `).join('');
@@ -442,23 +440,83 @@
             );
 
             if (dadosFiltrados.length > 0) {
-                document.getElementById('kpi-vencedor').innerText = dadosFiltrados[0].piloto || 'N/A';
-                document.getElementById('kpi-vencedor-sub').innerText = `${bateriasSelecionadas.length} sessão(ões) ativa(s)`;
+                // 1. Piloto com mais vitórias nas sessões selecionadas
+                const vitoriasContador = {};
+                bateriasSelecionadas.forEach(batKey => {
+                    const itensBateria = dadosBase.filter(d => d.bateriaKey === batKey);
+                    if (itensBateria.length > 0) {
+                        // Encontra o vencedor da sessão (quem tem pos "1º" ou menor tempo/maior voltas)
+                        let vencedorSessao = itensBateria.reduce((prev, curr) => {
+                            let posPrev = parseInt(prev.pos) || 99;
+                            let posCurr = parseInt(curr.pos) || 99;
+                            return posCurr < posPrev ? curr : prev;
+                        }, itensBateria[0]);
+                        
+                        if (vencedorSessao && pilotosSelecionados.includes(vencedorSessao.piloto)) {
+                            vitoriasContador[vencedorSessao.piloto] = (vitoriasContador[vencedorSessao.piloto] || 0) + 1;
+                        }
+                    }
+                });
 
-                let melhorVoltaGeral = dadosFiltrados.reduce((prev, curr) => (curr.melhorVoltaVal < prev.melhorVoltaVal) ? curr : prev, dadosFiltrados[0]);
-                if (melhorVoltaGeral && melhorVoltaGeral.melhorVoltaVal) {
-                    document.getElementById('kpi-melhor-volta').innerText = `${melhorVoltaGeral.melhorVoltaVal.toFixed(3).replace('.', ',')}s`;
-                    document.getElementById('kpi-melhor-volta-sub').innerText = `${melhorVoltaGeral.piloto} (${melhorVoltaGeral.sessao})`;
+                let maisVitoriasPiloto = "--";
+                let maxVitorias = -1;
+                for (let [piloto, vitorias] of Object.entries(vitoriasContador)) {
+                    if (vitorias > maxVitorias) {
+                        maxVitorias = vitorias;
+                        maisVitoriasPiloto = piloto;
+                    }
                 }
 
+                document.getElementById('kpi-vencedor').innerText = maisVitoriasPiloto !== "--" ? maisVitoriasPiloto : "Nenhum";
+                document.getElementById('kpi-vencedor-sub').innerText = maxVitorias > 0 ? `${maxVitorias} vitória(s) nas sessões` : "Sem vitórias no filtro";
+
+                // 2. Melhor Volta Geral (com indicação da volta e da sessão)
+                let melhorVoltaGlobalVal = 999999;
+                let melhorVoltaObj = null;
+                let melhorVoltaNum = 0;
+
+                dadosFiltrados.forEach(item => {
+                    if (item.laps && item.laps.length > 0) {
+                        item.laps.forEach((tempo, idx) => {
+                            if (tempo < melhorVoltaGlobalVal) {
+                                melhorVoltaGlobalVal = tempo;
+                                melhorVoltaObj = item;
+                                melhorVoltaNum = idx + 1;
+                            }
+                        });
+                    }
+                });
+
+                if (melhorVoltaObj) {
+                    document.getElementById('kpi-melhor-volta').innerText = `${melhorVoltaGlobalVal.toFixed(3).replace('.', ',')}s`;
+                    document.getElementById('kpi-melhor-volta-sub').innerText = `${melhorVoltaObj.piloto} (Volta ${melhorVoltaNum} - ${melhorVoltaObj.sessao})`;
+                } else {
+                    document.getElementById('kpi-melhor-volta').innerText = "--";
+                    document.getElementById('kpi-melhor-volta-sub').innerText = "Aguardando dados";
+                }
+
+                // 3. Total de Voltas Válidas Analisadas
                 let totalVoltas = dadosFiltrados.reduce((sum, item) => sum + (item.laps ? item.laps.length : 0), 0);
                 document.getElementById('kpi-total-voltas').innerText = totalVoltas;
 
-                let mediaGlobal = dadosFiltrados.reduce((sum, item) => sum + (item.mediaVal || 0), 0) / dadosFiltrados.length;
-                document.getElementById('kpi-media-global').innerText = `${mediaGlobal.toFixed(3).replace('.', ',')}s`;
+                // 4. Média Global de todas as sessões marcadas
+                let somaMedias = 0;
+                let contadorMedias = 0;
+                dadosFiltrados.forEach(item => {
+                    if (item.laps && item.laps.length > 0) {
+                        let somaLaps = item.laps.reduce((a, b) => a + b, 0);
+                        somaMedias += (somaLaps / item.laps.length);
+                        contadorMedias++;
+                    }
+                });
+                let mediaGlobal = contadorMedias > 0 ? (somaMedias / contadorMedias) : 0;
+                document.getElementById('kpi-media-global').innerText = mediaGlobal > 0 ? `${mediaGlobal.toFixed(3).replace('.', ',')}s` : "--";
+
             } else {
                 document.getElementById('kpi-vencedor').innerText = "--";
+                document.getElementById('kpi-vencedor-sub').innerText = "Aguardando dados";
                 document.getElementById('kpi-melhor-volta').innerText = "--";
+                document.getElementById('kpi-melhor-volta-sub').innerText = "--";
                 document.getElementById('kpi-total-voltas').innerText = "0";
                 document.getElementById('kpi-media-global').innerText = "--";
             }
@@ -511,7 +569,6 @@
                 sessionBlock.innerHTML = html;
                 mainContainer.appendChild(sessionBlock);
 
-                // Gráfico de Ritmo com todos os pilotos reais
                 if (modulosSelecionados.includes('mod-grafico')) {
                     let maxV = Math.max(...dadosSessao.map(d => d.laps ? d.laps.length : 0));
                     const labels = Array.from({ length: maxV }, (_, i) => `V${i+1}`);
