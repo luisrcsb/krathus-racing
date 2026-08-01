@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Krathus Racing - Central de Telemetria JSON</title>
+    <title>Krathus Racing - Central de Telemetria</title>
     <!-- Chart.js para renderizar os gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -40,6 +40,9 @@
         .btn { padding: 10px 18px; border-radius: 8px; border: none; font-weight: 600; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: opacity 0.2s; }
         .btn-primary { background-color: var(--accent-red); color: #fff; }
         .btn-secondary { background-color: #2b384e; color: var(--text-main); }
+        .btn-text-action { background: transparent; border: none; color: var(--accent-blue); font-size: 0.78rem; font-weight: 600; cursor: pointer; padding: 0; text-align: left; }
+        .btn-text-action:hover { text-decoration: underline; }
+
         .btn-pdf-global { background: linear-gradient(135deg, #ff5722 0%, #e63946 100%); color: #ffffff; font-size: 0.95rem; padding: 12px 24px; font-weight: 700; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 4px 15px rgba(255, 87, 34, 0.4); width: fit-content; }
 
         .tab-content { display: none; flex-direction: column; gap: 20px; }
@@ -49,7 +52,9 @@
         .filters-card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 18px; }
         .filters-grid { display: grid; grid-template-columns: 1fr 1fr 1.3fr; gap: 20px; }
         .filter-group { display: flex; flex-direction: column; gap: 12px; }
+        .filter-group-header { display: flex; justify-content: space-between; align-items: center; }
         .filter-group label.group-title { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+        
         .checkbox-container { background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 10px; max-height: 150px; overflow-y: auto; }
         .checkbox-item { display: flex; align-items: center; gap: 10px; font-size: 0.88rem; color: var(--text-main); cursor: pointer; }
         .checkbox-item input[type="checkbox"] { accent-color: var(--accent-red); width: 16px; height: 16px; cursor: pointer; }
@@ -123,7 +128,7 @@
             <div class="brand-title">
                 <div>
                     <h1>🏁 KRATHUS RACING</h1>
-                    <p>Central de Telemetria JSON</p>
+                    <p>Central de Telemetria</p>
                 </div>
             </div>
             
@@ -142,7 +147,10 @@
             <section class="filters-card">
                 <div class="filters-grid">
                     <div class="filter-group">
-                        <label class="group-title">SESSÕES / BATERIAS</label>
+                        <div class="filter-group-header">
+                            <label class="group-title">SESSÕES / BATERIAS</label>
+                            <button class="btn-text-action" onclick="limparSelecaoBaterias()">🗑️ Limpar Seleção</button>
+                        </div>
                         <div class="checkbox-container" id="filtro-baterias-container">
                             <span style="font-size:0.85rem; color: var(--text-muted);">Nenhum arquivo JSON carregado.</span>
                         </div>
@@ -234,7 +242,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v1.3.7 (Advanced Consistency Analysis)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v1.3.8 (Filters & Clear Selection)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -426,13 +434,21 @@
                 return;
             }
 
-            batContainer.innerHTML = Object.keys(bateriasMap).map(key => `
+            // Ordena as baterias em ordem decrescente (da última para a primeira)
+            const bateriasKeysOrdenadas = Object.keys(bateriasMap).reverse();
+
+            batContainer.innerHTML = bateriasKeysOrdenadas.map(key => `
                 <label class="checkbox-item"><input type="checkbox" value="${key}" class="filter-bateria" checked onchange="atualizarDashboard()"> ${bateriasMap[key]}</label>
             `).join('');
 
             pilContainer.innerHTML = Array.from(pilotosSet).map(piloto => `
                 <label class="checkbox-item"><input type="checkbox" value="${piloto}" class="filter-piloto" checked onchange="atualizarDashboard()"> ${piloto}</label>
             `).join('');
+        }
+
+        function limparSelecaoBaterias() {
+            document.querySelectorAll('.filter-bateria').forEach(cb => cb.checked = false);
+            atualizarDashboard();
         }
 
         function atualizarDashboard() {
@@ -542,7 +558,10 @@
                 return;
             }
 
-            bateriasSelecionadas.forEach((bateriaKey) => {
+            // Exibe as baterias selecionadas na ordem decrescente (da última para a primeira selecionada)
+            const bateriasOrdenadasExibicao = [...bateriasSelecionadas].reverse();
+
+            bateriasOrdenadasExibicao.forEach((bateriaKey) => {
                 const dadosSessao = dadosBase.filter(d => d.bateriaKey === bateriaKey && pilotosSelecionados.includes(d.piloto));
                 if (dadosSessao.length === 0) return;
 
@@ -710,11 +729,10 @@
                     logsContainer.innerHTML = logsHtml;
                 }
 
-                // 3. Classificação & Consistência com Análise Diagnóstica Avançada baseada em Desvio Padrão
+                // 3. Classificação & Consistência
                 if (modulosSelecionados.includes('mod-classificacao-analise')) {
                     const tbody = document.getElementById(`tabela-unificada-${bateriaKey}`);
                     dadosSessao.forEach(item => {
-                        // Cálculo detalhado do Desvio Padrão e Diagnóstico Técnico
                         let laps = item.laps || [];
                         let mediaVal = item.mediaVal || (laps.length > 0 ? laps.reduce((a,b)=>a+b,0)/laps.length : 0);
                         
@@ -722,7 +740,6 @@
                         let stdDevCalc = Math.sqrt(variancia);
                         let desvioTxt = `±${stdDevCalc.toFixed(3).replace('.',',')}s`;
 
-                        // Análise inteligente de consistência e prováveis causas de erro
                         let nivelConstancia = "";
                         let diagnosticoCausas = "";
 
@@ -737,7 +754,6 @@
                             diagnosticoCausas = "Desvio padrão elevado indica forte instabilidade na sessão. A causa raiz mais provável envolve erros graves de pilotagem (como capotamentos, rodadas completas ou batidas fortes nas barreiras), falhas de aderência com pneus frios/sujos, ou tempo perdido em recuperações de pista.";
                         }
 
-                        // Identifica voltas muito lentas (outliers) na sessão deste piloto
                         let voltasLentas = [];
                         laps.forEach((t, idx) => {
                             if (t > mediaVal + (stdDevCalc * 1.5) && t > 12.0) {
