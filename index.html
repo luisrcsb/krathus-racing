@@ -614,16 +614,16 @@
             <div class="card">
                 <div class="card-header">📂 Envio e Histórico de Arquivos de Prova</div>
                 <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem;">
-                    Faça o upload de novos arquivos de cronometragem (JSON ou exports do ZRound/MYLAPS). Os arquivos enviados ficam salvos e listados permanentemente no navegador.
+                    Faça o upload de novos arquivos de cronometragem em formato JSON. O sistema lerá os dados e atualizará instantaneamente a central de telemetria.
                 </p>
 
                 <!-- Área de Upload -->
                 <div style="background: var(--bg-input); border: 2px dashed var(--border-card); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 24px;">
-                    <input type="file" id="file-input" accept=".json,.txt,.csv" style="display: none;" onchange="processarUploadArquivo(event)">
+                    <input type="file" id="file-input" accept=".json" style="display: none;" onchange="processarUploadArquivo(event)">
                     <button class="btn btn-primary" style="margin: 0 auto;" onclick="document.getElementById('file-input').click()">
-                        📁 Selecionar Arquivo do Computador
+                        📁 Selecionar Arquivo JSON do Computador
                     </button>
-                    <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 10px;">Formatos aceitos: .JSON, .CSV, .TXT</p>
+                    <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 10px;">Formato aceito: .JSON</p>
                 </div>
 
                 <!-- Tabela de Arquivos Armazenados -->
@@ -665,7 +665,7 @@
         </footer>
     </div>
 
-    <!-- Script de Lógica, Abas, Upload e Renderização -->
+    <!-- Script de Lógica, Abas, Upload e Renderização de Dados Reais -->
     <script>
         // Sistema de Abas
         function mudarAba(abaId) {
@@ -682,8 +682,8 @@
             }
         }
 
-        // Simulação de Dados Base de Telemetria
-        const dadosBase = [
+        // Dados de Demonstração (Fallback Padrão)
+        const dadosPadrao = [
             { pos: "1º", piloto: "DJ", bateriaKey: "bateria1", sessao: "Corrida - Bateria 1 (17/07 23:17)", voltas: "29 / 29", tempoTotal: "06:11,204", melhorVoltaVal: 10.898, melhorVoltaTxt: "10,898s (V20)", mediaVal: 12.800, mediaTxt: "12,800s", desvio: "±1,682s", desvioVal: 1.682, badgeColor: "#ffb703",
               laps: [15.0, 12.3, 12.1, 12.0, 11.9, 11.8, 11.7, 12.0, 12.5, 12.2, 12.1, 12.0, 12.3, 12.1, 12.0, 18.8, 12.6, 12.4, 12.2, 10.898, 11.9, 11.9, 15.0, 14.0, 12.2, 12.4, 12.5, 11.8, 20.5],
               positions: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] },
@@ -704,7 +704,7 @@
               laps: [16.8, 16.6, 14.5, 12.5, 12.9, 11.603, 11.8, 16.6, 14.4],
               positions: [3, 3, 3, 3, 3, 3, 3, 3, 3] },
 
-            { pos: "3º", piloto: "Raphael", bateriaKey: "bateria2", sessao: "Corrida - Bateria 2 (17/07 23:39)", voltas: "25 / 25", tempoTotal: "06:07,078", melhorVoltaVal: 11.873, melhorVoltaTxt: "11,873s (V07)", mediaVal: 14.683, mediaTxt: "14,683s", desvio: "±1,865s", desvioVal: 1.865, badgeColor: "#cd7f32",
+            { pos: "3º", piloto: "Raphael", bateriaKey: "bateria2", sessao: "Corrida - Bateria 2 (17/07 23:39)", voltas: "25 / 25", tempoTotal: "06:07,078", melhorVoltaVal: 11.873, melhorVoltaTxt: "11.873s (V07)", mediaVal: 14.683, mediaTxt: "14,683s", desvio: "±1,865s", desvioVal: 1.865, badgeColor: "#cd7f32",
               laps: [16.0, 15.5, 14.2, 13.0, 12.8, 12.2, 11.873, 12.5, 13.0, 13.2, 13.5, 14.0, 13.8, 13.5, 13.2, 13.0, 13.5, 13.8, 14.0, 13.5, 13.2, 13.0, 13.5, 13.8, 14.0],
               positions: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3] }
         ];
@@ -717,15 +717,24 @@
             atualizarDashboard();
         });
 
-        // Gerenciamento de Arquivos via LocalStorage
+        // Gerenciamento de Arquivos e Leitura Real do JSON
         function inicializarArquivosPadrao() {
             let salvos = localStorage.getItem('krathus_arquivos');
             if (!salvos) {
                 let arquivosIniciais = [
-                    { id: 1, nome: "corrida_bateria_1707_oficial.json", data: "17/07/2026 23:45", tamanho: "45 KB" }
+                    { id: 1, nome: "corrida_bateria_1707_oficial.json", data: "17/07/2026 23:45", tamanho: "45 KB", dados: dadosPadrao }
                 ];
                 localStorage.setItem('krathus_arquivos', JSON.stringify(arquivosIniciais));
+                localStorage.setItem('krathus_dados_ativos', JSON.stringify(dadosPadrao));
             }
+        }
+
+        function obterDadosAtivos() {
+            let dadosSalvos = localStorage.getItem('krathus_dados_ativos');
+            if (dadosSalvos) {
+                try { return JSON.parse(dadosSalvos); } catch(e) { return dadosPadrao; }
+            }
+            return dadosPadrao;
         }
 
         function carregarListaArquivos() {
@@ -743,6 +752,7 @@
                     <td>${arq.data}</td>
                     <td>${arq.tamanho}</td>
                     <td style="text-align: right;">
+                        <button class="btn btn-primary" style="padding: 5px 10px; font-size: 0.8rem; display: inline-flex; margin-right: 6px;" onclick="ativarArquivo(${arq.id})">⚡ Usar Dados</button>
                         <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem; display: inline-flex;" onclick="removerArquivo(${arq.id})">🗑️ Excluir</button>
                     </td>
                 </tr>
@@ -753,21 +763,52 @@
             const file = event.target.files[0];
             if (!file) return;
 
-            let arquivos = JSON.parse(localStorage.getItem('krathus_arquivos') || '[]');
-            
-            let novoArquivo = {
-                id: Date.now(),
-                nome: file.name,
-                data: new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}),
-                tamanho: (file.size / 1024).toFixed(1) + ' KB'
-            };
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const conteudoJSON = JSON.parse(e.target.result);
+                    
+                    if (Array.isArray(conteudoJSON) && conteudoJSON.length > 0) {
+                        let arquivos = JSON.parse(localStorage.getItem('krathus_arquivos') || '[]');
+                        
+                        let novoArquivo = {
+                            id: Date.now(),
+                            nome: file.name,
+                            data: new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}),
+                            tamanho: (file.size / 1024).toFixed(1) + ' KB',
+                            dados: conteudoJSON
+                        };
 
-            arquivos.push(novoArquivo);
-            localStorage.setItem('krathus_arquivos', JSON.stringify(arquivos));
-            
-            alert(`Arquivo "${file.name}" importado e listado com sucesso!`);
-            carregarListaArquivos();
-            mudarAba('telemetria');
+                        arquivos.push(novoArquivo);
+                        localStorage.setItem('krathus_arquivos', JSON.stringify(arquivos));
+                        
+                        // Define automaticamente como os dados ativos do dashboard
+                        localStorage.setItem('krathus_dados_ativos', JSON.stringify(conteudoJSON));
+
+                        alert(`Sucesso! O arquivo "${file.name}" foi importado e os dados da telemetria foram atualizados.`);
+                        carregarListaArquivos();
+                        mudarAba('telemetria');
+                        atualizarDashboard();
+                    } else {
+                        alert("Erro: O arquivo JSON enviado não possui o formato de dados esperado.");
+                    }
+                } catch (erro) {
+                    alert("Erro ao ler o arquivo JSON. Verifique a formatação.");
+                    console.error(erro);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function ativarArquivo(id) {
+            let arquivos = JSON.parse(localStorage.getItem('krathus_arquivos') || '[]');
+            let arquivoEncontrado = arquivos.find(a => a.id === id);
+            if (arquivoEncontrado && arquivoEncontrado.dados) {
+                localStorage.setItem('krathus_dados_ativos', JSON.stringify(arquivoEncontrado.dados));
+                alert(`Dados do arquivo "${arquivoEncontrado.nome}" ativados com sucesso!`);
+                mudarAba('telemetria');
+                atualizarDashboard();
+            }
         }
 
         function removerArquivo(id) {
@@ -779,8 +820,9 @@
             }
         }
 
-        // Lógica de Atualização do Dashboard de Telemetria
+        // Lógica de Atualização do Dashboard utilizando os dados ativos
         function atualizarDashboard() {
+            const dadosBase = obterDadosAtivos();
             const bateriasSelecionadas = Array.from(document.querySelectorAll('.filter-bateria:checked')).map(cb => cb.value);
             const pilotosSelecionados = Array.from(document.querySelectorAll('.filter-piloto:checked')).map(cb => cb.value);
             const modulosSelecionados = Array.from(document.querySelectorAll('.filter-modulo:checked')).map(cb => cb.value);
@@ -814,10 +856,10 @@
                 document.getElementById('kpi-media-global').innerText = "--";
             }
 
-            renderizarSessõesCompletas(bateriasSelecionadas, pilotosSelecionados, modulosSelecionados);
+            renderizarSessõesCompletas(dadosBase, bateriasSelecionadas, pilotosSelecionados, modulosSelecionados);
         }
 
-        function renderizarSessõesCompletas(bateriasSelecionadas, pilotosSelecionados, modulosSelecionados) {
+        function renderizarSessõesCompletas(dadosBase, bateriasSelecionadas, pilotosSelecionados, modulosSelecionados) {
             chartInstances.forEach(chart => chart.destroy());
             chartInstances = [];
 
@@ -901,21 +943,21 @@
                     let maxVoltas = Math.max(...dadosSessao.map(d => d.laps.length));
                     const labelsLapByLap = Array.from({ length: maxVoltas }, (_, i) => `V${i + 1}`);
                     const datasets = dadosSessao.map(d => ({
-                        label: d.piloto, data: d.laps, borderColor: pilotoCores[d.piloto], backgroundColor: pilotoCores[d.piloto], borderWidth: 2, tension: 0.2, pointRadius: 3
+                        label: d.piloto, data: d.laps, borderColor: pilotoCores[d.piloto] || '#3a86ff', backgroundColor: pilotoCores[d.piloto] || '#3a86ff', borderWidth: 2, tension: 0.2, pointRadius: 3
                     }));
                     const ctx = document.getElementById(chartId).getContext('2d');
                     chartInstances.push(new Chart(ctx, {
                         type: 'line', data: { labels: labelsLapByLap, datasets },
-                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#8492a6' } } }, scales: { x: { grid: { color: '#1c2638' }, ticks: { color: '#8492a6' } }, y: { grid: { color: '#1c2638' }, ticks: { color: '#8492a6' }, min: 10, max: 36 } } }
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#8492a6' } } }, scales: { x: { grid: { color: '#1c2638' }, ticks: { color: '#8492a6' } }, y: { grid: { color: '#1c2638' }, ticks: { color: '#8492a6' } } } }
                     }));
                 }
 
                 // Render Gráfico de Posição
-                if (modulosSelecionados.includes('mod-grafico-posicao')) {
-                    let maxVoltasPos = Math.max(...dadosSessao.map(d => d.positions.length));
+                if (modulosSelecionados.includes('mod-grafico-posicao') && dadosSessao[0].positions) {
+                    let maxVoltasPos = Math.max(...dadosSessao.map(d => d.positions ? d.positions.length : 0));
                     const labelsPos = Array.from({ length: maxVoltasPos }, (_, i) => `V${i + 1}`);
                     const datasetsPos = dadosSessao.map(d => ({
-                        label: d.piloto, data: d.positions, borderColor: pilotoCores[d.piloto], backgroundColor: pilotoCores[d.piloto], borderWidth: 3, tension: 0.2, pointRadius: 4
+                        label: d.piloto, data: d.positions || [], borderColor: pilotoCores[d.piloto] || '#3a86ff', backgroundColor: pilotoCores[d.piloto] || '#3a86ff', borderWidth: 3, tension: 0.2, pointRadius: 4
                     }));
                     const ctxPos = document.getElementById(chartPosId).getContext('2d');
                     chartInstances.push(new Chart(ctxPos, {
@@ -927,9 +969,11 @@
                     const logsContainer = document.getElementById(`pos-logs-${bateriaKey}`);
                     let logsHTML = `<div class="position-log-item">🏎️ <strong>Largada (Volta 1):</strong> Alinhamento cruzado com sucesso.</div>`;
                     dadosSessao.forEach(d => {
-                        for (let v = 1; v < d.positions.length; v++) {
-                            if (d.positions[v] < d.positions[v-1]) {
-                                logsHTML += `<div class="position-log-item">⚡ <strong>Volta ${v+1}:</strong> <span class="tag-gain">Ultrapassagem!</span> <strong>${d.piloto}</strong> subiu para o ${d.positions[v]}º lugar.</div>`;
+                        if (d.positions) {
+                            for (let v = 1; v < d.positions.length; v++) {
+                                if (d.positions[v] < d.positions[v-1]) {
+                                    logsHTML += `<div class="position-log-item">⚡ <strong>Volta ${v+1}:</strong> <span class="tag-gain">Ultrapassagem!</span> <strong>${d.piloto}</strong> subiu para o ${d.positions[v]}º lugar.</div>`;
+                                }
                             }
                         }
                     });
@@ -943,7 +987,7 @@
                         let diag = item.desvioVal <= 1.7 ? "Alta consistência e ritmo homogêneo sem incidentes." : "Oscilação leve por disputas em pista.";
                         tabelaCorpo.innerHTML += `
                             <tr class="main-row">
-                                <td><span class="pos-badge" style="background:${item.badgeColor};">${item.pos}</span></td>
+                                <td><span class="pos-badge" style="background:${item.badgeColor || '#ffb703'};">${item.pos}</span></td>
                                 <td><strong>${item.piloto}</strong></td>
                                 <td><span class="session-badge">${item.sessao}</span></td>
                                 <td>${item.voltas}</td>
@@ -961,7 +1005,7 @@
                 if (modulosSelecionados.includes('mod-tabela-geral')) {
                     const headerLap = document.getElementById(`head-lapbyLap-${bateriaKey}`);
                     const bodyLap = document.getElementById(`body-lapbyLap-${bateriaKey}`);
-                    dadosSessao.forEach(d => headerLap.innerHTML += `<th><span style="color:${pilotoCores[d.piloto]}">●</span> ${d.piloto}</th>`);
+                    dadosSessao.forEach(d => headerLap.innerHTML += `<th><span style="color:${pilotoCores[d.piloto] || '#fff'}">●</span> ${d.piloto}</th>`);
                     
                     let maxV = Math.max(...dadosSessao.map(d => d.laps.length));
                     for (let i = 0; i < maxV; i++) {
