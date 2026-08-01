@@ -63,6 +63,12 @@
         .kpi-value.green { color: var(--accent-green); }
         .kpi-subtext { font-size: 0.8rem; color: var(--text-muted); }
 
+        /* Cabeçalho da Bateria */
+        .session-block-header { background: linear-gradient(135deg, var(--bg-card-header) 0%, var(--bg-card) 100%); border: 1px solid var(--border-card); border-left: 5px solid var(--accent-red); border-radius: 10px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .session-block-title { font-size: 1.15rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 10px; }
+        .session-block-meta { font-size: 0.85rem; color: var(--text-muted); display: flex; gap: 15px; align-items: center; }
+        .session-winner-tag { background: rgba(255, 183, 3, 0.15); color: var(--accent-gold); border: 1px solid var(--accent-gold); padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; }
+
         .session-blocks-container { display: flex; flex-direction: column; gap: 30px; }
         .session-block { display: flex; flex-direction: column; gap: 20px; background: rgba(21, 28, 40, 0.4); border: 1px solid var(--border-card); border-radius: 14px; padding: 20px; }
         .card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px; }
@@ -228,7 +234,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v1.3.5 (Strict Race Position Rank)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v1.3.6 (Session Header Support)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -541,12 +547,33 @@
                 if (dadosSessao.length === 0) return;
 
                 const nomeSessao = dadosSessao[0].sessao || bateriaKey;
+                
+                // Determina o vencedor da bateria para exibir no cabeçalho
+                let todosDaBateria = dadosBase.filter(d => d.bateriaKey === bateriaKey);
+                let vencedorSessaoObj = todosDaBateria.reduce((prev, curr) => {
+                    let pPrev = parseInt(prev.pos) || 99;
+                    let pCurr = parseInt(curr.pos) || 99;
+                    return pCurr < pPrev ? curr : prev;
+                }, todosDaBateria[0]);
+                let nomeVencedorSessao = vencedorSessaoObj ? vencedorSessaoObj.piloto : 'N/A';
+
                 const chartId = `chart-${bateriaKey}`;
                 const chartPosId = `chart-pos-${bateriaKey}`;
 
                 const sessionBlock = document.createElement('div');
                 sessionBlock.className = 'session-block';
-                let html = '';
+                
+                // Inserção do cabeçalho dedicado antes de cada bateria/sessão
+                let html = `
+                    <div class="session-block-header">
+                        <div class="session-block-title">
+                            🏁 Sessão / Bateria: ${nomeSessao}
+                        </div>
+                        <div class="session-block-meta">
+                            <span class="session-winner-tag">🏆 Vencedor: <strong>${nomeVencedorSessao}</strong></span>
+                        </div>
+                    </div>
+                `;
 
                 if (modulosSelecionados.includes('mod-grafico')) {
                     html += `<div class="card"><div class="card-header">Evolução de Ritmo (Lap Times - Total) - ${nomeSessao}</div><div class="chart-container"><canvas id="${chartId}"></canvas></div></div>`;
@@ -583,9 +610,8 @@
                     }));
                 }
 
-                // 2. Gráfico de Posição Volta a Volta estritamente ordenado sem empates de posição
+                // 2. Gráfico de Posição Volta a Volta
                 if (modulosSelecionados.includes('mod-grafico-posicao')) {
-                    let todosDaBateria = dadosBase.filter(d => d.bateriaKey === bateriaKey);
                     let maxVPos = Math.max(...todosDaBateria.map(d => d.laps ? d.laps.length : 0));
                     const labelsPos = Array.from({ length: maxVPos }, (_, i) => `Volta ${i+1}`);
 
@@ -600,17 +626,14 @@
                                 for (let k = 0; k <= Math.min(v, d.laps.length - 1); k++) {
                                     somaAteV += d.laps[k];
                                 }
-                                // Critério de desempate secundário baseado na quantidade de voltas completadas para evitar conflitos estritos
                                 let voltasCompletadas = Math.min(v + 1, d.laps.length);
                                 if (v >= d.laps.length) {
                                     somaAteV += (v - d.laps.length + 1) * 1000;
                                 }
-                                acumuladosVolta.sort
                                 acumuladosVolta.push({ piloto: d.piloto, tempoAcumulado: somaAteV, voltas: voltasCompletadas });
                             }
                         });
 
-                        // Ordenação estrita: 1º quem tem mais voltas completadas; em caso de empate, quem tem menor tempo acumulado. Garante unicidade de posição (1º, 2º, 3º...)
                         acumuladosVolta.sort((a, b) => {
                             if (b.voltas !== a.voltas) {
                                 return b.voltas - a.voltas;
@@ -618,7 +641,6 @@
                             return a.tempoAcumulado - b.tempoAcumulado;
                         });
 
-                        // Atribuição rigorosa de posições inteiras e distintas
                         acumuladosVolta.forEach((item, posIndex) => {
                             matrizPosicoesGeral[item.piloto].push(posIndex + 1);
                         });
@@ -645,7 +667,7 @@
                             maintainAspectRatio: false,
                             scales: {
                                 y: {
-                                    reverse: true, // 1º lugar no topo
+                                    reverse: true,
                                     min: 1,
                                     max: todosDaBateria.length + 0.5,
                                     ticks: {
