@@ -129,7 +129,10 @@
 
         .analysis-subrow-box { background: rgba(28, 38, 59, 0.6); border-left: 4px solid var(--accent-blue); border-radius: 6px; padding: 14px 18px; font-size: 0.86rem; color: var(--text-main); line-height: 1.6; }
         .analysis-subrow-box strong.title { color: var(--accent-blue); text-transform: uppercase; font-size: 0.78rem; display: block; margin-bottom: 6px; letter-spacing: 0.5px; }
+        
+        /* DESTAQUES DE VOLTAS RÁPIDAS NAS TABELAS */
         .fastest-lap-highlight { background-color: rgba(46, 196, 182, 0.15) !important; color: var(--accent-green) !important; font-weight: bold; border-radius: 4px; padding: 4px 8px; border: 1px solid var(--accent-green); }
+        .absolute-fastest-lap-highlight { background-color: rgba(255, 183, 3, 0.25) !important; color: var(--accent-gold) !important; font-weight: bold; border-radius: 4px; padding: 4px 8px; border: 1px solid var(--accent-gold); box-shadow: 0 0 10px rgba(255, 183, 3, 0.2); }
 
         .footer-container { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px 24px; display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 10px; }
         .footer-meta-info { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 16px; font-size: 0.82rem; color: var(--text-muted); background: var(--bg-input); padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border-card); }
@@ -239,10 +242,10 @@
                     Este sistema processa e exibe dados oficiais de telemetria das baterias de automodelismo 1/28 4x4. Utilize os filtros acima para selecionar sessões, alternar pilotos e customizar os módulos de gráficos, posições e tabelas detalhadas.
                 </div>
                 <div class="changelog-box">
-                    <div class="changelog-header">🚀 O que há de novo na Versão 3.7.1:</div>
+                    <div class="changelog-header">🚀 O que há de novo na Versão 3.8.0:</div>
                     <ul class="changelog-list">
-                        <li><strong>Relatório Orquestrado de Cima para Baixo (Top-Down):</strong> A análise volta a volta agora percorre o grid estritamente da 1ª posição em diante, narrando com precisão absoluta quando um líder despenca (ex: Rafael caindo de 1º para 3º) e como os perseguidores herdaram os postos superiores (DJ e Ronaldo).</li>
-                        <li><strong>Filtro de Silêncio Estrito:</strong> Voltas sem alterações de posições continuam totalmente omitidas.</li>
+                        <li><strong>Destaque Dourado para a Volta Mais Rápida Geral:</strong> A volta recorde absoluta entre todas as sessões filtradas agora recebe destaque visual em tom dourado com alto contraste nas tabelas volta a volta.</li>
+                        <li><strong>Relatório Top-Down e Filtros de Silêncio:</strong> Mantida a ordenação correta do pódio e a supressão de giros sem alterações.</li>
                     </ul>
                 </div>
             </section>
@@ -250,7 +253,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v3.7.1 (Ordem Pódio Top-Down no Relatório de Ultrapassagens)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v3.8.0 (Destaque Dourado para Volta Mais Rápida Absoluta)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -342,6 +345,18 @@
                 bateriasSelecionadas.includes(item.bateriaKey) && pilotosSelecionados.includes(item.piloto)
             );
 
+            // Calcula a melhor volta absoluta de todo o conjunto filtrado
+            let melhorVoltaAbsolutaVal = 999999;
+            dadosBase.forEach(item => {
+                if (item.laps && item.laps.length > 0) {
+                    item.laps.forEach(tempo => {
+                        if (tempo < melhorVoltaAbsolutaVal) {
+                            melhorVoltaAbsolutaVal = tempo;
+                        }
+                    });
+                }
+            });
+
             if (dadosFiltrados.length > 0) {
                 const vitoriasContador = {};
                 bateriasSelecionadas.forEach(batKey => {
@@ -419,7 +434,7 @@
                 document.getElementById('kpi-media-global').innerText = "--";
             }
 
-            renderizarSessõesCompletas(dadosBase, bateriasSelecionadas, pilotosSelecionados, modulosSelecionados);
+            renderizarSessõesCompletas(dadosBase, bateriasSelecionadas, pilotosSelecionados, modulosSelecionados, melhorVoltaAbsolutaVal);
         }
 
         window.compartilharCorrida = function(bateriaKey, nomeSessao, vencedor) {
@@ -453,7 +468,7 @@
             }
         };
 
-        function renderizarSessõesCompletas(dadosBase, bateriasSelecionadas, pilotosSelecionados, modulosSelecionados) {
+        function renderizarSessõesCompletas(dadosBase, bateriasSelecionadas, pilotosSelecionados, modulosSelecionados, melhorVoltaAbsolutaVal) {
             chartInstances.forEach(chart => chart.destroy());
             chartInstances = [];
 
@@ -602,7 +617,6 @@
                     const logsContainer = document.getElementById(`pos-logs-${bateriaKey}`);
                     let logsHtml = '';
                     
-                    // 1. RELATO DA 1ª VOLTA (GRID INICIAL)
                     if (maxVPos > 0) {
                         let ordemVolta1 = [];
                         todosDaBateria.forEach(d => {
@@ -614,7 +628,6 @@
                         logsHtml += `<div class="position-log-item">🏁 <strong>1ª Volta:</strong> O grid se consolidou com a seguinte ordem inicial: <strong>${descVolta1}</strong>.</div>`;
                     }
 
-                    // 2. RELATO VOLTA A VOLTA (ORDEM ESTRITA TOP-DOWN: DO 1º COLOCADO EM DIANTE)
                     for (let v = 1; v < maxVPos; v++) {
                         let posNaVoltaAnterior = {};
                         let posNaVoltaAtual = {};
@@ -625,12 +638,9 @@
                             if (arr[v]) posNaVoltaAtual[arr[v]] = d.piloto;
                         });
 
-                        // Cria um array ordenado do 1º colocado ao último na volta ATUAL para garantir a leitura top-down
                         let rankingAtual = [];
                         for (let p = 1; p <= todosDaBateria.length; p++) {
-                            if (posNaVoltaAtual[p]) {
-                                rankingAtual.push({ piloto: posNaVoltaAtual[p], posAtual: p });
-                            }
+                            if (posNaVoltaAtual[p]) rankingAtual.push({ piloto: posNaVoltaAtual[p], posAtual: p });
                         }
 
                         let mudancasNestaVolta = [];
@@ -645,7 +655,6 @@
 
                             if (pAnt > 0 && pAtu > 0 && pAtu !== pAnt) {
                                 if (pAtu < pAnt) {
-                                    // GANHOU POSIÇÃO (Subiu)
                                     let superados = [];
                                     for (let p = pAtu; p < pAnt; p++) {
                                         let pilotoSuperado = posNaVoltaAnterior[p];
@@ -657,7 +666,6 @@
                                     mudancasNestaVolta.push(`🔥 <strong style="color:${obterCorPiloto(d.piloto)}">${d.piloto}</strong> avançou da <span class="tag-gain">${pAnt}ª para a ${pAtu}ª posição</span>${superadosTxt}`);
                                 } 
                                 else if (pAtu > pAnt) {
-                                    // PERDEU POSIÇÃO (Caiu)
                                     let beneficiados = [];
                                     for (let p = pAnt + 1; p <= pAtu; p++) {
                                         let pilotoBeneficiado = posNaVoltaAtual[p];
@@ -671,7 +679,6 @@
                             }
                         });
 
-                        // Se houveram mudanças nesta volta, exibe o bloco ordenado
                         if (mudancasNestaVolta.length > 0) {
                             logsHtml += `<div class="position-log-item">🔄 <strong>Volta ${v+1}:</strong> ${mudancasNestaVolta.join(' | ')}.</div>`;
                         }
@@ -700,7 +707,7 @@
                             nivelConstancia = "🟡 Constância Moderada (Oscilações Intermitentes e Desgaste)";
                             diagnosticoCausas = "O ritmo geral foi competitivo, mas pontuado por variações perceptíveis de desempenho. O desvio padrão nesta faixa aponta para pequenas escapadas de frente/traseira ao forçar o limite de aderência do piso, freadas ligeiramente intempestivas ou micro-tráfego na pista.";
                         } else {
-                            nivelConstancia = "🔴 Baixa Constância (Instabilidade Crítica e Recuperações)";
+                            nivelConstancia = "🔴 Baixa Constância (Instabilidade Кри́tica e Recuperações)";
                             diagnosticoCausas = "O índice de variação indica uma bateria de alto risco ou com eventos severos de perda de tempo. O comportamento aponta para rodadas completas, capotamentos, batidas fortes nas barreiras ou tempo excessivo gasto em manobras de recuperação de pista.";
                         }
 
@@ -750,8 +757,16 @@
                         dadosSessao.forEach(d => {
                             if (d.laps && i < d.laps.length) {
                                 let t = d.laps[i];
+                                let isAbsoluteFast = (Math.abs(t - melhorVoltaAbsolutaVal) < 0.0001);
                                 let isFast = (t === d.melhorVoltaVal);
-                                linha += isFast ? `<td><span class="fastest-lap-highlight">⚡ ${t.toFixed(3).replace('.',',')}s</span></td>` : `<td>${t.toFixed(3).replace('.',',')}s</td>`;
+
+                                if (isAbsoluteFast) {
+                                    linha += `<td><span class="absolute-fastest-lap-highlight" title="Volta Mais Rápida Absoluta Geral!">👑 ${t.toFixed(3).replace('.',',')}s</span></td>`;
+                                } else if (isFast) {
+                                    linha += `<td><span class="fastest-lap-highlight">⚡ ${t.toFixed(3).replace('.',',')}s</span></td>`;
+                                } else {
+                                    linha += `<td>${t.toFixed(3).replace('.',',')}s</td>`;
+                                }
                             } else { linha += `<td>-</td>`; }
                         });
                         bodyLap.innerHTML += `<tr>${linha}</tr>`;
