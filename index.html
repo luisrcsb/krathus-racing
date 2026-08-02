@@ -124,7 +124,7 @@
         .sub-row td { padding: 0 16px 16px 16px !important; border-bottom: 1px solid var(--border-card) !important; }
 
         .pos-badge { background: var(--accent-gold); color: #000; font-weight: bold; font-size: 0.8rem; padding: 4px 8px; border-radius: 4px; display: inline-block; }
-        .session-badge { background: #1d3557; color: var(--accent-blue); padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; display: inline-block; }
+        .session-badge { background: #1d3557; color: var(--accent-blue); padding: 4px 10px; border-radius: 4px; font-size: 0.80rem; font-weight: 600; display: inline-block; }
         .text-green { color: var(--accent-green); font-weight: 700; }
 
         .analysis-subrow-box { background: rgba(28, 38, 59, 0.6); border-left: 4px solid var(--accent-blue); border-radius: 6px; padding: 14px 18px; font-size: 0.86rem; color: var(--text-main); line-height: 1.6; }
@@ -146,8 +146,12 @@
             .header-actions, .filters-card, .btn-pdf-global, .btn-share, .welcome-card { display: none !important; }
             .header { background: #ffffff !important; border: 1px solid #d1d5db !important; }
             .kpi-card { background: #f9fafb !important; border: 1px solid #d1d5db !important; }
-            .card { background: #ffffff !important; border: 1px solid #d1d5db !important; }
-            .position-analysis-container { background: #f8fafc !important; border-left-color: #000 !important; }
+            
+            /* MODIFICAÇÃO DE ALTO CONTRASTE PARA OS GRÁFICOS NA IMPRESSÃO */
+            .card { background: #ffffff !important; border: 1px solid #9ca3af !important; }
+            .chart-container { background-color: #e5e7eb !important; border: 1px solid #9ca3af !important; border-radius: 6px; padding: 10px !important; }
+            
+            .position-analysis-container { background: #f3f4f6 !important; border-left-color: #000 !important; }
             .footer-container { background: #ffffff !important; border: 1px solid #d1d5db !important; }
         }
     </style>
@@ -242,10 +246,10 @@
                     Este sistema processa e exibe dados oficiais de telemetria das baterias de automodelismo 1/28 4x4. Utilize os filtros acima para selecionar sessões, alternar pilotos e customizar os módulos de gráficos, posições e tabelas detalhadas.
                 </div>
                 <div class="changelog-box">
-                    <div class="changelog-header">🚀 O que há de novo na Versão 3.8.0:</div>
+                    <div class="changelog-header">🚀 O que há de novo na Versão 3.8.1:</div>
                     <ul class="changelog-list">
-                        <li><strong>Destaque Dourado para a Volta Mais Rápida Geral:</strong> A volta recorde absoluta entre todas as sessões filtradas agora recebe destaque visual em tom dourado com alto contraste nas tabelas volta a volta.</li>
-                        <li><strong>Relatório Top-Down e Filtros de Silêncio:</strong> Mantida a ordenação correta do pódio e a supressão de giros sem alterações.</li>
+                        <li><strong>Contraste Aprimorado nos Gráficos (Impressão/PDF):</strong> Adicionado fundo cinza médio nos containers e áreas de gráficos no módulo de impressão (`@media print`), garantindo excelente legibilidade das linhas e grids.</li>
+                        <li><strong>Destaque Dourado para a Volta Absoluta:</strong> Mantido o destaque com alto contraste para o recorde geral da pista.</li>
                     </ul>
                 </div>
             </section>
@@ -253,7 +257,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v3.8.0 (Destaque Dourado para Volta Mais Rápida Absoluta)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v3.8.1 (Fundo Cinza para Gráficos na Impressão)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -345,7 +349,6 @@
                 bateriasSelecionadas.includes(item.bateriaKey) && pilotosSelecionados.includes(item.piloto)
             );
 
-            // Calcula a melhor volta absoluta de todo o conjunto filtrado
             let melhorVoltaAbsolutaVal = 999999;
             dadosBase.forEach(item => {
                 if (item.laps && item.laps.length > 0) {
@@ -707,7 +710,7 @@
                             nivelConstancia = "🟡 Constância Moderada (Oscilações Intermitentes e Desgaste)";
                             diagnosticoCausas = "O ritmo geral foi competitivo, mas pontuado por variações perceptíveis de desempenho. O desvio padrão nesta faixa aponta para pequenas escapadas de frente/traseira ao forçar o limite de aderência do piso, freadas ligeiramente intempestivas ou micro-tráfego na pista.";
                         } else {
-                            nivelConstancia = "🔴 Baixa Constância (Instabilidade Кри́tica e Recuperações)";
+                            nivelConstancia = "🔴 Baixa Constância (Instabilidade Crítica e Recuperações)";
                             diagnosticoCausas = "O índice de variação indica uma bateria de alto risco ou com eventos severos de perda de tempo. O comportamento aponta para rodadas completas, capotamentos, batidas fortes nas barreiras ou tempo excessivo gasto em manobras de recuperação de pista.";
                         }
 
