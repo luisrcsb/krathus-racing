@@ -26,7 +26,7 @@
         body { background-color: var(--bg-body); color: var(--text-main); padding: 24px; }
         .dashboard-container { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
 
-        /* AVISO DE MODO PAISAGEM PARA CELULAR (Retrato) - Ajustado para evitar estouro de tela */
+        /* AVISO DE MODO PAISAGEM PARA CELULAR (Retrato) */
         #mobile-orientation-warning {
             display: none;
             position: fixed;
@@ -204,6 +204,7 @@
                             <label class="checkbox-item"><input type="checkbox" value="mod-grafico-posicao" class="filter-modulo" checked onchange="atualizarDashboard()"> 📊 Posição Volta a Volta (Race Position)</label>
                             <label class="checkbox-item"><input type="checkbox" value="mod-classificacao-analise" class="filter-modulo" checked onchange="atualizarDashboard()"> 🏆 Classificação & Consistência</label>
                             <label class="checkbox-item"><input type="checkbox" value="mod-tabela-geral" class="filter-modulo" checked onchange="atualizarDashboard()"> ⏱️ Tabela Geral Volta a Volta</label>
+                            <label class="checkbox-item"><input type="checkbox" value="mod-diffs" class="filter-modulo" checked onchange="atualizarDashboard()"> ⚡ Gaps e Diferenças em Cascata</label>
                         </div>
                     </div>
                 </div>
@@ -243,8 +244,8 @@
                 <div class="changelog-box">
                     <div class="changelog-header">🚀 O que há de novo na Versão Atualizada:</div>
                     <ul class="changelog-list">
-                        <li><strong>Aviso de Orientação Adaptativo:</strong> Correção no redimensionamento do painel de aviso para celular em modo retrato, evitando estourar a tela.</li>
-                        <li><strong>Piloto Atualizado:</strong> Nomenclatura corrigida para <strong>DJ Edgard</strong> em todo o sistema.</li>
+                        <li><strong>Módulo de Gaps em Cascata:</strong> Novo relatório integrado que calcula automaticamente a diferença de tempo (delta) de cada piloto em relação ao concorrente imediatamente à frente.</li>
+                        <li><strong>Layout Otimizado:</strong> Ajustes no aviso mobile e nomenclaturas corrigidas.</li>
                     </ul>
                 </div>
             </section>
@@ -252,7 +253,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v3.8.4 (Aviso Mobile Ajustado)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v3.8.5 (Gaps em Cascata Adicionados)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -524,6 +525,9 @@
                 if (modulosSelecionados.includes('mod-tabela-geral')) {
                     html += `<div class="card"><div class="card-header">Tabela Geral Volta a Volta (Integral) - ${nomeSessao}</div><div class="table-container"><table><thead><tr id="head-lapbyLap-${bateriaKey}"><th>VOLTA</th></tr></thead><tbody id="body-lapbyLap-${bateriaKey}"></tbody></table></div></div>`;
                 }
+                if (modulosSelecionados.includes('mod-diffs')) {
+                    html += `<div class="card"><div class="card-header">⚡ Relatório de Gaps em Cascata (Diferença para o Piloto à Frente) - ${nomeSessao}</div><div class="position-analysis-container" style="border-left-color: var(--accent-green);"><div class="position-analysis-title" style="color: var(--accent-green);">⏱️ Delta Volta a Volta em Relação ao Concorrente Imediato</div><div class="position-log-list" id="diffs-logs-${bateriaKey}"></div></div></div>`;
+                }
 
                 sessionBlock.innerHTML = html;
                 mainContainer.appendChild(sessionBlock);
@@ -684,6 +688,49 @@
 
                     if (logsHtml === '') logsHtml = `<div class="position-log-item">🏎️ Prova estável sem trocas de posição registradas.</div>`;
                     logsContainer.innerHTML = logsHtml;
+                }
+
+                if (modulosSelecionados.includes('mod-diffs')) {
+                    const diffsContainer = document.getElementById(`diffs-logs-${bateriaKey}`);
+                    let diffsHtml = '';
+
+                    for (let v = 0; v < maxVPos; v++) {
+                        let acumuladosVolta = [];
+                        todosDaBateria.forEach(d => {
+                            if (d.laps && d.laps.length > 0) {
+                                let somaAteV = 0;
+                                for (let k = 0; k <= Math.min(v, d.laps.length - 1); k++) {
+                                    somaAteV += d.laps[k];
+                                }
+                                let voltasCompletadas = Math.min(v + 1, d.laps.length);
+                                if (v >= d.laps.length) {
+                                    somaAteV += (v - d.laps.length + 1) * 1000;
+                                }
+                                acumuladosVolta.push({ piloto: d.piloto, tempoAcumulado: somaAteV, voltas: voltasCompletadas });
+                            }
+                        });
+
+                        acumuladosVolta.sort((a, b) => {
+                            if (b.voltas !== a.voltas) return b.voltas - a.voltas;
+                            return a.tempoAcumulado - b.tempoAcumulado;
+                        });
+
+                        let linhaDiffs = [];
+                        for (let i = 0; i < acumuladosVolta.length; i++) {
+                            let atual = acumuladosVolta[i];
+                            let corPiloto = obterCorPiloto(atual.piloto);
+                            if (i === 0) {
+                                linhaDiffs.push(`<strong style="color:${corPiloto}">${atual.piloto}</strong> (Líder)`);
+                            } else {
+                                let anterior = acumuladosVolta[i - 1];
+                                let diff = atual.tempoAcumulado - anterior.tempoAcumulado;
+                                let diffTxt = diff >= 0 ? `+${diff.toFixed(3).replace('.',',')}s` : `${diff.toFixed(3).replace('.',',')}s`;
+                                linhaDiffs.push(`<strong style="color:${corPiloto}">${atual.piloto}</strong> (<span style="color:var(--accent-green);">${diffTxt} de ${anterior.piloto}</span>)`);
+                            }
+                        }
+                        diffsHtml += `<div class="position-log-item">⏱️ <strong>Volta ${v+1}:</strong> ${linhaDiffs.join(' | ')}</div>`;
+                    }
+                    diffsContainer.innerHTML = diffsHtml;
                 }
 
                 if (modulosSelecionados.includes('mod-classificacao-analise')) {
