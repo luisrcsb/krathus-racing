@@ -26,23 +26,25 @@
         body { background-color: var(--bg-body); color: var(--text-main); padding: 24px; }
         .dashboard-container { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
 
-        /* AVISO DE MODO PAISAGEM PARA CELULAR (Retrato) */
+        /* AVISO DE MODO PAISAGEM PARA CELULAR (Retrato) - Ajustado para evitar estouro de tela */
         #mobile-orientation-warning {
             display: none;
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(13, 17, 26, 0.95);
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: rgba(13, 17, 26, 0.96);
             z-index: 9999;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
-            padding: 30px;
-            gap: 20px;
+            padding: 20px;
+            box-sizing: border-box;
+            gap: 15px;
+            overflow-y: auto;
         }
-        .orientation-icon { font-size: 3.5rem; animation: rotatePhone 2s infinite ease-in-out; }
-        .orientation-title { font-size: 1.3rem; font-weight: 700; color: var(--text-title); }
-        .orientation-text { font-size: 0.9rem; color: var(--text-muted); max-width: 320px; line-height: 1.5; }
+        .orientation-icon { font-size: 3rem; animation: rotatePhone 2s infinite ease-in-out; }
+        .orientation-title { font-size: 1.2rem; font-weight: 700; color: var(--text-title); max-width: 90%; }
+        .orientation-text { font-size: 0.85rem; color: var(--text-muted); max-width: 280px; line-height: 1.4; }
         
         @keyframes rotatePhone {
             0% { transform: rotate(0deg); }
@@ -71,7 +73,6 @@
 
         .tab-content { display: flex; flex-direction: column; gap: 20px; }
 
-        /* Welcome / Info Card (No Rodapé) */
         .welcome-card { background: linear-gradient(135deg, var(--bg-card) 0%, rgba(28, 38, 56, 0.7) 100%); border: 1px solid var(--border-card); border-left: 5px solid var(--accent-blue); border-radius: 12px; padding: 22px 24px; display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
         .welcome-title { font-size: 1.1rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 8px; }
         .welcome-text { font-size: 0.9rem; color: var(--text-main); line-height: 1.6; }
@@ -129,7 +130,6 @@
         .analysis-subrow-box { background: rgba(28, 38, 59, 0.6); border-left: 4px solid var(--accent-blue); border-radius: 6px; padding: 14px 18px; font-size: 0.86rem; color: var(--text-main); line-height: 1.6; }
         .analysis-subrow-box strong.title { color: var(--accent-blue); text-transform: uppercase; font-size: 0.78rem; display: block; margin-bottom: 6px; letter-spacing: 0.5px; }
         
-        /* DESTAQUES DE VOLTAS RÁPIDAS NAS TABELAS */
         .fastest-lap-highlight { background-color: rgba(46, 196, 182, 0.15) !important; color: var(--accent-green) !important; font-weight: bold; border-radius: 4px; padding: 4px 8px; border: 1px solid var(--accent-green); }
         .absolute-fastest-lap-highlight { background-color: rgba(255, 183, 3, 0.25) !important; color: var(--accent-gold) !important; font-weight: bold; border-radius: 4px; padding: 4px 8px; border: 1px solid var(--accent-gold); box-shadow: 0 0 10px rgba(255, 183, 3, 0.2); }
 
@@ -238,13 +238,13 @@
             <section class="welcome-card">
                 <div class="welcome-title">📊 Sobre a Central de Telemetria Krathus Racing</div>
                 <div class="welcome-text">
-                    Este sistema processa e exibe dados oficiais de telemetria das baterias de automodelismo 1/28 4x4. Utilize os filtros acima para selecionar sessões, alternar pilotos e customizar os módulos de gráficos, posições e tabelas detalhadas.
+                    Este sistema processa e exibe dados oficiais de telemetria das baterias de automodelismo 1/28. Utilize os filtros acima para selecionar sessões, alternar pilotos e customizar os módulos de gráficos, posições e tabelas detalhadas.
                 </div>
                 <div class="changelog-box">
-                    <div class="changelog-header">🚀 O que há de novo na Versão 3.8.2:</div>
+                    <div class="changelog-header">🚀 O que há de novo na Versão Atualizada:</div>
                     <ul class="changelog-list">
-                        <li><strong>Botão de PDF no Cabeçalho:</strong> O botão de exportação de relatório completo foi realocado para o topo, ficando lado a lado com o botão de resetar filtros.</li>
-                        <li><strong>Manteve-se o Padrão Visual:</strong> Cores, sombras e formatações preservadas integralmente.</li>
+                        <li><strong>Aviso de Orientação Adaptativo:</strong> Correção no redimensionamento do painel de aviso para celular em modo retrato, evitando estourar a tela.</li>
+                        <li><strong>Piloto Atualizado:</strong> Nomenclatura corrigida para <strong>DJ Edgard</strong> em todo o sistema.</li>
                     </ul>
                 </div>
             </section>
@@ -252,7 +252,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v3.8.2 (Botão PDF Realocado para o Cabeçalho)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v3.8.4 (Aviso Mobile Ajustado)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
