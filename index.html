@@ -132,6 +132,10 @@
         
         .fastest-lap-highlight { background-color: rgba(46, 196, 182, 0.15) !important; color: var(--accent-green) !important; font-weight: bold; border-radius: 4px; padding: 4px 8px; border: 1px solid var(--accent-green); }
         .absolute-fastest-lap-highlight { background-color: rgba(255, 183, 3, 0.25) !important; color: var(--accent-gold) !important; font-weight: bold; border-radius: 4px; padding: 4px 8px; border: 1px solid var(--accent-gold); box-shadow: 0 0 10px rgba(255, 183, 3, 0.2); }
+        
+        /* Estilização para o Gap unificado na tabela */
+        .lap-cell-content { display: flex; flex-direction: column; gap: 35px; }
+        .lap-diff-subtext { font-size: 0.75rem; color: var(--accent-green); font-weight: 600; }
 
         .footer-container { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px 24px; display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 10px; }
         .footer-meta-info { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 16px; font-size: 0.82rem; color: var(--text-muted); background: var(--bg-input); padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border-card); }
@@ -148,7 +152,6 @@
             .kpi-card { background: #f9fafb !important; border: 1px solid #d1d5db !important; }
             
             .card { background: #ffffff !important; border: 1px solid #9ca3af !important; }
-            /* Fundo dos gráficos em tom cinza e fontes pretas na impressão */
             .chart-container { background-color: #e5e7eb !important; border: 1px solid #9ca3af !important; border-radius: 6px; padding: 10px !important; }
             
             .position-analysis-container { background: #f3f4f6 !important; border-left-color: #000 !important; }
@@ -205,8 +208,7 @@
                             <label class="checkbox-item"><input type="checkbox" value="mod-grafico" class="filter-modulo" checked onchange="atualizarDashboard()"> 📈 Evolução de Ritmo (Lap Times)</label>
                             <label class="checkbox-item"><input type="checkbox" value="mod-grafico-posicao" class="filter-modulo" checked onchange="atualizarDashboard()"> 📊 Posição Volta a Volta (Race Position)</label>
                             <label class="checkbox-item"><input type="checkbox" value="mod-classificacao-analise" class="filter-modulo" checked onchange="atualizarDashboard()"> 🏆 Classificação & Consistência</label>
-                            <label class="checkbox-item"><input type="checkbox" value="mod-tabela-geral" class="filter-modulo" checked onchange="atualizarDashboard()"> ⏱️ Tabela Geral Volta a Volta</label>
-                            <label class="checkbox-item"><input type="checkbox" value="mod-diffs" class="filter-modulo" checked onchange="atualizarDashboard()"> ⚡ Gaps e Diferenças em Cascata</label>
+                            <label class="checkbox-item"><input type="checkbox" value="mod-tabela-geral" class="filter-modulo" checked onchange="atualizarDashboard()"> ⏱️ Tabela Geral Volta a Volta (com Gaps em Cascata)</label>
                         </div>
                     </div>
                 </div>
@@ -246,8 +248,7 @@
                 <div class="changelog-box">
                     <div class="changelog-header">🚀 O que há de novo na Versão Atualizada:</div>
                     <ul class="changelog-list">
-                        <li><strong>Estilização de Impressão (PDF):</strong> Gráficos com fundo em tom cinza elegíveis e fontes totalmente em preto para relatórios impressos e em PDF.</li>
-                        <li><strong>Gaps em Cascata:</strong> Módulo de diferença para o concorrente à frente integrado.</li>
+                        <li><strong>Tabela Geral Integrada:</strong> Os tempos por volta e os gaps de diferença em cascata para o concorrente à frente agora aparecem combinados em uma única tabela fluida.</li>
                     </ul>
                 </div>
             </section>
@@ -255,7 +256,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v3.8.6 (Estilização PDF Otimizada)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v3.8.7 (Tabela Geral com Gaps Integrados)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -525,10 +526,7 @@
                     html += `<div class="card"><div class="card-header">Classificação & Consistência - ${nomeSessao}</div><div class="table-container"><table><thead><tr><th>POS</th><th>PILOTO</th><th>SESSÃO</th><th>TOTAL DE VOLTAS</th><th>MELHOR</th><th>MÉDIA</th><th>DESVIO</th></tr></thead><tbody id="tabela-unificada-${bateriaKey}"></tbody></table></div></div>`;
                 }
                 if (modulosSelecionados.includes('mod-tabela-geral')) {
-                    html += `<div class="card"><div class="card-header">Tabela Geral Volta a Volta (Integral) - ${nomeSessao}</div><div class="table-container"><table><thead><tr id="head-lapbyLap-${bateriaKey}"><th>VOLTA</th></tr></thead><tbody id="body-lapbyLap-${bateriaKey}"></tbody></table></div></div>`;
-                }
-                if (modulosSelecionados.includes('mod-diffs')) {
-                    html += `<div class="card"><div class="card-header">⚡ Relatório de Gaps em Cascata (Diferença para o Piloto à Frente) - ${nomeSessao}</div><div class="position-analysis-container" style="border-left-color: var(--accent-green);"><div class="position-analysis-title" style="color: var(--accent-green);">⏱️ Delta Volta a Volta em Relação ao Concorrente Imediato</div><div class="position-log-list" id="diffs-logs-${bateriaKey}"></div></div></div>`;
+                    html += `<div class="card"><div class="card-header">Tabela Geral Volta a Volta (com Gaps em Cascata) - ${nomeSessao}</div><div class="table-container"><table><thead><tr id="head-lapbyLap-${bateriaKey}"><th>VOLTA</th></tr></thead><tbody id="body-lapbyLap-${bateriaKey}"></tbody></table></div></div>`;
                 }
 
                 sessionBlock.innerHTML = html;
@@ -692,49 +690,6 @@
                     logsContainer.innerHTML = logsHtml;
                 }
 
-                if (modulosSelecionados.includes('mod-diffs')) {
-                    const diffsContainer = document.getElementById(`diffs-logs-${bateriaKey}`);
-                    let diffsHtml = '';
-
-                    for (let v = 0; v < maxVPos; v++) {
-                        let acumuladosVolta = [];
-                        todosDaBateria.forEach(d => {
-                            if (d.laps && d.laps.length > 0) {
-                                let somaAteV = 0;
-                                for (let k = 0; k <= Math.min(v, d.laps.length - 1); k++) {
-                                    somaAteV += d.laps[k];
-                                }
-                                let voltasCompletadas = Math.min(v + 1, d.laps.length);
-                                if (v >= d.laps.length) {
-                                    somaAteV += (v - d.laps.length + 1) * 1000;
-                                }
-                                acumuladosVolta.push({ piloto: d.piloto, tempoAcumulado: somaAteV, voltas: voltasCompletadas });
-                            }
-                        });
-
-                        acumuladosVolta.sort((a, b) => {
-                            if (b.voltas !== a.voltas) return b.voltas - a.voltas;
-                            return a.tempoAcumulado - b.tempoAcumulado;
-                        });
-
-                        let linhaDiffs = [];
-                        for (let i = 0; i < acumuladosVolta.length; i++) {
-                            let atual = acumuladosVolta[i];
-                            let corPiloto = obterCorPiloto(atual.piloto);
-                            if (i === 0) {
-                                linhaDiffs.push(`<strong style="color:${corPiloto}">${atual.piloto}</strong> (Líder)`);
-                            } else {
-                                let anterior = acumuladosVolta[i - 1];
-                                let diff = atual.tempoAcumulado - anterior.tempoAcumulado;
-                                let diffTxt = diff >= 0 ? `+${diff.toFixed(3).replace('.',',')}s` : `${diff.toFixed(3).replace('.',',')}s`;
-                                linhaDiffs.push(`<strong style="color:${corPiloto}">${atual.piloto}</strong> (<span style="color:var(--accent-green);">${diffTxt} de ${anterior.piloto}</span>)`);
-                            }
-                        }
-                        diffsHtml += `<div class="position-log-item">⏱️ <strong>Volta ${v+1}:</strong> ${linhaDiffs.join(' | ')}</div>`;
-                    }
-                    diffsContainer.innerHTML = diffsHtml;
-                }
-
                 if (modulosSelecionados.includes('mod-classificacao-analise')) {
                     const tbody = document.getElementById(`tabela-unificada-${bateriaKey}`);
                     dadosSessao.forEach(item => {
@@ -801,18 +756,55 @@
                     let maxV = Math.max(...dadosSessao.map(d => d.laps ? d.laps.length : 0));
                     for (let i = 0; i < maxV; i++) {
                         let linha = `<td><strong>Volta ${i+1}</strong></td>`;
+                        
+                        // Cálculo dos tempos acumulados nesta volta exata para gerar os gaps em cascata unificados
+                        let acumuladosVoltaAtual = [];
+                        todosDaBateria.forEach(d => {
+                            if (d.laps && d.laps.length > 0) {
+                                let somaAteV = 0;
+                                for (let k = 0; k <= Math.min(i, d.laps.length - 1); k++) {
+                                    somaAteV += d.laps[k];
+                                }
+                                let voltasCompletadas = Math.min(i + 1, d.laps.length);
+                                if (i >= d.laps.length) {
+                                    somaAteV += (i - d.laps.length + 1) * 1000;
+                                }
+                                acumuladosVoltaAtual.push({ piloto: d.piloto, tempoAcumulado: somaAteV, voltas: voltasCompletadas });
+                            }
+                        });
+
+                        acumuladosVoltaAtual.sort((a, b) => {
+                            if (b.voltas !== a.voltas) return b.voltas - a.voltas;
+                            return a.tempoAcumulado - b.tempoAcumulado;
+                        });
+
                         dadosSessao.forEach(d => {
                             if (d.laps && i < d.laps.length) {
                                 let t = d.laps[i];
                                 let isAbsoluteFast = (Math.abs(t - melhorVoltaAbsolutaVal) < 0.0001);
                                 let isFast = (t === d.melhorVoltaVal);
 
+                                // Identifica o gap deste piloto em relação ao anterior nesta volta
+                                let indexNoRanking = acumuladosVoltaAtual.findIndex(x => x.piloto === d.piloto);
+                                let gapTxt = "";
+                                if (indexNoRanking > 0) {
+                                    let anterior = acumuladosVoltaAtual[indexNoRanking - 1];
+                                    let atualObj = acumuladosVoltaAtual[indexNoRanking];
+                                    let diff = atualObj.tempoAcumulado - anterior.tempoAcumulado;
+                                    gapTxt = diff >= 0 ? `+${diff.toFixed(3).replace('.',',')}s` : `${diff.toFixed(3).replace('.',',')}s`;
+                                } else if (indexNoRanking === 0) {
+                                    gapTxt = "Líder";
+                                }
+
+                                let subtextHtml = gapTxt ? `<div class="lap-diff-subtext">(${gapTxt})</div>` : "";
+
+                                let tempoFormatado = `${t.toFixed(3).replace('.',',')}s`;
                                 if (isAbsoluteFast) {
-                                    linha += `<td><span class="absolute-fastest-lap-highlight" title="Volta Mais Rápida Absoluta Geral!">👑 ${t.toFixed(3).replace('.',',')}s</span></td>`;
+                                    linha += `<td><div class="lap-cell-content"><span class="absolute-fastest-lap-highlight" title="Volta Mais Rápida Absoluta Geral!">👑 ${tempoFormatado}</span>${subtextHtml}</div></td>`;
                                 } else if (isFast) {
-                                    linha += `<td><span class="fastest-lap-highlight">⚡ ${t.toFixed(3).replace('.',',')}s</span></td>`;
+                                    linha += `<td><div class="lap-cell-content"><span class="fastest-lap-highlight">⚡ ${tempoFormatado}</span>${subtextHtml}</div></td>`;
                                 } else {
-                                    linha += `<td>${t.toFixed(3).replace('.',',')}s</td>`;
+                                    linha += `<td><div class="lap-cell-content"><span>${tempoFormatado}</span>${subtextHtml}</div></td>`;
                                 }
                             } else { linha += `<td>-</td>`; }
                         });
