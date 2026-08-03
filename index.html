@@ -139,6 +139,7 @@
         .footer-logo-img { height: 36px; width: auto; object-fit: contain; border-radius: 4px; padding: 3px 6px; background: #ffffff; }
         .footer-copyright { font-size: 0.85rem; color: var(--text-muted); text-align: center; border-top: 1px solid var(--border-card); padding-top: 12px; width: 100%; }
 
+        /* ESTILOS DE IMPRESSÃO / GERAÇÃO DE PDF */
         @media print {
             body, body * { color: #000000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             body { background-color: #ffffff !important; padding: 10px !important; font-size: 11px !important; }
@@ -147,6 +148,7 @@
             .kpi-card { background: #f9fafb !important; border: 1px solid #d1d5db !important; }
             
             .card { background: #ffffff !important; border: 1px solid #9ca3af !important; }
+            /* Fundo dos gráficos em tom cinza e fontes pretas na impressão */
             .chart-container { background-color: #e5e7eb !important; border: 1px solid #9ca3af !important; border-radius: 6px; padding: 10px !important; }
             
             .position-analysis-container { background: #f3f4f6 !important; border-left-color: #000 !important; }
@@ -244,8 +246,8 @@
                 <div class="changelog-box">
                     <div class="changelog-header">🚀 O que há de novo na Versão Atualizada:</div>
                     <ul class="changelog-list">
-                        <li><strong>Módulo de Gaps em Cascata:</strong> Novo relatório integrado que calcula automaticamente a diferença de tempo (delta) de cada piloto em relação ao concorrente imediatamente à frente.</li>
-                        <li><strong>Layout Otimizado:</strong> Ajustes no aviso mobile e nomenclaturas corrigidas.</li>
+                        <li><strong>Estilização de Impressão (PDF):</strong> Gráficos com fundo em tom cinza elegíveis e fontes totalmente em preto para relatórios impressos e em PDF.</li>
+                        <li><strong>Gaps em Cascata:</strong> Módulo de diferença para o concorrente à frente integrado.</li>
                     </ul>
                 </div>
             </section>
@@ -253,7 +255,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v3.8.5 (Gaps em Cascata Adicionados)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v3.8.6 (Estilização PDF Otimizada)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
