@@ -62,7 +62,6 @@
 
         .header-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
         .btn { padding: 10px 18px; border-radius: 8px; border: none; font-weight: 600; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: opacity 0.2s; }
-        .btn-secondary { background-color: #2b384e; color: var(--text-main); }
         .btn-text-action { background: transparent; border: none; color: var(--accent-blue); font-size: 0.78rem; font-weight: 600; cursor: pointer; padding: 0; text-align: left; }
         .btn-text-action:hover { text-decoration: underline; }
 
@@ -175,7 +174,6 @@
                 <p>Central de Telemetria e Análise de Desempenho</p>
             </div>
             <div class="header-actions">
-                <button class="btn btn-secondary" onclick="resetarFiltros()">🔄 Resetar Filtros</button>
                 <button class="btn btn-pdf-global" onclick="gerarRelatórioPDF()">📄 Gerar Relatório PDF Completo</button>
             </div>
         </header>
@@ -248,7 +246,7 @@
                 <div class="changelog-box">
                     <div class="changelog-header">🚀 O que há de novo na Versão Atualizada:</div>
                     <ul class="changelog-list">
-                        <li><strong>Gaps ao Lado do Tempo:</strong> A diferença em cascata agora é exibida lateralmente ao lado do tempo principal de cada volta na tabela integral.</li>
+                        <li><strong>Interface Otimizada:</strong> Botão global de reset removido; limpeza de filtros gerenciada individualmente por seção.</li>
                     </ul>
                 </div>
             </section>
@@ -256,7 +254,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v3.8.8 (Gaps Laterais na Tabela)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v3.8.9 (Filtros Individuais Otimizados)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -810,11 +808,6 @@
                     }
                 }
             });
-        }
-
-        function resetarFiltros() {
-            document.querySelectorAll('.filter-bateria, .filter-piloto, .filter-modulo').forEach(cb => cb.checked = true);
-            atualizarDashboard();
         }
 
         function gerarRelatórioPDF() { window.print(); }
