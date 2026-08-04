@@ -234,7 +234,8 @@
                 <div class="kpi-card">
                     <span class="kpi-label">Média Global do Grid</span>
                     <div class="kpi-value" id="kpi-media-global">--</div>
-                    <span class="kpi-subtext" id="kpi-media-global-sub">Média geral das sessões</span>
+                    <div class="kpi-value" id="kpi-media-global-vel">--</div>
+                    <span class="kpi-subtext">Média geral das sessões</span>
                 </div>
             </section>
 
@@ -256,7 +257,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v3.9.3 (Velocidade km/h na Média Global)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v3.9.4 (Média Global de Velocidade Corrigida)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -409,7 +410,7 @@
                     document.getElementById('kpi-melhor-volta-sub').innerText = `${melhorVoltaObj.piloto} (Volta ${melhorVoltaNum} - ${melhorVoltaObj.sessao})`;
                 } else {
                     document.getElementById('kpi-melhor-volta').innerText = "--";
-                    document.getElementById('kpi-melhor-volta-sub').innerText = "Aguardando dados";
+                    document.getElementById('kpi-melhor-volta-sub').innerText = "--";
                 }
 
                 let totalVoltas = dadosFiltrados.reduce((sum, item) => sum + (item.laps ? item.laps.length : 0), 0);
@@ -417,25 +418,37 @@
 
                 let somaMedias = 0;
                 let contadorMedias = 0;
+                let somaVelocidadesKmh = 0;
+                let contadorVelocidades = 0;
+                const DISTANCIA_PISTA = 26; // metros
+
                 dadosFiltrados.forEach(item => {
                     if (item.laps && item.laps.length > 0) {
                         let somaLaps = item.laps.reduce((a, b) => a + b, 0);
-                        somaMedias += (somaLaps / item.laps.length);
+                        let mediaTempoPiloto = somaLaps / item.laps.length;
+                        somaMedias += mediaTempoPiloto;
                         contadorMedias++;
+
+                        // Velocidade média deste piloto nesta bateria (Distância / Tempo Médio * 3.6)
+                        let velPilotoKmh = (DISTANCIA_PISTA / mediaTempoPiloto) * 3.6;
+                        somaVelocidadesKmh += velPilotoKmh;
+                        contadorVelocidades++;
                     }
                 });
-                let mediaGlobal = contadorMedias > 0 ? (somaMedias / contadorMedias) : 0;
-                
-                if (mediaGlobal > 0) {
-                    const DISTANCIA_PISTA = 26; // metros
-                    let velPistaMediaMs = DISTANCIA_PISTA / mediaGlobal;
-                    let velPistaMediaKmh = velPistaMediaMs * 3.6;
 
+                let mediaGlobal = contadorMedias > 0 ? (somaMedias / contadorMedias) : 0;
+                let mediaVelocidadeGlobalKmh = contadorVelocidades > 0 ? (somaVelocidadesKmh / contadorVelocidades) : 0;
+
+                if (mediaGlobal > 0) {
                     document.getElementById('kpi-media-global').innerText = `${mediaGlobal.toFixed(3).replace('.', ',')}s`;
-                    document.getElementById('kpi-media-global-sub').innerText = `${velPistaMediaKmh.toFixed(1).replace('.', ',')} km/h`;
                 } else {
                     document.getElementById('kpi-media-global').innerText = "--";
-                    document.getElementById('kpi-media-global-sub').innerText = "Média geral das sessões";
+                }
+
+                if (mediaVelocidadeGlobalKmh > 0) {
+                    document.getElementById('kpi-media-global-vel').innerText = `${mediaVelocidadeGlobalKmh.toFixed(1).replace('.', ',')} km/h`;
+                } else {
+                    document.getElementById('kpi-media-global-vel').innerText = "--";
                 }
 
             } else {
@@ -445,7 +458,7 @@
                 document.getElementById('kpi-melhor-volta-sub').innerText = "--";
                 document.getElementById('kpi-total-voltas').innerText = "0";
                 document.getElementById('kpi-media-global').innerText = "--";
-                document.getElementById('kpi-media-global-sub').innerText = "Média geral das sessões";
+                document.getElementById('kpi-media-global-vel').innerText = "--";
             }
 
             renderizarSessõesCompletas(dadosBase, bateriasSelecionadas, pilotosSelecionados, modulosSelecionados, melhorVoltaAbsolutaVal);
