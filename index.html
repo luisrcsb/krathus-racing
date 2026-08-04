@@ -206,6 +206,7 @@
                             <label class="checkbox-item"><input type="checkbox" value="mod-grafico" class="filter-modulo" checked onchange="atualizarDashboard()"> 📈 Evolução de Ritmo (Lap Times)</label>
                             <label class="checkbox-item"><input type="checkbox" value="mod-grafico-posicao" class="filter-modulo" checked onchange="atualizarDashboard()"> 📊 Posição Volta a Volta (Race Position)</label>
                             <label class="checkbox-item"><input type="checkbox" value="mod-log-posicao" class="filter-modulo" checked onchange="atualizarDashboard()"> 📝 Relatório Detalhado de Ultrapassagens</label>
+                            <label class="checkbox-item"><input type="checkbox" value="mod-velocidade" class="filter-modulo" checked onchange="atualizarDashboard()"> 🏎️ Velocidade Média e Escala Real (1/28)</label>
                             <label class="checkbox-item"><input type="checkbox" value="mod-classificacao-analise" class="filter-modulo" checked onchange="atualizarDashboard()"> 🏆 Classificação & Consistência</label>
                             <label class="checkbox-item"><input type="checkbox" value="mod-tabela-geral" class="filter-modulo" checked onchange="atualizarDashboard()"> ⏱️ Tabela Geral Volta a Volta (com Gaps ao Lado)</label>
                         </div>
@@ -247,7 +248,7 @@
                 <div class="changelog-box">
                     <div class="changelog-header">🚀 O que há de novo na Versão Atualizada:</div>
                     <ul class="changelog-list">
-                        <li><strong>Módulo de Relatório de Ultrapassagens Separado:</strong> O log detalhado volta a Volta agora possui sua própria opção de exibição independente na lista de módulos visíveis.</li>
+                        <li><strong>Módulo de Velocidade Média e Escala Real:</strong> Cálculo dinâmico baseado na pista de 26 metros, exibindo a velocidade real na pista e o equivalente proporcional a 190 km/h na escala 1/28.</li>
                     </ul>
                 </div>
             </section>
@@ -255,7 +256,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v3.9.0 (Módulo de Log Isolado)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v3.9.1 (Módulo de Velocidade Real Adicionado)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -524,6 +525,9 @@
                 if (modulosSelecionados.includes('mod-log-posicao')) {
                     html += `<div class="card"><div class="card-header">📝 Relatório Detalhado de Ultrapassagens e Trocas de Posição - ${nomeSessao}</div><div class="position-analysis-container" style="margin-top:0;"><div class="position-analysis-title">Histórico Volta a Volta</div><div class="position-log-list" id="pos-logs-${bateriaKey}"></div></div></div>`;
                 }
+                if (modulosSelecionados.includes('mod-velocidade')) {
+                    html += `<div class="card"><div class="card-header">🏎️ Estatísticas de Velocidade Média e Escala Real (1/28 - Pista 26m) - ${nomeSessao}</div><div class="table-container"><table><thead><tr><th>PILOTO</th><th>MELHOR TEMPO</th><th>VELO. PISTA (Melhor)</th><th>VELO. ESCALA REAL (1/28)</th><th>MÉDIA DA SESSÃO</th><th>VELO. PISTA (Média)</th><th>VELO. ESCALA REAL (Média)</th></tr></thead><tbody id="tabela-velocidade-${bateriaKey}"></tbody></table></div></div>`;
+                }
                 if (modulosSelecionados.includes('mod-classificacao-analise')) {
                     html += `<div class="card"><div class="card-header">Classificação & Consistência - ${nomeSessao}</div><div class="table-container"><table><thead><tr><th>POS</th><th>PILOTO</th><th>SESSÃO</th><th>TOTAL DE VOLTAS</th><th>MELHOR</th><th>MÉDIA</th><th>DESVIO</th></tr></thead><tbody id="tabela-unificada-${bateriaKey}"></tbody></table></div></div>`;
                 }
@@ -694,6 +698,42 @@
                     logsContainer.innerHTML = logsHtml;
                 }
 
+                if (modulosSelecionados.includes('mod-velocidade')) {
+                    const tbodyVel = document.getElementById(`tabela-velocidade-${bateriaKey}`);
+                    const DISTANCIA_PISTA = 26; // em metros
+                    const ESCALA = 28;
+
+                    dadosSessao.forEach(item => {
+                        let laps = item.laps || [];
+                        if (laps.length === 0) return;
+
+                        let melhorTempo = item.melhorVoltaVal || Math.min(...laps);
+                        let somaLaps = laps.reduce((a, b) => a + b, 0);
+                        let mediaTempo = somaLaps / laps.length;
+
+                        // Cálculo da velocidade: V = Distância (26m) / Tempo (s) * 3.6 (para km/h)
+                        let velPistaMelhorMs = DISTANCIA_PISTA / melhorTempo;
+                        let velPistaMelhorKmh = velPistaMelhorMs * 3.6;
+                        let velEscalaMelhorKmh = velPistaMelhorKmh * ESCALA;
+
+                        let velPistaMediaMs = DISTANCIA_PISTA / mediaTempo;
+                        let velPistaMediaKmh = velPistaMediaMs * 3.6;
+                        let velEscalaMediaKmh = velPistaMediaKmh * ESCALA;
+
+                        tbodyVel.innerHTML += `
+                            <tr>
+                                <td><strong>${item.piloto}</strong></td>
+                                <td class="text-green">${melhorTempo.toFixed(3).replace('.',',')}s</td>
+                                <td>${velPistaMelhorKmh.toFixed(2).replace('.',',')} km/h</td>
+                                <td><strong style="color: var(--accent-gold);">${velEscalaMelhorKmh.toFixed(1).replace('.',',')} km/h</strong></td>
+                                <td>${mediaTempo.toFixed(3).replace('.',',')}s</td>
+                                <td>${velPistaMediaKmh.toFixed(2).replace('.',',')} km/h</td>
+                                <td><strong>${velEscalaMediaKmh.toFixed(1).replace('.',',')} km/h</strong></td>
+                            </tr>
+                        `;
+                    });
+                }
+
                 if (modulosSelecionados.includes('mod-classificacao-analise')) {
                     const tbody = document.getElementById(`tabela-unificada-${bateriaKey}`);
                     dadosSessao.forEach(item => {
@@ -713,7 +753,7 @@
                             nivelConstancia = "🟡 Constância Moderada (Oscilações Intermitentes e Desgaste)";
                             diagnosticoCausas = "O ritmo geral foi competitivo, mas pontuado por variações perceptíveis de desempenho. O desvio padrão nesta faixa aponta para pequenas escapadas de frente/traseira ao forçar o limite de aderência do piso, freadas ligeiramente intempestivas ou micro-tráfego na pista.";
                         } else {
-                            nivelConstancia = "🔴 Baixa Constância (Instabilidade Криtica e Recuperações)";
+                            nivelConstancia = "🔴 Baixa Constância (Instabilidade Crítica e Recuperações)";
                             diagnosticoCausas = "O índice de variação indica uma bateria de alto risco ou com eventos severos de perda de tempo. O comportamento aponta para rodadas completas, capotamentos, batidas fortes nas barreiras ou tempo excessivo gasto em manobras de recuperação de pista.";
                         }
 
