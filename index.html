@@ -224,6 +224,7 @@
                 <div class="kpi-card">
                     <span class="kpi-label">Melhor Volta Geral</span>
                     <div class="kpi-value green" id="kpi-melhor-volta">--</div>
+                    <div class="kpi-value" id="kpi-melhor-volta-vel" style="color: var(--accent-gold); margin-top: 2px;">--</div>
                     <span class="kpi-subtext" id="kpi-melhor-volta-sub">--</span>
                 </div>
                 <div class="kpi-card">
@@ -249,7 +250,7 @@
                 <div class="changelog-box">
                     <div class="changelog-header">🚀 O que há de novo na Versão Atualizada:</div>
                     <ul class="changelog-list">
-                        <li><strong>Média Global de Velocidade Escala Real:</strong> Exibição consolidada da média de VELO. ESCALA REAL (Média) de todos os pilotos filtrados logo abaixo da média de tempo.</li>
+                        <li><strong>Melhor Volta Geral e Média Global Escala Real:</strong> Exibição consolidada das velocidades na escala 1/28 logo abaixo dos tempos no painel de KPIs.</li>
                     </ul>
                 </div>
             </section>
@@ -257,7 +258,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v3.9.5 (Média Global Escala Real)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v3.9.6 (Velocidade Escala Real na Melhor Volta)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -406,11 +407,19 @@
                 });
 
                 if (melhorVoltaObj) {
+                    const DISTANCIA_PISTA = 26; // metros
+                    const ESCALA = 28;
+                    let velPistaMelhorMs = DISTANCIA_PISTA / melhorVoltaGlobalVal;
+                    let velPistaMelhorKmh = velPistaMelhorMs * 3.6;
+                    let velEscalaMelhorKmh = velPistaMelhorKmh * ESCALA;
+
                     document.getElementById('kpi-melhor-volta').innerText = `${melhorVoltaGlobalVal.toFixed(3).replace('.', ',')}s`;
+                    document.getElementById('kpi-melhor-volta-vel').innerText = `${velEscalaMelhorKmh.toFixed(1).replace('.', ',')} km/h`;
                     document.getElementById('kpi-melhor-volta-sub').innerText = `${melhorVoltaObj.piloto} (Volta ${melhorVoltaNum} - ${melhorVoltaObj.sessao})`;
                 } else {
                     document.getElementById('kpi-melhor-volta').innerText = "--";
-                    document.getElementById('kpi-melhor-volta-sub').innerText = "--";
+                    document.getElementById('kpi-melhor-volta-vel').innerText = "--";
+                    document.getElementById('kpi-melhor-volta-sub').innerText = "Aguardando dados";
                 }
 
                 let totalVoltas = dadosFiltrados.reduce((sum, item) => sum + (item.laps ? item.laps.length : 0), 0);
@@ -431,7 +440,6 @@
                         contadorMedias++;
 
                         // Cálculo da VELO. ESCALA REAL (Média) para este piloto:
-                        // (Distância / Tempo Médio da Sessão) * 3.6 * ESCALA
                         let velPistaMediaMs = DISTANCIA_PISTA / mediaTempoPiloto;
                         let velPistaMediaKmh = velPistaMediaMs * 3.6;
                         let velEscalaMediaKmh = velPistaMediaKmh * ESCALA;
@@ -460,6 +468,7 @@
                 document.getElementById('kpi-vencedor').innerText = "--";
                 document.getElementById('kpi-vencedor-sub').innerText = "Aguardando dados";
                 document.getElementById('kpi-melhor-volta').innerText = "--";
+                document.getElementById('kpi-melhor-volta-vel').innerText = "--";
                 document.getElementById('kpi-melhor-volta-sub').innerText = "--";
                 document.getElementById('kpi-total-voltas').innerText = "0";
                 document.getElementById('kpi-media-global').innerText = "--";
