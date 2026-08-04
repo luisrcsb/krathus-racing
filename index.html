@@ -92,7 +92,7 @@
         .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
         .kpi-card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; justify-content: space-between; }
         .kpi-label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
-        .kpi-value { font-size: 1.6rem; font-weight: 700; color: var(--text-title); margin: 8px 0 4px 0; }
+        .kpi-value { font-size: 1.5rem; font-weight: 700; color: var(--text-title); margin: 8px 0 4px 0; }
         .kpi-value.green { color: var(--accent-green); }
         .kpi-subtext { font-size: 0.8rem; color: var(--text-muted); }
 
@@ -234,7 +234,7 @@
                 <div class="kpi-card">
                     <span class="kpi-label">Média Global do Grid</span>
                     <div class="kpi-value" id="kpi-media-global">--</div>
-                    <span class="kpi-subtext">Média geral das sessões</span>
+                    <span class="kpi-subtext" id="kpi-media-global-sub">Média geral das sessões</span>
                 </div>
             </section>
 
@@ -256,7 +256,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v3.9.1 (Módulo de Velocidade Real Adicionado)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v3.9.2 (Velocidade Escala Real na Média Global)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -425,7 +425,20 @@
                     }
                 });
                 let mediaGlobal = contadorMedias > 0 ? (somaMedias / contadorMedias) : 0;
-                document.getElementById('kpi-media-global').innerText = mediaGlobal > 0 ? `${mediaGlobal.toFixed(3).replace('.', ',')}s` : "--";
+                
+                if (mediaGlobal > 0) {
+                    const DISTANCIA_PISTA = 26; // metros
+                    const ESCALA = 28;
+                    let velPistaMediaMs = DISTANCIA_PISTA / mediaGlobal;
+                    let velPistaMediaKmh = velPistaMediaMs * 3.6;
+                    let velEscalaMediaKmh = velPistaMediaKmh * ESCALA;
+
+                    document.getElementById('kpi-media-global').innerText = `${mediaGlobal.toFixed(3).replace('.', ',')}s`;
+                    document.getElementById('kpi-media-global-sub').innerText = `Escala Real: ${velEscalaMediaKmh.toFixed(1).replace('.', ',')} km/h`;
+                } else {
+                    document.getElementById('kpi-media-global').innerText = "--";
+                    document.getElementById('kpi-media-global-sub').innerText = "Média geral das sessões";
+                }
 
             } else {
                 document.getElementById('kpi-vencedor').innerText = "--";
@@ -434,6 +447,7 @@
                 document.getElementById('kpi-melhor-volta-sub').innerText = "--";
                 document.getElementById('kpi-total-voltas').innerText = "0";
                 document.getElementById('kpi-media-global').innerText = "--";
+                document.getElementById('kpi-media-global-sub').innerText = "Média geral das sessões";
             }
 
             renderizarSessõesCompletas(dadosBase, bateriasSelecionadas, pilotosSelecionados, modulosSelecionados, melhorVoltaAbsolutaVal);
@@ -711,7 +725,6 @@
                         let somaLaps = laps.reduce((a, b) => a + b, 0);
                         let mediaTempo = somaLaps / laps.length;
 
-                        // Cálculo da velocidade: V = Distância (26m) / Tempo (s) * 3.6 (para km/h)
                         let velPistaMelhorMs = DISTANCIA_PISTA / melhorTempo;
                         let velPistaMelhorKmh = velPistaMelhorMs * 3.6;
                         let velEscalaMelhorKmh = velPistaMelhorKmh * ESCALA;
