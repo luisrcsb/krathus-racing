@@ -234,7 +234,7 @@
                 <div class="kpi-card">
                     <span class="kpi-label">Média Global do Grid</span>
                     <div class="kpi-value" id="kpi-media-global">--</div>
-                    <div class="kpi-value" id="kpi-media-global-vel">--</div>
+                    <div class="kpi-value" id="kpi-media-global-vel" style="color: var(--accent-gold); margin-top: 2px;">--</div>
                     <span class="kpi-subtext">Média geral das sessões</span>
                 </div>
             </section>
@@ -249,7 +249,7 @@
                 <div class="changelog-box">
                     <div class="changelog-header">🚀 O que há de novo na Versão Atualizada:</div>
                     <ul class="changelog-list">
-                        <li><strong>Módulo de Velocidade Média e Escala Real:</strong> Cálculo dinâmico baseado na pista de 26 metros, exibindo a velocidade real na pista e o equivalente proporcional a 190 km/h na escala 1/28.</li>
+                        <li><strong>Média Global de Velocidade Escala Real:</strong> Exibição consolidada da média de VELO. ESCALA REAL (Média) de todos os pilotos filtrados logo abaixo da média de tempo.</li>
                     </ul>
                 </div>
             </section>
@@ -257,7 +257,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v3.9.4 (Média Global de Velocidade Corrigida)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v3.9.5 (Média Global Escala Real)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -418,9 +418,10 @@
 
                 let somaMedias = 0;
                 let contadorMedias = 0;
-                let somaVelocidadesKmh = 0;
-                let contadorVelocidades = 0;
+                let somaVelEscalaMedias = 0;
+                let contadorVelEscala = 0;
                 const DISTANCIA_PISTA = 26; // metros
+                const ESCALA = 28;
 
                 dadosFiltrados.forEach(item => {
                     if (item.laps && item.laps.length > 0) {
@@ -429,15 +430,19 @@
                         somaMedias += mediaTempoPiloto;
                         contadorMedias++;
 
-                        // Velocidade média deste piloto nesta bateria (Distância / Tempo Médio * 3.6)
-                        let velPilotoKmh = (DISTANCIA_PISTA / mediaTempoPiloto) * 3.6;
-                        somaVelocidadesKmh += velPilotoKmh;
-                        contadorVelocidades++;
+                        // Cálculo da VELO. ESCALA REAL (Média) para este piloto:
+                        // (Distância / Tempo Médio da Sessão) * 3.6 * ESCALA
+                        let velPistaMediaMs = DISTANCIA_PISTA / mediaTempoPiloto;
+                        let velPistaMediaKmh = velPistaMediaMs * 3.6;
+                        let velEscalaMediaKmh = velPistaMediaKmh * ESCALA;
+
+                        somaVelEscalaMedias += velEscalaMediaKmh;
+                        contadorVelEscala++;
                     }
                 });
 
                 let mediaGlobal = contadorMedias > 0 ? (somaMedias / contadorMedias) : 0;
-                let mediaVelocidadeGlobalKmh = contadorVelocidades > 0 ? (somaVelocidadesKmh / contadorVelocidades) : 0;
+                let mediaVelEscalaGlobalKmh = contadorVelEscala > 0 ? (somaVelEscalaMedias / contadorVelEscala) : 0;
 
                 if (mediaGlobal > 0) {
                     document.getElementById('kpi-media-global').innerText = `${mediaGlobal.toFixed(3).replace('.', ',')}s`;
@@ -445,8 +450,8 @@
                     document.getElementById('kpi-media-global').innerText = "--";
                 }
 
-                if (mediaVelocidadeGlobalKmh > 0) {
-                    document.getElementById('kpi-media-global-vel').innerText = `${mediaVelocidadeGlobalKmh.toFixed(1).replace('.', ',')} km/h`;
+                if (mediaVelEscalaGlobalKmh > 0) {
+                    document.getElementById('kpi-media-global-vel').innerText = `${mediaVelEscalaGlobalKmh.toFixed(1).replace('.', ',')} km/h`;
                 } else {
                     document.getElementById('kpi-media-global-vel').innerText = "--";
                 }
