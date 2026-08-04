@@ -256,7 +256,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v3.9.2 (Velocidade Escala Real na Média Global)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v3.9.3 (Velocidade km/h na Média Global)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -428,13 +428,11 @@
                 
                 if (mediaGlobal > 0) {
                     const DISTANCIA_PISTA = 26; // metros
-                    const ESCALA = 28;
                     let velPistaMediaMs = DISTANCIA_PISTA / mediaGlobal;
                     let velPistaMediaKmh = velPistaMediaMs * 3.6;
-                    let velEscalaMediaKmh = velPistaMediaKmh * ESCALA;
 
                     document.getElementById('kpi-media-global').innerText = `${mediaGlobal.toFixed(3).replace('.', ',')}s`;
-                    document.getElementById('kpi-media-global-sub').innerText = `Escala Real: ${velEscalaMediaKmh.toFixed(1).replace('.', ',')} km/h`;
+                    document.getElementById('kpi-media-global-sub').innerText = `${velPistaMediaKmh.toFixed(1).replace('.', ',')} km/h`;
                 } else {
                     document.getElementById('kpi-media-global').innerText = "--";
                     document.getElementById('kpi-media-global-sub').innerText = "Média geral das sessões";
