@@ -248,7 +248,7 @@
                 <div class="changelog-box">
                     <div class="changelog-header">🚀 O que há de novo na Versão Atualizada:</div>
                     <ul class="changelog-list">
-                        <li><strong>Banco de Dados Consolidado:</strong> Integrados todos os arquivos PDF de baterias de 17/07/2026, 31/07/2026 e 03/08/2026.</li>
+                        <li><strong>Módulo de Velocidade Média e Escala Real:</strong> Cálculo dinâmico baseado na pista de 26 metros, exibindo a velocidade real na pista e o equivalente proporcional a 190 km/h na escala 1/28.</li>
                     </ul>
                 </div>
             </section>
@@ -256,7 +256,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v3.9.2 (Banco Completo Consolidado)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v3.9.1 (Módulo de Velocidade Real Adicionado)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -266,204 +266,8 @@
         </footer>
     </div>
 
-    <!-- BANCO DE DADOS INTEGRADO NA ÍNTEGRA -->
-    <script>
-        const listaJsonsCache = [
-            {
-                id: 9,
-                bateriaKey: "bateria_09_03_08_2026",
-                sessao: "Bateria 9 - 03/08/2026",
-                dados: [
-                    {
-                        pos: "1º", piloto: "DJ Edgard", sessao: "Bateria 9", voltasTotais: 23,
-                        melhorVoltaTxt: "09,907s", melhorVoltaVal: 9.907, mediaTxt: "10,517s", mediaVal: 10.517, badgeColor: "#ffb703",
-                        laps: [11.272, 10.443, 12.209, 9.950, 10.543, 10.549, 10.444, 10.679, 10.954, 9.907, 11.354, 10.252, 10.284, 10.172, 10.046, 10.418, 10.380, 10.580, 10.157, 10.311, 10.118, 9.967, 10.899]
-                    },
-                    {
-                        pos: "2º", piloto: "Raphael", sessao: "Bateria 9", voltasTotais: 23,
-                        melhorVoltaTxt: "09,089s", melhorVoltaVal: 9.089, mediaTxt: "10,830s", mediaVal: 10.830, badgeColor: "#2b384e",
-                        laps: [11.771, 12.762, 10.139, 10.058, 10.830, 11.283, 11.554, 9.319, 9.674, 11.663, 11.059, 9.331, 12.631, 10.104, 11.597, 9.804, 9.839, 9.089, 11.005, 13.420, 10.652, 9.879, 11.621]
-                    }
-                ]
-            },
-            {
-                id: 8,
-                bateriaKey: "bateria_08_31_07_2026",
-                sessao: "Bateria 8 - 31/07/2026",
-                dados: [
-                    {
-                        pos: "1º", piloto: "Ronaldo", sessao: "Bateria 8", voltasTotais: 20,
-                        melhorVoltaTxt: "09,856s", melhorVoltaVal: 9.856, mediaTxt: "12,259s", mediaVal: 12.259, badgeColor: "#ffb703",
-                        laps: [14.661, 10.775, 10.826, 10.711, 12.210, 10.326, 10.367, 14.737, 21.240, 10.783, 15.060, 13.513, 12.885, 10.580, 9.856, 12.243, 10.970, 11.310, 11.131, 10.992]
-                    },
-                    {
-                        pos: "2º", piloto: "DJ", sessao: "Bateria 8", voltasTotais: 20,
-                        melhorVoltaTxt: "09,944s", melhorVoltaVal: 9.944, mediaTxt: "12,977s", mediaVal: 12.977, badgeColor: "#3a86ff",
-                        laps: [9.944, 11.091, 10.276, 20.979, 10.199, 22.164, 10.630, 10.677, 10.130, 13.986, 12.778, 11.057, 12.463, 10.529, 11.160, 10.807, 14.026, 11.022, 11.410, 24.206]
-                    },
-                    {
-                        pos: "3º", piloto: "Raphael", sessao: "Bateria 8", voltasTotais: 17,
-                        melhorVoltaTxt: "10,319s", melhorVoltaVal: 10.319, mediaTxt: "13,283s", mediaVal: 13.283, badgeColor: "#e63946",
-                        laps: [11.177, 23.734, 14.951, 11.697, 11.446, 14.511, 10.319, 11.912, 11.911, 12.285, 12.312, 13.213, 11.377, 11.975, 10.870, 12.984, 19.140]
-                    }
-                ]
-            },
-            {
-                id: 7,
-                bateriaKey: "bateria_07_31_07_2026",
-                sessao: "Bateria 7 - 31/07/2026",
-                dados: [
-                    {
-                        pos: "1º", piloto: "DJ", sessao: "Bateria 7", voltasTotais: 31,
-                        melhorVoltaTxt: "10,356s", melhorVoltaVal: 10.356, mediaTxt: "11,619s", mediaVal: 11.619, badgeColor: "#ffb703",
-                        laps: [11.844, 11.418, 14.868, 12.240, 11.342, 11.204, 10.705, 11.076, 10.841, 10.605, 10.712, 14.668, 11.137, 10.802, 14.627, 11.847, 12.491, 11.103, 12.126, 11.239, 10.468, 11.790, 12.992, 12.035, 11.087, 10.527, 11.300, 10.485, 11.528, 10.731, 10.356]
-                    },
-                    {
-                        pos: "2º", piloto: "Ronaldo", sessao: "Bateria 7", voltasTotais: 31,
-                        melhorVoltaTxt: "10,136s", melhorVoltaVal: 10.136, mediaTxt: "11,941s", mediaVal: 11.941, badgeColor: "#3a86ff",
-                        laps: [14.797, 15.797, 11.811, 11.306, 10.136, 13.812, 10.989, 11.089, 13.072, 10.564, 14.950, 11.474, 11.034, 14.481, 11.355, 15.536, 10.803, 10.830, 10.659, 11.053, 11.382, 10.317, 11.592, 10.913, 14.127, 11.300, 10.657, 10.996, 10.449, 10.627, 12.253]
-                    },
-                    {
-                        pos: "3º", piloto: "Raphael", sessao: "Bateria 7", voltasTotais: 22,
-                        melhorVoltaTxt: "09,317s", melhorVoltaVal: 9.317, mediaTxt: "16,490s", mediaVal: 16.490, badgeColor: "#e63946",
-                        laps: [12.069, 11.702, 9.847, 11.643, 9.725, 12.061, 10.062, 10.052, 9.796, 10.269, 9.965, 10.321, 10.327, 9.317, 10.542, 18.001, 18.541, 12.733, 13.502, 15.068, 116.7, 10.475]
-                    }
-                ]
-            },
-            {
-                id: 6,
-                bateriaKey: "bateria_06_31_07_2026",
-                sessao: "Bateria 6 - 31/07/2026",
-                dados: [
-                    {
-                        pos: "1º", piloto: "Raphael", sessao: "Bateria 6", voltasTotais: 32,
-                        melhorVoltaTxt: "09,406s", melhorVoltaVal: 9.406, mediaTxt: "11,514s", mediaVal: 11.514, badgeColor: "#ffb703",
-                        laps: [11.010, 10.737, 9.687, 11.768, 11.320, 11.937, 11.814, 10.793, 11.270, 12.038, 10.967, 10.527, 13.385, 12.755, 11.327, 9.406, 10.868, 12.436, 11.414, 10.535, 13.305, 10.812, 11.272, 15.258, 12.467, 10.507, 10.056, 13.766, 10.056, 10.222, 10.116, 11.053]
-                    },
-                    {
-                        pos: "2º", piloto: "Ronaldo", sessao: "Bateria 6", voltasTotais: 31,
-                        melhorVoltaTxt: "09,938s", melhorVoltaVal: 9.938, mediaTxt: "11,666s", mediaVal: 11.666, badgeColor: "#3a86ff",
-                        laps: [12.446, 10.340, 11.178, 10.457, 9.938, 10.366, 11.341, 15.684, 11.002, 10.854, 11.528, 10.465, 10.587, 12.860, 10.634, 11.804, 11.097, 10.973, 10.716, 10.912, 11.188, 11.039, 12.350, 14.022, 12.937, 10.553, 10.309, 10.804, 11.177, 11.256, 11.630]
-                    },
-                    {
-                        pos: "3º", piloto: "DJ", sessao: "Bateria 6", voltasTotais: 31,
-                        melhorVoltaTxt: "09,880s", melhorVoltaVal: 9.880, mediaTxt: "11,930s", mediaVal: 11.930, badgeColor: "#e63946",
-                        laps: [11.165, 9.880, 14.818, 10.275, 17.859, 10.214, 11.704, 12.405, 10.723, 9.978, 11.433, 12.314, 11.240, 9.837, 9.861, 29.759, 10.770, 15.896, 11.947, 12.703, 11.503, 9.935, 11.588, 12.068, 11.240, 10.693, 13.504, 13.605, 10.083, 12.416, 12.380]
-                    }
-                ]
-            },
-            {
-                id: 5,
-                bateriaKey: "bateria_05_31_07_2026",
-                sessao: "Bateria 5 - 31/07/2026",
-                dados: [
-                    {
-                        pos: "1º", piloto: "DJ", sessao: "Bateria 5", voltasTotais: 30,
-                        melhorVoltaTxt: "09,855s", melhorVoltaVal: 9.855, mediaTxt: "12,331s", mediaVal: 12.331, badgeColor: "#ffb703",
-                        laps: [11.898, 13.260, 10.885, 11.581, 19.614, 10.646, 13.165, 13.168, 10.571, 17.027, 11.464, 10.556, 10.839, 9.855, 10.367, 13.437, 11.589, 11.504, 11.303, 13.172, 24.523, 10.824, 10.707, 11.268, 11.458, 10.917, 11.430, 10.781, 11.491, 10.631]
-                    },
-                    {
-                        pos: "2º", piloto: "Ronaldo", sessao: "Bateria 5", voltasTotais: 28,
-                        melhorVoltaTxt: "10,091s", melhorVoltaVal: 10.091, mediaTxt: "13,188s", mediaVal: 13.188, badgeColor: "#3a86ff",
-                        laps: [15.438, 10.841, 13.482, 15.256, 12.850, 11.329, 11.459, 12.340, 11.375, 14.500, 10.916, 16.687, 11.045, 11.442, 10.091, 11.335, 13.850, 11.310, 17.501, 30.212, 11.518, 10.702, 10.884, 13.941, 14.227, 13.109, 10.611, 11.003]
-                    },
-                    {
-                        pos: "3º", piloto: "Raphael", sessao: "Bateria 5", voltasTotais: 24,
-                        melhorVoltaTxt: "09,524s", melhorVoltaVal: 9.524, mediaTxt: "13,619s", mediaVal: 13.619, badgeColor: "#e63946",
-                        laps: [12.259, 11.439, 10.561, 9.835, 27.292, 15.271, 11.171, 10.657, 11.437, 9.964, 10.388, 12.214, 12.614, 14.034, 11.854, 9.524, 14.271, 11.557, 45.678, 10.499, 10.199, 13.877, 10.368, 9.888]
-                    }
-                ]
-            },
-            {
-                id: 4,
-                bateriaKey: "bateria_04_31_07_2026",
-                sessao: "Bateria 4 - 31/07/2026",
-                dados: [
-                    {
-                        pos: "1º", piloto: "DJ", sessao: "Bateria 4", voltasTotais: 32,
-                        melhorVoltaTxt: "10,012s", melhorVoltaVal: 10.012, mediaTxt: "11,523s", mediaVal: 11.523, badgeColor: "#ffb703",
-                        laps: [10.859, 10.819, 10.257, 10.413, 10.375, 10.991, 11.105, 10.435, 10.778, 10.881, 10.012, 10.708, 10.757, 12.880, 10.604, 12.359, 10.730, 10.085, 11.128, 14.482, 14.487, 11.060, 11.363, 11.365, 12.242, 11.175, 13.044, 14.066, 12.040, 14.248, 10.817, 12.182]
-                    },
-                    {
-                        pos: "2º", piloto: "Ronaldo", sessao: "Bateria 4", voltasTotais: 31,
-                        melhorVoltaTxt: "09,974s", melhorVoltaVal: 9.974, mediaTxt: "11,656s", mediaVal: 11.656, badgeColor: "#3a86ff",
-                        laps: [11.774, 10.294, 12.256, 10.175, 10.828, 9.974, 14.093, 11.442, 16.280, 11.695, 10.774, 10.490, 15.381, 10.706, 10.748, 11.468, 10.163, 11.640, 10.732, 11.466, 10.989, 10.816, 10.612, 13.389, 11.185, 11.584, 11.824, 11.421, 11.701, 11.464, 13.976]
-                    },
-                    {
-                        pos: "3º", piloto: "Raphael", sessao: "Bateria 4", voltasTotais: 30,
-                        melhorVoltaTxt: "09,474s", melhorVoltaVal: 9.474, mediaTxt: "12,276s", mediaVal: 12.276, badgeColor: "#e63946",
-                        laps: [10.759, 15.099, 10.682, 9.983, 12.636, 13.026, 9.857, 10.122, 12.656, 9.474, 11.570, 10.640, 10.005, 12.093, 9.589, 15.846, 10.553, 16.037, 10.509, 24.160, 10.714, 10.027, 12.278, 15.528, 14.188, 12.153, 12.109, 12.427, 10.200, 13.361]
-                    }
-                ]
-            },
-            {
-                id: 3,
-                bateriaKey: "bateria_03_31_07_2026",
-                sessao: "Bateria 3 - 31/07/2026",
-                dados: [
-                    {
-                        pos: "1º", piloto: "Raphael", sessao: "Bateria 3", voltasTotais: 23,
-                        melhorVoltaTxt: "09,187s", melhorVoltaVal: 9.187, mediaTxt: "13,446s", mediaVal: 13.446, badgeColor: "#ffb703",
-                        laps: [11.668, 14.203, 13.746, 11.770, 9.187, 9.280, 10.287, 23.080, 16.419, 15.011, 16.915, 15.836, 10.813, 12.444, 12.281, 23.546, 11.042, 11.464, 12.094, 9.770, 11.893, 15.463, 11.052]
-                    },
-                    {
-                        pos: "2º", piloto: "Ronaldo", sessao: "Bateria 3", voltasTotais: 22,
-                        melhorVoltaTxt: "09,886s", melhorVoltaVal: 9.886, mediaTxt: "13,473s", mediaVal: 13.473, badgeColor: "#3a86ff",
-                        laps: [12.701, 12.951, 21.157, 10.318, 10.916, 12.290, 17.094, 10.087, 11.238, 17.841, 11.414, 14.064, 12.377, 10.123, 11.516, 30.159, 11.162, 9.886, 11.447, 10.534, 13.763, 13.358]
-                    },
-                    {
-                        pos: "3º", piloto: "DJ", sessao: "Bateria 3", voltasTotais: 18,
-                        melhorVoltaTxt: "10,237s", melhorVoltaVal: 10.237, mediaTxt: "11,113s", mediaVal: 11.113, badgeColor: "#e63946",
-                        laps: [11.190, 10.471, 11.163, 12.767, 10.714, 12.460, 10.314, 10.447, 12.091, 10.726, 12.404, 10.564, 10.386, 10.568, 10.237, 12.274, 10.718, 10.547]
-                    }
-                ]
-            },
-            {
-                id: 2,
-                bateriaKey: "bateria_02_17_07_2026",
-                sessao: "Bateria 2 - 17/07/2026",
-                dados: [
-                    {
-                        pos: "1º", piloto: "DJ", sessao: "Bateria 2", voltasTotais: 28,
-                        melhorVoltaTxt: "11,723s", melhorVoltaVal: 11.723, mediaTxt: "13,168s", mediaVal: 13.168, badgeColor: "#ffb703",
-                        laps: [15.031, 14.302, 11.998, 15.516, 12.733, 12.325, 11.723, 12.079, 13.147, 12.260, 13.915, 15.157, 13.812, 12.355, 12.136, 18.899, 12.689, 12.467, 12.259, 11.980, 11.900, 11.905, 15.088, 14.033, 12.223, 12.432, 12.526, 11.812]
-                    },
-                    {
-                        pos: "2º", piloto: "Ronaldo", sessao: "Bateria 2", voltasTotais: 26,
-                        melhorVoltaTxt: "11,434s", melhorVoltaVal: 11.434, mediaTxt: "13,921s", mediaVal: 13.921, badgeColor: "#3a86ff",
-                        laps: [15.900, 15.888, 11.925, 12.857, 11.547, 13.154, 12.150, 12.424, 13.308, 34.863, 11.934, 12.308, 15.044, 12.291, 13.008, 12.784, 16.284, 12.704, 13.997, 12.521, 11.434, 12.332, 12.916, 13.286, 12.280, 12.802]
-                    },
-                    {
-                        pos: "3º", piloto: "Raphael", sessao: "Bateria 2", voltasTotais: 25,
-                        melhorVoltaTxt: "11,873s", melhorVoltaVal: 11.873, mediaTxt: "14,683s", mediaVal: 14.683, badgeColor: "#e63946",
-                        laps: [16.852, 16.665, 14.531, 12.503, 12.964, 14.023, 11.873, 16.617, 14.425, 15.493, 15.085, 14.074, 16.202, 11.965, 18.290, 15.660, 15.798, 12.246, 12.831, 12.879, 16.828, 13.985, 16.371, 16.873, 12.045]
-                    }
-                ]
-            },
-            {
-                id: 1,
-                bateriaKey: "bateria_01_17_07_2026",
-                sessao: "Bateria 1 - 17/07/2026",
-                dados: [
-                    {
-                        pos: "1º", piloto: "DJ", sessao: "Bateria 1", voltasTotais: 29,
-                        melhorVoltaTxt: "10,898s", melhorVoltaVal: 10.898, mediaTxt: "12,800s", mediaVal: 12.800, badgeColor: "#ffb703",
-                        laps: [14.629, 12.638, 12.218, 12.385, 12.040, 12.716, 12.951, 11.966, 11.855, 12.668, 12.265, 12.574, 12.151, 12.730, 12.532, 13.333, 12.056, 12.311, 15.411, 10.898, 12.320, 11.678, 12.653, 12.727, 12.699, 12.412, 12.139, 11.689, 20.560]
-                    },
-                    {
-                        pos: "2º", piloto: "Ronaldo", sessao: "Bateria 1", voltasTotais: 26,
-                        melhorVoltaTxt: "11,703s", melhorVoltaVal: 11.703, mediaTxt: "14,119s", mediaVal: 14.119, badgeColor: "#3a86ff",
-                        laps: [16.499, 12.136, 15.613, 16.191, 15.321, 11.782, 14.966, 15.030, 12.854, 13.173, 16.636, 11.703, 12.458, 12.285, 12.106, 16.119, 12.822, 14.438, 11.787, 12.131, 12.177, 16.200, 17.302, 15.951, 13.257, 16.146]
-                    },
-                    {
-                        pos: "3º", piloto: "Raphael", sessao: "Bateria 1", voltasTotais: 10,
-                        melhorVoltaTxt: "09,967s", melhorVoltaVal: 9.967, mediaTxt: "33,473s", mediaVal: 33.473, badgeColor: "#e63946",
-                        laps: [18.892, 18.404, 205.1, 14.887, 14.754, 11.603, 12.893, 43.997, 12.262, 15.388]
-                    }
-                ]
-            }
-        ];
-    </script>
+    <!-- IMPORTAÇÃO DO BANCO DE DADOS -->
+    <script src="banco-de-dados.js"></script>
 
     <script>
         let chartInstances = [];
@@ -474,7 +278,7 @@
                 gerarFiltrosDinamicos();
                 atualizarDashboard();
             } else {
-                console.error("Erro: banco de dados não encontrado.");
+                console.error("Erro: banco-de-dados.js não encontrado.");
             }
         });
 
@@ -907,6 +711,7 @@
                         let somaLaps = laps.reduce((a, b) => a + b, 0);
                         let mediaTempo = somaLaps / laps.length;
 
+                        // Cálculo da velocidade: V = Distância (26m) / Tempo (s) * 3.6 (para km/h)
                         let velPistaMelhorMs = DISTANCIA_PISTA / melhorTempo;
                         let velPistaMelhorKmh = velPistaMelhorMs * 3.6;
                         let velEscalaMelhorKmh = velPistaMelhorKmh * ESCALA;
