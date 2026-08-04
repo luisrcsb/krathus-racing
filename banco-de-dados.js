@@ -10,7 +10,7 @@ const listaJsonsCache = [
         "dados": [
             {
                 "pos": "1º",
-                "piloto": "DJ",
+                "piloto": "DJ Edgard",
                 "bateriaKey": "bat_17_07_26_bateria_1",
                 "sessao": "17-07-26 Bateria (1)",
                 "voltasTotais": 29,
@@ -72,7 +72,7 @@ const listaJsonsCache = [
         "dados": [
             {
                 "pos": "1º",
-                "piloto": "DJ",
+                "piloto": "DJ Edgard",
                 "bateriaKey": "bat_17_07_26_bateria_2",
                 "sessao": "17-07-26 Bateria (2)",
                 "voltasTotais": 28,
@@ -166,7 +166,7 @@ const listaJsonsCache = [
             },
             {
                 "pos": "3º",
-                "piloto": "DJ",
+                "piloto": "DJ Edgard",
                 "bateriaKey": "bat_31_07_26_bateria_3",
                 "sessao": "31-07-26 Bateria (3)",
                 "voltasTotais": 18,
@@ -196,7 +196,7 @@ const listaJsonsCache = [
         "dados": [
             {
                 "pos": "1º",
-                "piloto": "DJ",
+                "piloto": "DJ Edgard",
                 "bateriaKey": "bat_31_07_26_bateria_4",
                 "sessao": "31-07-26 Bateria (4)",
                 "voltasTotais": 32,
@@ -258,7 +258,7 @@ const listaJsonsCache = [
         "dados": [
             {
                 "pos": "1º",
-                "piloto": "DJ",
+                "piloto": "DJ Edgard",
                 "bateriaKey": "bat_31_07_26_bateria_5",
                 "sessao": "31-07-26 Bateria (5)",
                 "voltasTotais": 30,
@@ -352,7 +352,7 @@ const listaJsonsCache = [
             },
             {
                 "pos": "3º",
-                "piloto": "DJ",
+                "piloto": "DJ Edgard",
                 "bateriaKey": "bat_31_07_26_bateria_6",
                 "sessao": "31-07-26 Bateria (6)",
                 "voltasTotais": 31,
@@ -382,7 +382,7 @@ const listaJsonsCache = [
         "dados": [
             {
                 "pos": "1º",
-                "piloto": "DJ",
+                "piloto": "DJ Edgard",
                 "bateriaKey": "bat_31_07_26_bateria_7",
                 "sessao": "31-07-26 Bateria (7)",
                 "voltasTotais": 31,
@@ -460,7 +460,7 @@ const listaJsonsCache = [
             },
             {
                 "pos": "2º",
-                "piloto": "DJ",
+                "piloto": "DJ Edgard",
                 "bateriaKey": "bat_31_07_26_bateria_8",
                 "sessao": "31-07-26 Bateria (8)",
                 "voltasTotais": 20,
@@ -540,18 +540,6 @@ const listaJsonsCache = [
     }
     // =========================================================================
     // FIM - SESSÃO DO DIA 03/08/2026 - BATERIA 9
-    // =========================================================================
-
-
-    // =========================================================================
-    // ESPAÇO RESERVADO PARA A PRÓXIMA BATERIA
-    // =========================================================================
-    // {
-    //     "bateriaKey": "bat_XX_XX_26_bateria_X",
-    //     "sessao": "XX-XX-26 Bateria (X)",
-    //     "id": XXXXXXXXXX,
-    //     "dados": []
-    // }
     // =========================================================================
 
 ];
