@@ -264,7 +264,7 @@
                 <div class="changelog-box">
                     <div class="changelog-header">🚀 O que há de novo na Versão Atualizada:</div>
                     <ul class="changelog-list">
-                        <li><strong>Curtidas e Comentários em Tempo Real:</strong> Sistema integrado via Firebase para curtir baterias e debater estratégias diretamente na nuvem.</li>
+                        <li><strong>Comentários Atualizados:</strong> Títulos e caixas de texto ajustados para o novo formato simplificado.</li>
                     </ul>
                 </div>
             </section>
@@ -272,7 +272,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v3.9.8 (Curtidas e Comentários Firebase)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v3.9.9 (Comentários Simplificados)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -683,16 +683,16 @@
                     html += `<div class="card"><div class="card-header">Tabela Geral Volta a Volta (com Gaps ao Lado) - ${nomeSessao}</div><div class="table-container"><table><thead><tr id="head-lapbyLap-${bateriaKey}"><th>VOLTA</th></tr></thead><tbody id="body-lapbyLap-${bateriaKey}"></tbody></table></div></div>`;
                 }
 
-                // Módulo de Comentários integrado por sessão
+                // Módulo de Comentários ajustado (título e placeholder)
                 html += `
                     <div class="comments-section">
-                        <div class="comments-title">💬 Debate & Comentários da Sessão</div>
+                        <div class="comments-title">💬 Comentários</div>
                         <div class="comments-list" id="comments-list-${safeKey}">
-                            <div style="font-size:0.85rem; color: var(--text-muted); text-align:center; padding: 6px;">Carregando comentários...</div>
+                            <div style="font-size:0.85rem; color: var(--text-muted); text-align:center; padding: 6px;">Nenhum comentário ainda. Seja o primeiro a comentar!</div>
                         </div>
                         <div class="comment-form">
                             <input type="text" id="comment-name-${safeKey}" class="comment-input-name" placeholder="Seu Nome / Piloto">
-                            <input type="text" id="comment-text-${safeKey}" class="comment-input-text" placeholder="Deixe seu comentário ou aponte um 'gato'..." onkeypress="if(event.key === 'Enter') enviarComentario('${bateriaKey}')">
+                            <input type="text" id="comment-text-${safeKey}" class="comment-input-text" placeholder="Deixe seu comentário..." onkeypress="if(event.key === 'Enter') enviarComentario('${bateriaKey}')">
                             <button class="btn-comment" onclick="enviarComentario('${bateriaKey}')">Enviar</button>
                         </div>
                     </div>
