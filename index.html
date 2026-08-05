@@ -151,6 +151,9 @@
         .fastest-lap-highlight { background-color: rgba(46, 196, 182, 0.15) !important; color: var(--accent-green) !important; font-weight: bold; border-radius: 4px; padding: 4px 8px; border: 1px solid var(--accent-green); }
         .absolute-fastest-lap-highlight { background-color: rgba(255, 183, 3, 0.25) !important; color: var(--accent-gold) !important; font-weight: bold; border-radius: 4px; padding: 4px 8px; border: 1px solid var(--accent-gold); box-shadow: 0 0 10px rgba(255, 183, 3, 0.2); }
         
+        /* Estilização para Volta Anulada por Gato */
+        .gato-lap-highlight { background-color: rgba(230, 57, 70, 0.2) !important; border: 1px solid var(--accent-red) !important; color: var(--accent-red) !important; border-radius: 4px; padding: 4px 8px; text-decoration: line-through; }
+        
         .lap-cell-inline { display: inline-flex; align-items: baseline; gap: 6px; white-space: nowrap; }
         .lap-diff-inline { font-size: 0.75rem; color: var(--accent-green); font-weight: 600; }
 
@@ -221,7 +224,7 @@
                             <label class="checkbox-item"><input type="checkbox" value="mod-grafico-posicao" class="filter-modulo" checked onchange="atualizarDashboard()"> 📊 Posição Volta a Volta (Race Position)</label>
                             <label class="checkbox-item"><input type="checkbox" value="mod-log-posicao" class="filter-modulo" checked onchange="atualizarDashboard()"> 📝 Relatório Detalhado de Ultrapassagens</label>
                             <label class="checkbox-item"><input type="checkbox" value="mod-velocidade" class="filter-modulo" checked onchange="atualizarDashboard()"> 🏎️ Velocidade Média e Escala Real (1/28)</label>
-                            <label class="checkbox-item"><input type="checkbox" value="mod-classificacao-analise" class="filter-modulo" checked onchange="atualizarDashboard()"> 🏆 Classificação & Consistência</label>
+                            <label class="checkbox-item"><input type="checkbox" value="mod-classificacao-analise" class="filter-modulo" checked onchange="atualizarDashboard()"> 🏆 Consistência (Ritmo, Comportamento e Pontos Críticos)</label>
                             <label class="checkbox-item"><input type="checkbox" value="mod-tabela-geral" class="filter-modulo" checked onchange="atualizarDashboard()"> ⏱️ Tabela Geral Volta a Volta (com Gaps ao Lado)</label>
                         </div>
                     </div>
@@ -264,7 +267,8 @@
                 <div class="changelog-box">
                     <div class="changelog-header">🚀 O que há de novo na Versão Atualizada:</div>
                     <ul class="changelog-list">
-                        <li><strong>Comentários Atualizados:</strong> Títulos e caixas de texto ajustados para o novo formato simplificado.</li>
+                        <li><strong>Auditoria de "Gatos" (Voltas Anuladas):</strong> Suporte para marcação e sinalização de voltas anuladas na Tabela Geral e relatórios de consistência.</li>
+                        <li><strong>Módulo Renomeado:</strong> Ajustado para "Consistência (Ritmo, Comportamento e Pontos Críticos)".</li>
                     </ul>
                 </div>
             </section>
@@ -272,7 +276,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v3.9.9 (Comentários Simplificados)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v4.0.0 (Auditoria de Gato & Módulo Atualizado)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -461,8 +465,10 @@
             let melhorVoltaAbsolutaVal = 999999;
             dadosBase.forEach(item => {
                 if (item.laps && item.laps.length > 0) {
-                    item.laps.forEach(tempo => {
-                        if (tempo < melhorVoltaAbsolutaVal) {
+                    item.laps.forEach(lapObj => {
+                        let tempo = typeof lapObj === 'object' ? lapObj.tempo : lapObj;
+                        let isAnulada = typeof lapObj === 'object' ? lapObj.anulada : false;
+                        if (!isAnulada && tempo < melhorVoltaAbsolutaVal) {
                             melhorVoltaAbsolutaVal = tempo;
                         }
                     });
@@ -504,8 +510,10 @@
 
                 dadosFiltrados.forEach(item => {
                     if (item.laps && item.laps.length > 0) {
-                        item.laps.forEach((tempo, idx) => {
-                            if (tempo < melhorVoltaGlobalVal) {
+                        item.laps.forEach((lapObj, idx) => {
+                            let tempo = typeof lapObj === 'object' ? lapObj.tempo : lapObj;
+                            let isAnulada = typeof lapObj === 'object' ? lapObj.anulada : false;
+                            if (!isAnulada && tempo < melhorVoltaGlobalVal) {
                                 melhorVoltaGlobalVal = tempo;
                                 melhorVoltaObj = item;
                                 melhorVoltaNum = idx + 1;
@@ -530,7 +538,11 @@
                     document.getElementById('kpi-melhor-volta-sub').innerText = "Aguardando dados";
                 }
 
-                let totalVoltas = dadosFiltrados.reduce((sum, item) => sum + (item.laps ? item.laps.length : 0), 0);
+                let totalVoltas = dadosFiltrados.reduce((sum, item) => {
+                    if (!item.laps) return sum;
+                    let validas = item.laps.filter(l => !(typeof l === 'object' && l.anulada)).length;
+                    return sum + validas;
+                }, 0);
                 document.getElementById('kpi-total-voltas').innerText = totalVoltas;
 
                 let somaMedias = 0;
@@ -542,17 +554,20 @@
 
                 dadosFiltrados.forEach(item => {
                     if (item.laps && item.laps.length > 0) {
-                        let somaLaps = item.laps.reduce((a, b) => a + b, 0);
-                        let mediaTempoPiloto = somaLaps / item.laps.length;
-                        somaMedias += mediaTempoPiloto;
-                        contadorMedias++;
+                        let lapsValidas = item.laps.filter(l => !(typeof l === 'object' && l.anulada)).map(l => typeof l === 'object' ? l.tempo : l);
+                        if (lapsValidas.length > 0) {
+                            let somaLaps = lapsValidas.reduce((a, b) => a + b, 0);
+                            let mediaTempoPiloto = somaLaps / lapsValidas.length;
+                            somaMedias += mediaTempoPiloto;
+                            contadorMedias++;
 
-                        let velPistaMediaMs = DISTANCIA_PISTA / mediaTempoPiloto;
-                        let velPistaMediaKmh = velPistaMediaMs * 3.6;
-                        let velEscalaMediaKmh = velPistaMediaKmh * ESCALA;
+                            let velPistaMediaMs = DISTANCIA_PISTA / mediaTempoPiloto;
+                            let velPistaMediaKmh = velPistaMediaMs * 3.6;
+                            let velEscalaMediaKmh = velPistaMediaKmh * ESCALA;
 
-                        somaVelEscalaMedias += velEscalaMediaKmh;
-                        contadorVelEscala++;
+                            somaVelEscalaMedias += velEscalaMediaKmh;
+                            contadorVelEscala++;
+                        }
                     }
                 });
 
@@ -677,13 +692,13 @@
                     html += `<div class="card"><div class="card-header">🏎️ Estatísticas de Velocidade Média e Escala Real (1/28 - Pista 26m) - ${nomeSessao}</div><div class="table-container"><table><thead><tr><th>PILOTO</th><th>MELHOR TEMPO</th><th>VELO. PISTA (Melhor)</th><th>VELO. ESCALA REAL (1/28)</th><th>MÉDIA DA SESSÃO</th><th>VELO. PISTA (Média)</th><th>VELO. ESCALA REAL (Média)</th></tr></thead><tbody id="tabela-velocidade-${bateriaKey}"></tbody></table></div></div>`;
                 }
                 if (modulosSelecionados.includes('mod-classificacao-analise')) {
-                    html += `<div class="card"><div class="card-header">Classificação & Consistência - ${nomeSessao}</div><div class="table-container"><table><thead><tr><th>POS</th><th>PILOTO</th><th>SESSÃO</th><th>TOTAL DE VOLTAS</th><th>MELHOR</th><th>MÉDIA</th><th>DESVIO</th></tr></thead><tbody id="tabela-unificada-${bateriaKey}"></tbody></table></div></div>`;
+                    html += `<div class="card"><div class="card-header">Consistência (Ritmo, Comportamento e Pontos Críticos) - ${nomeSessao}</div><div class="table-container"><table><thead><tr><th>POS</th><th>PILOTO</th><th>SESSÃO</th><th>TOTAL DE VOLTAS</th><th>MELHOR</th><th>MÉDIA</th><th>DESVIO</th></tr></thead><tbody id="tabela-unificada-${bateriaKey}"></tbody></table></div></div>`;
                 }
                 if (modulosSelecionados.includes('mod-tabela-geral')) {
                     html += `<div class="card"><div class="card-header">Tabela Geral Volta a Volta (com Gaps ao Lado) - ${nomeSessao}</div><div class="table-container"><table><thead><tr id="head-lapbyLap-${bateriaKey}"><th>VOLTA</th></tr></thead><tbody id="body-lapbyLap-${bateriaKey}"></tbody></table></div></div>`;
                 }
 
-                // Módulo de Comentários ajustado (título e placeholder)
+                // Módulo de Comentários
                 html += `
                     <div class="comments-section">
                         <div class="comments-title">💬 Comentários</div>
@@ -701,7 +716,6 @@
                 sessionBlock.innerHTML = html;
                 mainContainer.appendChild(sessionBlock);
 
-                // Ativa a escuta em tempo real do Firebase para Curtidas e Comentários
                 escutarCurtidas(bateriaKey);
                 escutarComentarios(bateriaKey);
 
@@ -710,7 +724,7 @@
                     const labels = Array.from({ length: maxV }, (_, i) => `V${i+1}`);
                     const datasets = dadosSessao.map(d => ({
                         label: d.piloto,
-                        data: d.laps || [],
+                        data: (d.laps || []).map(l => typeof l === 'object' ? l.tempo : l),
                         borderColor: obterCorPiloto(d.piloto),
                         backgroundColor: obterCorPiloto(d.piloto),
                         borderWidth: 2,
@@ -732,10 +746,17 @@
                     todosDaBateria.forEach(d => {
                         if (d.laps && d.laps.length > 0) {
                             let somaAteV = 0;
+                            let voltasCompletadas = 0;
                             for (let k = 0; k <= Math.min(v, d.laps.length - 1); k++) {
-                                somaAteV += d.laps[k];
+                                let lapObj = d.laps[k];
+                                let tempo = typeof lapObj === 'object' ? lapObj.tempo : lapObj;
+                                let isAnulada = typeof lapObj === 'object' ? lapObj.anulada : false;
+                                
+                                if (!isAnulada) {
+                                    somaAteV += tempo;
+                                    voltasCompletadas++;
+                                }
                             }
-                            let voltasCompletadas = Math.min(v + 1, d.laps.length);
                             if (v >= d.laps.length) {
                                 somaAteV += (v - d.laps.length + 1) * 1000;
                             }
@@ -871,12 +892,15 @@
                     const ESCALA = 28;
 
                     dadosSessao.forEach(item => {
-                        let laps = item.laps || [];
-                        if (laps.length === 0) return;
+                        let lapsRaw = item.laps || [];
+                        if (lapsRaw.length === 0) return;
 
-                        let melhorTempo = item.melhorVoltaVal || Math.min(...laps);
-                        let somaLaps = laps.reduce((a, b) => a + b, 0);
-                        let mediaTempo = somaLaps / laps.length;
+                        let lapsValidas = lapsRaw.filter(l => !(typeof l === 'object' && l.anulada)).map(l => typeof l === 'object' ? l.tempo : l);
+                        if (lapsValidas.length === 0) return;
+
+                        let melhorTempo = Math.min(...lapsValidas);
+                        let somaLaps = lapsValidas.reduce((a, b) => a + b, 0);
+                        let mediaTempo = somaLaps / lapsValidas.length;
 
                         let velPistaMelhorMs = DISTANCIA_PISTA / melhorTempo;
                         let velPistaMelhorKmh = velPistaMelhorMs * 3.6;
@@ -903,9 +927,13 @@
                 if (modulosSelecionados.includes('mod-classificacao-analise')) {
                     const tbody = document.getElementById(`tabela-unificada-${bateriaKey}`);
                     dadosSessao.forEach(item => {
-                        let laps = item.laps || [];
-                        let mediaVal = item.mediaVal || (laps.length > 0 ? laps.reduce((a,b)=>a+b,0)/laps.length : 0);
-                        let variancia = laps.length > 1 ? laps.reduce((sum, t) => sum + Math.pow(t - mediaVal, 2), 0) / laps.length : 0;
+                        let lapsRaw = item.laps || [];
+                        let lapsValidas = lapsRaw.filter(l => !(typeof l === 'object' && l.anulada)).map(l => typeof l === 'object' ? l.tempo : l);
+                        if (lapsValidas.length === 0) return;
+
+                        let melhorTempo = Math.min(...lapsValidas);
+                        let mediaVal = lapsValidas.reduce((a,b)=>a+b,0) / lapsValidas.length;
+                        let variancia = lapsValidas.length > 1 ? lapsValidas.reduce((sum, t) => sum + Math.pow(t - mediaVal, 2), 0) / lapsValidas.length : 0;
                         let stdDevCalc = Math.sqrt(variancia);
                         let desvioTxt = `±${stdDevCalc.toFixed(3).replace('.',',')}s`;
 
@@ -924,9 +952,9 @@
                         }
 
                         let voltasLentas = [];
-                        laps.forEach((t, idx) => {
+                        lapsValidas.forEach((t, idx) => {
                             if (t > mediaVal + (stdDevCalc * 1.5) && t > 12.0) {
-                                voltasLentas.push(`Volta ${idx+1} (${t.toFixed(3).replace('.',',')}s)`);
+                                voltasLentas.push(`Volta (${t.toFixed(3).replace('.',',')}s)`);
                             }
                         });
 
@@ -939,9 +967,9 @@
                                 <td><span class="pos-badge" style="background:${item.badgeColor || '#ffb703'};">${item.pos || '1º'}</span></td>
                                 <td><strong>${item.piloto}</strong></td>
                                 <td><span class="session-badge">${item.sessao || bateriaKey}</span></td>
-                                <td><strong>${item.voltasTotais} voltas</strong></td>
-                                <td class="text-green">${item.melhorVoltaTxt}</td>
-                                <td>${item.mediaTxt}</td>
+                                <td><strong>${lapsValidas.length} voltas válidas</strong></td>
+                                <td class="text-green">${melhorTempo.toFixed(3).replace('.',',')}s</td>
+                                <td>${mediaVal.toFixed(3).replace('.',',')}s</td>
                                 <td>${desvioTxt}</td>
                             </tr>
                             <tr class="sub-row">
@@ -971,10 +999,17 @@
                         todosDaBateria.forEach(d => {
                             if (d.laps && d.laps.length > 0) {
                                 let somaAteV = 0;
+                                let voltasCompletadas = 0;
                                 for (let k = 0; k <= Math.min(i, d.laps.length - 1); k++) {
-                                    somaAteV += d.laps[k];
+                                    let lapObj = d.laps[k];
+                                    let tempo = typeof lapObj === 'object' ? lapObj.tempo : lapObj;
+                                    let isAnulada = typeof lapObj === 'object' ? lapObj.anulada : false;
+                                    
+                                    if (!isAnulada) {
+                                        somaAteV += tempo;
+                                        voltasCompletadas++;
+                                    }
                                 }
-                                let voltasCompletadas = Math.min(i + 1, d.laps.length);
                                 if (i >= d.laps.length) {
                                     somaAteV += (i - d.laps.length + 1) * 1000;
                                 }
@@ -989,30 +1024,39 @@
 
                         dadosSessao.forEach(d => {
                             if (d.laps && i < d.laps.length) {
-                                let t = d.laps[i];
-                                let isAbsoluteFast = (Math.abs(t - melhorVoltaAbsolutaVal) < 0.0001);
-                                let isFast = (t === d.melhorVoltaVal);
+                                let lapObj = d.laps[i];
+                                let t = typeof lapObj === 'object' ? lapObj.tempo : lapObj;
+                                let isAnulada = typeof lapObj === 'object' ? lapObj.anulada : false;
 
-                                let indexNoRanking = acumuladosVoltaAtual.findIndex(x => x.piloto === d.piloto);
-                                let gapTxt = "";
-                                if (indexNoRanking > 0) {
-                                    let anterior = acumuladosVoltaAtual[indexNoRanking - 1];
-                                    let atualObj = acumuladosVoltaAtual[indexNoRanking];
-                                    let diff = atualObj.tempoAcumulado - anterior.tempoAcumulado;
-                                    gapTxt = diff >= 0 ? `+${diff.toFixed(3).replace('.',',')}s` : `${diff.toFixed(3).replace('.',',')}s`;
-                                } else if (indexNoRanking === 0) {
-                                    gapTxt = "Líder";
-                                }
-
-                                let inlineSubtext = gapTxt ? `<span class="lap-diff-inline">(${gapTxt})</span>` : "";
-                                let tempoFormatado = `${t.toFixed(3).replace('.',',')}s`;
-
-                                if (isAbsoluteFast) {
-                                    linha += `<td><div class="lap-cell-inline"><span class="absolute-fastest-lap-highlight" title="Volta Mais Rápida Absoluta Geral!">👑 ${tempoFormatado}</span> ${inlineSubtext}</div></td>`;
-                                } else if (isFast) {
-                                    linha += `<td><div class="lap-cell-inline"><span class="fastest-lap-highlight">⚡ ${tempoFormatado}</span> ${inlineSubtext}</div></td>`;
+                                if (isAnulada) {
+                                    linha += `<td><div class="lap-cell-inline"><span class="gato-lap-highlight" title="Volta Anulada por Gato/Corte">🐱 ${t.toFixed(3).replace('.',',')}s Anulada</span></div></td>`;
                                 } else {
-                                    linha += `<td><div class="lap-cell-inline"><span>${tempoFormatado}</span> ${inlineSubtext}</div></td>`;
+                                    let isAbsoluteFast = (Math.abs(t - melhorVoltaAbsolutaVal) < 0.0001);
+                                    let lapsValidas = d.laps.filter(l => !(typeof l === 'object' && l.anulada)).map(l => typeof l === 'object' ? l.tempo : l);
+                                    let melhorPilotoVal = lapsValidas.length > 0 ? Math.min(...lapsValidas) : 999;
+                                    let isFast = (Math.abs(t - melhorPilotoVal) < 0.0001);
+
+                                    let indexNoRanking = acumuladosVoltaAtual.findIndex(x => x.piloto === d.piloto);
+                                    let gapTxt = "";
+                                    if (indexNoRanking > 0) {
+                                        let anterior = acumuladosVoltaAtual[indexNoRanking - 1];
+                                        let atualObj = acumuladosVoltaAtual[indexNoRanking];
+                                        let diff = atualObj.tempoAcumulado - anterior.tempoAcumulado;
+                                        gapTxt = diff >= 0 ? `+${diff.toFixed(3).replace('.',',')}s` : `${diff.toFixed(3).replace('.',',')}s`;
+                                    } else if (indexNoRanking === 0) {
+                                        gapTxt = "Líder";
+                                    }
+
+                                    let inlineSubtext = gapTxt ? `<span class="lap-diff-inline">(${gapTxt})</span>` : "";
+                                    let tempoFormatado = `${t.toFixed(3).replace('.',',')}s`;
+
+                                    if (isAbsoluteFast) {
+                                        linha += `<td><div class="lap-cell-inline"><span class="absolute-fastest-lap-highlight" title="Volta Mais Rápida Absoluta Geral!">👑 ${tempoFormatado}</span> ${inlineSubtext}</div></td>`;
+                                    } else if (isFast) {
+                                        linha += `<td><div class="lap-cell-inline"><span class="fastest-lap-highlight">⚡ ${tempoFormatado}</span> ${inlineSubtext}</div></td>`;
+                                    } else {
+                                        linha += `<td><div class="lap-cell-inline"><span>${tempoFormatado}</span> ${inlineSubtext}</div></td>`;
+                                    }
                                 }
                             } else { linha += `<td>-</td>`; }
                         });
