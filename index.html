@@ -268,7 +268,7 @@
                     <div class="changelog-header">🚀 O que há de novo na Versão Atualizada:</div>
                     <ul class="changelog-list">
                         <li><strong>Auditoria de "Gatos" (Voltas Anuladas):</strong> Suporte para marcação e sinalização de voltas anuladas na Tabela Geral e relatórios de consistência.</li>
-                        <li><strong>Módulo Renomeado:</strong> Ajustado para "Consistência (Ritmo, Comportamento e Pontos Críticos)".</li>
+                        <li><strong>Firebase Configurado:</strong> Conectado ao banco de dados oficial da Krathus Racing para curtidas e comentários em nuvem.</li>
                     </ul>
                 </div>
             </section>
@@ -276,7 +276,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v4.0.0 (Auditoria de Gato & Módulo Atualizado)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v4.0.1 (Firebase Oficial Conectado)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -290,15 +290,16 @@
     <script src="banco-de-dados.js"></script>
 
     <script>
-        // CONFIGURAÇÃO DO FIREBASE (Insira suas credenciais gratuitas do Firebase abaixo)
+        // CONFIGURAÇÃO DO FIREBASE (Credenciais Oficiais Krathus Racing)
         const firebaseConfig = {
-            apiKey: "SUA_API_KEY_AQUI",
-            authDomain: "seu-projeto.firebaseapp.com",
-            databaseURL: "https://seu-projeto-default-rtdb.firebaseio.com",
-            projectId: "seu-projeto",
-            storageBucket: "seu-projeto.appspot.com",
-            messagingSenderId: "SEU_MESSAGING_SENDER_ID",
-            appId: "SEU_APP_ID"
+            apiKey: "AIzaSyDCTkeIa6QsY2zYs8S__HlIwcY-zcuhZCA",
+            authDomain: "krathus-telemetria.firebaseapp.com",
+            projectId: "krathus-telemetria",
+            storageBucket: "krathus-telemetria.firebasestorage.app",
+            messagingSenderId: "1051581039922",
+            appId: "1:1051581039922:web:d8ae00eb4ab45fa3d5432b",
+            measurementId: "G-JPR41S7CZ3",
+            databaseURL: "https://krathus-telemetria-default-rtdb.firebaseio.com"
         };
 
         let db = null;
@@ -306,7 +307,7 @@
             firebase.initializeApp(firebaseConfig);
             db = firebase.database();
         } catch (e) {
-            console.warn("Firebase não configurado. Insira as credenciais no objeto firebaseConfig.");
+            console.warn("Erro ao inicializar o Firebase:", e);
         }
 
         let chartInstances = [];
@@ -380,7 +381,7 @@
         // Curtidas
         window.curtirSessao = function(bateriaKey) {
             if (!db) {
-                alert("Configure as credenciais do Firebase para habilitar as curtidas!");
+                alert("Firebase não conectado!");
                 return;
             }
             let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
@@ -400,7 +401,7 @@
         // Comentários
         window.enviarComentario = function(bateriaKey) {
             if (!db) {
-                alert("Configure as credenciais do Firebase para habilitar os comentários!");
+                alert("Firebase não conectado!");
                 return;
             }
             let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
