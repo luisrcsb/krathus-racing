@@ -76,6 +76,66 @@
         .btn-like { background: rgba(230, 57, 70, 0.15); color: var(--accent-red); border: 1px solid var(--accent-red); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s; }
         .btn-like:hover { background: rgba(230, 57, 70, 0.3); transform: scale(1.05); }
 
+        .piloto-link { color: var(--accent-blue); text-decoration: none; font-weight: 700; cursor: pointer; transition: color 0.2s; }
+        .piloto-link:hover { color: var(--accent-gold); text-decoration: underline; }
+
+        /* Modal / Ficha do Piloto */
+        #piloto-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: rgba(13, 17, 26, 0.88);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-top: 5px solid var(--accent-gold);
+            border-radius: 14px;
+            width: 100%;
+            max-width: 900px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            animation: modalFadeIn 0.3s ease-in-out;
+            overflow: hidden;
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .modal-header { padding: 20px 24px; background: var(--bg-card-header); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-card); }
+        .modal-title { font-size: 1.25rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 10px; }
+        .modal-close { background: transparent; border: none; color: var(--text-muted); font-size: 1.4rem; cursor: pointer; font-weight: bold; transition: color 0.2s; }
+        .modal-close:hover { color: var(--accent-red); }
+        .modal-body { padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
+        
+        /* Container de Medalhas / Pódio de Conquistas */
+        .badges-podium-container { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 5px; }
+        .badge-achievement { background: linear-gradient(135deg, rgba(255, 183, 3, 0.2) 0%, rgba(255, 183, 3, 0.05) 100%); border: 1px solid var(--accent-gold); color: var(--accent-gold); padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(255, 183, 3, 0.15); }
+        .badge-achievement.silver { background: linear-gradient(135deg, rgba(132, 146, 166, 0.2) 0%, rgba(132, 146, 166, 0.05) 100%); border-color: var(--text-muted); color: var(--text-title); }
+        .badge-achievement.green-tag { background: linear-gradient(135deg, rgba(46, 196, 182, 0.2) 0%, rgba(46, 196, 182, 0.05) 100%); border-color: var(--accent-green); color: var(--accent-green); }
+
+        .dossier-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+        .dossier-kpi { background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 4px; text-align: center; }
+        .dossier-kpi-label { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+        .dossier-kpi-value { font-size: 1.25rem; font-weight: 700; color: var(--accent-gold); }
+
+        /* Ranking de Posições */
+        .positions-ranking-box { background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+        .positions-ranking-title { font-size: 0.85rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase; letter-spacing: 0.5px; }
+        .positions-pills-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+        .position-pill { background: var(--bg-card); border: 1px solid var(--border-card); padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
+        .position-pill span { font-weight: 700; color: var(--text-title); }
+
+        .dossier-report-box { background: var(--bg-input); border-left: 4px solid var(--accent-blue); border-radius: 8px; padding: 18px; font-size: 0.9rem; line-height: 1.6; color: var(--text-main); display: flex; flex-direction: column; gap: 10px; }
+        .dossier-report-title { font-size: 0.85rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 0.5px; }
+
         .tab-content { display: flex; flex-direction: column; gap: 20px; }
 
         .welcome-card { background: linear-gradient(135deg, var(--bg-card) 0%, rgba(28, 38, 56, 0.7) 100%); border: 1px solid var(--border-card); border-left: 5px solid var(--accent-blue); border-radius: 12px; padding: 22px 24px; display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
@@ -121,7 +181,7 @@
         .tag-gain { color: var(--accent-green); font-weight: 700; }
         .tag-loss { color: var(--accent-red); font-weight: 700; }
 
-        /* Módulo de Comentários por Sessão com Reações */
+        /* Módulo de Comentários com Reações */
         .comments-section { margin-top: 15px; background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
         .comments-title { font-size: 0.85rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
         .comments-list { display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto; }
@@ -156,7 +216,6 @@
         .fastest-lap-highlight { background-color: rgba(46, 196, 182, 0.15) !important; color: var(--accent-green) !important; font-weight: bold; border-radius: 4px; padding: 4px 8px; border: 1px solid var(--accent-green); }
         .absolute-fastest-lap-highlight { background-color: rgba(255, 183, 3, 0.25) !important; color: var(--accent-gold) !important; font-weight: bold; border-radius: 4px; padding: 4px 8px; border: 1px solid var(--accent-gold); box-shadow: 0 0 10px rgba(255, 183, 3, 0.2); }
         
-        /* Estilização para Volta Anulada por Gato */
         .gato-lap-highlight { background-color: rgba(230, 57, 70, 0.2) !important; border: 1px solid var(--accent-red) !important; color: var(--accent-red) !important; border-radius: 4px; padding: 4px 8px; text-decoration: line-through; }
         
         .lap-cell-inline { display: inline-flex; align-items: baseline; gap: 6px; white-space: nowrap; }
@@ -171,7 +230,7 @@
         @media print {
             body, body * { color: #000000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             body { background-color: #ffffff !important; padding: 10px !important; font-size: 11px !important; }
-            .header-actions, .filters-card, .btn-pdf-global, .btn-share, .btn-like, .comments-section, .welcome-card { display: none !important; }
+            .header-actions, .filters-card, .btn-pdf-global, .btn-share, .btn-like, .comments-section, .welcome-card, #piloto-modal { display: none !important; }
             .header { background: #ffffff !important; border: 1px solid #d1d5db !important; }
             .kpi-card { background: #f9fafb !important; border: 1px solid #d1d5db !important; }
             .card { background: #ffffff !important; border: 1px solid #9ca3af !important; }
@@ -182,6 +241,19 @@
     </style>
 </head>
 <body>
+
+    <!-- MODAL / FICHA DO PILOTO -->
+    <div id="piloto-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-piloto-nome">🏎️ Ficha do Piloto</div>
+                <button class="modal-close" onclick="fecharDossiePiloto()">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-piloto-corpo">
+                <!-- Conteúdo injetado via JavaScript -->
+            </div>
+        </div>
+    </div>
 
     <div id="mobile-orientation-warning">
         <div class="orientation-icon">📱🔄</div>
@@ -272,7 +344,7 @@
                 <div class="changelog-box">
                     <div class="changelog-header">🚀 O que há de novo na Versão Atualizada:</div>
                     <ul class="changelog-list">
-                        <li><strong>Reações em Comentários:</strong> Suporte a ícones de Curtir (👍) e Não Curtir (👎) integrados diretamente nos comentários por sessão via Firebase.</li>
+                        <li><strong>Ficha do Piloto com Pódio de Conquistas:</strong> Topo da ficha enriquecido com medalhas de premiação (Volta Mais Rápida, Maior Número de Vitórias, Melhor Consistência) e ranking detalhado de posições.</li>
                     </ul>
                 </div>
             </section>
@@ -280,7 +352,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v4.1.0 (Comentários com Reações)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v4.3.0 (Ficha do Piloto e Pódio de Conquistas)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -382,6 +454,214 @@
             atualizarDashboard();
         }
 
+        // Sistema de Ficha do Piloto com Pódio de Conquistas e Ranking de Posições
+        window.abrirDossiePiloto = function(nomePiloto) {
+            const modal = document.getElementById('piloto-modal');
+            const titleEl = document.getElementById('modal-piloto-nome');
+            const bodyEl = document.getElementById('modal-piloto-corpo');
+
+            titleEl.innerHTML = `🏎️ Ficha do Piloto: <span style="color: var(--accent-gold);">${nomePiloto}</span>`;
+
+            let dadosBase = obterTodosDadosConsolidados();
+            let participacoes = dadosBase.filter(d => d.piloto === nomePiloto);
+
+            if (participacoes.length === 0) {
+                bodyEl.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted);">Nenhum dado encontrado para este piloto.</div>`;
+                modal.style.display = 'flex';
+                return;
+            }
+
+            let totalCorridas = participacoes.length;
+            let vitorias = 0;
+            let melhorVoltaAbsolutaPiloto = 999999;
+            let melhorSessaoVolta = "";
+            let somaMediasPiloto = 0;
+            let totalVoltasVálidasPiloto = 0;
+            let tabelaHistoricoHtml = "";
+            let contadorPosicoes = {};
+            let menorDesvioPiloto = 999;
+
+            participacoes.forEach(part => {
+                let posStr = String(part.pos || '99').replace('º','').trim();
+                let posNum = parseInt(posStr) || 99;
+                contadorPosicoes[posNum] = (contadorPosicoes[posNum] || 0) + 1;
+                if (posNum === 1) vitorias++;
+
+                let lapsRaw = part.laps || [];
+                let lapsValidas = lapsRaw.filter(l => !(typeof l === 'object' && l.anulada)).map(l => typeof l === 'object' ? l.tempo : l);
+                
+                if (lapsValidas.length > 0) {
+                    let melhorPart = Math.min(...lapsValidas);
+                    if (melhorPart < melhorVoltaAbsolutaPiloto) {
+                        melhorVoltaAbsolutaPiloto = melhorPart;
+                        melhorSessaoVolta = part.sessao || part.bateriaKey;
+                    }
+
+                    let somaPart = lapsValidas.reduce((a,b)=>a+b, 0);
+                    let mediaPart = somaPart / lapsValidas.length;
+                    somaMediasPiloto += mediaPart * lapsValidas.length;
+                    totalVoltasVálidasPiloto += lapsValidas.length;
+
+                    let variancia = lapsValidas.length > 1 ? lapsValidas.reduce((sum, t) => sum + Math.pow(t - mediaPart, 2), 0) / lapsValidas.length : 0;
+                    let desvioCalc = Math.sqrt(variancia);
+                    if (desvioCalc < menorDesvioPiloto) {
+                        menorDesvioPiloto = desvioCalc;
+                    }
+
+                    tabelaHistoricoHtml += `
+                        <tr>
+                            <td><span class="session-badge">${part.sessao || part.bateriaKey}</span></td>
+                            <td><span class="pos-badge">${part.pos || '-'}</span></td>
+                            <td>${lapsValidas.length} voltas</td>
+                            <td class="text-green">${melhorPart.toFixed(3).replace('.',',')}s</td>
+                            <td>${mediaPart.toFixed(3).replace('.',',')}s</td>
+                        </tr>
+                    `;
+                }
+            });
+
+            let mediaGeralPiloto = totalVoltasVálidasPiloto > 0 ? (somaMediasPiloto / totalVoltasVálidasPiloto) : 0;
+
+            // Verificar se o piloto tem recorde absoluto de volta rápida no grid global
+            let globalMelhorVolta = 999999;
+            dadosBase.forEach(d => {
+                if (d.laps) {
+                    d.laps.forEach(l => {
+                        let t = typeof l === 'object' ? l.tempo : l;
+                        let anul = typeof l === 'object' ? l.anulada : false;
+                        if (!anul && t < globalMelhorVolta) globalMelhorVolta = t;
+                    });
+                }
+            });
+            let temVoltaMaisRapidaGeral = (Math.abs(melhorVoltaAbsolutaPiloto - globalMelhorVolta) < 0.0001);
+
+            // Verificar se é o piloto com mais vitórias no grid geral
+            let vitoriasPorPiloto = {};
+            let bateriasUnicas = [...new Set(dadosBase.map(d => d.bateriaKey))];
+            bateriasUnicas.forEach(bk => {
+                let itensBat = dadosBase.filter(d => d.bateriaKey === bk);
+                if (itensBat.length > 0) {
+                    let vencedorBat = itensBat.reduce((prev, curr) => (parseInt(curr.pos)||99) < (parseInt(prev.pos)||99) ? curr : prev, itensBat[0]);
+                    if (vencedorBat) {
+                        vitoriasPorPiloto[vencedorBat.piloto] = (vitoriasPorPiloto[vencedorBat.piloto] || 0) + 1;
+                    }
+                }
+            });
+            let maxVitoriasGrid = 0;
+            for (let p in vitoriasPorPiloto) {
+                if (vitoriasPorPiloto[p] > maxVitoriasGrid) maxVitoriasGrid = vitoriasPorPiloto[p];
+            }
+            let temMaisVitorias = (maxVitoriasGrid > 0 && (vitoriasPorPiloto[nomePiloto] || 0) === maxVitoriasGrid && vitoriasPorPiloto[nomePiloto] >= 2);
+
+            // Construir Tags de Premiação (Pódio de Conquistas no Topo)
+            let badgesHtml = '';
+            if (temVoltaMaisRapidaGeral) {
+                badgesHtml += `<div class="badge-achievement">👑 Premiação: Volta Mais Rápida Geral do Grid (${melhorVoltaAbsolutaPiloto.toFixed(3).replace('.',',')}s)</div>`;
+            }
+            if (temMaisVitorias) {
+                badgesHtml += `<div class="badge-achievement silver">🏆 Premiação: Maior Número de Vitórias (${vitorias} vitórias)</div>`;
+            }
+            if (menorDesvioPiloto < 1.2 && totalCorridas > 0) {
+                badgesHtml += `<div class="badge-achievement green-tag">🎯 Premiação: Referência em Consistência (±${menorDesvioPiloto.toFixed(3).replace('.',',')}s)</div>`;
+            }
+            if (!badgesHtml) {
+                badgesHtml = `<div style="font-size: 0.82rem; color: var(--text-muted); font-style: italic;">Piloto em busca de sua primeira condecoração oficial no pódio.</div>`;
+            }
+
+            // Construir Ranking de Posições
+            let posicoesOrdenadas = Object.keys(contadorPosicoes).map(Number).sort((a,b) => a - b);
+            let rankingPillsHtml = posicoesOrdenadas.map(p => `
+                <div class="position-pill">
+                    <span>${p}º Lugar:</span> <span>${contadorPosicoes[p]}x</span>
+                </div>
+            `).join('');
+
+            // Olhar Crítico da Liderança
+            let analiseLideranca = "";
+            if (vitorias >= totalCorridas * 0.5) {
+                analiseLideranca = `Piloto de elite e referência de desempenho na Krathus Racing. Demonstra maturidade exemplar na gestão de pneus e traçado, impondo um ritmo forte desde a primeira volta. Seu índice de aproveitamento reflete constância e alta resiliência sob pressão.`;
+            } else if (vitorias > 0) {
+                analiseLideranca = `Competidor altamente competitivo com picos de velocidade impressionantes e capacidade clara de vitória. O foco para a evolução na equipe reside em estabilizar a consistência ao longo de todas as voltas da bateria, evitando pequenos erros de contorno de curva que custam décimos preciosos.`;
+            } else {
+                analiseLideranca = `Piloto em franca curva de desenvolvimento técnico. Apresenta lampejos de excelente velocidade pura, mas ainda sofre com a oscilação em provas longas. A recomendação da liderança é focar em treinos de ritmo limpo, priorizando a segurança nas tangências antes de buscar o limite absoluto do automodelo.`;
+            }
+
+            bodyEl.innerHTML = `
+                <!-- Pódio de Conquistas / Premiações no Topo -->
+                <div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">🏅 Pódio de Conquistas e Premiações</div>
+                    <div class="badges-podium-container">
+                        ${badgesHtml}
+                    </div>
+                </div>
+
+                <div class="dossier-grid">
+                    <div class="dossier-kpi">
+                        <span class="dossier-kpi-label">Sessões / Corridas</span>
+                        <span class="dossier-kpi-value">${totalCorridas}</span>
+                    </div>
+                    <div class="dossier-kpi">
+                        <span class="dossier-kpi-label">Vitórias (1º Lugar)</span>
+                        <span class="dossier-kpi-value">${vitorias}</span>
+                    </div>
+                    <div class="dossier-kpi">
+                        <span class="dossier-kpi-label">Melhor Volta Pessoal</span>
+                        <span class="dossier-kpi-value">${melhorVoltaAbsolutaPiloto < 999 ? melhorVoltaAbsolutaPiloto.toFixed(3).replace('.',',') + 's' : '--'}</span>
+                    </div>
+                    <div class="dossier-kpi">
+                        <span class="dossier-kpi-label">Média Geral de Ritmo</span>
+                        <span class="dossier-kpi-value">${mediaGeralPiloto > 0 ? mediaGeralPiloto.toFixed(3).replace('.',',') + 's' : '--'}</span>
+                    </div>
+                </div>
+
+                <!-- Ranking de Posições -->
+                <div class="positions-ranking-box">
+                    <div class="positions-ranking-title">📊 Ranking de Posições Conquistadas</div>
+                    <div class="positions-pills-grid">
+                        ${rankingPillsHtml}
+                    </div>
+                </div>
+
+                <div class="dossier-report-box">
+                    <div class="dossier-report-title">🎯 Visão Crítica da Liderança de Equipe</div>
+                    <div>${analiseLideranca}</div>
+                </div>
+
+                <div class="card" style="padding: 14px; margin-top: 5px;">
+                    <div class="card-header" style="margin-bottom: 10px;">📜 Histórico de Participações em Baterias</div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Sessão / Bateria</th>
+                                    <th>Posição Final</th>
+                                    <th>Voltas Válidas</th>
+                                    <th>Melhor Volta</th>
+                                    <th>Média da Sessão</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${tabelaHistoricoHtml}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            modal.style.display = 'flex';
+        };
+
+        window.fecharDossiePiloto = function() {
+            document.getElementById('piloto-modal').style.display = 'none';
+        };
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('piloto-modal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        };
+
         // Curtidas da Sessão
         window.curtirSessao = function(bateriaKey) {
             if (!db) {
@@ -456,7 +736,7 @@
                     commentsHtml += `
                         <div class="comment-item">
                             <div class="comment-header-row">
-                                <span class="comment-author">${escapeHtml(com.autor)}</span>
+                                <span class="comment-author"><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(com.autor)}')">${escapeHtml(com.autor)}</a></span>
                             </div>
                             <div class="comment-text">${escapeHtml(com.texto)}</div>
                             <div class="comment-reactions">
@@ -528,7 +808,12 @@
                     }
                 }
 
-                document.getElementById('kpi-vencedor').innerText = maisVitoriasPiloto !== "--" ? maisVitoriasPiloto : "Nenhum";
+                let vencedorEl = document.getElementById('kpi-vencedor');
+                if (maisVitoriasPiloto !== "--") {
+                    vencedorEl.innerHTML = `<a class="piloto-link" onclick="abrirDossiePiloto('${maisVitoriasPiloto}')">${maisVitoriasPiloto}</a>`;
+                } else {
+                    vencedorEl.innerText = "Nenhum";
+                }
                 document.getElementById('kpi-vencedor-sub').innerText = maxVitorias > 0 ? `${maxVitorias} vitória(s) nas sessões` : "Sem vitórias no filtro";
 
                 let melhorVoltaGlobalVal = 999999;
@@ -558,7 +843,7 @@
 
                     document.getElementById('kpi-melhor-volta').innerText = `${melhorVoltaGlobalVal.toFixed(3).replace('.', ',')}s`;
                     document.getElementById('kpi-melhor-volta-vel').innerText = `${velEscalaMelhorKmh.toFixed(1).replace('.', ',')} km/h`;
-                    document.getElementById('kpi-melhor-volta-sub').innerText = `${melhorVoltaObj.piloto} (Volta ${melhorVoltaNum} - ${melhorVoltaObj.sessao})`;
+                    document.getElementById('kpi-melhor-volta-sub').innerHTML = `<a class="piloto-link" onclick="abrirDossiePiloto('${melhorVoltaObj.piloto}')">${melhorVoltaObj.piloto}</a> (Volta ${melhorVoltaNum} - ${melhorVoltaObj.sessao})`;
                 } else {
                     document.getElementById('kpi-melhor-volta').innerText = "--";
                     document.getElementById('kpi-melhor-volta-vel').innerText = "--";
@@ -695,11 +980,13 @@
                 const sessionBlock = document.createElement('div');
                 sessionBlock.className = 'session-block';
                 
+                let vencedorLinkHtml = vencedorSessaoObj ? `<a class="piloto-link" onclick="abrirDossiePiloto('${nomeVencedorSessao}')">${nomeVencedorSessao}</a>` : 'N/A';
+
                 let html = `
                     <div class="session-block-header">
                         <div class="session-block-title">🏁 Sessão / Bateria: ${nomeSessao}</div>
                         <div class="session-block-meta">
-                            <span class="session-winner-tag">🏆 Vencedor: <strong>${nomeVencedorSessao}</strong></span>
+                            <span class="session-winner-tag">🏆 Vencedor: <strong>${vencedorLinkHtml}</strong></span>
                             <button class="btn-like" onclick="curtirSessao('${bateriaKey}')">❤️ Curtir (<span id="like-count-${safeKey}">0</span>)</button>
                             <button class="btn-share" onclick="compartilharCorrida('${bateriaKey}', '${nomeSessao}', '${nomeVencedorSessao}')">🔗 Compartilhar</button>
                         </div>
@@ -849,7 +1136,7 @@
                             if (arr[0]) ordemVolta1.push({ piloto: d.piloto, pos: arr[0] });
                         });
                         ordemVolta1.sort((a, b) => a.pos - b.pos);
-                        let descVolta1 = ordemVolta1.map(item => `${item.piloto} em ${item.pos}º`).join(', ');
+                        let descVolta1 = ordemVolta1.map(item => `<a class="piloto-link" onclick="abrirDossiePiloto('${item.piloto}')">${item.piloto}</a> em ${item.pos}º`).join(', ');
                         logsHtml += `<div class="position-log-item">🏁 <strong>1ª Volta:</strong> O grid se consolidou com a seguinte ordem inicial: <strong>${descVolta1}</strong>.</div>`;
                     }
 
@@ -878,28 +1165,30 @@
                             let pAnt = arrPos[v-1] || 0;
                             let pAtu = arrPos[v] || 0;
 
+                            let linkPiloto = `<a class="piloto-link" onclick="abrirDossiePiloto('${d.piloto}')" style="color:${obterCorPiloto(d.piloto)}">${d.piloto}</a>`;
+
                             if (pAnt > 0 && pAtu > 0 && pAtu !== pAnt) {
                                 if (pAtu < pAnt) {
                                     let superados = [];
                                     for (let p = pAtu; p < pAnt; p++) {
                                         let pilotoSuperado = posNaVoltaAnterior[p];
                                         if (pilotoSuperado && pilotoSuperado !== d.piloto) {
-                                            superados.push(`${pilotoSuperado} (${p}º)`);
+                                            superados.push(`<a class="piloto-link" onclick="abrirDossiePiloto('${pilotoSuperado}')">${pilotoSuperado}</a> (${p}º)`);
                                         }
                                     }
                                     let superadosTxt = superados.length > 0 ? `, superando ${superados.join(', ')}` : "";
-                                    mudancasNestaVolta.push(`🔥 <strong style="color:${obterCorPiloto(d.piloto)}">${d.piloto}</strong> avançou da <span class="tag-gain">${pAnt}ª para a ${pAtu}ª posição</span>${superadosTxt}`);
+                                    mudancasNestaVolta.push(`🔥 <strong>${linkPiloto}</strong> avançou da <span class="tag-gain">${pAnt}ª para a ${pAtu}ª posição</span>${superadosTxt}`);
                                 } 
                                 else if (pAtu > pAnt) {
                                     let beneficiados = [];
                                     for (let p = pAnt + 1; p <= pAtu; p++) {
                                         let pilotoBeneficiado = posNaVoltaAtual[p];
                                         if (pilotoBeneficiado && pilotoBeneficiado !== d.piloto) {
-                                            beneficiados.push(`${pilotoBeneficiado} (${p}º)`);
+                                            beneficiados.push(`<a class="piloto-link" onclick="abrirDossiePiloto('${pilotoBeneficiado}')">${pilotoBeneficiado}</a> (${p}º)`);
                                         }
                                     }
                                     let beneficiadosTxt = beneficiados.length > 0 ? `, cedendo posições para ${beneficiados.join(' e ')}` : "";
-                                    mudancasNestaVolta.push(`💧 <strong style="color:${obterCorPiloto(d.piloto)}">${d.piloto}</strong> caiu da <span class="tag-loss">${pAnt}ª para a ${pAtu}ª posição</span>${beneficiadosTxt}`);
+                                    mudancasNestaVolta.push(`💧 <strong>${linkPiloto}</strong> caiu da <span class="tag-loss">${pAnt}ª para a ${pAtu}ª posição</span>${beneficiadosTxt}`);
                                 }
                             }
                         });
@@ -937,9 +1226,11 @@
                         let velPistaMediaKmh = velPistaMediaMs * 3.6;
                         let velEscalaMediaKmh = velPistaMediaKmh * ESCALA;
 
+                        let linkPiloto = `<a class="piloto-link" onclick="abrirDossiePiloto('${item.piloto}')">${item.piloto}</a>`;
+
                         tbodyVel.innerHTML += `
                             <tr>
-                                <td><strong>${item.piloto}</strong></td>
+                                <td><strong>${linkPiloto}</strong></td>
                                 <td class="text-green">${melhorTempo.toFixed(3).replace('.',',')}s</td>
                                 <td>${velPistaMelhorKmh.toFixed(2).replace('.',',')} km/h</td>
                                 <td><strong style="color: var(--accent-gold);">${velEscalaMelhorKmh.toFixed(1).replace('.',',')} km/h</strong></td>
@@ -989,10 +1280,12 @@
                             ? `<br>⚠️ <strong>Análise de Pontos Críticos:</strong> Picos significativos de perda de tempo isolados nos giros: <strong>${voltasLentas.slice(0, 5).join(', ')}</strong>. Estes registros evidenciam falhas pontuais de traçado ou incidentes isolados de prova.`
                             : `<br>✨ <strong>Fluidez de Prova:</strong> O piloto não apresentou discrepâncias graves ou voltas excessivamente penalizadas; o tempo perdido foi linear e distribuído de forma homogênea.`;
 
+                        let linkPiloto = `<a class="piloto-link" onclick="abrirDossiePiloto('${item.piloto}')">${item.piloto}</a>`;
+
                         tbody.innerHTML += `
                             <tr class="main-row">
                                 <td><span class="pos-badge" style="background:${item.badgeColor || '#ffb703'};">${item.pos || '1º'}</span></td>
-                                <td><strong>${item.piloto}</strong></td>
+                                <td><strong>${linkPiloto}</strong></td>
                                 <td><span class="session-badge">${item.sessao || bateriaKey}</span></td>
                                 <td><strong>${lapsValidas.length} voltas válidas</strong></td>
                                 <td class="text-green">${melhorTempo.toFixed(3).replace('.',',')}s</td>
@@ -1016,7 +1309,11 @@
                 if (modulosSelecionados.includes('mod-tabela-geral')) {
                     const headerLap = document.getElementById(`head-lapbyLap-${bateriaKey}`);
                     const bodyLap = document.getElementById(`body-lapbyLap-${bateriaKey}`);
-                    dadosSessao.forEach(d => headerLap.innerHTML += `<th><span style="color:${obterCorPiloto(d.piloto)}">●</span> ${d.piloto}</th>`);
+                    
+                    dadosSessao.forEach(d => {
+                        let linkPilotoHeader = `<a class="piloto-link" onclick="abrirDossiePiloto('${d.piloto}')">${d.piloto}</a>`;
+                        headerLap.innerHTML += `<th><span style="color:${obterCorPiloto(d.piloto)}">●</span> ${linkPilotoHeader}</th>`;
+                    });
                     
                     let maxV = Math.max(...dadosSessao.map(d => d.laps ? d.laps.length : 0));
                     for (let i = 0; i < maxV; i++) {
