@@ -121,13 +121,18 @@
         .tag-gain { color: var(--accent-green); font-weight: 700; }
         .tag-loss { color: var(--accent-red); font-weight: 700; }
 
-        /* Módulo de Comentários por Sessão */
+        /* Módulo de Comentários por Sessão com Reações */
         .comments-section { margin-top: 15px; background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
         .comments-title { font-size: 0.85rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
-        .comments-list { display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; }
-        .comment-item { background: rgba(21, 28, 40, 0.6); padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border-card); font-size: 0.85rem; }
-        .comment-author { font-weight: 700; color: var(--accent-gold); margin-bottom: 2px; }
-        .comment-text { color: var(--text-main); word-break: break-word; }
+        .comments-list { display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto; }
+        .comment-item { background: rgba(21, 28, 40, 0.6); padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border-card); font-size: 0.85rem; display: flex; flex-direction: column; gap: 6px; }
+        .comment-header-row { display: flex; justify-content: space-between; align-items: center; }
+        .comment-author { font-weight: 700; color: var(--accent-gold); }
+        .comment-text { color: var(--text-main); word-break: break-word; line-height: 1.4; }
+        .comment-reactions { display: flex; gap: 12px; margin-top: 4px; align-items: center; }
+        .btn-comment-reaction { background: rgba(28, 38, 59, 0.8); border: 1px solid var(--border-card); color: var(--text-muted); padding: 3px 8px; border-radius: 6px; font-size: 0.78rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all 0.2s; }
+        .btn-comment-reaction:hover { border-color: var(--accent-blue); color: var(--text-title); background: rgba(58, 134, 255, 0.15); }
+        
         .comment-form { display: flex; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
         .comment-input-name { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 6px; padding: 8px 12px; color: var(--text-main); font-size: 0.85rem; width: 160px; }
         .comment-input-text { flex: 1; background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 6px; padding: 8px 12px; color: var(--text-main); font-size: 0.85rem; min-width: 200px; }
@@ -267,8 +272,7 @@
                 <div class="changelog-box">
                     <div class="changelog-header">🚀 O que há de novo na Versão Atualizada:</div>
                     <ul class="changelog-list">
-                        <li><strong>Auditoria de "Gatos" (Voltas Anuladas):</strong> Suporte para marcação e sinalização de voltas anuladas na Tabela Geral e relatórios de consistência.</li>
-                        <li><strong>Firebase Conectado:</strong> Realtime Database vinculado corretamente para curtidas e comentários em tempo real.</li>
+                        <li><strong>Reações em Comentários:</strong> Suporte a ícones de Curtir (👍) e Não Curtir (👎) integrados diretamente nos comentários por sessão via Firebase.</li>
                     </ul>
                 </div>
             </section>
@@ -276,7 +280,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v4.0.2 (databaseURL Integrada)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v4.1.0 (Comentários com Reações)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -290,7 +294,7 @@
     <script src="banco-de-dados.js"></script>
 
     <script>
-        // CONFIGURAÇÃO DO FIREBASE (Completada com databaseURL oficial)
+        // CONFIGURAÇÃO DO FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyDCTkeIa6QsY2zYs8S__HlIwcY-zcuhZCA",
             authDomain: "krathus-telemetria.firebaseapp.com",
@@ -378,7 +382,7 @@
             atualizarDashboard();
         }
 
-        // Curtidas
+        // Curtidas da Sessão
         window.curtirSessao = function(bateriaKey) {
             if (!db) {
                 alert("Firebase não conectado!");
@@ -398,7 +402,7 @@
             });
         }
 
-        // Comentários
+        // Comentários e Reações (Curtir/Descurtir)
         window.enviarComentario = function(bateriaKey) {
             if (!db) {
                 alert("Firebase não conectado!");
@@ -416,10 +420,19 @@
             db.ref('comments/' + safeKey).push({
                 autor: autor,
                 texto: texto,
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                likes: 0,
+                dislikes: 0
             });
 
             textInput.value = "";
+        };
+
+        window.reagirComentario = function(bateriaKey, comentarioId, tipo) {
+            if (!db) return;
+            let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
+            let refComentario = db.ref(`comments/${safeKey}/${comentarioId}/${tipo}`);
+            refComentario.transaction(currentVal => (currentVal || 0) + 1);
         };
 
         function escutarComentarios(bateriaKey) {
@@ -435,16 +448,29 @@
                 }
                 
                 snapshot.forEach(childSnapshot => {
+                    let comId = childSnapshot.key;
                     let com = childSnapshot.val();
+                    let likes = com.likes || 0;
+                    let dislikes = com.dislikes || 0;
+
                     commentsHtml += `
                         <div class="comment-item">
-                            <div class="comment-author">${escapeHtml(com.autor)}</div>
+                            <div class="comment-header-row">
+                                <span class="comment-author">${escapeHtml(com.autor)}</span>
+                            </div>
                             <div class="comment-text">${escapeHtml(com.texto)}</div>
+                            <div class="comment-reactions">
+                                <button class="btn-comment-reaction" onclick="reagirComentario('${bateriaKey}', '${comId}', 'likes')">
+                                    👍 Curtir (${likes})
+                                </button>
+                                <button class="btn-comment-reaction" onclick="reagirComentario('${bateriaKey}', '${comId}', 'dislikes')">
+                                    👎 Não Curtir (${dislikes})
+                                </button>
+                            </div>
                         </div>
                     `;
                 });
                 listContainer.innerHTML = commentsHtml;
-                listContainer.scrollTop = listContainer.scrollHeight;
             });
         }
 
@@ -699,16 +725,16 @@
                     html += `<div class="card"><div class="card-header">Tabela Geral Volta a Volta (com Gaps ao Lado) - ${nomeSessao}</div><div class="table-container"><table><thead><tr id="head-lapbyLap-${bateriaKey}"><th>VOLTA</th></tr></thead><tbody id="body-lapbyLap-${bateriaKey}"></tbody></table></div></div>`;
                 }
 
-                // Módulo de Comentários
+                // Módulo de Comentários com Reações
                 html += `
                     <div class="comments-section">
-                        <div class="comments-title">💬 Comentários</div>
+                        <div class="comments-title">💬 Comentários e Reações</div>
                         <div class="comments-list" id="comments-list-${safeKey}">
                             <div style="font-size:0.85rem; color: var(--text-muted); text-align:center; padding: 6px;">Nenhum comentário ainda. Seja o primeiro a comentar!</div>
                         </div>
                         <div class="comment-form">
                             <input type="text" id="comment-name-${safeKey}" class="comment-input-name" placeholder="Seu Nome / Piloto">
-                            <input type="text" id="comment-text-${safeKey}" class="comment-input-text" placeholder="Deixe seu comentário..." onkeypress="if(event.key === 'Enter') enviarComentario('${bateriaKey}')">
+                            <input type="text" id="comment-text-${safeKey}" class="comment-input-text" placeholder="Escreva seu comentário..." onkeypress="if(event.key === 'Enter') enviarComentario('${bateriaKey}')">
                             <button class="btn-comment" onclick="enviarComentario('${bateriaKey}')">Enviar</button>
                         </div>
                     </div>
