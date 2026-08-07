@@ -366,7 +366,7 @@
                 <div class="changelog-box">
                     <div class="changelog-header">🚀 O que há de novo na Versão Atualizada:</div>
                     <ul class="changelog-list">
-                        <li><strong>Gestão de Uploads em Aba Própria:</strong> O painel de envio e gerenciamento de arquivos JSON agora possui sua própria aba dedicada, otimizando o fluxo de trabalho.</li>
+                        <li><strong>Leitura Robusta de Múltiplas Sessões:</strong> Parser avançado para extração automática de todas as sessões e pilotos presentes nos arquivos JSON.</li>
                     </ul>
                 </div>
             </section>
@@ -389,7 +389,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v4.7.0 (Abas Organizadas)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v4.8.0 (Parser Robusto Integrado)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -622,19 +622,43 @@
                     if (!categoriaAtivaSelecionada || tipoArq === categoriaAtivaSelecionada || tipoArq === 'outro') {
                         let rawDados = arq.dados;
                         if (rawDados) {
-                            let arrayItens = Array.isArray(rawDados) ? rawDados : (rawDados.dados || rawDados.results || Object.values(rawDados));
-                            if (Array.isArray(arrayItens)) {
-                                arrayItens.forEach(item => {
-                                    let itemNormalizado = {
-                                        bateriaKey: item.bateriaKey || item.sessionKey || item.bateria || item.sessaoKey || 'bateria_geral',
-                                        sessao: item.sessao || item.sessionName || item.bateria || item.nomeSessao || arq.nomeArquivo,
-                                        piloto: item.piloto || item.driver || item.nome || 'Piloto Desconhecido',
-                                        pos: item.pos || item.position || item.colocacao || '-',
-                                        laps: item.laps || item.voltas || item.lapTimes || []
-                                    };
-                                    consolidado.push(itemNormalizado);
-                                });
-                            }
+                            let blocos = Array.isArray(rawDados) ? rawDados : (rawDados.sessions || rawDados.baterias || rawDados.results || [rawDados]);
+                            
+                            blocos.forEach((bloco, bIdx) => {
+                                let nomeSessaoBloco = bloco.sessao || bloco.sessionName || bloco.name || bloco.bateria || arq.nomeArquivo;
+                                let chaveBateria = bloco.bateriaKey || bloco.sessionKey || bloco.id || `bateria_${bIdx}_${arq.nomeArquivo}`;
+
+                                let listaPilotos = bloco.pilotos || bloco.drivers || bloco.results || bloco.ranking || (Array.isArray(bloco) ? bloco : null);
+
+                                if (Array.isArray(listaPilotos)) {
+                                    listaPilotos.forEach((item, pIdx) => {
+                                        let nomePiloto = item.piloto || item.driver || item.name || item.nome || item.pilotoNome;
+                                        if (!nomePiloto && typeof item === 'string') nomePiloto = item;
+                                        
+                                        let itemNormalizado = {
+                                            bateriaKey: chaveBateria,
+                                            sessao: nomeSessaoBloco,
+                                            piloto: nomePiloto || `Piloto ${pIdx + 1}`,
+                                            pos: item.pos || item.position || item.colocacao || item.rank || (pIdx + 1),
+                                            laps: item.laps || item.voltas || item.lapTimes || item.times || item.voltasTempos || []
+                                        };
+                                        consolidado.push(itemNormalizado);
+                                    });
+                                } else if (typeof bloco === 'object' && bloco !== null) {
+                                    Object.keys(bloco).forEach(key => {
+                                        let sub = bloco[key];
+                                        if (sub && typeof sub === 'object' && (sub.laps || sub.voltas || sub.driver || sub.piloto)) {
+                                            consolidado.push({
+                                                bateriaKey: chaveBateria,
+                                                sessao: nomeSessaoBloco,
+                                                piloto: sub.piloto || sub.driver || sub.name || key,
+                                                pos: sub.pos || sub.position || '-',
+                                                laps: sub.laps || sub.voltas || sub.lapTimes || []
+                                            });
+                                        }
+                                    });
+                                }
+                            });
                         }
                     }
                 });
