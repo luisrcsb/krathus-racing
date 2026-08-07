@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Krathus Racing - Central de Telemetria e Gestão</title>
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Firebase SDK (Compat) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
     <style>
@@ -27,6 +29,7 @@
         body { background-color: var(--bg-body); color: var(--text-main); padding: 24px; }
         .dashboard-container { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
 
+        /* AVISO DE MODO PAISAGEM PARA CELULAR */
         #mobile-orientation-warning {
             display: none;
             position: fixed;
@@ -243,16 +246,16 @@
             .position-analysis-container { background: #f3f4f6 !important; border-left-color: #000 !important; }
             .footer-container { background: #ffffff !important; border: 1px solid #d1d5db !important; }
         }
-    
+    </style>
+</head>
+<body>
 
-
-
-    
+    <!-- MODAL / FICHA DO PILOTO -->
     <div id="piloto-modal">
         <div class="modal-content">
             <div class="modal-header">
                 <div class="modal-title" id="modal-piloto-nome">🏎️ Ficha do Piloto</div>
-                <button class="modal-close" onclick="fecharDossiePiloto()">×</button>
+                <button class="modal-close" onclick="fecharDossiePiloto()">&times;</button>
             </div>
             <div class="modal-body" id="modal-piloto-corpo"></div>
         </div>
@@ -275,7 +278,7 @@
             </div>
         </header>
 
-        
+        <!-- MÓDULO DE UPLOAD E GERENCIAMENTO DE ARQUIVOS -->
         <section class="upload-section">
             <div class="card-header" style="margin-bottom:0;">📤 Gestão e Upload de Arquivos (Banco: Upload)</div>
             <div class="upload-row">
@@ -288,7 +291,7 @@
             </div>
         </section>
 
-        
+        <!-- MENU DINÂMICO DE CATEGORIAS (Só aparece se houver dados) -->
         <div class="menu-categorias-container" id="menu-categorias-dinamico"></div>
 
         <div id="tab-telemetria" class="tab-content">
@@ -327,7 +330,7 @@
                 </div>
             </section>
 
-            
+            <!-- KPIs -->
             <section class="kpi-grid">
                 <div class="kpi-card">
                     <span class="kpi-label">Piloto com Mais Vitórias</span>
@@ -377,10 +380,11 @@
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
                 <img src="https://www.zround.com/wp-content/uploads/2020/05/zround_logo_web.png" alt="ZRound" class="footer-logo-img">
             </div>
-            <div class="footer-copyright">© 2026 Krathus Racing - Central de Telemetria. Todos os direitos reservados.</div>
+            <div class="footer-copyright">&copy; 2026 Krathus Racing - Central de Telemetria. Todos os direitos reservados.</div>
         </footer>
     </div>
 
+    <!-- SCRIPT DE BANCO DE DATABASE -->
     <script src="banco-de-database.js"></script>
 
     <script>
@@ -475,7 +479,7 @@
 
             let chaves = Object.keys(arquivosNoServidor);
             if (chaves.length === 0) {
-                container.innerHTML = `Nenhum arquivo enviado para o banco "Upload" ainda.`;
+                container.innerHTML = `<span style="color:var(--text-muted); font-size:0.85rem;">Nenhum arquivo enviado para o banco "Upload" ainda.</span>`;
                 return;
             }
 
@@ -519,7 +523,6 @@
             }
 
             Array.from(files).forEach(file => {
-                // Filtro contra duplicidade de arquivos
                 if (arquivosExistentesSet.has(file.name)) {
                     console.warn("Arquivo duplicado ignorado: " + file.name);
                     return;
@@ -590,7 +593,6 @@
             if (typeof listaJsonsCache !== 'undefined') {
                 listaJsonsCache.forEach(arq => {
                     let tipoArq = classificarPorNome(arq.nomeArquivo || '');
-                    // Se houver categoria ativa selecionada, filtra por ela; caso contrário, traz tudo
                     if (!categoriaAtivaSelecionada || tipoArq === categoriaAtivaSelecionada || tipoArq === 'outro') {
                         if (arq.dados && Array.isArray(arq.dados)) {
                             consolidado = consolidado.concat(arq.dados);
@@ -1016,7 +1018,7 @@
         }
 
         function escapeHtml(text) {
-            let map = { '&': '&', '<': '<', '>': '>', '"': '"', "'": ''' };
+            let map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
             return text.replace(/[&<>"']/g, m => map[m]);
         }
 
