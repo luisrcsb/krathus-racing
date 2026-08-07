@@ -366,7 +366,7 @@
                 <div class="changelog-box">
                     <div class="changelog-header">🚀 O que há de novo na Versão Atualizada:</div>
                     <ul class="changelog-list">
-                        <li><strong>Leitura Robusta de Múltiplas Sessões:</strong> Parser avançado para extração automática de todas as sessões e pilotos presentes nos arquivos JSON.</li>
+                        <li><strong>Compatibilidade Total com Estrutura Padronizada:</strong> Suporte completo ao formato de dados unificado por bateria/sessão no Firebase ("Upload").</li>
                     </ul>
                 </div>
             </section>
@@ -389,7 +389,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v4.8.0 (Parser Robusto Integrado)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v4.9.0 (Estrutura Firebase Padronizada)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -628,7 +628,7 @@
                                 let nomeSessaoBloco = bloco.sessao || bloco.sessionName || bloco.name || bloco.bateria || arq.nomeArquivo;
                                 let chaveBateria = bloco.bateriaKey || bloco.sessionKey || bloco.id || `bateria_${bIdx}_${arq.nomeArquivo}`;
 
-                                let listaPilotos = bloco.pilotos || bloco.drivers || bloco.results || bloco.ranking || (Array.isArray(bloco) ? bloco : null);
+                                let listaPilotos = bloco.dados || bloco.pilotos || bloco.drivers || bloco.results || bloco.ranking || (Array.isArray(bloco) ? bloco : null);
 
                                 if (Array.isArray(listaPilotos)) {
                                     listaPilotos.forEach((item, pIdx) => {
@@ -636,11 +636,12 @@
                                         if (!nomePiloto && typeof item === 'string') nomePiloto = item;
                                         
                                         let itemNormalizado = {
-                                            bateriaKey: chaveBateria,
-                                            sessao: nomeSessaoBloco,
+                                            bateriaKey: item.bateriaKey || chaveBateria,
+                                            sessao: item.sessao || nomeSessaoBloco,
                                             piloto: nomePiloto || `Piloto ${pIdx + 1}`,
                                             pos: item.pos || item.position || item.colocacao || item.rank || (pIdx + 1),
-                                            laps: item.laps || item.voltas || item.lapTimes || item.times || item.voltasTempos || []
+                                            laps: item.laps || item.voltas || item.lapTimes || item.times || item.voltasTempos || [],
+                                            badgeColor: item.badgeColor || '#ffb703'
                                         };
                                         consolidado.push(itemNormalizado);
                                     });
@@ -649,11 +650,12 @@
                                         let sub = bloco[key];
                                         if (sub && typeof sub === 'object' && (sub.laps || sub.voltas || sub.driver || sub.piloto)) {
                                             consolidado.push({
-                                                bateriaKey: chaveBateria,
-                                                sessao: nomeSessaoBloco,
+                                                bateriaKey: sub.bateriaKey || chaveBateria,
+                                                sessao: sub.sessao || nomeSessaoBloco,
                                                 piloto: sub.piloto || sub.driver || sub.name || key,
                                                 pos: sub.pos || sub.position || '-',
-                                                laps: sub.laps || sub.voltas || sub.lapTimes || []
+                                                laps: sub.laps || sub.voltas || sub.lapTimes || [],
+                                                badgeColor: sub.badgeColor || '#ffb703'
                                             });
                                         }
                                     });
