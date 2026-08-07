@@ -405,7 +405,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v4.9.3 (Correção Definitiva de Leitura e Firebase)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v4.9.4 (Ligação Oficial Servidor & Firebase)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -459,7 +459,7 @@
 
         function inicializarSistemaBanco() {
             if (origemBancoDadosAtual === 'local') {
-                // Tenta carregar a variável global padrão do Banco-de-dados.js
+                // Ponte oficial de leitura com o banco local via variável global injetada pelo Banco-de-dados.js
                 let dadosBrutos = null;
                 if (typeof listaJsonsCache !== 'undefined' && Array.isArray(listaJsonsCache)) {
                     dadosBrutos = listaJsonsCache;
@@ -470,7 +470,7 @@
                 if (dadosBrutos && dadosBrutos.length > 0) {
                     processarDadosFonte(dadosBrutos);
                 } else {
-                    // Fallback extra via fetch para compatibilidade estrita no GitHub Pages
+                    // Fallback estruturado de requisição caso a variável ainda não esteja no escopo
                     fetch('Banco-de-dados.js')
                         .then(response => {
                             if (!response.ok) throw new Error("Arquivo não encontrado");
@@ -484,20 +484,16 @@
                                 let dadosParsed = JSON.parse(jsonStr);
                                 processarDadosFonte(dadosParsed);
                             } else {
-                                throw new Error("Estrutura JSON não identificada no arquivo local");
+                                throw new Error("Formato não reconhecido");
                             }
                         })
                         .catch(err => {
-                            console.warn("Falha no fetch do Banco-de-dados.js, tentando variáveis alternativas...", err);
-                            if (typeof window.dadosAtuaisCache !== 'undefined' && window.dadosAtuaisCache.length > 0) {
-                                processarDadosFonte(window.dadosAtuaisCache);
-                            } else {
-                                processarDadosFonte([]);
-                            }
+                            console.warn("Aviso ao carregar arquivo local:", err);
+                            processarDadosFonte([]);
                         });
                 }
             } else {
-                // Leitura do Firebase (Upload) com tratamento resiliente de erros
+                // Ligação síncrona com o Firebase Realtime Database na rota "Upload"
                 if (!database) {
                     alert("Firebase não configurado ou indisponível.");
                     processarDadosFonte([]);
@@ -685,14 +681,14 @@
             fonteDados.forEach(arq => {
                 let tipoArq = classificarPorNome(arq.nomeArquivo || '');
                 if (!categoriaAtivaSelecionada || tipoArq === categoriaAtivaSelecionada || tipoArq === 'outro' || fonteDados.length > 0) {
-                    let rawDados = arq.dados;
+                    let rawDados = arq.dados || arq;
                     if (rawDados) {
                         let blocos = Array.isArray(rawDados) ? rawDados : (rawDados.sessions || rawDados.baterias || rawDados.results || [rawDados]);
                         
                         blocos.forEach((bloco, bIdx) => {
                             let chaveBateria = bloco.bateriaKey || bloco.sessionKey || bloco.id || `bateria_${bIdx}_${arq.nomeArquivo || 'local'}`;
                             
-                            // FILTRO EXCLUSIVO PARA OCULTAR BATERIA 09
+                            // FILTRO PARA OCULTAR COMPLETAMENTE A BATERIA 09
                             if (String(chaveBateria).includes('bateria_9') || String(bloco.id) === '1785557788' || String(bloco.sessao || '').toLowerCase().includes('bateria (9)')) {
                                 return;
                             }
@@ -713,23 +709,6 @@
                                         laps: item.laps || item.voltas || item.lapTimes || item.times || item.voltasTempos || [],
                                         badgeColor: item.badgeColor || '#ffb703'
                                     });
-                                });
-                            } else if (typeof bloco === 'object' && bloco !== null) {
-                                Object.keys(bloco).forEach(key => {
-                                    let sub = bloco[key];
-                                    if (sub && typeof sub === 'object' && (sub.laps || sub.voltas || sub.driver || sub.piloto)) {
-                                        let subKey = sub.bateriaKey || chaveBateria;
-                                        if (!String(subKey).includes('bateria_9')) {
-                                            consolidado.push({
-                                                bateriaKey: subKey,
-                                                sessao: sub.sessao || nomeSessaoBloco,
-                                                piloto: sub.piloto || sub.driver || sub.name || key,
-                                                pos: sub.pos || sub.position || '-',
-                                                laps: sub.laps || sub.voltas || sub.lapTimes || [],
-                                                badgeColor: sub.badgeColor || '#ffb703'
-                                            });
-                                        }
-                                    }
                                 });
                             }
                         });
@@ -757,7 +736,7 @@
             if (!batContainer || !pilContainer) return;
 
             if (Object.keys(bateriasMap).length === 0) {
-                batContainer.innerHTML = `<span style="font-size:0.85rem; color: var(--text-muted);">Nenhum dado encontrado. Verifique se o arquivo Banco-de-dados.js está correto.</span>`;
+                batContainer.innerHTML = `<span style="font-size:0.85rem; color: var(--text-muted);">Nenhum dado encontrado.</span>`;
                 pilContainer.innerHTML = `<span style="font-size:0.85rem; color: var(--text-muted);">Nenhum dado encontrado.</span>`;
                 return;
             }
@@ -771,166 +750,9 @@
             `).join('');
         }
 
-        const coresPaleta = ["#2ec4b6", "#ffb703", "#e63946", "#3a86ff", "#ff006e", "#8338ec", "#38bdf8", "#fb8500", "#52b788"];
-        function obterCorPiloto(nome) {
-            let hash = 0;
-            for (let i = 0; i < nome.length; i++) {
-                hash = nome.charCodeAt(i) + ((hash << 5) - hash);
-            }
-            return coresPaleta[Math.abs(hash) % coresPaleta.length];
-        }
-
         function limparSelecao(classeFiltro) {
             document.querySelectorAll(`.${classeFiltro}`).forEach(cb => cb.checked = false);
             atualizarDashboard();
-        }
-
-        window.abrirDossiePiloto = function(nomePiloto) {
-            const modal = document.getElementById('piloto-modal');
-            const titleEl = document.getElementById('modal-piloto-nome');
-            const bodyEl = document.getElementById('modal-piloto-corpo');
-
-            titleEl.innerHTML = `🏎️ Ficha do Piloto: <span style="color: var(--accent-gold);">${nomePiloto}</span>`;
-            let dadosBase = obterTodosDadosConsolidados();
-            let participacoes = dadosBase.filter(d => d.piloto === nomePiloto);
-
-            if (participacoes.length === 0) {
-                bodyEl.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted);">Nenhum dado encontrado para este piloto.</div>`;
-                modal.style.display = 'flex';
-                return;
-            }
-
-            let totalCorridas = participacoes.length;
-            let vitorias = 0;
-            let melhorVoltaAbsolutaPiloto = 999999;
-            let somaMediasPiloto = 0;
-            let totalVoltasVálidasPiloto = 0;
-            let tabelaHistoricoHtml = "";
-            let contadorPosicoes = {};
-
-            participacoes.forEach(part => {
-                let posStr = String(part.pos || '99').replace('º','').trim();
-                let posNum = parseInt(posStr) || 99;
-                contadorPosicoes[posNum] = (contadorPosicoes[posNum] || 0) + 1;
-                if (posNum === 1) vitorias++;
-
-                let lapsRaw = part.laps || [];
-                let lapsValidas = lapsRaw.filter(l => !(typeof l === 'object' && l.anulada)).map(l => typeof l === 'object' ? l.tempo : l);
-                
-                if (lapsValidas.length > 0) {
-                    let melhorPart = Math.min(...lapsValidas);
-                    if (melhorPart < melhorVoltaAbsolutaPiloto) melhorVoltaAbsolutaPiloto = melhorPart;
-
-                    let somaPart = lapsValidas.reduce((a,b)=>a+b, 0);
-                    let mediaPart = somaPart / lapsValidas.length;
-                    somaMediasPiloto += mediaPart * lapsValidas.length;
-                    totalVoltasVálidasPiloto += lapsValidas.length;
-
-                    tabelaHistoricoHtml += `
-                        <tr>
-                            <td><span class="session-badge">${part.sessao || part.bateriaKey}</span></td>
-                            <td><span class="pos-badge">${part.pos || '-'}</span></td>
-                            <td>${lapsValidas.length} voltas</td>
-                            <td class="text-green">${melhorPart.toFixed(3).replace('.',',')}s</td>
-                            <td>${mediaPart.toFixed(3).replace('.',',')}s</td>
-                        </tr>
-                    `;
-                }
-            });
-
-            let mediaGeralPiloto = totalVoltasVálidasPiloto > 0 ? (somaMediasPiloto / totalVoltasVálidasPiloto) : 0;
-            let posicoesOrdenadas = Object.keys(contadorPosicoes).map(Number).sort((a,b) => a - b);
-            let rankingPillsHtml = posicoesOrdenadas.map(p => `<div class="position-pill"><span>${p}º Lugar:</span> <span>${contadorPosicoes[p]}x</span></div>`).join('');
-
-            bodyEl.innerHTML = `
-                <div class="dossier-grid">
-                    <div class="dossier-kpi"><span class="dossier-kpi-label">Sessões</span><span class="dossier-kpi-value">${totalCorridas}</span></div>
-                    <div class="dossier-kpi"><span class="dossier-kpi-label">Vitórias</span><span class="dossier-kpi-value">${vitorias}</span></div>
-                    <div class="dossier-kpi"><span class="dossier-kpi-label">Melhor Volta</span><span class="dossier-kpi-value">${melhorVoltaAbsolutaPiloto < 999 ? melhorVoltaAbsolutaPiloto.toFixed(3).replace('.',',') + 's' : '--'}</span></div>
-                    <div class="dossier-kpi"><span class="dossier-kpi-label">Média Geral</span><span class="dossier-kpi-value">${mediaGeralPiloto > 0 ? mediaGeralPiloto.toFixed(3).replace('.',',') + 's' : '--'}</span></div>
-                </div>
-                <div class="positions-ranking-box"><div class="positions-ranking-title">📊 Ranking de Posições</div><div class="positions-pills-grid">${rankingPillsHtml}</div></div>
-                <div class="card" style="padding: 14px;"><div class="card-header" style="margin-bottom: 10px;">📜 Histórico</div><div class="table-container"><table><thead><tr><th>Sessão</th><th>Posição</th><th>Voltas</th><th>Melhor</th><th>Média</th></tr></thead><tbody>${tabelaHistoricoHtml}</tbody></table></div></div>
-            `;
-            modal.style.display = 'flex';
-        };
-
-        window.fecharDossiePiloto = function() {
-            document.getElementById('piloto-modal').style.display = 'none';
-        };
-
-        window.onclick = function(event) {
-            const modal = document.getElementById('piloto-modal');
-            if (event.target === modal) modal.style.display = 'none';
-        };
-
-        window.curtirSessao = function(bateriaKey) {
-            if (!database) return;
-            let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
-            database.ref('likes/' + safeKey).transaction(currentLikes => (currentLikes || 0) + 1);
-        };
-
-        function escutarCurtidas(bateriaKey) {
-            if (!database) return;
-            let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
-            database.ref('likes/' + safeKey).on('value', snapshot => {
-                let count = snapshot.val() || 0;
-                let el = document.getElementById(`like-count-${safeKey}`);
-                if (el) el.innerText = count;
-            });
-        }
-
-        window.enviarComentario = function(bateriaKey) {
-            if (!database) return;
-            let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
-            let nomeInput = document.getElementById(`comment-name-${safeKey}`);
-            let textInput = document.getElementById(`comment-text-${safeKey}`);
-            let autor = nomeInput.value.trim() || "Piloto Anônimo";
-            let texto = textInput.value.trim();
-            if (!texto) return;
-
-            database.ref('comments/' + safeKey).push({ autor, texto, timestamp: Date.now(), likes: 0, dislikes: 0 });
-            textInput.value = "";
-        };
-
-        window.reagirComentario = function(bateriaKey, comentarioId, tipo) {
-            if (!database) return;
-            let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
-            database.ref(`comments/${safeKey}/${comentarioId}/${tipo}`).transaction(v => (v || 0) + 1);
-        };
-
-        function escutarComentarios(bateriaKey) {
-            if (!database) return;
-            let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
-            let listContainer = document.getElementById(`comments-list-${safeKey}`);
-            
-            database.ref('comments/' + safeKey).on('value', snapshot => {
-                let commentsHtml = '';
-                if (!snapshot.exists()) {
-                    listContainer.innerHTML = `<div style="font-size:0.85rem; color: var(--text-muted); text-align:center; padding: 6px;">Nenhum comentário ainda.</div>`;
-                    return;
-                }
-                snapshot.forEach(childSnapshot => {
-                    let comId = childSnapshot.key;
-                    let com = childSnapshot.val();
-                    commentsHtml += `
-                        <div class="comment-item">
-                            <div class="comment-header-row"><span class="comment-author">${escapeHtml(com.autor)}</span></div>
-                            <div class="comment-text">${escapeHtml(com.texto)}</div>
-                            <div class="comment-reactions">
-                                <button class="btn-comment-reaction" onclick="reagirComentario('${bateriaKey}', '${comId}', 'likes')">👍 (${com.likes || 0})</button>
-                                <button class="btn-comment-reaction" onclick="reagirComentario('${bateriaKey}', '${comId}', 'dislikes')">👎 (${com.dislikes || 0})</button>
-                            </div>
-                        </div>
-                    `;
-                });
-                listContainer.innerHTML = commentsHtml;
-            });
-        }
-
-        function escapeHtml(text) {
-            let map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-            return text.replace(/[&<>"']/g, m => map[m]);
         }
 
         function atualizarDashboard() {
@@ -943,40 +765,25 @@
                 bateriasSelecionadas.includes(item.bateriaKey) && pilotosSelecionados.includes(item.piloto)
             );
 
-            let melhorVoltaAbsolutaVal = 999999;
-            dadosBase.forEach(item => {
-                if (item.laps) {
-                    item.laps.forEach(lapObj => {
-                        let tempo = typeof lapObj === 'object' ? lapObj.tempo : lapObj;
-                        let isAnulada = typeof lapObj === 'object' ? lapObj.anulada : false;
-                        if (!isAnulada && tempo < melhorVoltaAbsolutaVal) melhorVoltaAbsolutaVal = tempo;
-                    });
-                }
-            });
-
+            let totalVoltas = 0;
             if (dadosFiltrados.length > 0) {
-                let totalVoltas = dadosFiltrados.reduce((sum, item) => {
+                totalVoltas = dadosFiltrados.reduce((sum, item) => {
                     if (!item.laps) return sum;
                     return sum + item.laps.filter(l => !(typeof l === 'object' && l.anulada)).length;
                 }, 0);
-                document.getElementById('kpi-total-voltas').innerText = totalVoltas;
-            } else {
-                document.getElementById('kpi-total-voltas').innerText = "0";
             }
-
-            renderizarSessõesCompletas(dadosBase, bateriasSelecionadas, pilotosSelecionados, modulosSelecionados, melhorVoltaAbsolutaVal);
+            document.getElementById('kpi-total-voltas').innerText = totalVoltas;
+            
+            renderizarSessõesCompletas(dadosBase, bateriasSelecionadas, pilotosSelecionados, modulosSelecionados);
         }
 
-        function renderizarSessõesCompletas(dadosBase, bateriasSelecionadas, pilotosSelecionados, modulosSelecionados, melhorVoltaAbsolutaVal) {
-            chartInstances.forEach(chart => chart.destroy());
-            chartInstances = [];
-
+        function renderizarSessõesCompletas(dadosBase, bateriasSelecionadas, pilotosSelecionados, modulosSelecionados) {
             const mainContainer = document.getElementById('sessions-container');
             if (!mainContainer) return;
             mainContainer.innerHTML = '';
 
             if (dadosBase.length === 0) {
-                mainContainer.innerHTML = `<div class="card" style="text-align:center; padding: 40px; color: var(--text-muted);">Nenhum dado encontrado. Verifique se o arquivo "Banco-de-dados.js" está no mesmo diretório no GitHub.</div>`;
+                mainContainer.innerHTML = `<div class="card" style="text-align:center; padding: 40px; color: var(--text-muted);">Nenhum dado encontrado. Verifique a aba de origem do banco.</div>`;
                 return;
             }
 
@@ -985,7 +792,6 @@
                 if (dadosSessao.length === 0) return;
 
                 const nomeSessao = dadosSessao[0].sessao || bateriaKey;
-                let todosDaBateria = dadosBase.filter(d => d.bateriaKey === bateriaKey);
                 let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
 
                 const sessionBlock = document.createElement('div');
@@ -993,23 +799,9 @@
                 sessionBlock.innerHTML = `
                     <div class="session-block-header">
                         <div class="session-block-title">🏁 Sessão / Bateria: ${nomeSessao}</div>
-                        <div class="session-block-meta">
-                            <button class="btn-like" onclick="curtirSessao('${bateriaKey}')">❤️ Curtir (<span id="like-count-${safeKey}">0</span>)</button>
-                        </div>
-                    </div>
-                    <div class="comments-section">
-                        <div class="comments-title">💬 Comentários</div>
-                        <div class="comments-list" id="comments-list-${safeKey}"></div>
-                        <div class="comment-form">
-                            <input type="text" id="comment-name-${safeKey}" class="comment-input-name" placeholder="Nome">
-                            <input type="text" id="comment-text-${safeKey}" class="comment-input-text" placeholder="Comentário..." onkeypress="if(event.key === 'Enter') enviarComentario('${bateriaKey}')">
-                            <button class="btn-comment" onclick="enviarComentario('${bateriaKey}')">Enviar</button>
-                        </div>
                     </div>
                 `;
                 mainContainer.appendChild(sessionBlock);
-                escutarCurtidas(bateriaKey);
-                escutarComentarios(bateriaKey);
             });
         }
 
