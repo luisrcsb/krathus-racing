@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Krathus Racing - Central de Telemetria</title>
-    <!-- Chart.js -->
+    <title>Krathus Racing - Central de Telemetria e Gestão</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Firebase SDK (Compat) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
     <style>
@@ -29,7 +27,6 @@
         body { background-color: var(--bg-body); color: var(--text-main); padding: 24px; }
         .dashboard-container { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
 
-        /* AVISO DE MODO PAISAGEM PARA CELULAR (Retrato) */
         #mobile-orientation-warning {
             display: none;
             position: fixed;
@@ -78,6 +75,17 @@
 
         .piloto-link { color: var(--accent-blue); text-decoration: none; font-weight: 700; cursor: pointer; transition: color 0.2s; }
         .piloto-link:hover { color: var(--accent-gold); text-decoration: underline; }
+
+        /* Menu de Categorias Dinâmico */
+        .menu-categorias-container { display: flex; gap: 10px; margin-bottom: 5px; flex-wrap: wrap; }
+        .tab-categoria-btn { background: var(--bg-input); border: 1px solid var(--border-card); color: var(--text-main); padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .tab-categoria-btn.active { background: var(--accent-blue); color: #fff; border-color: var(--accent-blue); }
+
+        /* Módulo de Upload / Gestão de Arquivos */
+        .upload-section { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .upload-row { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
+        .file-list-box { max-height: 180px; overflow-y: auto; background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+        .file-item-row { display: flex; justify-content: space-between; align-items: center; background: rgba(21, 28, 40, 0.6); padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-card); font-size: 0.85rem; }
 
         /* Modal / Ficha do Piloto */
         #piloto-modal {
@@ -179,7 +187,6 @@
         .tag-gain { color: var(--accent-green); font-weight: 700; }
         .tag-loss { color: var(--accent-red); font-weight: 700; }
 
-        /* Módulo de Comentários com Reações */
         .comments-section { margin-top: 15px; background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
         .comments-title { font-size: 0.85rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
         .comments-list { display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto; }
@@ -228,7 +235,7 @@
         @media print {
             body, body * { color: #000000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             body { background-color: #ffffff !important; padding: 10px !important; font-size: 11px !important; }
-            .header-actions, .filters-card, .btn-pdf-global, .btn-share, .btn-like, .comments-section, .welcome-card, #piloto-modal { display: none !important; }
+            .header-actions, .filters-card, .btn-pdf-global, .btn-share, .btn-like, .comments-section, .welcome-card, #piloto-modal, .upload-section, .menu-categorias-container { display: none !important; }
             .header { background: #ffffff !important; border: 1px solid #d1d5db !important; }
             .kpi-card { background: #f9fafb !important; border: 1px solid #d1d5db !important; }
             .card { background: #ffffff !important; border: 1px solid #9ca3af !important; }
@@ -236,20 +243,18 @@
             .position-analysis-container { background: #f3f4f6 !important; border-left-color: #000 !important; }
             .footer-container { background: #ffffff !important; border: 1px solid #d1d5db !important; }
         }
-    </style>
-</head>
-<body>
+    
 
-    <!-- MODAL / FICHA DO PILOTO COM SEGURANÇA DE SENHA -->
+
+
+    
     <div id="piloto-modal">
         <div class="modal-content">
             <div class="modal-header">
                 <div class="modal-title" id="modal-piloto-nome">🏎️ Ficha do Piloto</div>
-                <button class="modal-close" onclick="fecharDossiePiloto()">&times;</button>
+                <button class="modal-close" onclick="fecharDossiePiloto()">×</button>
             </div>
-            <div class="modal-body" id="modal-piloto-corpo">
-                <!-- Conteúdo injetado via JavaScript -->
-            </div>
+            <div class="modal-body" id="modal-piloto-corpo"></div>
         </div>
     </div>
 
@@ -269,6 +274,22 @@
                 <button class="btn btn-pdf-global" onclick="gerarRelatórioPDF()">📄 Gerar Relatório PDF Completo</button>
             </div>
         </header>
+
+        
+        <section class="upload-section">
+            <div class="card-header" style="margin-bottom:0;">📤 Gestão e Upload de Arquivos (Banco: Upload)</div>
+            <div class="upload-row">
+                <input type="file" id="fileInput" multiple accept=".json" style="color:var(--text-main);">
+                <button class="btn" style="background:var(--accent-blue); color:#fff;" onclick="processarUpload()">Subir Arquivos</button>
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Arquivos enviados anteriormente salvos no servidor:</div>
+            <div class="file-list-box" id="lista-arquivos-servidor">
+                <span style="color:var(--text-muted); font-size:0.85rem;">Carregando arquivos...</span>
+            </div>
+        </section>
+
+        
+        <div class="menu-categorias-container" id="menu-categorias-dinamico"></div>
 
         <div id="tab-telemetria" class="tab-content">
             <section class="filters-card">
@@ -306,7 +327,7 @@
                 </div>
             </section>
 
-            <!-- KPIs -->
+            
             <section class="kpi-grid">
                 <div class="kpi-card">
                     <span class="kpi-label">Piloto com Mais Vitórias</span>
@@ -342,7 +363,7 @@
                 <div class="changelog-box">
                     <div class="changelog-header">🚀 O que há de novo na Versão Atualizada:</div>
                     <ul class="changelog-list">
-                        <li><strong>Ficha do Piloto com Senha e Premiação Exclusiva:</strong> Edição de dados protegida por senha e badge de consistência exclusiva para o piloto com o menor desvio padrão global do grid.</li>
+                        <li><strong>Banco de Dados "Upload" & Gestão de Arquivos:</strong> Sincronização em tempo real com o Firebase, filtragem automática por nome de arquivo (bateria, treino, campeonato) e bloqueio automático de duplicatas.</li>
                     </ul>
                 </div>
             </section>
@@ -350,21 +371,19 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v4.5.0 (Ficha Completa Definitiva)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v4.6.0 (Gestão "Upload" Integrada)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
                 <img src="https://www.zround.com/wp-content/uploads/2020/05/zround_logo_web.png" alt="ZRound" class="footer-logo-img">
             </div>
-            <div class="footer-copyright">&copy; 2026 Krathus Racing - Central de Telemetria. Todos os direitos reservados.</div>
+            <div class="footer-copyright">© 2026 Krathus Racing - Central de Telemetria. Todos os direitos reservados.</div>
         </footer>
     </div>
 
-    <!-- IMPORTAÇÃO DO BANCO DE DADOS -->
-    <script src="banco-de-dados.js"></script>
+    <script src="banco-de-database.js"></script>
 
     <script>
-        // CONFIGURAÇÃO DO FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyDCTkeIa6QsY2zYs8S__HlIwcY-zcuhZCA",
             authDomain: "krathus-telemetria.firebaseapp.com",
@@ -376,33 +395,206 @@
             databaseURL: "https://krathus-telemetria-default-rtdb.firebaseio.com"
         };
 
-        let db = null;
+        let database = null;
         try {
             firebase.initializeApp(firebaseConfig);
-            db = firebase.database();
+            database = firebase.database();
         } catch (e) {
             console.warn("Erro ao inicializar o Firebase:", e);
         }
 
         const SENHA_ADMIN = "krathus2026";
         let chartInstances = [];
+        let arquivosNoServidor = {};
+        let arquivosExistentesSet = new Set();
+        let categoriaAtivaSelecionada = null;
 
         document.addEventListener("DOMContentLoaded", () => {
-            if (typeof listaJsonsCache !== 'undefined') {
-                listaJsonsCache.sort((a, b) => b.id - a.id);
+            inicializarBancoUpload();
+        });
+
+        function inicializarBancoUpload() {
+            if (!database) {
+                if (typeof listaJsonsCache !== 'undefined') {
+                    processarDadosLocais(listaJsonsCache);
+                }
+                return;
+            }
+
+            // Ouvindo o banco de dados chamado "Upload"
+            database.ref('Upload').on('value', snapshot => {
+                arquivosNoServidor = {};
+                arquivosExistentesSet.clear();
+                let listaCacheDinamica = [];
+
+                if (snapshot.exists()) {
+                    snapshot.forEach(child => {
+                        let key = child.key;
+                        let val = child.val();
+                        arquivosNoServidor[key] = val;
+                        if (val.nomeArquivo) {
+                            arquivosExistentesSet.add(val.nomeArquivo);
+                        }
+                        if (val.conteudo) {
+                            if (Array.isArray(val.conteudo)) {
+                                listaCacheDinamica.push({ id: key, dados: val.conteudo, nomeArquivo: val.nomeArquivo });
+                            } else if (val.conteudo.dados && Array.isArray(val.conteudo.dados)) {
+                                listaCacheDinamica.push({ id: key, dados: val.conteudo.dados, nomeArquivo: val.nomeArquivo });
+                            }
+                        }
+                    });
+                }
+
+                window.listaJsonsCache = listaCacheDinamica;
+                renderizarListaArquivosUpload();
+                atualizarMenuCategoriasDinamico();
                 gerarFiltrosDinamicos();
                 atualizarDashboard();
-            } else {
-                console.error("Erro: banco-de-dados.js não encontrado.");
+            });
+        }
+
+        function processarDadosLocais(cache) {
+            window.listaJsonsCache = cache;
+            renderizarListaArquivosUpload();
+            atualizarMenuCategoriasDinamico();
+            gerarFiltrosDinamicos();
+            atualizarDashboard();
+        }
+
+        function classificarPorNome(nome) {
+            const n = (nome || '').toLowerCase();
+            if (n.includes('bateria')) return 'bateria';
+            if (n.includes('treino')) return 'treino';
+            if (n.includes('campeonato')) return 'campeonato';
+            return 'outro';
+        }
+
+        function renderizarListaArquivosUpload() {
+            const container = document.getElementById('lista-arquivos-servidor');
+            if (!container) return;
+
+            let chaves = Object.keys(arquivosNoServidor);
+            if (chaves.length === 0) {
+                container.innerHTML = `Nenhum arquivo enviado para o banco "Upload" ainda.`;
+                return;
             }
-        });
+
+            container.innerHTML = chaves.map(key => {
+                let item = arquivosNoServidor[key];
+                let nome = item.nomeArquivo || key;
+                return `
+                    <div class="file-item-row">
+                        <span>📄 ${nome}</span>
+                        <button class="btn" style="background:var(--accent-red); color:#fff; padding:3px 8px; font-size:0.75rem;" onclick="excluirArquivoUpload('${key}')">🗑️ Excluir</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        window.excluirArquivoUpload = function(key) {
+            if (!database) {
+                alert("Banco de dados não conectado!");
+                return;
+            }
+            if (confirm("Deseja realmente excluir este arquivo do banco 'Upload'?")) {
+                database.ref('Upload/' + key).remove().then(() => {
+                    alert("Arquivo excluído com sucesso!");
+                }).catch(err => {
+                    alert("Erro ao excluir: " + err.message);
+                });
+            }
+        };
+
+        window.processarUpload = function() {
+            const fileInput = document.getElementById('fileInput');
+            const files = fileInput.files;
+            if (files.length === 0) {
+                alert("Selecione ao menos um arquivo JSON.");
+                return;
+            }
+
+            if (!database) {
+                alert("Firebase / Database não configurado.");
+                return;
+            }
+
+            Array.from(files).forEach(file => {
+                // Filtro contra duplicidade de arquivos
+                if (arquivosExistentesSet.has(file.name)) {
+                    console.warn("Arquivo duplicado ignorado: " + file.name);
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const conteudoJson = JSON.parse(e.target.result);
+                        let dadosSalvar = {
+                            nomeArquivo: file.name,
+                            conteudo: conteudoJson,
+                            criadoEm: Date.now()
+                        };
+                        let safeKey = 'item_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+                        database.ref('Upload/' + safeKey).set(dadosSalvar);
+                    } catch (err) {
+                        alert("Erro ao interpretar o arquivo JSON: " + file.name);
+                    }
+                };
+                reader.readAsText(file);
+            });
+
+            fileInput.value = '';
+            alert("Processo de upload concluído (duplicatas filtradas automaticamente).");
+        };
+
+        function atualizarMenuCategoriasDinamico() {
+            const menuContainer = document.getElementById('menu-categorias-dinamico');
+            if (!menuContainer) return;
+
+            let categoriasDisponiveis = { bateria: 0, treino: 0, campeonato: 0 };
+
+            if (typeof listaJsonsCache !== 'undefined') {
+                listaJsonsCache.forEach(arq => {
+                    let tipo = classificarPorNome(arq.nomeArquivo || '');
+                    if (categoriasDisponiveis[tipo] !== undefined) {
+                        categoriasDisponiveis[tipo]++;
+                    }
+                });
+            }
+
+            menuContainer.innerHTML = '';
+            let htmlMenu = '';
+            let primeiraEncontrada = null;
+
+            ['bateria', 'treino', 'campeonato'].forEach(cat => {
+                if (categoriasDisponiveis[cat] > 0) {
+                    if (!primeiraEncontrada) primeiraEncontrada = cat;
+                    let isActive = (categoriaAtivaSelecionada === cat) || (!categoriaAtivaSelecionada && cat === primeiraEncontrada);
+                    if (isActive && !categoriaAtivaSelecionada) categoriaAtivaSelecionada = cat;
+
+                    htmlMenu += `<button class="tab-categoria-btn ${isActive ? 'active' : ''}" onclick="selecionarCategoriaMenu('${cat}')">📂 ${cat.toUpperCase()} (${categoriasDisponiveis[cat]})</button>`;
+                }
+            });
+
+            menuContainer.innerHTML = htmlMenu;
+        }
+
+        window.selecionarCategoriaMenu = function(cat) {
+            categoriaAtivaSelecionada = cat;
+            atualizarMenuCategoriasDinamico();
+            atualizarDashboard();
+        };
 
         function obterTodosDadosConsolidados() {
             let consolidado = [];
             if (typeof listaJsonsCache !== 'undefined') {
                 listaJsonsCache.forEach(arq => {
-                    if (arq.dados && Array.isArray(arq.dados)) {
-                        consolidado = consolidado.concat(arq.dados);
+                    let tipoArq = classificarPorNome(arq.nomeArquivo || '');
+                    // Se houver categoria ativa selecionada, filtra por ela; caso contrário, traz tudo
+                    if (!categoriaAtivaSelecionada || tipoArq === categoriaAtivaSelecionada || tipoArq === 'outro') {
+                        if (arq.dados && Array.isArray(arq.dados)) {
+                            consolidado = consolidado.concat(arq.dados);
+                        }
                     }
                 });
             }
@@ -424,9 +616,11 @@
             const batContainer = document.getElementById('filtro-baterias-container');
             const pilContainer = document.getElementById('filtro-pilotos-container');
 
+            if (!batContainer || !pilContainer) return;
+
             if (Object.keys(bateriasMap).length === 0) {
-                batContainer.innerHTML = `<span style="font-size:0.85rem; color: var(--text-muted);">Banco de dados vazio.</span>`;
-                pilContainer.innerHTML = `<span style="font-size:0.85rem; color: var(--text-muted);">Banco de dados vazio.</span>`;
+                batContainer.innerHTML = `<span style="font-size:0.85rem; color: var(--text-muted);">Nenhum dado nesta categoria.</span>`;
+                pilContainer.innerHTML = `<span style="font-size:0.85rem; color: var(--text-muted);">Nenhum dado nesta categoria.</span>`;
                 return;
             }
 
@@ -453,7 +647,6 @@
             atualizarDashboard();
         }
 
-        // Sistema de Ficha do Piloto com Consistência Exclusiva e Segurança Admin
         window.abrirDossiePiloto = function(nomePiloto) {
             const modal = document.getElementById('piloto-modal');
             const titleEl = document.getElementById('modal-piloto-nome');
@@ -463,7 +656,6 @@
 
             let dadosBase = obterTodosDadosConsolidados();
             
-            // 1. Cálculo de Consistência Global para Premiação Exclusiva
             let desviosGrid = {};
             dadosBase.forEach(d => {
                 if (!d.laps) return;
@@ -471,13 +663,11 @@
                 if (lapsValidas.length > 1) {
                     let media = lapsValidas.reduce((a,b)=>a+b, 0) / lapsValidas.length;
                     let variancia = lapsValidas.reduce((sum, t) => sum + Math.pow(t - media, 2), 0) / lapsValidas.length;
-                    // Se o piloto já tiver registro, fazemos uma média dos desvios ou guardamos o menor
                     if (!desviosGrid[d.piloto]) desviosGrid[d.piloto] = [];
                     desviosGrid[d.piloto].push(Math.sqrt(variancia));
                 }
             });
 
-            // Média dos desvios por piloto no geral
             let desvioMedioPiloto = {};
             for (let p in desviosGrid) {
                 let soma = desviosGrid[p].reduce((a,b)=>a+b, 0);
@@ -579,7 +769,6 @@
             if (temMaisVitorias) {
                 badgesHtml += `<div class="badge-achievement silver">🏆 Premiação: Maior Número de Vitórias (${vitorias} vitórias)</div>`;
             }
-            // Consistência Exclusiva
             if (nomePiloto === pilotoMaisConsistente && totalCorridas > 0) {
                 badgesHtml += `<div class="badge-achievement green-tag">🎯 Premiação: Piloto Mais Consistente (Desvio: ±${menorDesvioGlobal.toFixed(3).replace('.',',')}s)</div>`;
             }
@@ -605,8 +794,8 @@
             }
 
             let safeName = nomePiloto.replace(/[.#$\/\[\]]/g, "_");
-            if (db) {
-                db.ref('pilotos/' + safeName).once('value', snapshot => {
+            if (database) {
+                database.ref('pilotos/' + safeName).once('value', snapshot => {
                     let pData = snapshot.val() || {};
                     renderizarCorpoDossiê(bodyEl, badgesHtml, totalCorridas, vitorias, melhorVoltaAbsolutaPiloto, mediaGeralPiloto, rankingPillsHtml, analiseLideranca, tabelaHistoricoHtml, nomePiloto, pData);
                 });
@@ -705,7 +894,7 @@
         };
 
         window.salvarDadosPiloto = function(nomePiloto) {
-            if (!db) {
+            if (!database) {
                 alert("Firebase não conectado!");
                 return;
             }
@@ -717,7 +906,7 @@
             };
             
             let safeName = nomePiloto.replace(/[.#$\/\[\]]/g, "_");
-            db.ref('pilotos/' + safeName).set(dados).then(() => {
+            database.ref('pilotos/' + safeName).set(dados).then(() => {
                 alert("Ficha do piloto atualizada com sucesso!");
                 abrirDossiePiloto(nomePiloto);
             }).catch(err => {
@@ -737,18 +926,18 @@
         };
 
         window.curtirSessao = function(bateriaKey) {
-            if (!db) {
+            if (!database) {
                 alert("Firebase não conectado!");
                 return;
             }
             let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
-            db.ref('likes/' + safeKey).transaction(currentLikes => (currentLikes || 0) + 1);
+            database.ref('likes/' + safeKey).transaction(currentLikes => (currentLikes || 0) + 1);
         };
 
         function escutarCurtidas(bateriaKey) {
-            if (!db) return;
+            if (!database) return;
             let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
-            db.ref('likes/' + safeKey).on('value', snapshot => {
+            database.ref('likes/' + safeKey).on('value', snapshot => {
                 let count = snapshot.val() || 0;
                 let el = document.getElementById(`like-count-${safeKey}`);
                 if (el) el.innerText = count;
@@ -756,7 +945,7 @@
         }
 
         window.enviarComentario = function(bateriaKey) {
-            if (!db) {
+            if (!database) {
                 alert("Firebase não conectado!");
                 return;
             }
@@ -769,7 +958,7 @@
 
             if (!texto) return;
 
-            db.ref('comments/' + safeKey).push({
+            database.ref('comments/' + safeKey).push({
                 autor: autor,
                 texto: texto,
                 timestamp: Date.now(),
@@ -781,18 +970,18 @@
         };
 
         window.reagirComentario = function(bateriaKey, comentarioId, tipo) {
-            if (!db) return;
+            if (!database) return;
             let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
-            let refComentario = db.ref(`comments/${safeKey}/${comentarioId}/${tipo}`);
+            let refComentario = database.ref(`comments/${safeKey}/${comentarioId}/${tipo}`);
             refComentario.transaction(currentVal => (currentVal || 0) + 1);
         };
 
         function escutarComentarios(bateriaKey) {
-            if (!db) return;
+            if (!database) return;
             let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
             let listContainer = document.getElementById(`comments-list-${safeKey}`);
             
-            db.ref('comments/' + safeKey).on('value', snapshot => {
+            database.ref('comments/' + safeKey).on('value', snapshot => {
                 let commentsHtml = '';
                 if (!snapshot.exists()) {
                     listContainer.innerHTML = `<div style="font-size:0.85rem; color: var(--text-muted); text-align:center; padding: 6px;">Nenhum comentário ainda. Seja o primeiro a comentar!</div>`;
@@ -827,7 +1016,7 @@
         }
 
         function escapeHtml(text) {
-            let map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            let map = { '&': '&', '<': '<', '>': '>', '"': '"', "'": ''' };
             return text.replace(/[&<>"']/g, m => map[m]);
         }
 
@@ -1020,10 +1209,11 @@
             chartInstances = [];
 
             const mainContainer = document.getElementById('sessions-container');
+            if (!mainContainer) return;
             mainContainer.innerHTML = '';
 
             if (dadosBase.length === 0) {
-                mainContainer.innerHTML = `<div class="card" style="text-align:center; padding: 40px; color: var(--text-muted);">Nenhum dado encontrado no banco.</div>`;
+                mainContainer.innerHTML = `<div class="card" style="text-align:center; padding: 40px; color: var(--text-muted);">Nenhum dado encontrado para esta categoria.</div>`;
                 return;
             }
 
@@ -1275,7 +1465,7 @@
 
                 if (modulosSelecionados.includes('mod-velocidade')) {
                     const tbodyVel = document.getElementById(`tabela-velocidade-${bateriaKey}`);
-                    const DISTANCIA_PISTA = 26; // em metros
+                    const DISTANCIA_PISTA = 26; // metros
                     const ESCALA = 28;
 
                     dadosSessao.forEach(item => {
@@ -1341,7 +1531,7 @@
                         }
 
                         let voltasLentas = [];
-                        lapsValidas.forEach((t, idx) => {
+                        lapsValidas.forEach((t) => {
                             if (t > mediaVal + (stdDevCalc * 1.5) && t > 12.0) {
                                 voltasLentas.push(`Volta (${t.toFixed(3).replace('.',',')}s)`);
                             }
@@ -1424,7 +1614,7 @@
                                 let isAnulada = typeof lapObj === 'object' ? lapObj.anulada : false;
 
                                 if (isAnulada) {
-                                    linha += `<td><div class="lap-cell-inline"><span class="gato-lap-highlight" title="Volta Anulada por Gato/Corte">🐱 ${t.toFixed(3).replace('.',',')}s Anulada</span></div></td>`;
+                                    linha += `<td><div class="lap-cell-inline"><span class="gato-lap-highlight" title="Volta Anulada">🐱 ${t.toFixed(3).replace('.',',')}s Anulada</span></div></td>`;
                                 } else {
                                     let isAbsoluteFast = (Math.abs(t - melhorVoltaAbsolutaVal) < 0.0001);
                                     let lapsValidas = d.laps.filter(l => !(typeof l === 'object' && l.anulada)).map(l => typeof l === 'object' ? l.tempo : l);
