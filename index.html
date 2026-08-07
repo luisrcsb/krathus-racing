@@ -444,6 +444,8 @@
                                 listaCacheDinamica.push({ id: key, dados: val.conteudo, nomeArquivo: val.nomeArquivo });
                             } else if (val.conteudo.dados && Array.isArray(val.conteudo.dados)) {
                                 listaCacheDinamica.push({ id: key, dados: val.conteudo.dados, nomeArquivo: val.nomeArquivo });
+                            } else {
+                                listaCacheDinamica.push({ id: key, dados: val.conteudo, nomeArquivo: val.nomeArquivo });
                             }
                         }
                     });
@@ -594,8 +596,21 @@
                 listaJsonsCache.forEach(arq => {
                     let tipoArq = classificarPorNome(arq.nomeArquivo || '');
                     if (!categoriaAtivaSelecionada || tipoArq === categoriaAtivaSelecionada || tipoArq === 'outro') {
-                        if (arq.dados && Array.isArray(arq.dados)) {
-                            consolidado = consolidado.concat(arq.dados);
+                        let rawDados = arq.dados;
+                        if (rawDados) {
+                            let arrayItens = Array.isArray(rawDados) ? rawDados : (rawDados.dados || rawDados.results || Object.values(rawDados));
+                            if (Array.isArray(arrayItens)) {
+                                arrayItens.forEach(item => {
+                                    let itemNormalizado = {
+                                        bateriaKey: item.bateriaKey || item.sessionKey || item.bateria || item.sessaoKey || 'bateria_geral',
+                                        sessao: item.sessao || item.sessionName || item.bateria || item.nomeSessao || arq.nomeArquivo,
+                                        piloto: item.piloto || item.driver || item.nome || 'Piloto Desconhecido',
+                                        pos: item.pos || item.position || item.colocacao || '-',
+                                        laps: item.laps || item.voltas || item.lapTimes || []
+                                    };
+                                    consolidado.push(itemNormalizado);
+                                });
+                            }
                         }
                     }
                 });
