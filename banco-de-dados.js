@@ -1,4 +1,4 @@
-// banco-de-database.js
+// banco-de-dados.js
 const listaJsonsCache = [
     { id: 1, dados: [] }
 ];
