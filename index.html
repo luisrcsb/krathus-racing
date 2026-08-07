@@ -79,6 +79,15 @@
         .piloto-link { color: var(--accent-blue); text-decoration: none; font-weight: 700; cursor: pointer; transition: color 0.2s; }
         .piloto-link:hover { color: var(--accent-gold); text-decoration: underline; }
 
+        /* Seletor de Origem do Banco de Dados */
+        .db-selector-card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .db-selector-info { display: flex; flex-direction: column; gap: 2px; }
+        .db-selector-title { font-size: 0.9rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 6px; }
+        .db-selector-desc { font-size: 0.78rem; color: var(--text-muted); }
+        .db-toggle-group { display: flex; gap: 8px; background: var(--bg-input); padding: 4px; border-radius: 8px; border: 1px solid var(--border-card); }
+        .db-toggle-btn { background: transparent; border: none; color: var(--text-muted); padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; transition: all 0.2s; }
+        .db-toggle-btn.active { background: var(--accent-blue); color: #fff; box-shadow: 0 2px 8px rgba(58, 134, 255, 0.3); }
+
         /* Abas Principais do Sistema (Telemetria, Gestão de Uploads, etc.) */
         .main-tabs-container { display: flex; gap: 12px; margin-bottom: 5px; flex-wrap: wrap; }
         .tab-main-btn { background: var(--bg-card); border: 1px solid var(--border-card); color: var(--text-main); padding: 12px 24px; border-radius: 10px; font-weight: 700; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
@@ -244,7 +253,7 @@
         @media print {
             body, body * { color: #000000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             body { background-color: #ffffff !important; padding: 10px !important; font-size: 11px !important; }
-            .header-actions, .filters-card, .btn-pdf-global, .btn-share, .btn-like, .comments-section, .welcome-card, #piloto-modal, .upload-section, .main-tabs-container, .menu-categorias-container { display: none !important; }
+            .header-actions, .filters-card, .db-selector-card, .btn-pdf-global, .btn-share, .btn-like, .comments-section, .welcome-card, #piloto-modal, .upload-section, .main-tabs-container, .menu-categorias-container { display: none !important; }
             .header { background: #ffffff !important; border: 1px solid #d1d5db !important; }
             .kpi-card { background: #f9fafb !important; border: 1px solid #d1d5db !important; }
             .card { background: #ffffff !important; border: 1px solid #9ca3af !important; }
@@ -284,10 +293,22 @@
             </div>
         </header>
 
-        <!-- ABAS PRINCIPAIS DO SISTEMA -->
+        <!-- SELETOR DE ORIGEM DO BANCO DE DADOS (LOCAL vs FIREBASE) -->
+        <section class="db-selector-card">
+            <div class="db-selector-info">
+                <div class="db-selector-title">🗄️ Origem do Banco de Dados</div>
+                <div class="db-selector-desc">Escolha de onde carregar os dados de telemetria e sessões.</div>
+            </div>
+            <div class="db-toggle-group">
+                <button class="db-toggle-btn active" id="btn-src-local" onclick="mudarOrigemDados('local')">📁 Banco Local (Banco-de-dados.js)</button>
+                <button class="db-toggle-btn" id="btn-src-firebase" onclick="mudarOrigemDados('firebase')">☁️ Firebase (Upload)</button>
+            </div>
+        </section>
+
+        <!-- ABAS PRINCIPAIS DO SISTEMA (Telemetria, Gestão de Uploads, etc.) -->
         <div class="main-tabs-container">
             <button class="tab-main-btn active" onclick="trocarAbaPrincipal('telemetria', this)">📊 Central de Telemetria</button>
-            <button class="tab-main-btn" onclick="trocarAbaPrincipal('uploads', this)">📤 Gestão de Uploads (Banco: Upload)</button>
+            <button class="tab-main-btn" onclick="trocarAbaPrincipal('uploads', this)">📤 Gestão de Uploads</button>
         </div>
 
         <!-- ABA 1: TELEMETRIA -->
@@ -366,7 +387,8 @@
                 <div class="changelog-box">
                     <div class="changelog-header">🚀 O que há de novo na Versão Atualizada:</div>
                     <ul class="changelog-list">
-                        <li><strong>Compatibilidade Total com Estrutura Padronizada:</strong> Suporte completo ao formato de dados unificado por bateria/sessão no Firebase ("Upload").</li>
+                        <li><strong>Seletor de Banco de Dados:</strong> Alterne facilmente entre o Banco Local (Banco-de-dados.js) e o Firebase (Upload).</li>
+                        <li><strong>Compatibilidade Total com Estrutura Padronizada:</strong> Suporte completo ao formato de dados unificado.</li>
                     </ul>
                 </div>
             </section>
@@ -389,7 +411,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v4.9.0 (Estrutura Firebase Padronizada)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v4.9.1 (Seletor de Banco de Dados)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -399,8 +421,8 @@
         </footer>
     </div>
 
-    <!-- SCRIPT DE BANCO DE DATABASE -->
-    <script src="banco-de-database.js"></script>
+    <!-- SCRIPT DO BANCO LOCAL (Banco-de-dados.js) -->
+    <script src="Banco-de-dados.js"></script>
 
     <script>
         const firebaseConfig = {
@@ -427,10 +449,83 @@
         let arquivosNoServidor = {};
         let arquivosExistentesSet = new Set();
         let categoriaAtivaSelecionada = null;
+        
+        // Origem padrão definida como 'local' (Banco-de-dados.js)
+        let origemBancoDadosAtual = 'local'; 
 
         document.addEventListener("DOMContentLoaded", () => {
-            inicializarBancoUpload();
+            inicializarSistemaBanco();
         });
+
+        window.mudarOrigemDados = function(origem) {
+            origemBancoDadosAtual = origem;
+            
+            document.getElementById('btn-src-local').classList.remove('active');
+            document.getElementById('btn-src-firebase').classList.remove('active');
+            document.getElementById(`btn-src-${origem}`).classList.add('active');
+
+            categoriaAtivaSelecionada = null;
+            inicializarSistemaBanco();
+        };
+
+        function inicializarSistemaBanco() {
+            if (origemBancoDadosAtual === 'local') {
+                // Carrega do Banco-de-dados.js local
+                if (typeof listaJsonsCache !== 'undefined') {
+                    processarDadosFonte(listaJsonsCache);
+                } else {
+                    console.warn("Variável listaJsonsCache não encontrada no Banco-de-dados.js");
+                    processarDadosFonte([]);
+                }
+            } else {
+                // Carrega do Firebase (Upload)
+                if (!database) {
+                    alert("Firebase não configurado ou indisponível.");
+                    processarDadosFonte([]);
+                    return;
+                }
+
+                database.ref('Upload').on('value', snapshot => {
+                    arquivosNoServidor = {};
+                    arquivosExistentesSet.clear();
+                    let listaCacheDinamica = [];
+
+                    if (snapshot.exists()) {
+                        snapshot.forEach(child => {
+                            let key = child.key;
+                            let val = child.val();
+                            arquivosNoServidor[key] = val;
+                            if (val.nomeArquivo) {
+                                arquivosExistentesSet.add(val.nomeArquivo);
+                            }
+                            if (val.conteudo) {
+                                if (Array.isArray(val.conteudo)) {
+                                    listaCacheDinamica.push({ id: key, dados: val.conteudo, nomeArquivo: val.nomeArquivo });
+                                } else if (val.conteudo.dados && Array.isArray(val.conteudo.dados)) {
+                                    listaCacheDinamica.push({ id: key, dados: val.conteudo.dados, nomeArquivo: val.nomeArquivo });
+                                } else {
+                                    listaCacheDinamica.push({ id: key, dados: val.conteudo, nomeArquivo: val.nomeArquivo });
+                                }
+                            }
+                        });
+                    }
+
+                    renderizarListaArquivosUpload();
+                    processarDadosFonte(listaCacheDinamica);
+                }, error => {
+                    console.error("Erro ao ler do Firebase:", error);
+                    alert("Erro ao conectar com o Firebase. Verifique sua conexão ou credenciais.");
+                });
+            }
+        }
+
+        function processarDadosFonte(dadosCache) {
+            window.dadosAtuaisCache = dadosCache;
+            renderizarListaArquivosUpload();
+            atualizarMenuCategoriasDinamico();
+            gerarFiltrosDinamicos();
+            atualizarDashboard();
+        }
 
         window.trocarAbaPrincipal = function(nomeAba, btnElement) {
             document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
@@ -439,56 +534,6 @@
             document.getElementById(`pane-${nomeAba}`).classList.add('active');
             btnElement.classList.add('active');
         };
-
-        function inicializarBancoUpload() {
-            if (!database) {
-                if (typeof listaJsonsCache !== 'undefined') {
-                    processarDadosLocais(listaJsonsCache);
-                }
-                return;
-            }
-
-            // Ouvindo o banco de dados chamado "Upload"
-            database.ref('Upload').on('value', snapshot => {
-                arquivosNoServidor = {};
-                arquivosExistentesSet.clear();
-                let listaCacheDinamica = [];
-
-                if (snapshot.exists()) {
-                    snapshot.forEach(child => {
-                        let key = child.key;
-                        let val = child.val();
-                        arquivosNoServidor[key] = val;
-                        if (val.nomeArquivo) {
-                            arquivosExistentesSet.add(val.nomeArquivo);
-                        }
-                        if (val.conteudo) {
-                            if (Array.isArray(val.conteudo)) {
-                                listaCacheDinamica.push({ id: key, dados: val.conteudo, nomeArquivo: val.nomeArquivo });
-                            } else if (val.conteudo.dados && Array.isArray(val.conteudo.dados)) {
-                                listaCacheDinamica.push({ id: key, dados: val.conteudo.dados, nomeArquivo: val.nomeArquivo });
-                            } else {
-                                listaCacheDinamica.push({ id: key, dados: val.conteudo, nomeArquivo: val.nomeArquivo });
-                            }
-                        }
-                    });
-                }
-
-                window.listaJsonsCache = listaCacheDinamica;
-                renderizarListaArquivosUpload();
-                atualizarMenuCategoriasDinamico();
-                gerarFiltrosDinamicos();
-                atualizarDashboard();
-            });
-        }
-
-        function processarDadosLocais(cache) {
-            window.listaJsonsCache = cache;
-            renderizarListaArquivosUpload();
-            atualizarMenuCategoriasDinamico();
-            gerarFiltrosDinamicos();
-            atualizarDashboard();
-        }
 
         function classificarPorNome(nome) {
             const n = (nome || '').toLowerCase();
@@ -503,6 +548,11 @@
             if (!container) return;
 
             let chaves = Object.keys(arquivosNoServidor);
+            if (origemBancoDadosAtual === 'local') {
+                container.innerHTML = `<span style="color:var(--text-muted); font-size:0.85rem;">Gerenciamento de uploads disponível apenas ao selecionar o banco "Firebase".</span>`;
+                return;
+            }
+
             if (chaves.length === 0) {
                 container.innerHTML = `<span style="color:var(--text-muted); font-size:0.85rem;">Nenhum arquivo enviado para o banco "Upload" ainda.</span>`;
                 return;
@@ -535,6 +585,11 @@
         };
 
         window.processarUpload = function() {
+            if (origemBancoDadosAtual !== 'firebase') {
+                alert("Mude a origem do banco de dados para 'Firebase' antes de realizar uploads.");
+                return;
+            }
+
             const fileInput = document.getElementById('fileInput');
             const files = fileInput.files;
             if (files.length === 0) {
@@ -580,27 +635,28 @@
             if (!menuContainer) return;
 
             let categoriasDisponiveis = { bateria: 0, treino: 0, campeonato: 0 };
+            let fonteDados = window.dadosAtuaisCache || [];
 
-            if (typeof listaJsonsCache !== 'undefined') {
-                listaJsonsCache.forEach(arq => {
-                    let tipo = classificarPorNome(arq.nomeArquivo || '');
-                    if (categoriasDisponiveis[tipo] !== undefined) {
-                        categoriasDisponiveis[tipo]++;
-                    }
-                });
-            }
+            fonteDados.forEach(arq => {
+                let tipo = classificarPorNome(arq.nomeArquivo || '');
+                if (categoriasDisponiveis[tipo] !== undefined) {
+                    categoriasDisponiveis[tipo]++;
+                } else {
+                    categoriasDisponiveis['bateria']++;
+                }
+            });
 
             menuContainer.innerHTML = '';
             let htmlMenu = '';
             let primeiraEncontrada = null;
 
             ['bateria', 'treino', 'campeonato'].forEach(cat => {
-                if (categoriasDisponiveis[cat] > 0) {
+                if (categoriasDisponiveis[cat] > 0 || (fonteDados.length > 0 && cat === 'bateria')) {
                     if (!primeiraEncontrada) primeiraEncontrada = cat;
                     let isActive = (categoriaAtivaSelecionada === cat) || (!categoriaAtivaSelecionada && cat === primeiraEncontrada);
                     if (isActive && !categoriaAtivaSelecionada) categoriaAtivaSelecionada = cat;
 
-                    htmlMenu += `<button class="tab-categoria-btn ${isActive ? 'active' : ''}" onclick="selecionarCategoriaMenu('${cat}')">📂 ${cat.toUpperCase()} (${categoriasDisponiveis[cat]})</button>`;
+                    htmlMenu += `<button class="tab-categoria-btn ${isActive ? 'active' : ''}" onclick="selecionarCategoriaMenu('${cat}')">📂 ${cat.toUpperCase()} (${categoriasDisponiveis[cat] || fonteDados.length})</button>`;
                 }
             });
 
@@ -616,55 +672,55 @@
 
         function obterTodosDadosConsolidados() {
             let consolidado = [];
-            if (typeof listaJsonsCache !== 'undefined') {
-                listaJsonsCache.forEach(arq => {
-                    let tipoArq = classificarPorNome(arq.nomeArquivo || '');
-                    if (!categoriaAtivaSelecionada || tipoArq === categoriaAtivaSelecionada || tipoArq === 'outro') {
-                        let rawDados = arq.dados;
-                        if (rawDados) {
-                            let blocos = Array.isArray(rawDados) ? rawDados : (rawDados.sessions || rawDados.baterias || rawDados.results || [rawDados]);
-                            
-                            blocos.forEach((bloco, bIdx) => {
-                                let nomeSessaoBloco = bloco.sessao || bloco.sessionName || bloco.name || bloco.bateria || arq.nomeArquivo;
-                                let chaveBateria = bloco.bateriaKey || bloco.sessionKey || bloco.id || `bateria_${bIdx}_${arq.nomeArquivo}`;
+            let fonteDados = window.dadosAtuaisCache || [];
 
-                                let listaPilotos = bloco.dados || bloco.pilotos || bloco.drivers || bloco.results || bloco.ranking || (Array.isArray(bloco) ? bloco : null);
+            fonteDados.forEach(arq => {
+                let tipoArq = classificarPorNome(arq.nomeArquivo || '');
+                if (!categoriaAtivaSelecionada || tipoArq === categoriaAtivaSelecionada || tipoArq === 'outro' || fonteDados.length > 0) {
+                    let rawDados = arq.dados;
+                    if (rawDados) {
+                        let blocos = Array.isArray(rawDados) ? rawDados : (rawDados.sessions || rawDados.baterias || rawDados.results || [rawDados]);
+                        
+                        blocos.forEach((bloco, bIdx) => {
+                            let nomeSessaoBloco = bloco.sessao || bloco.sessionName || bloco.name || bloco.bateria || arq.nomeArquivo || `Sessão ${bIdx + 1}`;
+                            let chaveBateria = bloco.bateriaKey || bloco.sessionKey || bloco.id || `bateria_${bIdx}_${arq.nomeArquivo || 'local'}️`;
 
-                                if (Array.isArray(listaPilotos)) {
-                                    listaPilotos.forEach((item, pIdx) => {
-                                        let nomePiloto = item.piloto || item.driver || item.name || item.nome || item.pilotoNome;
-                                        if (!nomePiloto && typeof item === 'string') nomePiloto = item;
-                                        
-                                        let itemNormalizado = {
-                                            bateriaKey: item.bateriaKey || chaveBateria,
-                                            sessao: item.sessao || nomeSessaoBloco,
-                                            piloto: nomePiloto || `Piloto ${pIdx + 1}`,
-                                            pos: item.pos || item.position || item.colocacao || item.rank || (pIdx + 1),
-                                            laps: item.laps || item.voltas || item.lapTimes || item.times || item.voltasTempos || [],
-                                            badgeColor: item.badgeColor || '#ffb703'
-                                        };
-                                        consolidado.push(itemNormalizado);
-                                    });
-                                } else if (typeof bloco === 'object' && bloco !== null) {
-                                    Object.keys(bloco).forEach(key => {
-                                        let sub = bloco[key];
-                                        if (sub && typeof sub === 'object' && (sub.laps || sub.voltas || sub.driver || sub.piloto)) {
-                                            consolidado.push({
-                                                bateriaKey: sub.bateriaKey || chaveBateria,
-                                                sessao: sub.sessao || nomeSessaoBloco,
-                                                piloto: sub.piloto || sub.driver || sub.name || key,
-                                                pos: sub.pos || sub.position || '-',
-                                                laps: sub.laps || sub.voltas || sub.lapTimes || [],
-                                                badgeColor: sub.badgeColor || '#ffb703'
-                                            });
-                                        }
-                                    });
-                                }
-                            });
-                        }
+                            let listaPilotos = bloco.dados || bloco.pilotos || bloco.drivers || bloco.results || bloco.ranking || (Array.isArray(bloco) ? bloco : null);
+
+                            if (Array.isArray(listaPilotos)) {
+                                listaPilotos.forEach((item, pIdx) => {
+                                    let nomePiloto = item.piloto || item.driver || item.name || item.nome || item.pilotoNome;
+                                    if (!nomePiloto && typeof item === 'string') nomePiloto = item;
+                                    
+                                    let itemNormalizado = {
+                                        bateriaKey: item.bateriaKey || chaveBateria,
+                                        sessao: item.sessao || nomeSessaoBloco,
+                                        piloto: nomePiloto || `Piloto ${pIdx + 1}`,
+                                        pos: item.pos || item.position || item.colocacao || item.rank || (pIdx + 1),
+                                        laps: item.laps || item.voltas || item.lapTimes || item.times || item.voltasTempos || [],
+                                        badgeColor: item.badgeColor || '#ffb703'
+                                    };
+                                    consolidado.push(itemNormalizado);
+                                });
+                            } else if (typeof bloco === 'object' && bloco !== null) {
+                                Object.keys(bloco).forEach(key => {
+                                    let sub = bloco[key];
+                                    if (sub && typeof sub === 'object' && (sub.laps || sub.voltas || sub.driver || sub.piloto)) {
+                                        consolidado.push({
+                                            bateriaKey: sub.bateriaKey || chaveBateria,
+                                            sessao: sub.sessao || nomeSessaoBloco,
+                                            piloto: sub.piloto || sub.driver || sub.name || key,
+                                            pos: sub.pos || sub.position || '-',
+                                            laps: sub.laps || sub.voltas || sub.lapTimes || [],
+                                            badgeColor: sub.badgeColor || '#ffb703'
+                                        });
+                                    }
+                                });
+                            }
+                        });
                     }
-                });
-            }
+                }
+            });
             return consolidado;
         }
 
@@ -1280,7 +1336,7 @@
             mainContainer.innerHTML = '';
 
             if (dadosBase.length === 0) {
-                mainContainer.innerHTML = `<div class="card" style="text-align:center; padding: 40px; color: var(--text-muted);">Nenhum dado encontrado para esta categoria.</div>`;
+                mainContainer.innerHTML = `<div class="card" style="text-align:center; padding: 40px; color: var(--text-muted);">Nenhum dado encontrado para esta origem/categoria.</div>`;
                 return;
             }
 
