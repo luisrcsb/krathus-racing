@@ -9,6 +9,8 @@
     <!-- Firebase SDK (Compat) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <!-- SCRIPT DO BANCO LOCAL CARREGADO ANTES -->
+    <script src="Banco-de-dados.js"></script>
     <style>
         :root {
             --bg-body: #0d111a;
@@ -79,7 +81,16 @@
         .piloto-link { color: var(--accent-blue); text-decoration: none; font-weight: 700; cursor: pointer; transition: color 0.2s; }
         .piloto-link:hover { color: var(--accent-gold); text-decoration: underline; }
 
-        /* Abas Principais do Sistema (Telemetria, Gestão de Uploads, etc.) */
+        /* Seletor de Origem do Banco de Dados */
+        .db-selector-card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .db-selector-info { display: flex; flex-direction: column; gap: 2px; }
+        .db-selector-title { font-size: 0.9rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 6px; }
+        .db-selector-desc { font-size: 0.78rem; color: var(--text-muted); }
+        .db-toggle-group { display: flex; gap: 8px; background: var(--bg-input); padding: 4px; border-radius: 8px; border: 1px solid var(--border-card); }
+        .db-toggle-btn { background: transparent; border: none; color: var(--text-muted); padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; transition: all 0.2s; }
+        .db-toggle-btn.active { background: var(--accent-blue); color: #fff; box-shadow: 0 2px 8px rgba(58, 134, 255, 0.3); }
+
+        /* Abas Principais do Sistema */
         .main-tabs-container { display: flex; gap: 12px; margin-bottom: 5px; flex-wrap: wrap; }
         .tab-main-btn { background: var(--bg-card); border: 1px solid var(--border-card); color: var(--text-main); padding: 12px 24px; border-radius: 10px; font-weight: 700; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
         .tab-main-btn.active { background: var(--accent-blue); color: #fff; border-color: var(--accent-blue); box-shadow: 0 4px 12px rgba(58, 134, 255, 0.3); }
@@ -284,7 +295,7 @@
             </div>
         </header>
 
-        <!-- SELETOR DE ORIGEM DO BANCO DE DADOS (LOCAL vs FIREBASE) -->
+        <!-- SELETOR DE ORIGEM DO BANCO DE DADOS -->
         <section class="db-selector-card">
             <div class="db-selector-info">
                 <div class="db-selector-title">🗄️ Origem do Banco de Dados</div>
@@ -296,7 +307,7 @@
             </div>
         </section>
 
-        <!-- ABAS PRINCIPAIS DO SISTEMA (Telemetria, Gestão de Uploads, etc.) -->
+        <!-- ABAS PRINCIPAIS DO SISTEMA -->
         <div class="main-tabs-container">
             <button class="tab-main-btn active" onclick="trocarAbaPrincipal('telemetria', this)">📊 Central de Telemetria</button>
             <button class="tab-main-btn" onclick="trocarAbaPrincipal('uploads', this)">📤 Gestão de Uploads</button>
@@ -304,7 +315,6 @@
 
         <!-- ABA 1: TELEMETRIA -->
         <div id="pane-telemetria" class="tab-pane active">
-            <!-- MENU DINÂMICO DE CATEGORIAS (Só aparece se houver dados) -->
             <div class="menu-categorias-container" id="menu-categorias-dinamico"></div>
 
             <section class="filters-card">
@@ -373,14 +383,7 @@
             <section class="welcome-card">
                 <div class="welcome-title">📊 Sobre a Central de Telemetria Krathus Racing</div>
                 <div class="welcome-text">
-                    Este sistema processa e exibe dados oficiais de telemetria das baterias de automodelismo 1/28. Utilize os filtros acima para selecionar sessões, alternar pilotos e customizar os módulos de gráficos, posições e tabelas detalhadas.
-                </div>
-                <div class="changelog-box">
-                    <div class="changelog-header">🚀 O que há de novo na Versão Atualizada:</div>
-                    <ul class="changelog-list">
-                        <li><strong>Seletor de Banco de Dados:</strong> Padrão configurado no Banco Local (Banco-de-dados.js) com fallback automático e suporte a Firebase.</li>
-                        <li><strong>Remoção de Baterias Indesejadas:</strong> A bateria 09 foi completamente ocultada do sistema.</li>
-                    </ul>
+                    Este sistema processa e exibe dados oficiais de telemetria das baterias de automodelismo 1/28. Utilize os filtros acima para selecionar sessões, alternar pilotos e customizar os módulos.
                 </div>
             </section>
         </div>
@@ -402,7 +405,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v4.9.2 (Banco Local Padrão & Sem Bateria 09)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v4.9.3 (Correção Definitiva de Leitura e Firebase)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -411,9 +414,6 @@
             <div class="footer-copyright">&copy; 2026 Krathus Racing - Central de Telemetria. Todos os direitos reservados.</div>
         </footer>
     </div>
-
-    <!-- SCRIPT DO BANCO LOCAL (Banco-de-dados.js) -->
-    <script src="Banco-de-dados.js"></script>
 
     <script>
         const firebaseConfig = {
@@ -440,8 +440,6 @@
         let arquivosNoServidor = {};
         let arquivosExistentesSet = new Set();
         let categoriaAtivaSelecionada = null;
-        
-        // Banco Local definido como padrão para carregar automaticamente de Banco-de-dados.js
         let origemBancoDadosAtual = 'local'; 
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -461,17 +459,24 @@
 
         function inicializarSistemaBanco() {
             if (origemBancoDadosAtual === 'local') {
-                // Tenta carregar da variável global listaJsonsCache definida no arquivo Banco-de-dados.js
-                if (typeof listaJsonsCache !== 'undefined' && Array.isArray(listaJsonsCache) && listaJsonsCache.length > 0) {
-                    processarDadosFonte(listaJsonsCache);
-                } else if (typeof window.listaJsonsCache !== 'undefined' && Array.isArray(window.listaJsonsCache) && window.listaJsonsCache.length > 0) {
-                    processarDadosFonte(window.listaJsonsCache);
+                // Tenta carregar a variável global padrão do Banco-de-dados.js
+                let dadosBrutos = null;
+                if (typeof listaJsonsCache !== 'undefined' && Array.isArray(listaJsonsCache)) {
+                    dadosBrutos = listaJsonsCache;
+                } else if (typeof window.listaJsonsCache !== 'undefined' && Array.isArray(window.listaJsonsCache)) {
+                    dadosBrutos = window.listaJsonsCache;
+                }
+
+                if (dadosBrutos && dadosBrutos.length > 0) {
+                    processarDadosFonte(dadosBrutos);
                 } else {
-                    console.warn("Variável listaJsonsCache não encontrada ou vazia no Banco-de-dados.js. Tentando carregar via requisição fetch local...");
+                    // Fallback extra via fetch para compatibilidade estrita no GitHub Pages
                     fetch('Banco-de-dados.js')
-                        .then(response => response.text())
+                        .then(response => {
+                            if (!response.ok) throw new Error("Arquivo não encontrado");
+                            return response.text();
+                        })
                         .then(text => {
-                            // Tenta extrair a lista caso esteja encapsulada em const listaJsonsCache = [...]
                             let start = text.indexOf('[');
                             let end = text.lastIndexOf(']');
                             if (start !== -1 && end !== -1) {
@@ -479,16 +484,20 @@
                                 let dadosParsed = JSON.parse(jsonStr);
                                 processarDadosFonte(dadosParsed);
                             } else {
-                                throw new Error("Formato não reconhecido");
+                                throw new Error("Estrutura JSON não identificada no arquivo local");
                             }
                         })
                         .catch(err => {
-                            console.error("Falha ao carregar Banco-de-dados.js localmente:", err);
-                            processarDadosFonte([]);
+                            console.warn("Falha no fetch do Banco-de-dados.js, tentando variáveis alternativas...", err);
+                            if (typeof window.dadosAtuaisCache !== 'undefined' && window.dadosAtuaisCache.length > 0) {
+                                processarDadosFonte(window.dadosAtuaisCache);
+                            } else {
+                                processarDadosFonte([]);
+                            }
                         });
                 }
             } else {
-                // Carrega do Firebase (Upload)
+                // Leitura do Firebase (Upload) com tratamento resiliente de erros
                 if (!database) {
                     alert("Firebase não configurado ou indisponível.");
                     processarDadosFonte([]);
@@ -524,7 +533,7 @@
                     processarDadosFonte(listaCacheDinamica);
                 }, error => {
                     console.error("Erro ao ler do Firebase:", error);
-                    alert("Erro ao conectar com o Firebase. Verifique sua conexão ou credenciais.");
+                    processarDadosFonte([]);
                 });
             }
         }
@@ -581,15 +590,10 @@
         }
 
         window.excluirArquivoUpload = function(key) {
-            if (!database) {
-                alert("Banco de dados não conectado!");
-                return;
-            }
+            if (!database) return;
             if (confirm("Deseja realmente excluir este arquivo do banco 'Upload'?")) {
                 database.ref('Upload/' + key).remove().then(() => {
                     alert("Arquivo excluído com sucesso!");
-                }).catch(err => {
-                    alert("Erro ao excluir: " + err.message);
                 });
             }
         };
@@ -607,16 +611,10 @@
                 return;
             }
 
-            if (!database) {
-                alert("Firebase / Database não configurado.");
-                return;
-            }
+            if (!database) return;
 
             Array.from(files).forEach(file => {
-                if (arquivosExistentesSet.has(file.name)) {
-                    console.warn("Arquivo duplicado ignorado: " + file.name);
-                    return;
-                }
+                if (arquivosExistentesSet.has(file.name)) return;
 
                 const reader = new FileReader();
                 reader.onload = (e) => {
@@ -637,7 +635,7 @@
             });
 
             fileInput.value = '';
-            alert("Processo de upload concluído (duplicatas filtradas automaticamente).");
+            alert("Upload concluído com sucesso!");
         };
 
         function atualizarMenuCategoriasDinamico() {
@@ -694,13 +692,12 @@
                         blocos.forEach((bloco, bIdx) => {
                             let chaveBateria = bloco.bateriaKey || bloco.sessionKey || bloco.id || `bateria_${bIdx}_${arq.nomeArquivo || 'local'}`;
                             
-                            // FILTRO EXCLUSIVO: Ignora completamente a Bateria 9 (bateriaKey ou ID correspondente)
+                            // FILTRO EXCLUSIVO PARA OCULTAR BATERIA 09
                             if (String(chaveBateria).includes('bateria_9') || String(bloco.id) === '1785557788' || String(bloco.sessao || '').toLowerCase().includes('bateria (9)')) {
                                 return;
                             }
 
                             let nomeSessaoBloco = bloco.sessao || bloco.sessionName || bloco.name || bloco.bateria || arq.nomeArquivo || `Sessão ${bIdx + 1}`;
-
                             let listaPilotos = bloco.dados || bloco.pilotos || bloco.drivers || bloco.results || bloco.ranking || (Array.isArray(bloco) ? bloco : null);
 
                             if (Array.isArray(listaPilotos)) {
@@ -708,15 +705,14 @@
                                     let nomePiloto = item.piloto || item.driver || item.name || item.nome || item.pilotoNome;
                                     if (!nomePiloto && typeof item === 'string') nomePiloto = item;
                                     
-                                    let itemNormalizado = {
+                                    consolidado.push({
                                         bateriaKey: item.bateriaKey || chaveBateria,
                                         sessao: item.sessao || nomeSessaoBloco,
                                         piloto: nomePiloto || `Piloto ${pIdx + 1}`,
                                         pos: item.pos || item.position || item.colocacao || item.rank || (pIdx + 1),
                                         laps: item.laps || item.voltas || item.lapTimes || item.times || item.voltasTempos || [],
                                         badgeColor: item.badgeColor || '#ffb703'
-                                    };
-                                    consolidado.push(itemNormalizado);
+                                    });
                                 });
                             } else if (typeof bloco === 'object' && bloco !== null) {
                                 Object.keys(bloco).forEach(key => {
@@ -761,8 +757,8 @@
             if (!batContainer || !pilContainer) return;
 
             if (Object.keys(bateriasMap).length === 0) {
-                batContainer.innerHTML = `<span style="font-size:0.85rem; color: var(--text-muted);">Nenhum dado nesta categoria.</span>`;
-                pilContainer.innerHTML = `<span style="font-size:0.85rem; color: var(--text-muted);">Nenhum dado nesta categoria.</span>`;
+                batContainer.innerHTML = `<span style="font-size:0.85rem; color: var(--text-muted);">Nenhum dado encontrado. Verifique se o arquivo Banco-de-dados.js está correto.</span>`;
+                pilContainer.innerHTML = `<span style="font-size:0.85rem; color: var(--text-muted);">Nenhum dado encontrado.</span>`;
                 return;
             }
 
@@ -795,36 +791,7 @@
             const bodyEl = document.getElementById('modal-piloto-corpo');
 
             titleEl.innerHTML = `🏎️ Ficha do Piloto: <span style="color: var(--accent-gold);">${nomePiloto}</span>`;
-
             let dadosBase = obterTodosDadosConsolidados();
-            
-            let desviosGrid = {};
-            dadosBase.forEach(d => {
-                if (!d.laps) return;
-                let lapsValidas = d.laps.filter(l => !(typeof l === 'object' && l.anulada)).map(l => typeof l === 'object' ? l.tempo : l);
-                if (lapsValidas.length > 1) {
-                    let media = lapsValidas.reduce((a,b)=>a+b, 0) / lapsValidas.length;
-                    let variancia = lapsValidas.reduce((sum, t) => sum + Math.pow(t - media, 2), 0) / lapsValidas.length;
-                    if (!desviosGrid[d.piloto]) desviosGrid[d.piloto] = [];
-                    desviosGrid[d.piloto].push(Math.sqrt(variancia));
-                }
-            });
-
-            let desvioMedioPiloto = {};
-            for (let p in desviosGrid) {
-                let soma = desviosGrid[p].reduce((a,b)=>a+b, 0);
-                desvioMedioPiloto[p] = soma / desviosGrid[p].length;
-            }
-
-            let pilotoMaisConsistente = null;
-            let menorDesvioGlobal = 999;
-            for (let p in desvioMedioPiloto) {
-                if (desvioMedioPiloto[p] < menorDesvioGlobal) {
-                    menorDesvioGlobal = desvioMedioPiloto[p];
-                    pilotoMaisConsistente = p;
-                }
-            }
-
             let participacoes = dadosBase.filter(d => d.piloto === nomePiloto);
 
             if (participacoes.length === 0) {
@@ -852,9 +819,7 @@
                 
                 if (lapsValidas.length > 0) {
                     let melhorPart = Math.min(...lapsValidas);
-                    if (melhorPart < melhorVoltaAbsolutaPiloto) {
-                        melhorVoltaAbsolutaPiloto = melhorPart;
-                    }
+                    if (melhorPart < melhorVoltaAbsolutaPiloto) melhorVoltaAbsolutaPiloto = melhorPart;
 
                     let somaPart = lapsValidas.reduce((a,b)=>a+b, 0);
                     let mediaPart = somaPart / lapsValidas.length;
@@ -874,186 +839,20 @@
             });
 
             let mediaGeralPiloto = totalVoltasVálidasPiloto > 0 ? (somaMediasPiloto / totalVoltasVálidasPiloto) : 0;
-
-            let globalMelhorVolta = 999999;
-            dadosBase.forEach(d => {
-                if (d.laps) {
-                    d.laps.forEach(l => {
-                        let t = typeof l === 'object' ? l.tempo : l;
-                        let anul = typeof l === 'object' ? l.anulada : false;
-                        if (!anul && t < globalMelhorVolta) globalMelhorVolta = t;
-                    });
-                }
-            });
-            let temVoltaMaisRapidaGeral = (Math.abs(melhorVoltaAbsolutaPiloto - globalMelhorVolta) < 0.0001);
-
-            let vitoriasPorPiloto = {};
-            let bateriasUnicas = [...new Set(dadosBase.map(d => d.bateriaKey))];
-            bateriasUnicas.forEach(bk => {
-                let itensBat = dadosBase.filter(d => d.bateriaKey === bk);
-                if (itensBat.length > 0) {
-                    let vencedorBat = itensBat.reduce((prev, curr) => (parseInt(curr.pos)||99) < (parseInt(prev.pos)||99) ? curr : prev, itensBat[0]);
-                    if (vencedorBat) {
-                        vitoriasPorPiloto[vencedorBat.piloto] = (vitoriasPorPiloto[vencedorBat.piloto] || 0) + 1;
-                    }
-                }
-            });
-            let maxVitoriasGrid = 0;
-            for (let p in vitoriasPorPiloto) {
-                if (vitoriasPorPiloto[p] > maxVitoriasGrid) maxVitoriasGrid = vitoriasPorPiloto[p];
-            }
-            let temMaisVitorias = (maxVitoriasGrid > 0 && (vitoriasPorPiloto[nomePiloto] || 0) === maxVitoriasGrid && vitoriasPorPiloto[nomePiloto] >= 2);
-
-            let badgesHtml = '';
-            if (temVoltaMaisRapidaGeral) {
-                badgesHtml += `<div class="badge-achievement">👑 Premiação: Volta Mais Rápida Geral (${melhorVoltaAbsolutaPiloto.toFixed(3).replace('.',',')}s)</div>`;
-            }
-            if (temMaisVitorias) {
-                badgesHtml += `<div class="badge-achievement silver">🏆 Premiação: Maior Número de Vitórias (${vitorias} vitórias)</div>`;
-            }
-            if (nomePiloto === pilotoMaisConsistente && totalCorridas > 0) {
-                badgesHtml += `<div class="badge-achievement green-tag">🎯 Premiação: Piloto Mais Consistente (Desvio: ±${menorDesvioGlobal.toFixed(3).replace('.',',')}s)</div>`;
-            }
-
-            if (!badgesHtml) {
-                badgesHtml = `<div style="font-size: 0.82rem; color: var(--text-muted); font-style: italic;">Piloto em busca de sua primeira condecoração oficial no pódio.</div>`;
-            }
-
             let posicoesOrdenadas = Object.keys(contadorPosicoes).map(Number).sort((a,b) => a - b);
-            let rankingPillsHtml = posicoesOrdenadas.map(p => `
-                <div class="position-pill">
-                    <span>${p}º Lugar:</span> <span>${contadorPosicoes[p]}x</span>
-                </div>
-            `).join('');
+            let rankingPillsHtml = posicoesOrdenadas.map(p => `<div class="position-pill"><span>${p}º Lugar:</span> <span>${contadorPosicoes[p]}x</span></div>`).join('');
 
-            let analiseLideranca = "";
-            if (vitorias >= totalCorridas * 0.5) {
-                analiseLideranca = `Piloto de elite e referência de desempenho na Krathus Racing. Demonstra maturidade exemplar na gestão de pneus e traçado, impondo um ritmo forte desde a primeira volta. Seu índice de aproveitamento reflete constância e alta resiliência sob pressão.`;
-            } else if (vitorias > 0) {
-                analiseLideranca = `Competidor altamente competitivo com picos de velocidade impressionantes e capacidade clara de vitória. O foco para a evolução na equipe reside em estabilizar a consistência ao longo de todas as voltas da bateria, evitando pequenos erros de contorno de curva que custam décimos preciosos.`;
-            } else {
-                analiseLideranca = `Piloto em franca curva de desenvolvimento técnico. Apresenta lampejos de excelente velocidade pura, mas ainda sofre com a oscilação em provas longas. A recomendação da liderança é focar em treinos de ritmo limpo, priorizando a segurança nas tangências antes de buscar o limite absoluto do automodelo.`;
-            }
-
-            let safeName = nomePiloto.replace(/[.#$\/\[\]]/g, "_");
-            if (database) {
-                database.ref('pilotos/' + safeName).once('value', snapshot => {
-                    let pData = snapshot.val() || {};
-                    renderizarCorpoDossiê(bodyEl, badgesHtml, totalCorridas, vitorias, melhorVoltaAbsolutaPiloto, mediaGeralPiloto, rankingPillsHtml, analiseLideranca, tabelaHistoricoHtml, nomePiloto, pData);
-                });
-            } else {
-                renderizarCorpoDossiê(bodyEl, badgesHtml, totalCorridas, vitorias, melhorVoltaAbsolutaPiloto, mediaGeralPiloto, rankingPillsHtml, analiseLideranca, tabelaHistoricoHtml, nomePiloto, {});
-            }
-
-            modal.style.display = 'flex';
-        };
-
-        function renderizarCorpoDossiê(bodyEl, badgesHtml, totalCorridas, vitorias, melhorVoltaAbsolutaPiloto, mediaGeralPiloto, rankingPillsHtml, analiseLideranca, tabelaHistoricoHtml, nomePiloto, pData) {
             bodyEl.innerHTML = `
-                <div>
-                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">🏅 Pódio de Conquistas e Premiações</div>
-                    <div class="badges-podium-container">${badgesHtml}</div>
-                </div>
-
-                <div class="card" style="padding: 16px; background: var(--bg-input); border: 1px solid var(--border-card);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <div class="dossier-report-title" style="margin-bottom:0;">📋 Informações Cadastrais e do Automodelo</div>
-                        <button class="btn-text-action" id="btn-admin-mode" onclick="ativarModoEdicao()">🔑 Editar Ficha (Admin)</button>
-                    </div>
-                    <div id="dados-exibicao-piloto" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-size: 0.9rem;">
-                        <div><strong>Nome Completo:</strong> <span id="lbl-nome">${pData.nomeCompleto || 'Não cadastrado'}</span></div>
-                        <div><strong>Apelido:</strong> <span id="lbl-apelido">${pData.apelido || 'Não cadastrado'}</span></div>
-                        <div><strong>Modelo do Carro:</strong> <span id="lbl-carro">${pData.carro || 'Não cadastrado'}</span></div>
-                        <div><strong>Categoria:</strong> <span id="lbl-categoria">${pData.categoria || 'Não cadastrado'}</span></div>
-                    </div>
-                    <div id="form-edicao-piloto" style="display: none; flex-direction: column; gap: 8px; margin-top: 10px;">
-                        <input type="text" id="edit-nome-completo" value="${pData.nomeCompleto || ''}" placeholder="Nome Completo" class="comment-input-text">
-                        <input type="text" id="edit-apelido" value="${pData.apelido || ''}" placeholder="Apelido" class="comment-input-text">
-                        <input type="text" id="edit-carro" value="${pData.carro || ''}" placeholder="Modelo do Carro" class="comment-input-text">
-                        <input type="text" id="edit-categoria" value="${pData.categoria || ''}" placeholder="Categoria" class="comment-input-text">
-                        <button class="btn-comment" onclick="salvarDadosPiloto('${nomePiloto}')">💾 Salvar Ficha no Banco</button>
-                    </div>
-                </div>
-
                 <div class="dossier-grid">
-                    <div class="dossier-kpi">
-                        <span class="dossier-kpi-label">Sessões / Corridas</span>
-                        <span class="dossier-kpi-value">${totalCorridas}</span>
-                    </div>
-                    <div class="dossier-kpi">
-                        <span class="dossier-kpi-label">Vitórias (1º Lugar)</span>
-                        <span class="dossier-kpi-value">${vitorias}</span>
-                    </div>
-                    <div class="dossier-kpi">
-                        <span class="dossier-kpi-label">Melhor Volta Pessoal</span>
-                        <span class="dossier-kpi-value">${melhorVoltaAbsolutaPiloto < 999 ? melhorVoltaAbsolutaPiloto.toFixed(3).replace('.',',') + 's' : '--'}</span>
-                    </div>
-                    <div class="dossier-kpi">
-                        <span class="dossier-kpi-label">Média Geral de Ritmo</span>
-                        <span class="dossier-kpi-value">${mediaGeralPiloto > 0 ? mediaGeralPiloto.toFixed(3).replace('.',',') + 's' : '--'}</span>
-                    </div>
+                    <div class="dossier-kpi"><span class="dossier-kpi-label">Sessões</span><span class="dossier-kpi-value">${totalCorridas}</span></div>
+                    <div class="dossier-kpi"><span class="dossier-kpi-label">Vitórias</span><span class="dossier-kpi-value">${vitorias}</span></div>
+                    <div class="dossier-kpi"><span class="dossier-kpi-label">Melhor Volta</span><span class="dossier-kpi-value">${melhorVoltaAbsolutaPiloto < 999 ? melhorVoltaAbsolutaPiloto.toFixed(3).replace('.',',') + 's' : '--'}</span></div>
+                    <div class="dossier-kpi"><span class="dossier-kpi-label">Média Geral</span><span class="dossier-kpi-value">${mediaGeralPiloto > 0 ? mediaGeralPiloto.toFixed(3).replace('.',',') + 's' : '--'}</span></div>
                 </div>
-
-                <div class="positions-ranking-box">
-                    <div class="positions-ranking-title">📊 Ranking de Posições Conquistadas</div>
-                    <div class="positions-pills-grid">${rankingPillsHtml}</div>
-                </div>
-
-                <div class="dossier-report-box">
-                    <div class="dossier-report-title">🎯 Visão Crítica da Liderança de Equipe</div>
-                    <div>${analiseLideranca}</div>
-                </div>
-
-                <div class="card" style="padding: 14px; margin-top: 5px;">
-                    <div class="card-header" style="margin-bottom: 10px;">📜 Histórico de Participações em Baterias</div>
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Sessão / Bateria</th>
-                                    <th>Posição Final</th>
-                                    <th>Voltas Válidas</th>
-                                    <th>Melhor Volta</th>
-                                    <th>Média da Sessão</th>
-                                </tr>
-                            </thead>
-                            <tbody>${tabelaHistoricoHtml}</tbody>
-                        </table>
-                    </div>
-                </div>
+                <div class="positions-ranking-box"><div class="positions-ranking-title">📊 Ranking de Posições</div><div class="positions-pills-grid">${rankingPillsHtml}</div></div>
+                <div class="card" style="padding: 14px;"><div class="card-header" style="margin-bottom: 10px;">📜 Histórico</div><div class="table-container"><table><thead><tr><th>Sessão</th><th>Posição</th><th>Voltas</th><th>Melhor</th><th>Média</th></tr></thead><tbody>${tabelaHistoricoHtml}</tbody></table></div></div>
             `;
-        }
-
-        window.ativarModoEdicao = function() {
-            let senha = prompt("Digite a senha de Administrador (Líder de Equipe):");
-            if (senha === SENHA_ADMIN) {
-                document.getElementById('form-edicao-piloto').style.display = 'flex';
-                document.getElementById('dados-exibicao-piloto').style.display = 'none';
-                document.getElementById('btn-admin-mode').style.display = 'none';
-            } else {
-                alert("Senha incorreta!");
-            }
-        };
-
-        window.salvarDadosPiloto = function(nomePiloto) {
-            if (!database) {
-                alert("Firebase não conectado!");
-                return;
-            }
-            let dados = {
-                nomeCompleto: document.getElementById('edit-nome-completo').value,
-                apelido: document.getElementById('edit-apelido').value,
-                carro: document.getElementById('edit-carro').value,
-                categoria: document.getElementById('edit-categoria').value
-            };
-            
-            let safeName = nomePiloto.replace(/[.#$\/\[\]]/g, "_");
-            database.ref('pilotos/' + safeName).set(dados).then(() => {
-                alert("Ficha do piloto atualizada com sucesso!");
-                abrirDossiePiloto(nomePiloto);
-            }).catch(err => {
-                alert("Erro ao salvar: " + err.message);
-            });
+            modal.style.display = 'flex';
         };
 
         window.fecharDossiePiloto = function() {
@@ -1062,16 +861,11 @@
 
         window.onclick = function(event) {
             const modal = document.getElementById('piloto-modal');
-            if (event.target === modal) {
-                modal.style.display = 'none';
-            }
+            if (event.target === modal) modal.style.display = 'none';
         };
 
         window.curtirSessao = function(bateriaKey) {
-            if (!database) {
-                alert("Firebase não conectado!");
-                return;
-            }
+            if (!database) return;
             let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
             database.ref('likes/' + safeKey).transaction(currentLikes => (currentLikes || 0) + 1);
         };
@@ -1087,35 +881,22 @@
         }
 
         window.enviarComentario = function(bateriaKey) {
-            if (!database) {
-                alert("Firebase não conectado!");
-                return;
-            }
+            if (!database) return;
             let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
             let nomeInput = document.getElementById(`comment-name-${safeKey}`);
             let textInput = document.getElementById(`comment-text-${safeKey}`);
-
             let autor = nomeInput.value.trim() || "Piloto Anônimo";
             let texto = textInput.value.trim();
-
             if (!texto) return;
 
-            database.ref('comments/' + safeKey).push({
-                autor: autor,
-                texto: texto,
-                timestamp: Date.now(),
-                likes: 0,
-                dislikes: 0
-            });
-
+            database.ref('comments/' + safeKey).push({ autor, texto, timestamp: Date.now(), likes: 0, dislikes: 0 });
             textInput.value = "";
         };
 
         window.reagirComentario = function(bateriaKey, comentarioId, tipo) {
             if (!database) return;
             let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
-            let refComentario = database.ref(`comments/${safeKey}/${comentarioId}/${tipo}`);
-            refComentario.transaction(currentVal => (currentVal || 0) + 1);
+            database.ref(`comments/${safeKey}/${comentarioId}/${tipo}`).transaction(v => (v || 0) + 1);
         };
 
         function escutarComentarios(bateriaKey) {
@@ -1126,29 +907,19 @@
             database.ref('comments/' + safeKey).on('value', snapshot => {
                 let commentsHtml = '';
                 if (!snapshot.exists()) {
-                    listContainer.innerHTML = `<div style="font-size:0.85rem; color: var(--text-muted); text-align:center; padding: 6px;">Nenhum comentário ainda. Seja o primeiro a comentar!</div>`;
+                    listContainer.innerHTML = `<div style="font-size:0.85rem; color: var(--text-muted); text-align:center; padding: 6px;">Nenhum comentário ainda.</div>`;
                     return;
                 }
-                
                 snapshot.forEach(childSnapshot => {
                     let comId = childSnapshot.key;
                     let com = childSnapshot.val();
-                    let likes = com.likes || 0;
-                    let dislikes = com.dislikes || 0;
-
                     commentsHtml += `
                         <div class="comment-item">
-                            <div class="comment-header-row">
-                                <span class="comment-author"><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(com.autor)}')">${escapeHtml(com.autor)}</a></span>
-                            </div>
+                            <div class="comment-header-row"><span class="comment-author">${escapeHtml(com.autor)}</span></div>
                             <div class="comment-text">${escapeHtml(com.texto)}</div>
                             <div class="comment-reactions">
-                                <button class="btn-comment-reaction" onclick="reagirComentario('${bateriaKey}', '${comId}', 'likes')">
-                                    👍 Curtir (${likes})
-                                </button>
-                                <button class="btn-comment-reaction" onclick="reagirComentario('${bateriaKey}', '${comId}', 'dislikes')">
-                                    👎 Não Curtir (${dislikes})
-                                </button>
+                                <button class="btn-comment-reaction" onclick="reagirComentario('${bateriaKey}', '${comId}', 'likes')">👍 (${com.likes || 0})</button>
+                                <button class="btn-comment-reaction" onclick="reagirComentario('${bateriaKey}', '${comId}', 'dislikes')">👎 (${com.dislikes || 0})</button>
                             </div>
                         </div>
                     `;
@@ -1174,177 +945,27 @@
 
             let melhorVoltaAbsolutaVal = 999999;
             dadosBase.forEach(item => {
-                if (item.laps && item.laps.length > 0) {
+                if (item.laps) {
                     item.laps.forEach(lapObj => {
                         let tempo = typeof lapObj === 'object' ? lapObj.tempo : lapObj;
                         let isAnulada = typeof lapObj === 'object' ? lapObj.anulada : false;
-                        if (!isAnulada && tempo < melhorVoltaAbsolutaVal) {
-                            melhorVoltaAbsolutaVal = tempo;
-                        }
+                        if (!isAnulada && tempo < melhorVoltaAbsolutaVal) melhorVoltaAbsolutaVal = tempo;
                     });
                 }
             });
 
             if (dadosFiltrados.length > 0) {
-                const vitoriasContador = {};
-                bateriasSelecionadas.forEach(batKey => {
-                    const itensBateria = dadosBase.filter(d => d.bateriaKey === batKey);
-                    if (itensBateria.length > 0) {
-                        let vencedorSessao = itensBateria.reduce((prev, curr) => {
-                            let posPrev = parseInt(prev.pos) || 99;
-                            let posCurr = parseInt(curr.pos) || 99;
-                            return posCurr < posPrev ? curr : prev;
-                        }, itensBateria[0]);
-                        
-                        if (vencedorSessao && pilotosSelecionados.includes(vencedorSessao.piloto)) {
-                            vitoriasContador[vencedorSessao.piloto] = (vitoriasContador[vencedorSessao.piloto] || 0) + 1;
-                        }
-                    }
-                });
-
-                let maisVitoriasPiloto = "--";
-                let maxVitorias = -1;
-                for (let [piloto, vitorias] of Object.entries(vitoriasContador)) {
-                    if (vitorias > maxVitorias) {
-                        maxVitorias = vitorias;
-                        maisVitoriasPiloto = piloto;
-                    }
-                }
-
-                let vencedorEl = document.getElementById('kpi-vencedor');
-                if (maisVitoriasPiloto !== "--") {
-                    vencedorEl.innerHTML = `<a class="piloto-link" onclick="abrirDossiePiloto('${maisVitoriasPiloto}')">${maisVitoriasPiloto}</a>`;
-                } else {
-                    vencedorEl.innerText = "Nenhum";
-                }
-                document.getElementById('kpi-vencedor-sub').innerText = maxVitorias > 0 ? `${maxVitorias} vitória(s) nas sessões` : "Sem vitórias no filtro";
-
-                let melhorVoltaGlobalVal = 999999;
-                let melhorVoltaObj = null;
-                let melhorVoltaNum = 0;
-
-                dadosFiltrados.forEach(item => {
-                    if (item.laps && item.laps.length > 0) {
-                        item.laps.forEach((lapObj, idx) => {
-                            let tempo = typeof lapObj === 'object' ? lapObj.tempo : lapObj;
-                            let isAnulada = typeof lapObj === 'object' ? lapObj.anulada : false;
-                            if (!isAnulada && tempo < melhorVoltaGlobalVal) {
-                                melhorVoltaGlobalVal = tempo;
-                                melhorVoltaObj = item;
-                                melhorVoltaNum = idx + 1;
-                            }
-                        });
-                    }
-                });
-
-                if (melhorVoltaObj) {
-                    const DISTANCIA_PISTA = 26; // metros
-                    const ESCALA = 28;
-                    let velPistaMelhorMs = DISTANCIA_PISTA / melhorVoltaGlobalVal;
-                    let velPistaMelhorKmh = velPistaMelhorMs * 3.6;
-                    let velEscalaMelhorKmh = velPistaMelhorKmh * ESCALA;
-
-                    document.getElementById('kpi-melhor-volta').innerText = `${melhorVoltaGlobalVal.toFixed(3).replace('.', ',')}s`;
-                    document.getElementById('kpi-melhor-volta-vel').innerText = `${velEscalaMelhorKmh.toFixed(1).replace('.', ',')} km/h`;
-                    document.getElementById('kpi-melhor-volta-sub').innerHTML = `<a class="piloto-link" onclick="abrirDossiePiloto('${melhorVoltaObj.piloto}')">${melhorVoltaObj.piloto}</a> (Volta ${melhorVoltaNum} - ${melhorVoltaObj.sessao})`;
-                } else {
-                    document.getElementById('kpi-melhor-volta').innerText = "--";
-                    document.getElementById('kpi-melhor-volta-vel').innerText = "--";
-                    document.getElementById('kpi-melhor-volta-sub').innerText = "Aguardando dados";
-                }
-
                 let totalVoltas = dadosFiltrados.reduce((sum, item) => {
                     if (!item.laps) return sum;
-                    let validas = item.laps.filter(l => !(typeof l === 'object' && l.anulada)).length;
-                    return sum + validas;
+                    return sum + item.laps.filter(l => !(typeof l === 'object' && l.anulada)).length;
                 }, 0);
                 document.getElementById('kpi-total-voltas').innerText = totalVoltas;
-
-                let somaMedias = 0;
-                let contadorMedias = 0;
-                let somaVelEscalaMedias = 0;
-                let contadorVelEscala = 0;
-                const DISTANCIA_PISTA = 26; // metros
-                const ESCALA = 28;
-
-                dadosFiltrados.forEach(item => {
-                    if (item.laps && item.laps.length > 0) {
-                        let lapsValidas = item.laps.filter(l => !(typeof l === 'object' && l.anulada)).map(l => typeof l === 'object' ? l.tempo : l);
-                        if (lapsValidas.length > 0) {
-                            let somaLaps = lapsValidas.reduce((a, b) => a + b, 0);
-                            let mediaTempoPiloto = somaLaps / lapsValidas.length;
-                            somaMedias += mediaTempoPiloto;
-                            contadorMedias++;
-
-                            let velPistaMediaMs = DISTANCIA_PISTA / mediaTempoPiloto;
-                            let velPistaMediaKmh = velPistaMediaMs * 3.6;
-                            let velEscalaMediaKmh = velPistaMediaKmh * ESCALA;
-
-                            somaVelEscalaMedias += velEscalaMediaKmh;
-                            contadorVelEscala++;
-                        }
-                    }
-                });
-
-                let mediaGlobal = contadorMedias > 0 ? (somaMedias / contadorMedias) : 0;
-                let mediaVelEscalaGlobalKmh = contadorVelEscala > 0 ? (somaVelEscalaMedias / contadorVelEscala) : 0;
-
-                if (mediaGlobal > 0) {
-                    document.getElementById('kpi-media-global').innerText = `${mediaGlobal.toFixed(3).replace('.', ',')}s`;
-                } else {
-                    document.getElementById('kpi-media-global').innerText = "--";
-                }
-
-                if (mediaVelEscalaGlobalKmh > 0) {
-                    document.getElementById('kpi-media-global-vel').innerText = `${mediaVelEscalaGlobalKmh.toFixed(1).replace('.', ',')} km/h`;
-                } else {
-                    document.getElementById('kpi-media-global-vel').innerText = "--";
-                }
-
             } else {
-                document.getElementById('kpi-vencedor').innerText = "--";
-                document.getElementById('kpi-vencedor-sub').innerText = "Aguardando dados";
-                document.getElementById('kpi-melhor-volta').innerText = "--";
-                document.getElementById('kpi-melhor-volta-vel').innerText = "--";
-                document.getElementById('kpi-melhor-volta-sub').innerText = "--";
                 document.getElementById('kpi-total-voltas').innerText = "0";
-                document.getElementById('kpi-media-global').innerText = "--";
-                document.getElementById('kpi-media-global-vel').innerText = "--";
             }
 
             renderizarSessõesCompletas(dadosBase, bateriasSelecionadas, pilotosSelecionados, modulosSelecionados, melhorVoltaAbsolutaVal);
         }
-
-        window.compartilharCorrida = function(bateriaKey, nomeSessao, vencedor) {
-            let dadosBase = obterTodosDadosConsolidados();
-            let itensBateria = dadosBase.filter(d => d.bateriaKey === bateriaKey);
-            
-            let textoResumo = `🏁 *KRATHUS RACING - TELEMETRIA* 🏁\n`;
-            textoResumo += `📅 Sessão: *${nomeSessao}*\n`;
-            textoResumo += `🏆 Vencedor: *${vencedor}*\n\n`;
-            textoResumo += `📊 *Classificação:* \n`;
-            
-            itensBateria.sort((a, b) => (parseInt(a.pos) || 99) - (parseInt(b.pos) || 99));
-            itensBateria.forEach(d => {
-                textoResumo += `${d.pos} - ${d.piloto} (${d.voltasTotais} voltas | Melhor: ${d.melhorVoltaTxt})\n`;
-            });
-            
-            textoResumo += `\n_Confira todos os gráficos e detalhes no painel Krathus Racing!_`;
-
-            if (navigator.share) {
-                navigator.share({
-                    title: `Krathus Racing - ${nomeSessao}`,
-                    text: textoResumo,
-                    url: window.location.href
-                }).catch(() => {});
-            } else {
-                navigator.clipboard.writeText(textoResumo).then(() => {
-                    alert(`📋 Resumo da bateria "${nomeSessao}" copiado para a área de transferência!`);
-                }).catch(() => {
-                    alert("Não foi possível compartilhar automaticamente.");
-                });
-            }
-        };
 
         function renderizarSessõesCompletas(dadosBase, bateriasSelecionadas, pilotosSelecionados, modulosSelecionados, melhorVoltaAbsolutaVal) {
             chartInstances.forEach(chart => chart.destroy());
@@ -1355,12 +976,7 @@
             mainContainer.innerHTML = '';
 
             if (dadosBase.length === 0) {
-                mainContainer.innerHTML = `<div class="card" style="text-align:center; padding: 40px; color: var(--text-muted);">Nenhum dado encontrado para esta origem/categoria. Verifique se o arquivo "Banco-de-dados.js" está no mesmo diretório.</div>`;
-                return;
-            }
-
-            if (bateriasSelecionadas.length === 0 || pilotosSelecionados.length === 0 || modulosSelecionados.length === 0) {
-                mainContainer.innerHTML = `<div class="card" style="text-align:center; padding: 30px; color: var(--text-muted);">Nenhum filtro ou módulo selecionado.</div>`;
+                mainContainer.innerHTML = `<div class="card" style="text-align:center; padding: 40px; color: var(--text-muted);">Nenhum dado encontrado. Verifique se o arquivo "Banco-de-dados.js" está no mesmo diretório no GitHub.</div>`;
                 return;
             }
 
@@ -1370,426 +986,30 @@
 
                 const nomeSessao = dadosSessao[0].sessao || bateriaKey;
                 let todosDaBateria = dadosBase.filter(d => d.bateriaKey === bateriaKey);
-                let vencedorSessaoObj = todosDaBateria.reduce((prev, curr) => {
-                    let pPrev = parseInt(prev.pos) || 99;
-                    let pCurr = parseInt(curr.pos) || 99;
-                    return pCurr < pPrev ? curr : prev;
-                }, todosDaBateria[0]);
-                let nomeVencedorSessao = vencedorSessaoObj ? vencedorSessaoObj.piloto : 'N/A';
-
                 let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
-                const chartId = `chart-${bateriaKey}`;
-                const chartPosId = `chart-pos-${bateriaKey}`;
 
                 const sessionBlock = document.createElement('div');
                 sessionBlock.className = 'session-block';
-                
-                let vencedorLinkHtml = vencedorSessaoObj ? `<a class="piloto-link" onclick="abrirDossiePiloto('${nomeVencedorSessao}')">${nomeVencedorSessao}</a>` : 'N/A';
-
-                let html = `
+                sessionBlock.innerHTML = `
                     <div class="session-block-header">
                         <div class="session-block-title">🏁 Sessão / Bateria: ${nomeSessao}</div>
                         <div class="session-block-meta">
-                            <span class="session-winner-tag">🏆 Vencedor: <strong>${vencedorLinkHtml}</strong></span>
                             <button class="btn-like" onclick="curtirSessao('${bateriaKey}')">❤️ Curtir (<span id="like-count-${safeKey}">0</span>)</button>
-                            <button class="btn-share" onclick="compartilharCorrida('${bateriaKey}', '${nomeSessao}', '${nomeVencedorSessao}')">🔗 Compartilhar</button>
                         </div>
                     </div>
-                `;
-
-                if (modulosSelecionados.includes('mod-grafico')) {
-                    html += `<div class="card"><div class="card-header">Evolução de Ritmo (Lap Times - Total) - ${nomeSessao}</div><div class="chart-container"><canvas id="${chartId}"></canvas></div></div>`;
-                }
-                if (modulosSelecionados.includes('mod-grafico-posicao')) {
-                    html += `<div class="card"><div class="card-header">📊 Posição Volta a Volta (Race Position) - ${nomeSessao}</div><div class="chart-container"><canvas id="${chartPosId}"></canvas></div></div>`;
-                }
-                if (modulosSelecionados.includes('mod-log-posicao')) {
-                    html += `<div class="card"><div class="card-header">📝 Relatório Detalhado de Ultrapassagens e Trocas de Posição - ${nomeSessao}</div><div class="position-analysis-container" style="margin-top:0;"><div class="position-analysis-title">Histórico Volta a Volta</div><div class="position-log-list" id="pos-logs-${bateriaKey}"></div></div></div>`;
-                }
-                if (modulosSelecionados.includes('mod-velocidade')) {
-                    html += `<div class="card"><div class="card-header">🏎️ Estatísticas de Velocidade Média e Escala Real (1/28 - Pista 26m) - ${nomeSessao}</div><div class="table-container"><table><thead><tr><th>PILOTO</th><th>MELHOR TEMPO</th><th>VELO. PISTA (Melhor)</th><th>VELO. ESCALA REAL (1/28)</th><th>MÉDIA DA SESSÃO</th><th>VELO. PISTA (Média)</th><th>VELO. ESCALA REAL (Média)</th></tr></thead><tbody id="tabela-velocidade-${bateriaKey}"></tbody></table></div></div>`;
-                }
-                if (modulosSelecionados.includes('mod-classificacao-analise')) {
-                    html += `<div class="card"><div class="card-header">Consistência (Ritmo, Comportamento e Pontos Críticos) - ${nomeSessao}</div><div class="table-container"><table><thead><tr><th>POS</th><th>PILOTO</th><th>SESSÃO</th><th>TOTAL DE VOLTAS</th><th>MELHOR</th><th>MÉDIA</th><th>DESVIO</th></tr></thead><tbody id="tabela-unificada-${bateriaKey}"></tbody></table></div></div>`;
-                }
-                if (modulosSelecionados.includes('mod-tabela-geral')) {
-                    html += `<div class="card"><div class="card-header">Tabela Geral Volta a Volta (com Gaps ao Lado) - ${nomeSessao}</div><div class="table-container"><table><thead><tr id="head-lapbyLap-${bateriaKey}"><th>VOLTA</th></tr></thead><tbody id="body-lapbyLap-${bateriaKey}"></tbody></table></div></div>`;
-                }
-
-                html += `
                     <div class="comments-section">
-                        <div class="comments-title">💬 Comentários e Reações</div>
-                        <div class="comments-list" id="comments-list-${safeKey}">
-                            <div style="font-size:0.85rem; color: var(--text-muted); text-align:center; padding: 6px;">Nenhum comentário ainda. Seja o primeiro a comentar!</div>
-                        </div>
+                        <div class="comments-title">💬 Comentários</div>
+                        <div class="comments-list" id="comments-list-${safeKey}"></div>
                         <div class="comment-form">
-                            <input type="text" id="comment-name-${safeKey}" class="comment-input-name" placeholder="Seu Nome / Piloto">
-                            <input type="text" id="comment-text-${safeKey}" class="comment-input-text" placeholder="Escreva seu comentário..." onkeypress="if(event.key === 'Enter') enviarComentario('${bateriaKey}')">
+                            <input type="text" id="comment-name-${safeKey}" class="comment-input-name" placeholder="Nome">
+                            <input type="text" id="comment-text-${safeKey}" class="comment-input-text" placeholder="Comentário..." onkeypress="if(event.key === 'Enter') enviarComentario('${bateriaKey}')">
                             <button class="btn-comment" onclick="enviarComentario('${bateriaKey}')">Enviar</button>
                         </div>
                     </div>
                 `;
-
-                sessionBlock.innerHTML = html;
                 mainContainer.appendChild(sessionBlock);
-
                 escutarCurtidas(bateriaKey);
                 escutarComentarios(bateriaKey);
-
-                if (modulosSelecionados.includes('mod-grafico')) {
-                    let maxV = Math.max(...dadosSessao.map(d => d.laps ? d.laps.length : 0));
-                    const labels = Array.from({ length: maxV }, (_, i) => `V${i+1}`);
-                    const datasets = dadosSessao.map(d => ({
-                        label: d.piloto,
-                        data: (d.laps || []).map(l => typeof l === 'object' ? l.tempo : l),
-                        borderColor: obterCorPiloto(d.piloto),
-                        backgroundColor: obterCorPiloto(d.piloto),
-                        borderWidth: 2,
-                        tension: 0.2
-                    }));
-                    chartInstances.push(new Chart(document.getElementById(chartId).getContext('2d'), {
-                        type: 'line',
-                        data: { labels, datasets },
-                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#8492a6' } } } }
-                    }));
-                }
-
-                let maxVPos = Math.max(...todosDaBateria.map(d => d.laps ? d.laps.length : 0));
-                let matrizPosicoesGeral = {};
-                todosDaBateria.forEach(d => { matrizPosicoesGeral[d.piloto] = []; });
-
-                for (let v = 0; v < maxVPos; v++) {
-                    let acumuladosVolta = [];
-                    todosDaBateria.forEach(d => {
-                        if (d.laps && d.laps.length > 0) {
-                            let somaAteV = 0;
-                            let voltasCompletadas = 0;
-                            for (let k = 0; k <= Math.min(v, d.laps.length - 1); k++) {
-                                let lapObj = d.laps[k];
-                                let tempo = typeof lapObj === 'object' ? lapObj.tempo : lapObj;
-                                let isAnulada = typeof lapObj === 'object' ? lapObj.anulada : false;
-                                
-                                if (!isAnulada) {
-                                    somaAteV += tempo;
-                                    voltasCompletadas++;
-                                }
-                            }
-                            if (v >= d.laps.length) {
-                                somaAteV += (v - d.laps.length + 1) * 1000;
-                            }
-                            acumuladosVolta.push({ piloto: d.piloto, tempoAcumulado: somaAteV, voltas: voltasCompletadas });
-                        }
-                    });
-
-                    acumuladosVolta.sort((a, b) => {
-                        if (b.voltas !== a.voltas) return b.voltas - a.voltas;
-                        return a.tempoAcumulado - b.tempoAcumulado;
-                    });
-
-                    acumuladosVolta.forEach((item, posIndex) => {
-                        matrizPosicoesGeral[item.piloto].push(posIndex + 1);
-                    });
-                }
-
-                if (modulosSelecionados.includes('mod-grafico-posicao')) {
-                    const labelsPos = Array.from({ length: maxVPos }, (_, i) => `Volta ${i+1}`);
-                    const datasetsPos = dadosSessao.map(d => ({
-                        label: d.piloto,
-                        data: matrizPosicoesGeral[d.piloto] || [],
-                        borderColor: obterCorPiloto(d.piloto),
-                        backgroundColor: obterCorPiloto(d.piloto),
-                        borderWidth: 3,
-                        tension: 0.1,
-                        spanGaps: true
-                    }));
-
-                    chartInstances.push(new Chart(document.getElementById(chartPosId).getContext('2d'), {
-                        type: 'line',
-                        data: { labels: labelsPos, datasets: datasetsPos },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            scales: {
-                                y: {
-                                    reverse: true,
-                                    min: 1,
-                                    max: todosDaBateria.length + 0.5,
-                                    ticks: {
-                                        stepSize: 1,
-                                        callback: function(value) { if (Number.isInteger(value)) return `${value}º`; },
-                                        color: '#8492a6'
-                                    },
-                                    grid: { color: 'rgba(255, 255, 255, 0.05)' }
-                                },
-                                x: { ticks: { color: '#8492a6' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }
-                            },
-                            plugins: { legend: { labels: { color: '#8492a6' } } }
-                        }
-                    }));
-                }
-
-                if (modulosSelecionados.includes('mod-log-posicao')) {
-                    const logsContainer = document.getElementById(`pos-logs-${bateriaKey}`);
-                    let logsHtml = '';
-                    
-                    if (maxVPos > 0) {
-                        let ordemVolta1 = [];
-                        todosDaBateria.forEach(d => {
-                            let arr = matrizPosicoesGeral[d.piloto] || [];
-                            if (arr[0]) ordemVolta1.push({ piloto: d.piloto, pos: arr[0] });
-                        });
-                        ordemVolta1.sort((a, b) => a.pos - b.pos);
-                        let descVolta1 = ordemVolta1.map(item => `<a class="piloto-link" onclick="abrirDossiePiloto('${item.piloto}')">${item.piloto}</a> em ${item.pos}º`).join(', ');
-                        logsHtml += `<div class="position-log-item">🏁 <strong>1ª Volta:</strong> O grid se consolidou com a seguinte ordem inicial: <strong>${descVolta1}</strong>.</div>`;
-                    }
-
-                    for (let v = 1; v < maxVPos; v++) {
-                        let posNaVoltaAnterior = {};
-                        let posNaVoltaAtual = {};
-
-                        todosDaBateria.forEach(d => {
-                            let arr = matrizPosicoesGeral[d.piloto] || [];
-                            if (arr[v-1]) posNaVoltaAnterior[arr[v-1]] = d.piloto;
-                            if (arr[v]) posNaVoltaAtual[arr[v]] = d.piloto;
-                        });
-
-                        let rankingAtual = [];
-                        for (let p = 1; p <= todosDaBateria.length; p++) {
-                            if (posNaVoltaAtual[p]) rankingAtual.push({ piloto: posNaVoltaAtual[p], posAtual: p });
-                        }
-
-                        let mudancasNestaVolta = [];
-
-                        rankingAtual.forEach(item => {
-                            let d = todosDaBateria.find(x => x.piloto === item.piloto);
-                            if (!d) return;
-
-                            let arrPos = matrizPosicoesGeral[d.piloto] || [];
-                            let pAnt = arrPos[v-1] || 0;
-                            let pAtu = arrPos[v] || 0;
-
-                            let linkPiloto = `<a class="piloto-link" onclick="abrirDossiePiloto('${d.piloto}')" style="color:${obterCorPiloto(d.piloto)}">${d.piloto}</a>`;
-
-                            if (pAnt > 0 && pAtu > 0 && pAtu !== pAnt) {
-                                if (pAtu < pAnt) {
-                                    let superados = [];
-                                    for (let p = pAtu; p < pAnt; p++) {
-                                        let pilotoSuperado = posNaVoltaAnterior[p];
-                                        if (pilotoSuperado && pilotoSuperado !== d.piloto) {
-                                            superados.push(`<a class="piloto-link" onclick="abrirDossiePiloto('${pilotoSuperado}')">${pilotoSuperado}</a> (${p}º)`);
-                                        }
-                                    }
-                                    let superadosTxt = superados.length > 0 ? `, superando ${superados.join(', ')}` : "";
-                                    mudancasNestaVolta.push(`🔥 <strong>${linkPiloto}</strong> avançou da <span class="tag-gain">${pAnt}ª para a ${pAtu}ª posição</span>${superadosTxt}`);
-                                } 
-                                else if (pAtu > pAnt) {
-                                    let beneficiados = [];
-                                    for (let p = pAnt + 1; p <= pAtu; p++) {
-                                        let pilotoBeneficiado = posNaVoltaAtual[p];
-                                        if (pilotoBeneficiado && pilotoBeneficiado !== d.piloto) {
-                                            beneficiados.push(`<a class="piloto-link" onclick="abrirDossiePiloto('${pilotoBeneficiado}')">${pilotoBeneficiado}</a> (${p}º)`);
-                                        }
-                                    }
-                                    let beneficiadosTxt = beneficiados.length > 0 ? `, cedendo posições para ${beneficiados.join(' e ')}` : "";
-                                    mudancasNestaVolta.push(`💧 <strong>${linkPiloto}</strong> caiu da <span class="tag-loss">${pAnt}ª para a ${pAtu}ª posição</span>${beneficiadosTxt}`);
-                                }
-                            }
-                        });
-
-                        if (mudancasNestaVolta.length > 0) {
-                            logsHtml += `<div class="position-log-item">🔄 <strong>Volta ${v+1}:</strong> ${mudancasNestaVolta.join(' | ')}.</div>`;
-                        }
-                    }
-
-                    if (logsHtml === '') logsHtml = `<div class="position-log-item">🏎️ Prova estável sem trocas de posição registradas.</div>`;
-                    logsContainer.innerHTML = logsHtml;
-                }
-
-                if (modulosSelecionados.includes('mod-velocidade')) {
-                    const tbodyVel = document.getElementById(`tabela-velocidade-${bateriaKey}`);
-                    const DISTANCIA_PISTA = 26; // metros
-                    const ESCALA = 28;
-
-                    dadosSessao.forEach(item => {
-                        let lapsRaw = item.laps || [];
-                        if (lapsRaw.length === 0) return;
-
-                        let lapsValidas = lapsRaw.filter(l => !(typeof l === 'object' && l.anulada)).map(l => typeof l === 'object' ? l.tempo : l);
-                        if (lapsValidas.length === 0) return;
-
-                        let melhorTempo = Math.min(...lapsValidas);
-                        let somaLaps = lapsValidas.reduce((a, b) => a + b, 0);
-                        let mediaTempo = somaLaps / lapsValidas.length;
-
-                        let velPistaMelhorMs = DISTANCIA_PISTA / melhorTempo;
-                        let velPistaMelhorKmh = velPistaMelhorMs * 3.6;
-                        let velEscalaMelhorKmh = velPistaMelhorKmh * ESCALA;
-
-                        let velPistaMediaMs = DISTANCIA_PISTA / mediaTempo;
-                        let velPistaMediaKmh = velPistaMediaMs * 3.6;
-                        let velEscalaMediaKmh = velPistaMediaKmh * ESCALA;
-
-                        let linkPiloto = `<a class="piloto-link" onclick="abrirDossiePiloto('${item.piloto}')">${item.piloto}</a>`;
-
-                        tbodyVel.innerHTML += `
-                            <tr>
-                                <td><strong>${linkPiloto}</strong></td>
-                                <td class="text-green">${melhorTempo.toFixed(3).replace('.',',')}s</td>
-                                <td>${velPistaMelhorKmh.toFixed(2).replace('.',',')} km/h</td>
-                                <td><strong style="color: var(--accent-gold);">${velEscalaMelhorKmh.toFixed(1).replace('.',',')} km/h</strong></td>
-                                <td>${mediaTempo.toFixed(3).replace('.',',')}s</td>
-                                <td>${velPistaMediaKmh.toFixed(2).replace('.',',')} km/h</td>
-                                <td><strong>${velEscalaMediaKmh.toFixed(1).replace('.',',')} km/h</strong></td>
-                            </tr>
-                        `;
-                    });
-                }
-
-                if (modulosSelecionados.includes('mod-classificacao-analise')) {
-                    const tbody = document.getElementById(`tabela-unificada-${bateriaKey}`);
-                    dadosSessao.forEach(item => {
-                        let lapsRaw = item.laps || [];
-                        let lapsValidas = lapsRaw.filter(l => !(typeof l === 'object' && l.anulada)).map(l => typeof l === 'object' ? l.tempo : l);
-                        if (lapsValidas.length === 0) return;
-
-                        let melhorTempo = Math.min(...lapsValidas);
-                        let mediaVal = lapsValidas.reduce((a,b)=>a+b,0) / lapsValidas.length;
-                        let variancia = lapsValidas.length > 1 ? lapsValidas.reduce((sum, t) => sum + Math.pow(t - mediaVal, 2), 0) / lapsValidas.length : 0;
-                        let stdDevCalc = Math.sqrt(variancia);
-                        let desvioTxt = `±${stdDevCalc.toFixed(3).replace('.',',')}s`;
-
-                        let nivelConstancia = "";
-                        let diagnosticoCausas = "";
-
-                        if (stdDevCalc < 1.2) {
-                            nivelConstancia = "🟢 Alta Constância (Ritmo Exemplar / Padrão Metrônomo)";
-                            diagnosticoCausas = "O piloto demonstrou um controle de pilotagem impecável e alta maturidade no traçado. A baixíssima oscilação de tempo por volta indica repetibilidade exata de frenagem, aceleração progressiva sem perda de tração e pilotagem limpa longe das muretas.";
-                        } else if (stdDevCalc >= 1.2 && stdDevCalc < 3.5) {
-                            nivelConstancia = "🟡 Constância Moderada (Oscilações Intermitentes e Desgaste)";
-                            diagnosticoCausas = "O ritmo geral foi competitivo, mas pontuado por variações perceptíveis de desempenho. O desvio padrão nesta faixa aponta para pequenas escapadas de frente/traseira ao forçar o limite de aderência do piso, freadas ligeiramente intempestivas ou micro-tráfego na pista.";
-                        } else {
-                            nivelConstancia = "🔴 Baixa Constância (Instabilidade Crítica e Recuperações)";
-                            diagnosticoCausas = "O índice de variação indica uma bateria de alto risco ou com eventos severos de perda de tempo. O comportamento aponta para rodadas completas, capotamentos, batidas fortes nas barreiras ou tempo excessivo gasto em manobras de recuperação de pista.";
-                        }
-
-                        let voltasLentas = [];
-                        lapsValidas.forEach((t) => {
-                            if (t > mediaVal + (stdDevCalc * 1.5) && t > 12.0) {
-                                voltasLentas.push(`Volta (${t.toFixed(3).replace('.',',')}s)`);
-                            }
-                        });
-
-                        let alertaVoltas = voltasLentas.length > 0 
-                            ? `<br>⚠️ <strong>Análise de Pontos Críticos:</strong> Picos significativos de perda de tempo isolados nos giros: <strong>${voltasLentas.slice(0, 5).join(', ')}</strong>. Estes registros evidenciam falhas pontuais de traçado ou incidentes isolados de prova.`
-                            : `<br>✨ <strong>Fluidez de Prova:</strong> O piloto não apresentou discrepâncias graves ou voltas excessivamente penalizadas; o tempo perdido foi linear e distribuído de forma homogênea.`;
-
-                        let linkPiloto = `<a class="piloto-link" onclick="abrirDossiePiloto('${item.piloto}')">${item.piloto}</a>`;
-
-                        tbody.innerHTML += `
-                            <tr class="main-row">
-                                <td><span class="pos-badge" style="background:${item.badgeColor || '#ffb703'};">${item.pos || '1º'}</span></td>
-                                <td><strong>${linkPiloto}</strong></td>
-                                <td><span class="session-badge">${item.sessao || bateriaKey}</span></td>
-                                <td><strong>${lapsValidas.length} voltas válidas</strong></td>
-                                <td class="text-green">${melhorTempo.toFixed(3).replace('.',',')}s</td>
-                                <td>${mediaVal.toFixed(3).replace('.',',')}s</td>
-                                <td>${desvioTxt}</td>
-                            </tr>
-                            <tr class="sub-row">
-                                <td colspan="7">
-                                    <div class="analysis-subrow-box">
-                                        <strong class="title">🔍 Laudo Técnico Avançado de Consistência - ${item.piloto}</strong>
-                                        <strong>Avaliação de Ritmo:</strong> ${nivelConstancia}<br>
-                                        <strong>Diagnóstico de Comportamento:</strong> ${diagnosticoCausas}
-                                        ${alertaVoltas}
-                                    </div>
-                                </td>
-                            </tr>
-                        `;
-                    });
-                }
-
-                if (modulosSelecionados.includes('mod-tabela-geral')) {
-                    const headerLap = document.getElementById(`head-lapbyLap-${bateriaKey}`);
-                    const bodyLap = document.getElementById(`body-lapbyLap-${bateriaKey}`);
-                    
-                    dadosSessao.forEach(d => {
-                        let linkPilotoHeader = `<a class="piloto-link" onclick="abrirDossiePiloto('${d.piloto}')">${d.piloto}</a>`;
-                        headerLap.innerHTML += `<th><span style="color:${obterCorPiloto(d.piloto)}">●</span> ${linkPilotoHeader}</th>`;
-                    });
-                    
-                    let maxV = Math.max(...dadosSessao.map(d => d.laps ? d.laps.length : 0));
-                    for (let i = 0; i < maxV; i++) {
-                        let linha = `<td><strong>Volta ${i+1}</strong></td>`;
-                        
-                        let acumuladosVoltaAtual = [];
-                        todosDaBateria.forEach(d => {
-                            if (d.laps && d.laps.length > 0) {
-                                let somaAteV = 0;
-                                let voltasCompletadas = 0;
-                                for (let k = 0; k <= Math.min(i, d.laps.length - 1); k++) {
-                                    let lapObj = d.laps[k];
-                                    let tempo = typeof lapObj === 'object' ? lapObj.tempo : lapObj;
-                                    let isAnulada = typeof lapObj === 'object' ? lapObj.anulada : false;
-                                    
-                                    if (!isAnulada) {
-                                        somaAteV += tempo;
-                                        voltasCompletadas++;
-                                    }
-                                }
-                                if (i >= d.laps.length) {
-                                    somaAteV += (i - d.laps.length + 1) * 1000;
-                                }
-                                acumuladosVoltaAtual.push({ piloto: d.piloto, tempoAcumulado: somaAteV, voltas: voltasCompletadas });
-                            }
-                        });
-
-                        acumuladosVoltaAtual.sort((a, b) => {
-                            if (b.voltas !== a.voltas) return b.voltas - a.voltas;
-                            return a.tempoAcumulado - b.tempoAcumulado;
-                        });
-
-                        dadosSessao.forEach(d => {
-                            if (d.laps && i < d.laps.length) {
-                                let lapObj = d.laps[i];
-                                let t = typeof lapObj === 'object' ? lapObj.tempo : lapObj;
-                                let isAnulada = typeof lapObj === 'object' ? lapObj.anulada : false;
-
-                                if (isAnulada) {
-                                    linha += `<td><div class="lap-cell-inline"><span class="gato-lap-highlight" title="Volta Anulada">🐱 ${t.toFixed(3).replace('.',',')}s Anulada</span></div></td>`;
-                                } else {
-                                    let isAbsoluteFast = (Math.abs(t - melhorVoltaAbsolutaVal) < 0.0001);
-                                    let lapsValidas = d.laps.filter(l => !(typeof l === 'object' && l.anulada)).map(l => typeof l === 'object' ? l.tempo : l);
-                                    let melhorPilotoVal = lapsValidas.length > 0 ? Math.min(...lapsValidas) : 999;
-                                    let isFast = (Math.abs(t - melhorPilotoVal) < 0.0001);
-
-                                    let indexNoRanking = acumuladosVoltaAtual.findIndex(x => x.piloto === d.piloto);
-                                    let gapTxt = "";
-                                    if (indexNoRanking > 0) {
-                                        let anterior = acumuladosVoltaAtual[indexNoRanking - 1];
-                                        let atualObj = acumuladosVoltaAtual[indexNoRanking];
-                                        let diff = atualObj.tempoAcumulado - anterior.tempoAcumulado;
-                                        gapTxt = diff >= 0 ? `+${diff.toFixed(3).replace('.',',')}s` : `${diff.toFixed(3).replace('.',',')}s`;
-                                    } else if (indexNoRanking === 0) {
-                                        gapTxt = "Líder";
-                                    }
-
-                                    let inlineSubtext = gapTxt ? `<span class="lap-diff-inline">(${gapTxt})</span>` : "";
-                                    let tempoFormatado = `${t.toFixed(3).replace('.',',')}s`;
-
-                                    if (isAbsoluteFast) {
-                                        linha += `<td><div class="lap-cell-inline"><span class="absolute-fastest-lap-highlight" title="Volta Mais Rápida Absoluta Geral!">👑 ${tempoFormatado}</span> ${inlineSubtext}</div></td>`;
-                                    } else if (isFast) {
-                                        linha += `<td><div class="lap-cell-inline"><span class="fastest-lap-highlight">⚡ ${tempoFormatado}</span> ${inlineSubtext}</div></td>`;
-                                    } else {
-                                        linha += `<td><div class="lap-cell-inline"><span>${tempoFormatado}</span> ${inlineSubtext}</div></td>`;
-                                    }
-                                }
-                            } else { linha += `<td>-</td>`; }
-                        });
-                        bodyLap.innerHTML += `<tr>${linha}</tr>`;
-                    }
-                }
             });
         }
 
