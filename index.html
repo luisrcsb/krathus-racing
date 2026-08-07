@@ -342,7 +342,7 @@
                 <div class="changelog-box">
                     <div class="changelog-header">🚀 O que há de novo na Versão Atualizada:</div>
                     <ul class="changelog-list">
-                        <li><strong>Ficha do Piloto Protegida por Senha:</strong> Edição de dados cadastrais extras (Nome Completo, Apelido, Carro, Categoria) restrita ao líder mediante senha administrativa (<code>krathus2026</code>).</li>
+                        <li><strong>Ficha do Piloto com Senha e Premiação Exclusiva:</strong> Edição de dados protegida por senha (<code>krathus2026</code>) e badge de consistência exclusiva para o piloto com o menor desvio padrão global do grid.</li>
                     </ul>
                 </div>
             </section>
@@ -350,7 +350,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v4.4.0 (Ficha Completa com Senha)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v4.5.0 (Ficha Completa Definitiva)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -453,7 +453,7 @@
             atualizarDashboard();
         }
 
-        // Sistema de Ficha do Piloto com Dados Extras Salvos no Firebase e Senha Admin
+        // Sistema de Ficha do Piloto com Consistência Exclusiva e Segurança Admin
         window.abrirDossiePiloto = function(nomePiloto) {
             const modal = document.getElementById('piloto-modal');
             const titleEl = document.getElementById('modal-piloto-nome');
@@ -462,6 +462,37 @@
             titleEl.innerHTML = `🏎️ Ficha do Piloto: <span style="color: var(--accent-gold);">${nomePiloto}</span>`;
 
             let dadosBase = obterTodosDadosConsolidados();
+            
+            // 1. Cálculo de Consistência Global para Premiação Exclusiva
+            let desviosGrid = {};
+            dadosBase.forEach(d => {
+                if (!d.laps) return;
+                let lapsValidas = d.laps.filter(l => !(typeof l === 'object' && l.anulada)).map(l => typeof l === 'object' ? l.tempo : l);
+                if (lapsValidas.length > 1) {
+                    let media = lapsValidas.reduce((a,b)=>a+b, 0) / lapsValidas.length;
+                    let variancia = lapsValidas.reduce((sum, t) => sum + Math.pow(t - media, 2), 0) / lapsValidas.length;
+                    // Se o piloto já tiver registro, fazemos uma média dos desvios ou guardamos o menor
+                    if (!desviosGrid[d.piloto]) desviosGrid[d.piloto] = [];
+                    desviosGrid[d.piloto].push(Math.sqrt(variancia));
+                }
+            });
+
+            // Média dos desvios por piloto no geral
+            let desvioMedioPiloto = {};
+            for (let p in desviosGrid) {
+                let soma = desviosGrid[p].reduce((a,b)=>a+b, 0);
+                desvioMedioPiloto[p] = soma / desviosGrid[p].length;
+            }
+
+            let pilotoMaisConsistente = null;
+            let menorDesvioGlobal = 999;
+            for (let p in desvioMedioPiloto) {
+                if (desvioMedioPiloto[p] < menorDesvioGlobal) {
+                    menorDesvioGlobal = desvioMedioPiloto[p];
+                    pilotoMaisConsistente = p;
+                }
+            }
+
             let participacoes = dadosBase.filter(d => d.piloto === nomePiloto);
 
             if (participacoes.length === 0) {
@@ -477,7 +508,6 @@
             let totalVoltasVálidasPiloto = 0;
             let tabelaHistoricoHtml = "";
             let contadorPosicoes = {};
-            let menorDesvioPiloto = 999;
 
             participacoes.forEach(part => {
                 let posStr = String(part.pos || '99').replace('º','').trim();
@@ -498,12 +528,6 @@
                     let mediaPart = somaPart / lapsValidas.length;
                     somaMediasPiloto += mediaPart * lapsValidas.length;
                     totalVoltasVálidasPiloto += lapsValidas.length;
-
-                    let variancia = lapsValidas.length > 1 ? lapsValidas.reduce((sum, t) => sum + Math.pow(t - mediaPart, 2), 0) / lapsValidas.length : 0;
-                    let desvioCalc = Math.sqrt(variancia);
-                    if (desvioCalc < menorDesvioPiloto) {
-                        menorDesvioPiloto = desvioCalc;
-                    }
 
                     tabelaHistoricoHtml += `
                         <tr>
@@ -550,14 +574,16 @@
 
             let badgesHtml = '';
             if (temVoltaMaisRapidaGeral) {
-                badgesHtml += `<div class="badge-achievement">👑 Premiação: Volta Mais Rápida Geral do Grid (${melhorVoltaAbsolutaPiloto.toFixed(3).replace('.',',')}s)</div>`;
+                badgesHtml += `<div class="badge-achievement">👑 Premiação: Volta Mais Rápida Geral (${melhorVoltaAbsolutaPiloto.toFixed(3).replace('.',',')}s)</div>`;
             }
             if (temMaisVitorias) {
                 badgesHtml += `<div class="badge-achievement silver">🏆 Premiação: Maior Número de Vitórias (${vitorias} vitórias)</div>`;
             }
-            if (menorDesvioPiloto < 1.2 && totalCorridas > 0) {
-                badgesHtml += `<div class="badge-achievement green-tag">🎯 Premiação: Referência em Consistência (±${menorDesvioPiloto.toFixed(3).replace('.',',')}s)</div>`;
+            // Consistência Exclusiva
+            if (nomePiloto === pilotoMaisConsistente && totalCorridas > 0) {
+                badgesHtml += `<div class="badge-achievement green-tag">🎯 Premiação: Piloto Mais Consistente (Desvio: ±${menorDesvioGlobal.toFixed(3).replace('.',',')}s)</div>`;
             }
+
             if (!badgesHtml) {
                 badgesHtml = `<div style="font-size: 0.82rem; color: var(--text-muted); font-style: italic;">Piloto em busca de sua primeira condecoração oficial no pódio.</div>`;
             }
@@ -578,7 +604,6 @@
                 analiseLideranca = `Piloto em franca curva de desenvolvimento técnico. Apresenta lampejos de excelente velocidade pura, mas ainda sofre com a oscilação em provas longas. A recomendação da liderança é focar em treinos de ritmo limpo, priorizando a segurança nas tangências antes de buscar o limite absoluto do automodelo.`;
             }
 
-            // Buscar dados extras do Firebase
             let safeName = nomePiloto.replace(/[.#$\/\[\]]/g, "_");
             if (db) {
                 db.ref('pilotos/' + safeName).once('value', snapshot => {
@@ -599,7 +624,6 @@
                     <div class="badges-podium-container">${badgesHtml}</div>
                 </div>
 
-                <!-- Dados Cadastrais Extras -->
                 <div class="card" style="padding: 16px; background: var(--bg-input); border: 1px solid var(--border-card);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                         <div class="dossier-report-title" style="margin-bottom:0;">📋 Informações Cadastrais e do Automodelo</div>
@@ -695,7 +719,7 @@
             let safeName = nomePiloto.replace(/[.#$\/\[\]]/g, "_");
             db.ref('pilotos/' + safeName).set(dados).then(() => {
                 alert("Ficha do piloto atualizada com sucesso!");
-                abrirDossiePiloto(nomePiloto); // Atualiza o modal
+                abrirDossiePiloto(nomePiloto);
             }).catch(err => {
                 alert("Erro ao salvar: " + err.message);
             });
@@ -712,7 +736,6 @@
             }
         };
 
-        // Curtidas da Sessão
         window.curtirSessao = function(bateriaKey) {
             if (!db) {
                 alert("Firebase não conectado!");
@@ -732,7 +755,6 @@
             });
         }
 
-        // Comentários e Reações (Curtir/Descurtir)
         window.enviarComentario = function(bateriaKey) {
             if (!db) {
                 alert("Firebase não conectado!");
