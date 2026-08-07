@@ -115,7 +115,6 @@
         .modal-close:hover { color: var(--accent-red); }
         .modal-body { padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
         
-        /* Container de Medalhas / Pódio de Conquistas */
         .badges-podium-container { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 5px; }
         .badge-achievement { background: linear-gradient(135deg, rgba(255, 183, 3, 0.2) 0%, rgba(255, 183, 3, 0.05) 100%); border: 1px solid var(--accent-gold); color: var(--accent-gold); padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(255, 183, 3, 0.15); }
         .badge-achievement.silver { background: linear-gradient(135deg, rgba(132, 146, 166, 0.2) 0%, rgba(132, 146, 166, 0.05) 100%); border-color: var(--text-muted); color: var(--text-title); }
@@ -126,7 +125,6 @@
         .dossier-kpi-label { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
         .dossier-kpi-value { font-size: 1.25rem; font-weight: 700; color: var(--accent-gold); }
 
-        /* Ranking de Posições */
         .positions-ranking-box { background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
         .positions-ranking-title { font-size: 0.85rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase; letter-spacing: 0.5px; }
         .positions-pills-grid { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -242,7 +240,7 @@
 </head>
 <body>
 
-    <!-- MODAL / FICHA DO PILOTO -->
+    <!-- MODAL / FICHA DO PILOTO COM SEGURANÇA DE SENHA -->
     <div id="piloto-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -344,7 +342,7 @@
                 <div class="changelog-box">
                     <div class="changelog-header">🚀 O que há de novo na Versão Atualizada:</div>
                     <ul class="changelog-list">
-                        <li><strong>Ficha do Piloto com Pódio de Conquistas:</strong> Topo da ficha enriquecido com medalhas de premiação (Volta Mais Rápida, Maior Número de Vitórias, Melhor Consistência) e ranking detalhado de posições.</li>
+                        <li><strong>Ficha do Piloto Protegida por Senha:</strong> Edição de dados cadastrais extras (Nome Completo, Apelido, Carro, Categoria) restrita ao líder mediante senha administrativa (<code>krathus2026</code>).</li>
                     </ul>
                 </div>
             </section>
@@ -352,7 +350,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v4.3.0 (Ficha do Piloto e Pódio de Conquistas)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v4.4.0 (Ficha Completa com Senha)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -386,6 +384,7 @@
             console.warn("Erro ao inicializar o Firebase:", e);
         }
 
+        const SENHA_ADMIN = "krathus2026";
         let chartInstances = [];
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -454,7 +453,7 @@
             atualizarDashboard();
         }
 
-        // Sistema de Ficha do Piloto com Pódio de Conquistas e Ranking de Posições
+        // Sistema de Ficha do Piloto com Dados Extras Salvos no Firebase e Senha Admin
         window.abrirDossiePiloto = function(nomePiloto) {
             const modal = document.getElementById('piloto-modal');
             const titleEl = document.getElementById('modal-piloto-nome');
@@ -474,7 +473,6 @@
             let totalCorridas = participacoes.length;
             let vitorias = 0;
             let melhorVoltaAbsolutaPiloto = 999999;
-            let melhorSessaoVolta = "";
             let somaMediasPiloto = 0;
             let totalVoltasVálidasPiloto = 0;
             let tabelaHistoricoHtml = "";
@@ -494,7 +492,6 @@
                     let melhorPart = Math.min(...lapsValidas);
                     if (melhorPart < melhorVoltaAbsolutaPiloto) {
                         melhorVoltaAbsolutaPiloto = melhorPart;
-                        melhorSessaoVolta = part.sessao || part.bateriaKey;
                     }
 
                     let somaPart = lapsValidas.reduce((a,b)=>a+b, 0);
@@ -522,7 +519,6 @@
 
             let mediaGeralPiloto = totalVoltasVálidasPiloto > 0 ? (somaMediasPiloto / totalVoltasVálidasPiloto) : 0;
 
-            // Verificar se o piloto tem recorde absoluto de volta rápida no grid global
             let globalMelhorVolta = 999999;
             dadosBase.forEach(d => {
                 if (d.laps) {
@@ -535,7 +531,6 @@
             });
             let temVoltaMaisRapidaGeral = (Math.abs(melhorVoltaAbsolutaPiloto - globalMelhorVolta) < 0.0001);
 
-            // Verificar se é o piloto com mais vitórias no grid geral
             let vitoriasPorPiloto = {};
             let bateriasUnicas = [...new Set(dadosBase.map(d => d.bateriaKey))];
             bateriasUnicas.forEach(bk => {
@@ -553,7 +548,6 @@
             }
             let temMaisVitorias = (maxVitoriasGrid > 0 && (vitoriasPorPiloto[nomePiloto] || 0) === maxVitoriasGrid && vitoriasPorPiloto[nomePiloto] >= 2);
 
-            // Construir Tags de Premiação (Pódio de Conquistas no Topo)
             let badgesHtml = '';
             if (temVoltaMaisRapidaGeral) {
                 badgesHtml += `<div class="badge-achievement">👑 Premiação: Volta Mais Rápida Geral do Grid (${melhorVoltaAbsolutaPiloto.toFixed(3).replace('.',',')}s)</div>`;
@@ -568,7 +562,6 @@
                 badgesHtml = `<div style="font-size: 0.82rem; color: var(--text-muted); font-style: italic;">Piloto em busca de sua primeira condecoração oficial no pódio.</div>`;
             }
 
-            // Construir Ranking de Posições
             let posicoesOrdenadas = Object.keys(contadorPosicoes).map(Number).sort((a,b) => a - b);
             let rankingPillsHtml = posicoesOrdenadas.map(p => `
                 <div class="position-pill">
@@ -576,7 +569,6 @@
                 </div>
             `).join('');
 
-            // Olhar Crítico da Liderança
             let analiseLideranca = "";
             if (vitorias >= totalCorridas * 0.5) {
                 analiseLideranca = `Piloto de elite e referência de desempenho na Krathus Racing. Demonstra maturidade exemplar na gestão de pneus e traçado, impondo um ritmo forte desde a primeira volta. Seu índice de aproveitamento reflete constância e alta resiliência sob pressão.`;
@@ -586,12 +578,45 @@
                 analiseLideranca = `Piloto em franca curva de desenvolvimento técnico. Apresenta lampejos de excelente velocidade pura, mas ainda sofre com a oscilação em provas longas. A recomendação da liderança é focar em treinos de ritmo limpo, priorizando a segurança nas tangências antes de buscar o limite absoluto do automodelo.`;
             }
 
+            // Buscar dados extras do Firebase
+            let safeName = nomePiloto.replace(/[.#$\/\[\]]/g, "_");
+            if (db) {
+                db.ref('pilotos/' + safeName).once('value', snapshot => {
+                    let pData = snapshot.val() || {};
+                    renderizarCorpoDossiê(bodyEl, badgesHtml, totalCorridas, vitorias, melhorVoltaAbsolutaPiloto, mediaGeralPiloto, rankingPillsHtml, analiseLideranca, tabelaHistoricoHtml, nomePiloto, pData);
+                });
+            } else {
+                renderizarCorpoDossiê(bodyEl, badgesHtml, totalCorridas, vitorias, melhorVoltaAbsolutaPiloto, mediaGeralPiloto, rankingPillsHtml, analiseLideranca, tabelaHistoricoHtml, nomePiloto, {});
+            }
+
+            modal.style.display = 'flex';
+        };
+
+        function renderizarCorpoDossiê(bodyEl, badgesHtml, totalCorridas, vitorias, melhorVoltaAbsolutaPiloto, mediaGeralPiloto, rankingPillsHtml, analiseLideranca, tabelaHistoricoHtml, nomePiloto, pData) {
             bodyEl.innerHTML = `
-                <!-- Pódio de Conquistas / Premiações no Topo -->
                 <div>
                     <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">🏅 Pódio de Conquistas e Premiações</div>
-                    <div class="badges-podium-container">
-                        ${badgesHtml}
+                    <div class="badges-podium-container">${badgesHtml}</div>
+                </div>
+
+                <!-- Dados Cadastrais Extras -->
+                <div class="card" style="padding: 16px; background: var(--bg-input); border: 1px solid var(--border-card);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <div class="dossier-report-title" style="margin-bottom:0;">📋 Informações Cadastrais e do Automodelo</div>
+                        <button class="btn-text-action" id="btn-admin-mode" onclick="ativarModoEdicao()">🔑 Editar Ficha (Admin)</button>
+                    </div>
+                    <div id="dados-exibicao-piloto" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-size: 0.9rem;">
+                        <div><strong>Nome Completo:</strong> <span id="lbl-nome">${pData.nomeCompleto || 'Não cadastrado'}</span></div>
+                        <div><strong>Apelido:</strong> <span id="lbl-apelido">${pData.apelido || 'Não cadastrado'}</span></div>
+                        <div><strong>Modelo do Carro:</strong> <span id="lbl-carro">${pData.carro || 'Não cadastrado'}</span></div>
+                        <div><strong>Categoria:</strong> <span id="lbl-categoria">${pData.categoria || 'Não cadastrado'}</span></div>
+                    </div>
+                    <div id="form-edicao-piloto" style="display: none; flex-direction: column; gap: 8px; margin-top: 10px;">
+                        <input type="text" id="edit-nome-completo" value="${pData.nomeCompleto || ''}" placeholder="Nome Completo" class="comment-input-text">
+                        <input type="text" id="edit-apelido" value="${pData.apelido || ''}" placeholder="Apelido" class="comment-input-text">
+                        <input type="text" id="edit-carro" value="${pData.carro || ''}" placeholder="Modelo do Carro" class="comment-input-text">
+                        <input type="text" id="edit-categoria" value="${pData.categoria || ''}" placeholder="Categoria" class="comment-input-text">
+                        <button class="btn-comment" onclick="salvarDadosPiloto('${nomePiloto}')">💾 Salvar Ficha no Banco</button>
                     </div>
                 </div>
 
@@ -614,12 +639,9 @@
                     </div>
                 </div>
 
-                <!-- Ranking de Posições -->
                 <div class="positions-ranking-box">
                     <div class="positions-ranking-title">📊 Ranking de Posições Conquistadas</div>
-                    <div class="positions-pills-grid">
-                        ${rankingPillsHtml}
-                    </div>
+                    <div class="positions-pills-grid">${rankingPillsHtml}</div>
                 </div>
 
                 <div class="dossier-report-box">
@@ -640,15 +662,43 @@
                                     <th>Média da Sessão</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                ${tabelaHistoricoHtml}
-                            </tbody>
+                            <tbody>${tabelaHistoricoHtml}</tbody>
                         </table>
                     </div>
                 </div>
             `;
+        }
 
-            modal.style.display = 'flex';
+        window.ativarModoEdicao = function() {
+            let senha = prompt("Digite a senha de Administrador (Líder de Equipe):");
+            if (senha === SENHA_ADMIN) {
+                document.getElementById('form-edicao-piloto').style.display = 'flex';
+                document.getElementById('dados-exibicao-piloto').style.display = 'none';
+                document.getElementById('btn-admin-mode').style.display = 'none';
+            } else {
+                alert("Senha incorreta!");
+            }
+        };
+
+        window.salvarDadosPiloto = function(nomePiloto) {
+            if (!db) {
+                alert("Firebase não conectado!");
+                return;
+            }
+            let dados = {
+                nomeCompleto: document.getElementById('edit-nome-completo').value,
+                apelido: document.getElementById('edit-apelido').value,
+                carro: document.getElementById('edit-carro').value,
+                categoria: document.getElementById('edit-categoria').value
+            };
+            
+            let safeName = nomePiloto.replace(/[.#$\/\[\]]/g, "_");
+            db.ref('pilotos/' + safeName).set(dados).then(() => {
+                alert("Ficha do piloto atualizada com sucesso!");
+                abrirDossiePiloto(nomePiloto); // Atualiza o modal
+            }).catch(err => {
+                alert("Erro ao salvar: " + err.message);
+            });
         };
 
         window.fecharDossiePiloto = function() {
@@ -1012,7 +1062,6 @@
                     html += `<div class="card"><div class="card-header">Tabela Geral Volta a Volta (com Gaps ao Lado) - ${nomeSessao}</div><div class="table-container"><table><thead><tr id="head-lapbyLap-${bateriaKey}"><th>VOLTA</th></tr></thead><tbody id="body-lapbyLap-${bateriaKey}"></tbody></table></div></div>`;
                 }
 
-                // Módulo de Comentários com Reações
                 html += `
                     <div class="comments-section">
                         <div class="comments-title">💬 Comentários e Reações</div>
