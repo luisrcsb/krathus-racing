@@ -1,1 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Krathus Racing - Central de Gestão</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <style>
+        :root { --bg-body: #0d111a; --accent-blue: #3a86ff; }
+        body { background-color: var(--bg-body); color: #fff; font-family: sans-serif; padding: 20px; }
+        .menu-cat { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { background: var(--accent-blue); color: white; border: none; padding: 10px; cursor: pointer; border-radius: 4px; }
+        .file-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #333; align-items: center; }
+        .upload-section { margin-bottom: 20px; background: #151c28; padding: 15px; border-radius: 8px; }
+    </style>
+</head>
+<body>
 
+    <div class="upload-section">
+        <h3>📤 Enviar Novo Arquivo</h3>
+        <input type="file" id="fileInput" multiple accept=".json">
+        <button class="tab-btn" onclick="processarUpload()">Subir Arquivos</button>
+    </div>
+
+    <h3>📂 Menus Disponíveis</h3>
+    <div class="menu-cat" id="menu-categorias"></div>
+    <div id="conteudo-principal"></div>
+
+    <script src="banco-de-database.js"></script>
+    <script>
+        const firebaseConfig = { databaseURL: "https://krathus-telemetria-default-rtdb.firebaseio.com" };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        function classificarPorNome(nome) {
+            const n = nome.toLowerCase();
+            if (n.includes('bateria')) return 'bateria';
+            if (n.includes('treino')) return 'treino';
+            if (n.includes('campeonato')) return 'campeonato';
+            return 'outro';
+        }
+
+        window.processarUpload = function() {
+            const files = document.getElementById('fileInput').files;
+            if (files.length === 0) return alert("Selecione ao menos um arquivo.");
+            
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const conteudo = JSON.parse(e.target.result);
+                        const dadosSalvar = {
+                            nomeArquivo: file.name,
+                            conteudo: conteudo,
+                            criadoEm: Date.now()
+                        };
+                        database.ref('telemetria/' + Date.now() + '_' + Math.floor(Math.random()*1000)).set(dadosSalvar);
+                    } catch (err) {
+                        alert("Erro ao ler o JSON do arquivo: " + file.name);
+                    }
+                };
+                reader.readAsText(file);
+            });
+            alert("Processo de envio concluído!");
+        };
+
+        database.ref('telemetria').on('value', snap => {
+            const categorias = { bateria: [], treino: [], campeonato: [] };
+            
+            snap.forEach(child => {
+                const val = child.val();
+                const tipo = classificarPorNome(val.nomeArquivo || '');
+                if (categorias[tipo]) {
+                    categorias[tipo].push({ id: child.key, ...val });
+                }
+            });
+
+            const menu = document.getElementById('menu-categorias');
+            menu.innerHTML = '';
+            
+            let primeiraCategoriaAtiva = null;
+
+            Object.keys(categorias).forEach(cat => {
+                if (categorias[cat].length > 0) {
+                    const btn = document.createElement('button');
+                    btn.className = 'tab-btn';
+                    btn.innerText = cat.toUpperCase();
+                    btn.onclick = () => renderizar(cat, categorias[cat]);
+                    menu.appendChild(btn);
+
+                    if (!primeiraCategoriaAtiva) {
+                        primeiraCategoriaAtiva = { cat, lista: categorias[cat] };
+                    }
+                }
+            });
+
+            if (primeiraCategoriaAtiva) {
+                renderizar(primeiraCategoriaAtiva.cat, primeiraCategoriaAtiva.lista);
+            } else {
+                document.getElementById('conteudo-principal').innerHTML = '<p>Nenhum dado encontrado no servidor.</p>';
+            }
+        });
+
+        function renderizar(cat, lista) {
+            const container = document.getElementById('conteudo-principal');
+            container.innerHTML = `<h3>Itens da Categoria: ${cat.toUpperCase()}</h3>` + lista.map(item => 
+                `<div class="file-item"><span>📄 ${item.nomeArquivo}</span> <button class="tab-btn" style="background:#e63946;" onclick="excluir('${item.id}')">🗑️ Excluir</button></div>`
+            ).join('');
+        }
+
+        window.excluir = (id) => {
+            if (confirm("Deseja realmente excluir este arquivo?")) {
+                database.ref('telemetria/' + id).remove();
+            }
+        };
+    </script>
+</body>
+</html>
