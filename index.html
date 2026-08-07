@@ -79,6 +79,11 @@
         .piloto-link { color: var(--accent-blue); text-decoration: none; font-weight: 700; cursor: pointer; transition: color 0.2s; }
         .piloto-link:hover { color: var(--accent-gold); text-decoration: underline; }
 
+        /* Abas Principais do Sistema (Telemetria, Gestão de Uploads, etc.) */
+        .main-tabs-container { display: flex; gap: 12px; margin-bottom: 5px; flex-wrap: wrap; }
+        .tab-main-btn { background: var(--bg-card); border: 1px solid var(--border-card); color: var(--text-main); padding: 12px 24px; border-radius: 10px; font-weight: 700; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
+        .tab-main-btn.active { background: var(--accent-blue); color: #fff; border-color: var(--accent-blue); box-shadow: 0 4px 12px rgba(58, 134, 255, 0.3); }
+
         /* Menu de Categorias Dinâmico */
         .menu-categorias-container { display: flex; gap: 10px; margin-bottom: 5px; flex-wrap: wrap; }
         .tab-categoria-btn { background: var(--bg-input); border: 1px solid var(--border-card); color: var(--text-main); padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
@@ -87,8 +92,8 @@
         /* Módulo de Upload / Gestão de Arquivos */
         .upload-section { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
         .upload-row { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
-        .file-list-box { max-height: 180px; overflow-y: auto; background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 6px; }
-        .file-item-row { display: flex; justify-content: space-between; align-items: center; background: rgba(21, 28, 40, 0.6); padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-card); font-size: 0.85rem; }
+        .file-list-box { max-height: 350px; overflow-y: auto; background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+        .file-item-row { display: flex; justify-content: space-between; align-items: center; background: rgba(21, 28, 40, 0.6); padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border-card); font-size: 0.9rem; }
 
         /* Modal / Ficha do Piloto */
         #piloto-modal {
@@ -145,7 +150,8 @@
         .dossier-report-box { background: var(--bg-input); border-left: 4px solid var(--accent-blue); border-radius: 8px; padding: 18px; font-size: 0.9rem; line-height: 1.6; color: var(--text-main); display: flex; flex-direction: column; gap: 10px; }
         .dossier-report-title { font-size: 0.85rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 0.5px; }
 
-        .tab-content { display: flex; flex-direction: column; gap: 20px; }
+        .tab-pane { display: none; flex-direction: column; gap: 20px; }
+        .tab-pane.active { display: flex; }
 
         .welcome-card { background: linear-gradient(135deg, var(--bg-card) 0%, rgba(28, 38, 56, 0.7) 100%); border: 1px solid var(--border-card); border-left: 5px solid var(--accent-blue); border-radius: 12px; padding: 22px 24px; display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
         .welcome-title { font-size: 1.1rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 8px; }
@@ -238,7 +244,7 @@
         @media print {
             body, body * { color: #000000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             body { background-color: #ffffff !important; padding: 10px !important; font-size: 11px !important; }
-            .header-actions, .filters-card, .btn-pdf-global, .btn-share, .btn-like, .comments-section, .welcome-card, #piloto-modal, .upload-section, .menu-categorias-container { display: none !important; }
+            .header-actions, .filters-card, .btn-pdf-global, .btn-share, .btn-like, .comments-section, .welcome-card, #piloto-modal, .upload-section, .main-tabs-container, .menu-categorias-container { display: none !important; }
             .header { background: #ffffff !important; border: 1px solid #d1d5db !important; }
             .kpi-card { background: #f9fafb !important; border: 1px solid #d1d5db !important; }
             .card { background: #ffffff !important; border: 1px solid #9ca3af !important; }
@@ -278,23 +284,17 @@
             </div>
         </header>
 
-        <!-- MÓDULO DE UPLOAD E GERENCIAMENTO DE ARQUIVOS -->
-        <section class="upload-section">
-            <div class="card-header" style="margin-bottom:0;">📤 Gestão e Upload de Arquivos (Banco: Upload)</div>
-            <div class="upload-row">
-                <input type="file" id="fileInput" multiple accept=".json" style="color:var(--text-main);">
-                <button class="btn" style="background:var(--accent-blue); color:#fff;" onclick="processarUpload()">Subir Arquivos</button>
-            </div>
-            <div style="font-size: 0.8rem; color: var(--text-muted);">Arquivos enviados anteriormente salvos no servidor:</div>
-            <div class="file-list-box" id="lista-arquivos-servidor">
-                <span style="color:var(--text-muted); font-size:0.85rem;">Carregando arquivos...</span>
-            </div>
-        </section>
+        <!-- ABAS PRINCIPAIS DO SISTEMA -->
+        <div class="main-tabs-container">
+            <button class="tab-main-btn active" onclick="trocarAbaPrincipal('telemetria', this)">📊 Central de Telemetria</button>
+            <button class="tab-main-btn" onclick="trocarAbaPrincipal('uploads', this)">📤 Gestão de Uploads (Banco: Upload)</button>
+        </div>
 
-        <!-- MENU DINÂMICO DE CATEGORIAS (Só aparece se houver dados) -->
-        <div class="menu-categorias-container" id="menu-categorias-dinamico"></div>
+        <!-- ABA 1: TELEMETRIA -->
+        <div id="pane-telemetria" class="tab-pane active">
+            <!-- MENU DINÂMICO DE CATEGORIAS (Só aparece se houver dados) -->
+            <div class="menu-categorias-container" id="menu-categorias-dinamico"></div>
 
-        <div id="tab-telemetria" class="tab-content">
             <section class="filters-card">
                 <div class="filters-grid">
                     <div class="filter-group">
@@ -366,15 +366,30 @@
                 <div class="changelog-box">
                     <div class="changelog-header">🚀 O que há de novo na Versão Atualizada:</div>
                     <ul class="changelog-list">
-                        <li><strong>Banco de Dados "Upload" & Gestão de Arquivos:</strong> Sincronização em tempo real com o Firebase, filtragem automática por nome de arquivo (bateria, treino, campeonato) e bloqueio automático de duplicatas.</li>
+                        <li><strong>Gestão de Uploads em Aba Própria:</strong> O painel de envio e gerenciamento de arquivos JSON agora possui sua própria aba dedicada, otimizando o fluxo de trabalho.</li>
                     </ul>
+                </div>
+            </section>
+        </div>
+
+        <!-- ABA 2: GESTÃO DE UPLOADS -->
+        <div id="pane-uploads" class="tab-pane">
+            <section class="upload-section">
+                <div class="card-header" style="margin-bottom:0;">📤 Painel de Upload e Gerenciamento de Arquivos JSON (Banco: Upload)</div>
+                <div class="upload-row">
+                    <input type="file" id="fileInput" multiple accept=".json" style="color:var(--text-main);">
+                    <button class="btn" style="background:var(--accent-blue); color:#fff;" onclick="processarUpload()">Subir Arquivos para o Servidor</button>
+                </div>
+                <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Arquivos enviados anteriormente salvos no banco de dados "Upload":</div>
+                <div class="file-list-box" id="lista-arquivos-servidor">
+                    <span style="color:var(--text-muted); font-size:0.85rem;">Carregando arquivos...</span>
                 </div>
             </section>
         </div>
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v4.6.0 (Gestão "Upload" Integrada)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v4.7.0 (Abas Organizadas)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -416,6 +431,14 @@
         document.addEventListener("DOMContentLoaded", () => {
             inicializarBancoUpload();
         });
+
+        window.trocarAbaPrincipal = function(nomeAba, btnElement) {
+            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+            document.querySelectorAll('.tab-main-btn').forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById(`pane-${nomeAba}`).classList.add('active');
+            btnElement.classList.add('active');
+        };
 
         function inicializarBancoUpload() {
             if (!database) {
@@ -491,7 +514,7 @@
                 return `
                     <div class="file-item-row">
                         <span>📄 ${nome}</span>
-                        <button class="btn" style="background:var(--accent-red); color:#fff; padding:3px 8px; font-size:0.75rem;" onclick="excluirArquivoUpload('${key}')">🗑️ Excluir</button>
+                        <button class="btn" style="background:var(--accent-red); color:#fff; padding:5px 12px; font-size:0.8rem;" onclick="excluirArquivoUpload('${key}')">🗑️ Excluir</button>
                     </div>
                 `;
             }).join('');
@@ -587,6 +610,7 @@
         window.selecionarCategoriaMenu = function(cat) {
             categoriaAtivaSelecionada = cat;
             atualizarMenuCategoriasDinamico();
+            gerarFiltrosDinamicos();
             atualizarDashboard();
         };
 
