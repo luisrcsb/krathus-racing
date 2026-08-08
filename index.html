@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Krathus Racing - Central de Telemetria e Upload</title>
+    <title>Krathus Racing - Central de Telemetria</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
@@ -42,7 +42,7 @@
         .btn-text-action:hover { text-decoration: underline; }
 
         .btn-pdf-global { background: linear-gradient(135deg, #ff5722 0%, #e63946 100%); color: #ffffff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; }
-        .btn-upload-global { background: linear-gradient(135deg, #3a86ff 0%, #2ec4b6 100%); color: #ffffff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; }
+        .btn-upload-modal-trigger { background: linear-gradient(135deg, #3a86ff 0%, #2ec4b6 100%); color: #ffffff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
         
         .btn-share { background: rgba(58, 134, 255, 0.15); color: var(--accent-blue); border: 1px solid var(--accent-blue); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; }
         .btn-like { background: rgba(230, 57, 70, 0.15); color: var(--accent-red); border: 1px solid var(--accent-red); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; }
@@ -50,12 +50,13 @@
         .piloto-link { color: var(--accent-blue); text-decoration: none; font-weight: 700; cursor: pointer; }
         .piloto-link:hover { color: var(--accent-gold); text-decoration: underline; }
 
-        #piloto-modal {
+        /* Estilo dos Modais (Ficha do Piloto e Central de Uploads) */
+        .custom-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background-color: rgba(13, 17, 26, 0.88); z-index: 10000; justify-content: center; align-items: center; padding: 20px; overflow-y: auto;
         }
         .modal-content {
-            background: var(--bg-card); border: 1px solid var(--border-card); border-top: 5px solid var(--accent-gold); border-radius: 14px; width: 100%; max-width: 1000px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden;
+            background: var(--bg-card); border: 1px solid var(--border-card); border-top: 5px solid var(--accent-gold); border-radius: 14px; width: 100%; max-width: 950px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden;
         }
         .modal-header { padding: 20px 24px; background: var(--bg-card-header); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-card); }
         .modal-title { font-size: 1.25rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 10px; }
@@ -77,11 +78,10 @@
         .checkbox-item { display: flex; align-items: center; gap: 10px; font-size: 0.88rem; color: var(--text-main); cursor: pointer; }
         .checkbox-item input[type="checkbox"] { accent-color: var(--accent-red); width: 16px; height: 16px; cursor: pointer; }
 
-        /* Quadro de Upload Integrado */
-        .upload-section-box { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
+        /* Estilos Internos do Modal de Upload */
         .upload-grid-manager { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .upload-box { background: var(--bg-input); border: 1px dashed var(--border-card); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-        ul#upload-lista-historico { list-style: none; display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; padding-right: 4px; }
+        ul#upload-lista-historico { list-style: none; display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; padding-right: 4px; }
         ul#upload-lista-historico li { background: var(--bg-input); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-card); display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; }
         pre#upload-json-viewer { background: var(--bg-body); color: var(--accent-green); padding: 12px; border-radius: 6px; font-size: 0.75rem; max-height: 200px; overflow: auto; border: 1px solid var(--border-card); line-height: 1.4; }
 
@@ -150,13 +150,14 @@
         @media print {
             body, body * { color: #000000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             body { background-color: #ffffff !important; padding: 10px !important; font-size: 11px !important; }
-            .header-actions, .filters-card, .btn-pdf-global, .upload-section-box, .comments-section, #piloto-modal { display: none !important; }
+            .header-actions, .filters-card, .btn-pdf-global, .comments-section, .custom-modal { display: none !important; }
         }
     </style>
 </head>
 <body>
 
-    <div id="piloto-modal">
+    <!-- 🏎️ Modal Ficha do Piloto -->
+    <div id="piloto-modal" class="custom-modal">
         <div class="modal-content">
             <div class="modal-header">
                 <div class="modal-title" id="modal-piloto-nome">🏎️ Ficha do Piloto</div>
@@ -166,40 +167,48 @@
         </div>
     </div>
 
+    <!-- 📤 Modal Central de Uploads (Acionado pelo botão no topo) -->
+    <div id="upload-modal" class="custom-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">📤 Central de Upload de Relatórios PDF (ZRound)</div>
+                <button class="modal-close" onclick="fecharModalUpload()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="upload-grid-manager">
+                    <div class="upload-box">
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Selecione os relatórios PDF oficiais do ZRound. O sistema converte automaticamente, evita duplicidades e atualiza o painel.</p>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                            <input type="file" id="input-pdf-upload" accept=".pdf" multiple style="background: var(--bg-card); padding: 8px; border-radius: 6px; border: 1px solid var(--border-card); color: var(--text-main); flex: 1; font-size: 0.85rem;">
+                            <button class="btn btn-upload-modal-trigger" onclick="processarUploadEEnviarNuvem()">Converter e Enviar</button>
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Arquivos Carregados na Nuvem</span>
+                        <ul id="upload-lista-historico">
+                            <li>Carregando arquivos...</li>
+                        </ul>
+                    </div>
+                </div>
+                <div>
+                    <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Inspetor de Estrutura JSON</span>
+                    <pre id="upload-json-viewer">Selecione "Inspecionar" em um arquivo ao lado para visualizar os dados...</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="dashboard-container">
         <header class="header">
             <div class="brand-title">
                 <h1>🏁 KRATHUS RACING</h1>
-                <p>Central de Telemetria, Upload e Análise de Desempenho</p>
+                <p>Central de Telemetria e Análise de Desempenho</p>
             </div>
             <div class="header-actions">
+                <button class="btn btn-upload-modal-trigger" onclick="abrirModalUpload()">📤 Uploads</button>
                 <button class="btn btn-pdf-global" onclick="gerarRelatórioPDF()">📄 Gerar Relatório PDF Completo</button>
             </div>
         </header>
-
-        <!-- 📤 QUADRO DE UPLOAD DE RELATÓRIOS INTEGRADO DIRETAMENTE NO INDEX -->
-        <section class="upload-section-box">
-            <div class="card-header">📤 Central de Upload de Relatórios PDF (ZRound)</div>
-            <div class="upload-grid-manager">
-                <div class="upload-box">
-                    <p style="font-size: 0.85rem; color: var(--text-muted);">Selecione os relatórios PDF oficiais do ZRound. O sistema converte automaticamente, evita duplicidades e atualiza os gráficos abaixo.</p>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-                        <input type="file" id="input-pdf-upload" accept=".pdf" multiple style="background: var(--bg-card); padding: 8px; border-radius: 6px; border: 1px solid var(--border-card); color: var(--text-main); flex: 1; font-size: 0.85rem;">
-                        <button class="btn btn-upload-global" onclick="processarUploadEEnviarNuvem()">Converter e Enviar</button>
-                    </div>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Arquivos Carregados na Nuvem</span>
-                    <ul id="upload-lista-historico">
-                        <li>Carregando arquivos...</li>
-                    </ul>
-                </div>
-            </div>
-            <div style="margin-top: 5px;">
-                <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Inspetor de Estrutura JSON</span>
-                <pre id="upload-json-viewer">Selecione "Inspecionar" em um arquivo ao lado para visualizar os dados...</pre>
-            </div>
-        </section>
 
         <div id="tab-telemetria" class="tab-content">
             <section class="filters-card">
@@ -267,7 +276,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.6.0 (Painel Unificado)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.7.0 (Modal de Uploads)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -355,7 +364,10 @@
             }
         });
 
-        // 📤 Função de Conversão e Upload Integrado com Antiduplicação
+        // 📤 Funções do Modal de Uploads
+        window.abrirModalUpload = function() { document.getElementById('upload-modal').style.display = 'flex'; };
+        window.fecharModalUpload = function() { document.getElementById('upload-modal').style.display = 'none'; };
+
         window.processarUploadEEnviarNuvem = async function() {
             const input = document.getElementById('input-pdf-upload');
             if (!input.files || input.files.length === 0) {
@@ -683,6 +695,7 @@
 
         window.onclick = function(event) {
             if (event.target === document.getElementById('piloto-modal')) document.getElementById('piloto-modal').style.display = 'none';
+            if (event.target === document.getElementById('upload-modal')) document.getElementById('upload-modal').style.display = 'none';
         };
 
         window.curtirSessao = function(bateriaKey) {
