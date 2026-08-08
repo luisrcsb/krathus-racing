@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Krathus Racing - Central de Telemetria e Upload em Nuvem</title>
+    <title>Krathus Racing - Central de Upload e Gestão de Relatórios PDF</title>
     <!-- Firebase SDK (Compat) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
@@ -201,7 +201,6 @@
             let pilotosMap = {};
             let linhas = texto.split(/\r?\n/);
             
-            // 1. Mapeia todos os pilotos presentes no relatório
             linhas.forEach(linha => {
                 let partes = linha.split('|').map(p => p.trim());
                 if (partes.length >= 4) {
@@ -236,7 +235,6 @@
 
             let pilotoNomes = Object.keys(pilotosMap);
 
-            // 2. Extrai rigorosamente todas as voltas da tabela de voltas individuais
             linhas.forEach(linha => {
                 let partes = linha.split('|').map(p => p.trim());
                 if (partes.length >= 2 && /^\d+$/.test(partes[0])) {
