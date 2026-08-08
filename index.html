@@ -516,18 +516,24 @@
             if (dadosFiltrados.length > 0) {
                 let vencedorContador = {};
                 bateriasSel.forEach(batKey => {
-                    let itens = dadosBase.filter(d => d.bateriaKey === batKey);
-                    if (itens.length > 0) {
-                        let vencedor = itens.reduce((prev, curr) => (parseInt(prev.pos)||99) < (parseInt(curr.pos)||99) ? prev : curr, itens[0]);
+                    let itensDaBateria = dadosBase.filter(d => d.bateriaKey === batKey);
+                    if (itensDaBateria.length > 0) {
+                        let vencedor = itensDaBateria.find(d => {
+                            let posLimpa = String(d.pos).replace('º', '').trim();
+                            return posLimpa === "1";
+                        });
+
                         if (vencedor && pilotosSel.includes(vencedor.piloto)) {
                             vencedorContador[vencedor.piloto] = (vencedorContador[vencedor.piloto] || 0) + 1;
                         }
                     }
                 });
+
                 let maisVitorioso = "--", maxV = -1;
                 for (let [p, v] of Object.entries(vencedorContador)) {
                     if (v > maxV) { maxV = v; maisVitorioso = p; }
                 }
+                
                 document.getElementById('kpi-vencedor').innerHTML = maisVitorioso !== "--" ? `<a class="piloto-link" onclick="abrirDossiePiloto('${maisVitorioso}')">${maisVitorioso}</a>` : "Nenhum";
                 document.getElementById('kpi-vencedor-sub').innerText = maxV > 0 ? `${maxV} vitória(s)` : "Sem vitórias";
 
@@ -581,7 +587,7 @@
                 let sessaoOriginal = dadosSessao[0].sessao || bateriaKey;
                 const nomeSessaoFormatado = formatarNomeSessao(sessaoOriginal);
                 let todosBat = dadosBase.filter(d => d.bateriaKey === bateriaKey);
-                let vencedorObj = todosBat.reduce((prev, curr) => (parseInt(curr.pos)||99) < (parseInt(prev.pos)||99) ? prev : curr, todosBat[0]);
+                let vencedorObj = todosBat.find(d => String(d.pos).replace('º','').trim() === "1") || todosBat[0];
                 let nomeVencedor = vencedorObj ? vencedorObj.piloto : 'N/A';
                 let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
 
