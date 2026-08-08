@@ -360,8 +360,8 @@
         </footer>
     </div>
 
-    <!-- IMPORTAÇÃO DO BANCO DE DADOS -->
-    <script src="banco-de-dados.js"></script>
+    <!-- IMPORTAÇÃO CORRETA DO BANCO DE DADOS (Referência exata ao arquivo local) -->
+    <script src="Banco-de-dados.js"></script>
 
     <script>
         // CONFIGURAÇÃO DO FIREBASE
@@ -388,19 +388,24 @@
         let chartInstances = [];
 
         document.addEventListener("DOMContentLoaded", () => {
-            if (typeof listaJsonsCache !== 'undefined') {
-                listaJsonsCache.sort((a, b) => b.id - a.id);
+            // Suporte compatível tanto para listaJsonsCache quanto window.listaJsonsCache
+            let dadosCache = (typeof listaJsonsCache !== 'undefined') ? listaJsonsCache : (window.listaJsonsCache || null);
+            
+            if (dadosCache && Array.isArray(dadosCache)) {
+                dadosCache.sort((a, b) => b.id - a.id);
                 gerarFiltrosDinamicos();
                 atualizarDashboard();
             } else {
-                console.error("Erro: banco-de-dados.js não encontrado.");
+                console.error("Erro: Banco-de-dados.js ou listaJsonsCache não foi carregado corretamente.");
             }
         });
 
         function obterTodosDadosConsolidados() {
             let consolidado = [];
-            if (typeof listaJsonsCache !== 'undefined') {
-                listaJsonsCache.forEach(arq => {
+            let dadosCache = (typeof listaJsonsCache !== 'undefined') ? listaJsonsCache : (window.listaJsonsCache || []);
+            
+            if (dadosCache && Array.isArray(dadosCache)) {
+                dadosCache.forEach(arq => {
                     if (arq.dados && Array.isArray(arq.dados)) {
                         consolidado = consolidado.concat(arq.dados);
                     }
@@ -471,13 +476,11 @@
                 if (lapsValidas.length > 1) {
                     let media = lapsValidas.reduce((a,b)=>a+b, 0) / lapsValidas.length;
                     let variancia = lapsValidas.reduce((sum, t) => sum + Math.pow(t - media, 2), 0) / lapsValidas.length;
-                    // Se o piloto já tiver registro, fazemos uma média dos desvios ou guardamos o menor
                     if (!desviosGrid[d.piloto]) desviosGrid[d.piloto] = [];
                     desviosGrid[d.piloto].push(Math.sqrt(variancia));
                 }
             });
 
-            // Média dos desvios por piloto no geral
             let desvioMedioPiloto = {};
             for (let p in desviosGrid) {
                 let soma = desviosGrid[p].reduce((a,b)=>a+b, 0);
@@ -579,7 +582,6 @@
             if (temMaisVitorias) {
                 badgesHtml += `<div class="badge-achievement silver">🏆 Premiação: Maior Número de Vitórias (${vitorias} vitórias)</div>`;
             }
-            // Consistência Exclusiva
             if (nomePiloto === pilotoMaisConsistente && totalCorridas > 0) {
                 badgesHtml += `<div class="badge-achievement green-tag">🎯 Premiação: Piloto Mais Consistente (Desvio: ±${menorDesvioGlobal.toFixed(3).replace('.',',')}s)</div>`;
             }
@@ -995,7 +997,7 @@
             
             itensBateria.sort((a, b) => (parseInt(a.pos) || 99) - (parseInt(b.pos) || 99));
             itensBateria.forEach(d => {
-                textoResumo += `${d.pos} - ${d.piloto} (${d.voltasTotais} voltas | Melhor: ${d.melhorVoltaTxt})\n`;
+                textoResumo += `${d.pos} - ${d.piloto}\n`;
             });
             
             textoResumo += `\n_Confira todos os gráficos e detalhes no painel Krathus Racing!_`;
