@@ -2,20 +2,38 @@ function parsearTextoConvertido(texto, sessaoNome, batKey) {
     let pilotosMap = {};
     let linhas = texto.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
     
-    // 1. Extração cirúrgica dos pilotos na tabela de resumo inicial do ZRound
-    // Identifica linhas que possuem o formato: [Numero/Ordem] | [Nome do Piloto] | [Posicao] | [Voltas] | [TempoTotal]
+    let modoResumo = false;
+    let modoVoltas = false;
+    let ordemPilotos = [];
+
+    // 1. Varredura inteligente baseada nas seções reais do relatório do ZRound
     linhas.forEach(linha => {
         let partes = linha.split(/[\s|]+/).filter(Boolean);
-        // Exemplo: ["02", "DJ", "1", "29", "06:11,204"] ou ["01", "Ronaldo", "2", "26", ...]
-        if (partes.length >= 5) {
-            let idOrdem = partes[0];
+        if (partes.length === 0) return;
+
+        // Detecta o início da tabela de resumo dos pilotos
+        if (partes.includes("Piloto") && partes.includes("Voltas")) {
+            modoResumo = true;
+            modoVoltas = false;
+            return;
+        }
+
+        // Detecta o início da tabela de voltas individuais
+        if (linha.startsWith("Voltas por piloto") || (partes.includes("Num.") && modoResumo)) {
+            modoResumo = false;
+            modoVoltas = true;
+            return;
+        }
+
+        // Se estivermos na tabela de resumo, captura o nome exato do piloto e dados gerais
+        if (modoResumo && /^\d{2}$/.test(partes[0])) {
+            let numOrdem = partes[0];
             let possivelPiloto = partes[1];
             let possivelPos = partes[2];
             let possivelVoltas = partes[3];
-            let possivelTempo = partes[4];
+            let possivelTempo = partes[4] || "00:00,000";
 
-            // Garante que o ID de ordem é um número de linha e o piloto NÃO é um número
-            if (/^\d{2}$/.test(idOrdem) && isNaN(possivelPiloto) && /^\d+º?$/.test(possivelPos)) {
+            if (isNaN(possivelPiloto) && /^\d+º?$/.test(possivelPos)) {
                 let pilotoNome = possivelPiloto;
                 let posStr = possivelPos.includes('º') ? possivelPos : possivelPos + 'º';
 
@@ -35,32 +53,23 @@ function parsearTextoConvertido(texto, sessaoNome, batKey) {
                     badgeColor: "#ffb703",
                     laps: []
                 };
+                ordemPilotos.push(pilotoNome);
             }
         }
-    });
 
-    let pilotoNomes = Object.keys(pilotosMap);
-
-    // 2. Extração rigorosa das voltas individuais na tabela inferior (iniciada por número de volta)
-    let capturandoVoltas = false;
-    linhas.forEach(linha => {
-        let partes = linha.split(/[\s|]+/).filter(Boolean);
-        if (partes.length > 0 && partes[0] === "Num.") {
-            capturandoVoltas = true;
-            return;
-        }
-        if (capturandoVoltas && partes.length >= 2 && /^\d+$/.test(partes[0])) {
+        // Se estivermos na tabela de voltas, lê o número da volta e distribui para os pilotos na ordem correta
+        if (modoVoltas && /^\d+$/.test(partes[0])) {
             let numVolta = parseInt(partes[0], 10);
-            
             let colIdx = 1;
-            pilotoNomes.forEach(pName => {
+
+            ordemPilotos.forEach(pName => {
                 while (colIdx < partes.length) {
                     let token = partes[colIdx];
-                    // Aceita formatos de tempo válidos em segundos (ex: 14,629 ou 03:25,1)
-                    if (token && (/\d+[,.]\d+/.test(token) || /\d+:\d+[,.]\d+/.test(token))) {
+                    // Identifica tempos válidos (ex: 14,629 ou 03:25,1) ignorando hífens ou traços
+                    if (token && token !== "-" && (/\d+[,.]\d+/.test(token) || /\d+:\d+[,.]\d+/.test(token))) {
                         let tempoLimpo = token.split('-')[0].trim();
                         let tempoNum = 0;
-                        
+
                         if (tempoLimpo.includes(':')) {
                             let partesTempo = tempoLimpo.split(':');
                             let minutos = parseInt(partesTempo[0], 10);
@@ -82,12 +91,11 @@ function parsearTextoConvertido(texto, sessaoNome, batKey) {
         }
     });
 
-    // 3. Processamento de estatísticas finais (melhor volta, média, desvio padrão)
     let resultadoFinal = [];
     let coresBadge = ["#ffb703", "#e76f51", "#2ec4b6", "#3a86ff", "#e63946"];
     let contador = 0;
 
-    pilotoNomes.forEach(pName => {
+    Object.keys(pilotosMap).forEach(pName => {
         let pObj = pilotosMap[pName];
         pObj.laps = pObj.laps.filter(val => val !== undefined && !isNaN(val));
 
