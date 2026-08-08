@@ -1,4 +1,4 @@
-// Função robusta para processar o PDF do ZRound e estruturar perfeitamente para o Firebase
+// Função robusta para processar o PDF do ZRound e capturar TODAS as voltas sem limite
 window.processarUploadEEnviarNuvem = async function() {
     const input = document.getElementById('input-pdf-upload');
     if (!input.files || input.files.length === 0) {
@@ -14,15 +14,11 @@ window.processarUploadEEnviarNuvem = async function() {
         const arquivo = input.files[i];
         const nomeArq = arquivo.name;
         
-        // Extrai o nome limpo da sessão (ex: "08-08-26 Bateria (11)")
         const sessaoNome = nomeArq.replace(/\.[^/.]+$/, "").trim();
         const batKey = "bat_" + sessaoNome.toLowerCase().replace(/[^a-z0-9]/g, "_");
 
         try {
-            // Leitura do conteúdo do PDF usando FileReader
             const textoPdf = await lerTextoDoPdf(arquivo);
-            
-            // Extração estruturada dos dados do ZRound a partir do texto do PDF
             const dadosExtraidos = parsearRelatorioZRound(textoPdf, sessaoNome, batKey);
 
             const novoRegistro = {
@@ -32,9 +28,8 @@ window.processarUploadEEnviarNuvem = async function() {
                 dados: dadosExtraidos
             };
 
-            // Salva diretamente na nuvem do Firebase no nó 'baterias'
             await db.ref('baterias').push(novoRegistro);
-            console.log(`Sessão "${sessaoNome}" processada e salva na nuvem com sucesso!`);
+            console.log(`Sessão "${sessaoNome}" salva com todas as voltas na nuvem!`);
 
         } catch (err) {
             console.error("Erro ao processar o arquivo " + nomeArq, err);
@@ -42,17 +37,15 @@ window.processarUploadEEnviarNuvem = async function() {
         }
     }
 
-    alert("Todos os relatórios PDF foram processados e salvos na nuvem com sucesso!");
+    alert("Relatórios processados com sucesso e todas as voltas foram enviadas para a nuvem!");
     input.value = "";
     if (typeof atualizarListaUploadHistorico === 'function') atualizarListaUploadHistorico();
 };
 
-// Leitor auxiliar de texto de PDF no navegador
 function lerTextoDoPdf(arquivo) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = function() {
-            // Como os relatórios do ZRound gerados possuem texto legível, extraímos as strings brutas
             resolve(reader.result);
         };
         reader.onerror = reject;
@@ -60,15 +53,12 @@ function lerTextoDoPdf(arquivo) {
     });
 }
 
-// Parser inteligente para extrair os pilotos, tempos totais e todas as voltas (laps) do ZRound
+// Parser blindado para varrer e capturar 100% das voltas do PDF do ZRound
 function parsearRelatorioZRound(texto, sessaoNome, batKey) {
     let pilotosMap = {};
-    
-    // Identifica blocos de pilotos e tempos principais no formato do ZRound
-    // Exemplo: 02 | Raphael | 1 | 32 | 05:51,829 ... 08,812 (26) | 10,995 01,577...
     let linhas = texto.split(/\r?\n/);
     
-    // Coleta piloto, posição, tempo total e melhor volta
+    // 1. Identifica os nomes dos pilotos no cabeçalho da tabela de resumo
     linhas.forEach(linha => {
         let partes = linha.split('|').map(p => p.trim());
         if (partes.length >= 5) {
@@ -77,7 +67,6 @@ function parsearRelatorioZRound(texto, sessaoNome, batKey) {
             let possivelVoltas = partes[3];
             let possivelTempoTot = partes[4];
 
-            // Valida se é uma linha de piloto válida do ZRound
             if (possivelPos && (possivelPos.endsWith('º') || !isNaN(possivelPos)) && isNaN(possivelPiloto)) {
                 let pilotoNome = possivelPiloto;
                 let posStr = possivelPos.includes('º') ? possivelPos : possivelPos + 'º';
@@ -102,35 +91,43 @@ function parsearRelatorioZRound(texto, sessaoNome, batKey) {
         }
     });
 
-    // Se o parser padrão encontrar pilotos, extrai as voltas individuais (laps) da tabela sequencial do ZRound
-    // O ZRound lista as voltas no formato: Num | Piloto1 | Piloto2 ... (ex: "1 | 09,838-02 | 12,222-02")
-    let capturandoVoltas = false;
+    let pilotoKeys = Object.keys(pilotosMap);
+
+    // 2. Varre linha por linha procurando a tabela volta a volta de forma irrestrita
     linhas.forEach(linha => {
         let partes = linha.split('|').map(p => p.trim());
-        if (partes.length >= 3 && !isNaN(partes[0])) {
-            // Linha de volta individual (ex: coluna 0 = número da volta, colunas seguintes = tempos dos pilotos)
-            let pilotoKeys = Object.keys(pilotosMap);
-            for (let idx = 0; idx < pilotoKeys.length; idx++) {
-                let pName = pilotoKeys[idx];
+        // Linhas de voltas começam com o número da volta (ex: "1", "2", ... "500")
+        if (partes.length >= 2 && !isNaN(partes[0]) && partes[0] !== "") {
+            let numVolta = parseInt(partes[0], 10);
+            
+            // Para cada piloto mapeado, verifica se há tempo correspondente na coluna da tabela
+            pilotoKeys.forEach((pName, idx) => {
                 let colunaIndex = idx + 1;
-                if (partes[colunaIndex]) {
-                    let lapTexto = partes[colunaIndex].split('-')[0].trim(); // Remove sufixos de piloto se houver
+                if (partes[colunaIndex] && partes[colunaIndex] !== "") {
+                    let celula = partes[colunaIndex];
+                    // Remove eventuais marcadores adicionais e limpa para converter o formato de tempo
+                    let lapTexto = celula.split('-')[0].trim();
                     let tempoNum = parseFloat(lapTexto.replace(',', '.'));
+                    
                     if (!isNaN(tempoNum) && tempoNum > 0) {
-                        pilotosMap[pName].laps.push(tempoNum);
+                        // Insere o tempo garantindo que a posição do array corresponda exatamente à volta
+                        pilotosMap[pName].laps[numVolta - 1] = tempoNum;
                     }
                 }
-            }
+            });
         }
     });
 
-    // Pós-processamento de cada piloto (calcula melhor volta, média e desvio padrão reais)
+    // 3. Limpa eventuais buracos de array e calcula métricas finais para cada piloto
     let resultadoFinal = [];
     let coresBadge = ["#ffb703", "#e76f51", "#2ec4b6", "#3a86ff", "#e63946"];
     let contador = 0;
 
-    for (let pName in pilotosMap) {
+    pilotoKeys.forEach(pName => {
         let pObj = pilotosMap[pName];
+        // Remove valores vazios caso haja saltos
+        pObj.laps = pObj.laps.filter(val => val !== undefined && !isNaN(val));
+
         if (pObj.laps.length > 0) {
             let melhor = Math.min(...pObj.laps);
             let soma = pObj.laps.reduce((a, b) => a + b, 0);
@@ -146,30 +143,11 @@ function parsearRelatorioZRound(texto, sessaoNome, batKey) {
             pObj.desvio = `±${desvio.toFixed(3).replace('.', ',')}s`;
             pObj.voltasTotais = pObj.laps.length;
         }
+
         pObj.badgeColor = coresBadge[contador % coresBadge.length];
         contador++;
         resultadoFinal.push(pObj);
-    }
-
-    // Fallback caso o PDF venha com estrutura customizada: garante que nunca retorne vazio
-    if (resultadoFinal.length === 0) {
-        resultadoFinal.push({
-            pos: "1º",
-            piloto: "Raphael",
-            bateriaKey: batKey,
-            sessao: sessaoNome,
-            voltasTotais: 1,
-            tempoTotal: "05:00,000",
-            melhorVoltaVal: 10.0,
-            melhorVoltaTxt: "10,000s",
-            mediaVal: 10.0,
-            mediaTxt: "10,000s",
-            desvioVal: 0.0,
-            desvio: "±0,000s",
-            badgeColor: "#ffb703",
-            laps: [10.0]
-        });
-    }
+    });
 
     return resultadoFinal;
 }
