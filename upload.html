@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Krathus Racing - Gestão e Upload de Relatórios PDF</title>
+    <title>Krathus Racing - Central de Telemetria e Upload em Nuvem</title>
     <!-- Firebase SDK (Compat) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
@@ -60,16 +60,16 @@
     <div class="container">
         <header class="header">
             <div class="brand-title">
-                <h1>📂 Central de Upload de Relatórios PDF</h1>
-                <p>Krathus Racing - Firebase Cloud</p>
+                <h1>📂 Central de Upload e Gestão de Relatórios PDF</h1>
+                <p>Krathus Racing - Firebase Cloud Realtime</p>
             </div>
             <a href="index.html" class="btn-voltar">⬅️ Voltar ao Painel Principal</a>
         </header>
 
         <div class="card">
-            <div class="card-header">🚀 Enviar Novos Relatórios PDF</div>
+            <div class="card-header">🚀 Enviar e Processar Relatórios PDF</div>
             <div class="upload-box">
-                <p style="font-size: 0.88rem; color: var(--text-muted);">Selecione os arquivos PDF gerados pelo ZRound. O sistema extrairá 100% das voltas e pilotos para a nuvem.</p>
+                <p style="font-size: 0.88rem; color: var(--text-muted);">Selecione os arquivos PDF oficiais do ZRound. O sistema extrairá rigorosamente todos os pilotos e 100% das voltas para a nuvem.</p>
                 <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
                     <input type="file" id="input-pdf-upload" accept=".pdf" multiple style="background: var(--bg-card); padding: 8px; border-radius: 6px; border: 1px solid var(--border-card); color: var(--text-main); flex: 1;">
                     <button class="btn btn-upload-global" onclick="processarUploadEEnviarNuvem()">Processar e Enviar para Nuvem</button>
@@ -81,13 +81,13 @@
             <div class="card">
                 <div class="card-header">📋 Arquivos Carregados na Nuvem</div>
                 <ul id="upload-lista-historico">
-                    <li>Carregando...</li>
+                    <li>Carregando dados...</li>
                 </ul>
             </div>
 
             <div class="card">
                 <div class="card-header">🔍 Visualizador de Estrutura do JSON</div>
-                <pre id="upload-json-viewer">Selecione "Inspecionar" em um arquivo ao lado...</pre>
+                <pre id="upload-json-viewer">Selecione "Inspecionar" em um arquivo ao lado para ver a estrutura...</pre>
             </div>
         </div>
     </div>
@@ -201,6 +201,7 @@
             let pilotosMap = {};
             let linhas = texto.split(/\r?\n/);
             
+            // 1. Mapeia todos os pilotos presentes no relatório
             linhas.forEach(linha => {
                 let partes = linha.split('|').map(p => p.trim());
                 if (partes.length >= 4) {
@@ -235,6 +236,7 @@
 
             let pilotoNomes = Object.keys(pilotosMap);
 
+            // 2. Extrai rigorosamente todas as voltas da tabela de voltas individuais
             linhas.forEach(linha => {
                 let partes = linha.split('|').map(p => p.trim());
                 if (partes.length >= 2 && /^\d+$/.test(partes[0])) {
