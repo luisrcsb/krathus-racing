@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MANTA | Gestão de Obra</title>
+    <!-- Tailwind CSS para design responsivo e fluido em celulares -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Firebase SDK Modular -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        
+        // CONFIGURAÇÃO DO SEU FIREBASE (Substitua pelas chaves do seu projeto)
+        const firebaseConfig = {
+            apiKey: "SUA_API_KEY",
+            authDomain: "SEU_AUTH_DOMAIN",
+            projectId: "SEU_PROJECT_ID",
+            storageBucket: "SEU_STORAGE_BUCKET",
+            messagingSenderId: "SEU_SENDER_ID",
+            appId: "SEU_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        
+        // Expondo funções para o escopo global do navegador
+        window.db = db;
+        window.collection = collection;
+        window.addDoc = addDoc;
+        window.getDocs = getDocs;
+        window.deleteDoc = deleteDoc;
+        window.doc = doc;
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600&display=swap');
+        body { font-family: 'Manrope', sans-serif; background-color: #fcfcfc; }
+        .manta-dark { background-color: #002e26; color: white; }
+        .manta-sage { background-color: #9db2a2; color: #002e26; }
+    </style>
+</head>
+<body class="p-4 md:p-8 flex justify-center items-center min-h-screen">
+    
+    <div class="w-full max-w-md bg-white shadow-xl border border-gray-200 rounded-lg overflow-hidden">
+        
+        <!-- Cabeçalho Institucional Manta -->
+        <header class="manta-dark p-6 text-center">
+            <h1 class="text-3xl font-light tracking-[0.25em]">MANTA</h1>
+            <p class="text-[10px] uppercase tracking-[0.3em] mt-1 text-gray-300">Eco Retreat - Gestão de Obra</p>
+        </header>
+
+        <!-- Etapa 1: Tela de Login Protegida por Senha -->
+        <div id="login-section" class="p-6 space-y-4">
+            <p class="text-xs text-gray-600 text-center uppercase tracking-wider">Área restrita de controle</p>
+            <input type="password" id="password" placeholder="Senha de Acesso" class="w-full p-3 border border-gray-300 rounded text-sm focus:outline-none focus:border-[#002e26]">
+            <button onclick="login()" class="w-full manta-dark py-3 uppercase text-xs font-bold tracking-widest rounded transition hover:opacity-90">Entrar no Sistema</button>
+        </div>
+
+        <!-- Etapa 2: Aplicação Principal (Oculta até o login) -->
+        <div id="app-section" class="hidden p-6 space-y-6">
+            
+            <!-- Menu de Navegação Interno -->
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="showSection('upload-tab')" class="manta-sage py-2.5 text-xs uppercase font-bold tracking-wider rounded transition">Upload Dados</button>
+                <button onclick="carregarDados(); showSection('inspecao-tab')" class="manta-sage py-2.5 text-xs uppercase font-bold tracking-wider rounded transition">Inspeção / Banco</button>
+            </div>
+            
+            <!-- Aba 1: Upload e Envio -->
+            <div id="upload-tab" class="space-y-4">
+                <label class="block text-xs uppercase font-semibold text-gray-700">Novo Registro / Relatório Diário</label>
+                <input type="file" id="fileInput" class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-[#9db2a2] file:text-[#002e26] hover:file:opacity-80">
+                <button onclick="salvarNoFirebase()" class="w-full manta-dark py-3 uppercase text-xs font-bold tracking-widest rounded shadow">Salvar no Firebase</button>
+                <div id="upload-status" class="text-xs text-center font-medium"></div>
+            </div>
+
+            <!-- Aba 2: Inspeção e Exclusão -->
+            <div id="inspecao-tab" class="hidden space-y-4">
+                <h2 class="text-xs uppercase font-bold tracking-wider text-gray-700">Registros Ativos no Mês</h2>
+                <div id="data-container" class="max-h-52 overflow-y-auto border border-gray-200 p-2 text-xs space-y-2 bg-gray-50 rounded">
+                    Carregando registros...
+                </div>
+                <div class="space-y-2 pt-2 border-t">
+                    <input type="text" id="deleteId" placeholder="Cole o ID do registro para exclusão" class="w-full p-2 text-xs border border-gray-300 rounded">
+                    <button onclick="excluirRegistro()" class="w-full bg-red-700 text-white py-2.5 uppercase text-xs font-bold tracking-widest rounded hover:bg-red-800 transition">Excluir Registro</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Função de verificação de senha
+        function login() {
+            const pwd = document.getElementById('password').value;
+            if(pwd === 'manta2026') {
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('app-section').classList.remove('hidden');
+            } else {
+                alert('Senha incorreta.');
+            }
+        }
+
+        // Alternância de abas
+        function showSection(sectionId) {
+            document.getElementById('upload-tab').classList.add('hidden');
+            document.getElementById('inspecao-tab').classList.add('hidden');
+            document.getElementById(sectionId).classList.remove('hidden');
+        }
+
+        const mesVigente = "AGOSTO.2026";
+
+        // Envio estruturado para o Firebase Firestore
+        async function salvarNoFirebase() {
+            const statusDiv = document.getElementById('upload-status');
+            statusDiv.innerText = "Processando e enviando dados...";
+            
+            try {
+                await window.addDoc(window.collection(window.db, `obra_manta_${mesVigente}`), {
+                    dataRegistro: new Date().toISOString(),
+                    status: "Sincronizado via Web",
+                    empreendimento: "Manta Eco Retreat"
+                });
+                statusDiv.innerText = "Salvo com sucesso no Firebase!";
+                statusDiv.className = "text-xs text-center font-medium text-green-700";
+            } catch (error) {
+                statusDiv.innerText = "Erro ao salvar: " + error.message;
+                statusDiv.className = "text-xs text-center font-medium text-red-700";
+            }
+        }
+
+        // Inspeção de dados do banco
+        async function carregarDados() {
+            const container = document.getElementById('data-container');
+            container.innerHTML = "Buscando dados no Firebase...";
+            try {
+                const querySnapshot = await window.getDocs(window.collection(window.db, `obra_manta_${mesVigente}`));
+                container.innerHTML = "";
+                if(querySnapshot.empty) {
+                    container.innerHTML = "<p class='text-gray-500 text-center py-4'>Nenhum registro encontrado.</p>";
+                    return;
+                }
+                querySnapshot.forEach((doc) => {
+                    container.innerHTML += `<div class='p-2 bg-white border rounded flex justify-between items-center'><span><b>ID:</b> ${doc.id}</span></div>`;
+                });
+            } catch (error) {
+                container.innerHTML = "Erro ao carregar os registros.";
+            }
+        }
+
+        // Exclusão de registro específico por ID
+        async function excluirRegistro() {
+            const id = document.getElementById('deleteId').value;
+            if(!id) {
+                alert("Por favor, informe o ID do documento.");
+                return;
+            }
+            try {
+                await window.deleteDoc(window.doc(window.db, `obra_manta_${mesVigente}`, id));
+                alert("Registro excluído com sucesso!");
+                carregarDados();
+            } catch (error) {
+                alert("Erro ao excluir: " + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
