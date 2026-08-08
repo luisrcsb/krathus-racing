@@ -3,10 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Krathus Racing - Central de Telemetria</title>
+    <title>Krathus Racing - Central de Telemetria e Upload</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <!-- PDF.js para leitura completa de relatórios PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
     <style>
         :root {
             --bg-body: #0d111a;
@@ -37,7 +42,7 @@
         .btn-text-action:hover { text-decoration: underline; }
 
         .btn-pdf-global { background: linear-gradient(135deg, #ff5722 0%, #e63946 100%); color: #ffffff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; }
-        .btn-upload-global { background: linear-gradient(135deg, #3a86ff 0%, #2ec4b6 100%); color: #ffffff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; text-decoration: none; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px;}
+        .btn-upload-global { background: linear-gradient(135deg, #3a86ff 0%, #2ec4b6 100%); color: #ffffff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; }
         
         .btn-share { background: rgba(58, 134, 255, 0.15); color: var(--accent-blue); border: 1px solid var(--accent-blue); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; }
         .btn-like { background: rgba(230, 57, 70, 0.15); color: var(--accent-red); border: 1px solid var(--accent-red); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; }
@@ -46,27 +51,11 @@
         .piloto-link:hover { color: var(--accent-gold); text-decoration: underline; }
 
         #piloto-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background-color: rgba(13, 17, 26, 0.88);
-            z-index: 10000;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            overflow-y: auto;
+            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: rgba(13, 17, 26, 0.88); z-index: 10000; justify-content: center; align-items: center; padding: 20px; overflow-y: auto;
         }
         .modal-content {
-            background: var(--bg-card);
-            border: 1px solid var(--border-card);
-            border-top: 5px solid var(--accent-gold);
-            border-radius: 14px;
-            width: 100%;
-            max-width: 1000px;
-            max-height: 90vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            background: var(--bg-card); border: 1px solid var(--border-card); border-top: 5px solid var(--accent-gold); border-radius: 14px; width: 100%; max-width: 1000px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden;
         }
         .modal-header { padding: 20px 24px; background: var(--bg-card-header); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-card); }
         .modal-title { font-size: 1.25rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 10px; }
@@ -78,7 +67,6 @@
         .dossier-kpi-label { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
         .dossier-kpi-value { font-size: 1.25rem; font-weight: 700; color: var(--accent-gold); }
 
-        .tab-content { display: flex; flex-direction: column; gap: 20px; }
         .filters-card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 18px; }
         .filters-grid { display: grid; grid-template-columns: 1fr 1fr 1.3fr; gap: 20px; }
         .filter-group { display: flex; flex-direction: column; gap: 12px; }
@@ -88,6 +76,14 @@
         .checkbox-container { background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 10px; max-height: 150px; overflow-y: auto; }
         .checkbox-item { display: flex; align-items: center; gap: 10px; font-size: 0.88rem; color: var(--text-main); cursor: pointer; }
         .checkbox-item input[type="checkbox"] { accent-color: var(--accent-red); width: 16px; height: 16px; cursor: pointer; }
+
+        /* Quadro de Upload Integrado */
+        .upload-section-box { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
+        .upload-grid-manager { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .upload-box { background: var(--bg-input); border: 1px dashed var(--border-card); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+        ul#upload-lista-historico { list-style: none; display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; padding-right: 4px; }
+        ul#upload-lista-historico li { background: var(--bg-input); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-card); display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; }
+        pre#upload-json-viewer { background: var(--bg-body); color: var(--accent-green); padding: 12px; border-radius: 6px; font-size: 0.75rem; max-height: 200px; overflow: auto; border: 1px solid var(--border-card); line-height: 1.4; }
 
         .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
         .kpi-card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; justify-content: space-between; }
@@ -154,7 +150,7 @@
         @media print {
             body, body * { color: #000000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             body { background-color: #ffffff !important; padding: 10px !important; font-size: 11px !important; }
-            .header-actions, .filters-card, .btn-pdf-global, .btn-upload-global, .comments-section, .welcome-card, #piloto-modal { display: none !important; }
+            .header-actions, .filters-card, .btn-pdf-global, .upload-section-box, .comments-section, #piloto-modal { display: none !important; }
         }
     </style>
 </head>
@@ -174,13 +170,36 @@
         <header class="header">
             <div class="brand-title">
                 <h1>🏁 KRATHUS RACING</h1>
-                <p>Central de Telemetria e Análise de Desempenho (Tempo Real - Nuvem)</p>
+                <p>Central de Telemetria, Upload e Análise de Desempenho</p>
             </div>
             <div class="header-actions">
-                <a href="uploads.html" class="btn-upload-global">📤 Ir para Upload de Relatórios PDF</a>
                 <button class="btn btn-pdf-global" onclick="gerarRelatórioPDF()">📄 Gerar Relatório PDF Completo</button>
             </div>
         </header>
+
+        <!-- 📤 QUADRO DE UPLOAD DE RELATÓRIOS INTEGRADO DIRETAMENTE NO INDEX -->
+        <section class="upload-section-box">
+            <div class="card-header">📤 Central de Upload de Relatórios PDF (ZRound)</div>
+            <div class="upload-grid-manager">
+                <div class="upload-box">
+                    <p style="font-size: 0.85rem; color: var(--text-muted);">Selecione os relatórios PDF oficiais do ZRound. O sistema converte automaticamente, evita duplicidades e atualiza os gráficos abaixo.</p>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                        <input type="file" id="input-pdf-upload" accept=".pdf" multiple style="background: var(--bg-card); padding: 8px; border-radius: 6px; border: 1px solid var(--border-card); color: var(--text-main); flex: 1; font-size: 0.85rem;">
+                        <button class="btn btn-upload-global" onclick="processarUploadEEnviarNuvem()">Converter e Enviar</button>
+                    </div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Arquivos Carregados na Nuvem</span>
+                    <ul id="upload-lista-historico">
+                        <li>Carregando arquivos...</li>
+                    </ul>
+                </div>
+            </div>
+            <div style="margin-top: 5px;">
+                <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Inspetor de Estrutura JSON</span>
+                <pre id="upload-json-viewer">Selecione "Inspecionar" em um arquivo ao lado para visualizar os dados...</pre>
+            </div>
+        </section>
 
         <div id="tab-telemetria" class="tab-content">
             <section class="filters-card">
@@ -248,7 +267,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.5.0 (Painel Completo)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.6.0 (Painel Unificado)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -330,10 +349,251 @@
                     });
 
                     gerarFiltrosDinamicos();
+                    atualizarListaUploadHistorico();
                     atualizarDashboard();
                 });
             }
         });
+
+        // 📤 Função de Conversão e Upload Integrado com Antiduplicação
+        window.processarUploadEEnviarNuvem = async function() {
+            const input = document.getElementById('input-pdf-upload');
+            if (!input.files || input.files.length === 0) {
+                alert("Por favor, selecione ao menos um arquivo PDF.");
+                return;
+            }
+            if (!db) {
+                alert("Erro: Firebase não conectado.");
+                return;
+            }
+
+            let arquivosNovosEnviados = 0;
+            let arquivosDuplicados = [];
+
+            for (let i = 0; i < input.files.length; i++) {
+                const arquivo = input.files[i];
+                const nomeArq = arquivo.name;
+                const sessaoNome = nomeArq.replace(/\.[^/.]+$/, "").trim();
+                const batKey = "bat_" + sessaoNome.toLowerCase().replace(/[^a-z0-9]/g, "_");
+
+                const jaExiste = listaJsonsCache.some(item => 
+                    (item.sessao && item.sessao.toLowerCase() === sessaoNome.toLowerCase()) || 
+                    item.bateriaKey === batKey
+                );
+
+                if (jaExiste) {
+                    arquivosDuplicados.push(nomeArq);
+                    continue;
+                }
+
+                try {
+                    const textoPdf = await converterPdfParaTexto(arquivo);
+                    const dadosExtraidos = parsearTextoConvertido(textoPdf, sessaoNome, batKey);
+
+                    const novoRegistro = {
+                        bateriaKey: batKey,
+                        sessao: sessaoNome,
+                        id: Date.now() + i,
+                        dados: dadosExtraidos
+                    };
+
+                    await db.ref('baterias').push(novoRegistro);
+                    arquivosNovosEnviados++;
+                } catch (err) {
+                    console.error("Erro ao processar PDF:", err);
+                    alert("Erro ao converter o arquivo " + nomeArq + ": " + err.message);
+                }
+            }
+
+            if (arquivosNovosEnviados > 0 && arquivosDuplicados.length === 0) {
+                alert("Relatório(s) PDF processado(s) e salvo(s) na nuvem com sucesso!");
+            } else if (arquivosNovosEnviados > 0 && arquivosDuplicados.length > 0) {
+                alert(`Processado com sucesso! ${arquivosDuplicados.length} arquivo(s) foram ignorados por já existirem na nuvem.`);
+            } else if (arquivosDuplicados.length > 0) {
+                alert(`⚠️ Envio cancelado: O(s) arquivo(s) já está(ão) cadastrado(s) na nuvem! Sem duplicações.`);
+            }
+
+            input.value = "";
+        };
+
+        async function converterPdfParaTexto(arquivo) {
+            const arrayBuffer = await arquivo.arrayBuffer();
+            const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+            const pdfDoc = await loadingTask.promise;
+            let textoCompleto = "";
+
+            for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+                const pagina = await pdfDoc.getPage(pageNum);
+                const tokenTextos = await pagina.getTextContent();
+                let linhasY = {};
+                
+                tokenTextos.items.forEach(item => {
+                    let y = Math.round(item.transform[5] / 4) * 4;
+                    if (!linhasY[y]) linhasY[y] = [];
+                    linhasY[y].push({ x: item.transform[4], str: item.str });
+                });
+
+                let coordenadasYOrdenadas = Object.keys(linhasY).sort((a, b) => b - a);
+                coordenadasYOrdenadas.forEach(y => {
+                    let linhaItens = linhasY[y].sort((a, b) => a.x - b.x);
+                    let linhaStr = linhaItens.map(i => i.str).join(" | ");
+                    textoCompleto += linhaStr + "\n";
+                });
+            }
+            return textoCompleto;
+        }
+
+        function parsearTextoConvertido(texto, sessaoNome, batKey) {
+            let pilotosMap = {};
+            let linhas = texto.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+            
+            let modoResumo = false;
+            let modoVoltas = false;
+            let ordemPilotos = [];
+
+            linhas.forEach(linha => {
+                let partes = linha.split(/[\s|]+/).filter(Boolean);
+                if (partes.length === 0) return;
+
+                if (partes.includes("Piloto") && partes.includes("Voltas")) {
+                    modoResumo = true;
+                    modoVoltas = false;
+                    return;
+                }
+
+                if (linha.startsWith("Voltas por piloto") || (partes.includes("Num.") && modoResumo)) {
+                    modoResumo = false;
+                    modoVoltas = true;
+                    return;
+                }
+
+                if (modoResumo && /^\d{2}$/.test(partes[0])) {
+                    let numOrdem = partes[0];
+                    let possivelPiloto = partes[1];
+                    let possivelPos = partes[2];
+                    let possivelVoltas = partes[3];
+                    let possivelTempo = partes[4] || "00:00,000";
+
+                    if (isNaN(possivelPiloto) && /^\d+º?$/.test(possivelPos)) {
+                        let pilotoNome = possivelPiloto;
+                        let posStr = possivelPos.includes('º') ? possivelPos : possivelPos + 'º';
+
+                        pilotosMap[pilotoNome] = {
+                            pos: posStr,
+                            piloto: pilotoNome,
+                            bateriaKey: batKey,
+                            sessao: sessaoNome,
+                            voltasTotais: parseInt(possivelVoltas) || 0,
+                            tempoTotal: possivelTempo,
+                            melhorVoltaVal: 0,
+                            melhorVoltaTxt: "00,000s",
+                            mediaVal: 0,
+                            mediaTxt: "00,000s",
+                            desvioVal: 0,
+                            desvio: "±0,000s",
+                            badgeColor: "#ffb703",
+                            laps: []
+                        };
+                        ordemPilotos.push(pilotoNome);
+                    }
+                }
+
+                if (modoVoltas && /^\d+$/.test(partes[0])) {
+                    let numVolta = parseInt(partes[0], 10);
+                    let colIdx = 1;
+
+                    ordemPilotos.forEach(pName => {
+                        while (colIdx < partes.length) {
+                            let token = partes[colIdx];
+                            if (token && token !== "-" && (/\d+[,.]\d+/.test(token) || /\d+:\d+[,.]\d+/.test(token))) {
+                                let tempoLimpo = token.split('-')[0].trim();
+                                let tempoNum = 0;
+
+                                if (tempoLimpo.includes(':')) {
+                                    let partesTempo = tempoLimpo.split(':');
+                                    let minutos = parseInt(partesTempo[0], 10);
+                                    let segundos = parseFloat(partesTempo[1].replace(',', '.'));
+                                    tempoNum = (minutos * 60) + segundos;
+                                } else {
+                                    tempoNum = parseFloat(tempoLimpo.replace(',', '.'));
+                                }
+
+                                if (!isNaN(tempoNum) && tempoNum > 0) {
+                                    pilotosMap[pName].laps[numVolta - 1] = parseFloat(tempoNum.toFixed(3));
+                                    colIdx++;
+                                    break;
+                                }
+                            }
+                            colIdx++;
+                        }
+                    });
+                }
+            });
+
+            let resultadoFinal = [];
+            let coresBadge = ["#ffb703", "#e76f51", "#2ec4b6", "#3a86ff", "#e63946"];
+            let contador = 0;
+
+            Object.keys(pilotosMap).forEach(pName => {
+                let pObj = pilotosMap[pName];
+                pObj.laps = pObj.laps.filter(val => val !== undefined && !isNaN(val));
+
+                if (pObj.laps.length > 0) {
+                    let melhor = Math.min(...pObj.laps);
+                    let soma = pObj.laps.reduce((a, b) => a + b, 0);
+                    let media = soma / pObj.laps.length;
+                    let variancia = pObj.laps.reduce((sum, t) => sum + Math.pow(t - media, 2), 0) / pObj.laps.length;
+                    let desvio = Math.sqrt(variancia);
+
+                    pObj.melhorVoltaVal = parseFloat(melhor.toFixed(3));
+                    pObj.melhorVoltaTxt = melhor.toFixed(3).replace('.', ',') + 's';
+                    pObj.mediaVal = parseFloat(media.toFixed(3));
+                    pObj.mediaTxt = media.toFixed(3).replace('.', ',') + 's';
+                    pObj.desvioVal = parseFloat(desvio.toFixed(3));
+                    pObj.desvio = `±${desvio.toFixed(3).replace('.', ',')}s`;
+                    pObj.voltasTotais = pObj.laps.length;
+                }
+
+                pObj.badgeColor = coresBadge[contador % coresBadge.length];
+                contador++;
+                resultadoFinal.push(pObj);
+            });
+
+            return resultadoFinal;
+        }
+
+        function atualizarListaUploadHistorico() {
+            const ul = document.getElementById('upload-lista-historico');
+            if (!ul) return;
+            ul.innerHTML = "";
+            if (!listaJsonsCache || listaJsonsCache.length === 0) {
+                ul.innerHTML = `<li style="color: var(--text-muted); text-align: center; padding: 6px;">Nenhum arquivo na nuvem.</li>`;
+                return;
+            }
+            listaJsonsCache.forEach((item, index) => {
+                let nomeExibicao = item.sessao || `ID ${item.id}`;
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span>📄 <strong>${nomeExibicao}</strong></span>
+                    <div style="display: flex; gap: 6px;">
+                        <button class="btn-text-action" onclick="inspecionarJsonUpload(${index})">🔍 Inspecionar</button>
+                        <button class="btn-text-action" style="color: var(--accent-red);" onclick="excluirArquivoNuvem('${item.firebaseKey}', '${nomeExibicao}')">🗑️ Excluir</button>
+                    </div>`;
+                ul.appendChild(li);
+            });
+        }
+
+        window.inspecionarJsonUpload = function(index) {
+            const item = listaJsonsCache[index];
+            if (item) document.getElementById('upload-json-viewer').textContent = JSON.stringify(item, null, 4);
+        };
+
+        window.excluirArquivoNuvem = function(firebaseKey, nomeExibicao) {
+            if (!db) return;
+            if (confirm(`Deseja excluir "${nomeExibicao}" da nuvem?`)) {
+                db.ref('baterias/' + firebaseKey).remove().then(() => alert("Excluído com sucesso!"));
+            }
+        };
 
         function obterTodosDadosConsolidados() {
             let consolidado = [];
@@ -383,10 +643,10 @@
             `).join('');
         }
 
-        function limparSelecao(classeFiltro) {
+        window.limparSelecao = function(classeFiltro) {
             document.querySelectorAll(`.${classeFiltro}`).forEach(cb => cb.checked = false);
             atualizarDashboard();
-        }
+        };
 
         window.abrirDossiePiloto = function(nomePiloto) {
             const modal = document.getElementById('piloto-modal');
