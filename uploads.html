@@ -1,124 +1,354 @@
-function parsearTextoConvertido(texto, sessaoNome, batKey) {
-    let pilotosMap = {};
-    let linhas = texto.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-    
-    let modoResumo = false;
-    let modoVoltas = false;
-    let ordemPilotos = [];
-
-    // 1. Varredura inteligente baseada nas seções reais do relatório do ZRound
-    linhas.forEach(linha => {
-        let partes = linha.split(/[\s|]+/).filter(Boolean);
-        if (partes.length === 0) return;
-
-        // Detecta o início da tabela de resumo dos pilotos
-        if (partes.includes("Piloto") && partes.includes("Voltas")) {
-            modoResumo = true;
-            modoVoltas = false;
-            return;
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Krathus Racing - Central de Upload e Gestão de Relatórios PDF</title>
+    <!-- Firebase SDK (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <!-- PDF.js para conversão e leitura de texto do PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+    <style>
+        :root {
+            --bg-body: #0d111a;
+            --bg-card: #151c28;
+            --bg-card-header: #1c2638;
+            --bg-input: #1c263b;
+            --border-card: #222d42;
+            --text-title: #ffffff;
+            --text-main: #d0d7e3;
+            --text-muted: #8492a6;
+            --accent-red: #e63946;
+            --accent-green: #2ec4b6;
+            --accent-gold: #ffb703;
+            --accent-blue: #3a86ff;
         }
 
-        // Detecta o início da tabela de voltas individuais
-        if (linha.startsWith("Voltas por piloto") || (partes.includes("Num.") && modoResumo)) {
-            modoResumo = false;
-            modoVoltas = true;
-            return;
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        body { background-color: var(--bg-body); color: var(--text-main); padding: 24px; }
+        .container { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 20px 24px; border-radius: 12px; border: 1px solid var(--border-card); }
+        .brand-title h1 { font-size: 1.3rem; color: var(--text-title); }
+        .brand-title p { font-size: 0.8rem; color: var(--text-muted); }
+
+        .card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .card-header { font-size: 1rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 8px; }
+        
+        .btn { padding: 10px 18px; border-radius: 8px; border: none; font-weight: 600; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: opacity 0.2s; }
+        .btn-upload-global { background: linear-gradient(135deg, #3a86ff 0%, #2ec4b6 100%); color: #ffffff; font-weight: 700; }
+        .btn-text-action { background: transparent; border: none; color: var(--accent-blue); font-size: 0.82rem; font-weight: 600; cursor: pointer; padding: 0; }
+        .btn-text-action:hover { text-decoration: underline; }
+        
+        .upload-box { background: var(--bg-input); border: 1px dashed var(--border-card); border-radius: 8px; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+        .grid-manager { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        
+        ul#upload-lista-historico { list-style: none; display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; padding-right: 4px; }
+        ul#upload-lista-historico li { background: var(--bg-input); padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border-card); display: flex; justify-content: space-between; align-items: center; font-size: 0.88rem; }
+        
+        pre { background: var(--bg-body); color: var(--accent-green); padding: 14px; border-radius: 6px; font-size: 0.78rem; max-height: 300px; overflow: auto; border: 1px solid var(--border-card); line-height: 1.4; }
+        .btn-voltar { background: var(--border-card); color: var(--text-main); text-decoration: none; padding: 8px 14px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; }
+        .btn-voltar:hover { background: var(--bg-input); }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header class="header">
+            <div class="brand-title">
+                <h1>📂 Central de Upload e Gestão de Relatórios PDF</h1>
+                <p>Krathus Racing - Conversão e Processamento Inteligente</p>
+            </div>
+            <a href="index.html" class="btn-voltar">⬅️ Voltar ao Painel Principal</a>
+        </header>
+
+        <div class="card">
+            <div class="card-header">🚀 Enviar e Converter Relatório PDF</div>
+            <div class="upload-box">
+                <p style="font-size: 0.88rem; color: var(--text-muted);">Selecione o PDF do ZRound. O sistema converterá para texto e estruturará todas as voltas e pilotos perfeitamente.</p>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+                    <input type="file" id="input-pdf-upload" accept=".pdf" multiple style="background: var(--bg-card); padding: 8px; border-radius: 6px; border: 1px solid var(--border-card); color: var(--text-main); flex: 1;">
+                    <button class="btn btn-upload-global" onclick="processarUploadEEnviarNuvem()">Converter e Enviar para Nuvem</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-manager">
+            <div class="card">
+                <div class="card-header">📋 Arquivos Carregados na Nuvem</div>
+                <ul id="upload-lista-historico">
+                    <li>Carregando dados...</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <div class="card-header">🔍 Visualizador de Estrutura do JSON Convertido</div>
+                <pre id="upload-json-viewer">Selecione "Inspecionar" em um arquivo ao lado para ver o resultado...</pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDCTkeIa6QsY2zYs8S__HlIwcY-zcuhZCA",
+            authDomain: "krathus-telemetria.firebaseapp.com",
+            projectId: "krathus-telemetria",
+            storageBucket: "krathus-telemetria.firebasestorage.app",
+            messagingSenderId: "1051581039922",
+            appId: "1:1051581039922:web:d8ae00eb4ab45fa3d5432b",
+            measurementId: "G-JPR41S7CZ3",
+            databaseURL: "https://krathus-telemetria-default-rtdb.firebaseio.com"
+        };
+
+        let db = null;
+        let bateriasNuvemCache = [];
+
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.database();
+        } catch (e) {
+            console.error("Erro Firebase:", e);
         }
 
-        // Se estivermos na tabela de resumo, captura o nome exato do piloto e dados gerais
-        if (modoResumo && /^\d{2}$/.test(partes[0])) {
-            let numOrdem = partes[0];
-            let possivelPiloto = partes[1];
-            let possivelPos = partes[2];
-            let possivelVoltas = partes[3];
-            let possivelTempo = partes[4] || "00:00,000";
+        document.addEventListener("DOMContentLoaded", () => {
+            carregarBateriasDaNuvem();
+        });
 
-            if (isNaN(possivelPiloto) && /^\d+º?$/.test(possivelPos)) {
-                let pilotoNome = possivelPiloto;
-                let posStr = possivelPos.includes('º') ? possivelPos : possivelPos + 'º';
-
-                pilotosMap[pilotoNome] = {
-                    pos: posStr,
-                    piloto: pilotoNome,
-                    bateriaKey: batKey,
-                    sessao: sessaoNome,
-                    voltasTotais: parseInt(possivelVoltas) || 0,
-                    tempoTotal: possivelTempo,
-                    melhorVoltaVal: 0,
-                    melhorVoltaTxt: "00,000s",
-                    mediaVal: 0,
-                    mediaTxt: "00,000s",
-                    desvioVal: 0,
-                    desvio: "±0,000s",
-                    badgeColor: "#ffb703",
-                    laps: []
-                };
-                ordemPilotos.push(pilotoNome);
-            }
-        }
-
-        // Se estivermos na tabela de voltas, lê o número da volta e distribui para os pilotos na ordem correta
-        if (modoVoltas && /^\d+$/.test(partes[0])) {
-            let numVolta = parseInt(partes[0], 10);
-            let colIdx = 1;
-
-            ordemPilotos.forEach(pName => {
-                while (colIdx < partes.length) {
-                    let token = partes[colIdx];
-                    // Identifica tempos válidos (ex: 14,629 ou 03:25,1) ignorando hífens ou traços
-                    if (token && token !== "-" && (/\d+[,.]\d+/.test(token) || /\d+:\d+[,.]\d+/.test(token))) {
-                        let tempoLimpo = token.split('-')[0].trim();
-                        let tempoNum = 0;
-
-                        if (tempoLimpo.includes(':')) {
-                            let partesTempo = tempoLimpo.split(':');
-                            let minutos = parseInt(partesTempo[0], 10);
-                            let segundos = parseFloat(partesTempo[1].replace(',', '.'));
-                            tempoNum = (minutos * 60) + segundos;
-                        } else {
-                            tempoNum = parseFloat(tempoLimpo.replace(',', '.'));
-                        }
-
-                        if (!isNaN(tempoNum) && tempoNum > 0) {
-                            pilotosMap[pName].laps[numVolta - 1] = parseFloat(tempoNum.toFixed(3));
-                            colIdx++;
-                            break;
-                        }
-                    }
-                    colIdx++;
-                }
+        function carregarBateriasDaNuvem() {
+            if (!db) return;
+            db.ref('baterias').on('value', snapshot => {
+                bateriasNuvemCache = [];
+                snapshot.forEach(childSnapshot => {
+                    bateriasNuvemCache.push({
+                        firebaseKey: childSnapshot.key,
+                        ...childSnapshot.val()
+                    });
+                });
+                atualizarListaUploadHistorico();
             });
         }
-    });
 
-    let resultadoFinal = [];
-    let coresBadge = ["#ffb703", "#e76f51", "#2ec4b6", "#3a86ff", "#e63946"];
-    let contador = 0;
+        window.processarUploadEEnviarNuvem = async function() {
+            const input = document.getElementById('input-pdf-upload');
+            if (!input.files || input.files.length === 0) {
+                alert("Por favor, selecione ao menos um arquivo PDF.");
+                return;
+            }
+            if (!db) {
+                alert("Erro: Firebase não conectado.");
+                return;
+            }
 
-    Object.keys(pilotosMap).forEach(pName => {
-        let pObj = pilotosMap[pName];
-        pObj.laps = pObj.laps.filter(val => val !== undefined && !isNaN(val));
+            for (let i = 0; i < input.files.length; i++) {
+                const arquivo = input.files[i];
+                const nomeArq = arquivo.name;
+                const sessaoNome = nomeArq.replace(/\.[^/.]+$/, "").trim();
+                const batKey = "bat_" + sessaoNome.toLowerCase().replace(/[^a-z0-9]/g, "_");
 
-        if (pObj.laps.length > 0) {
-            let melhor = Math.min(...pObj.laps);
-            let soma = pObj.laps.reduce((a, b) => a + b, 0);
-            let media = soma / pObj.laps.length;
-            let variancia = pObj.laps.reduce((sum, t) => sum + Math.pow(t - media, 2), 0) / pObj.laps.length;
-            let desvio = Math.sqrt(variancia);
+                try {
+                    const textoPdf = await converterPdfParaTexto(arquivo);
+                    const dadosExtraidos = parsearTextoConvertido(textoPdf, sessaoNome, batKey);
 
-            pObj.melhorVoltaVal = parseFloat(melhor.toFixed(3));
-            pObj.melhorVoltaTxt = melhor.toFixed(3).replace('.', ',') + 's';
-            pObj.mediaVal = parseFloat(media.toFixed(3));
-            pObj.mediaTxt = media.toFixed(3).replace('.', ',') + 's';
-            pObj.desvioVal = parseFloat(desvio.toFixed(3));
-            pObj.desvio = `±${desvio.toFixed(3).replace('.', ',')}s`;
-            pObj.voltasTotais = pObj.laps.length;
+                    const novoRegistro = {
+                        bateriaKey: batKey,
+                        sessao: sessaoNome,
+                        id: Date.now() + i,
+                        dados: dadosExtraidos
+                    };
+
+                    await db.ref('baterias').push(novoRegistro);
+                } catch (err) {
+                    console.error("Erro ao processar PDF:", err);
+                    alert("Erro ao converter o arquivo " + nomeArq + ": " + err.message);
+                }
+            }
+
+            alert("PDF convertido e processado com sucesso na nuvem!");
+            input.value = "";
+        };
+
+        async function converterPdfParaTexto(arquivo) {
+            const arrayBuffer = await arquivo.arrayBuffer();
+            const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+            const pdfDoc = await loadingTask.promise;
+            let textoCompleto = "";
+
+            for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+                const pagina = await pdfDoc.getPage(pageNum);
+                const tokenTextos = await pagina.getTextContent();
+                let linhasY = {};
+                
+                tokenTextos.items.forEach(item => {
+                    let y = Math.round(item.transform[5] / 4) * 4;
+                    if (!linhasY[y]) linhasY[y] = [];
+                    linhasY[y].push({ x: item.transform[4], str: item.str });
+                });
+
+                let coordenadasYOrdenadas = Object.keys(linhasY).sort((a, b) => b - a);
+                coordenadasYOrdenadas.forEach(y => {
+                    let linhaItens = linhasY[y].sort((a, b) => a.x - b.x);
+                    let linhaStr = linhaItens.map(i => i.str).join(" | ");
+                    textoCompleto += linhaStr + "\n";
+                });
+            }
+            return textoCompleto;
         }
 
-        pObj.badgeColor = coresBadge[contador % coresBadge.length];
-        contador++;
-        resultadoFinal.push(pObj);
-    });
+        function parsearTextoConvertido(texto, sessaoNome, batKey) {
+            let pilotosMap = {};
+            let linhas = texto.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+            
+            let modoResumo = false;
+            let modoVoltas = false;
+            let ordemPilotos = [];
 
-    return resultadoFinal;
-}
+            linhas.forEach(linha => {
+                let partes = linha.split(/[\s|]+/).filter(Boolean);
+                if (partes.length === 0) return;
+
+                if (partes.includes("Piloto") && partes.includes("Voltas")) {
+                    modoResumo = true;
+                    modoVoltas = false;
+                    return;
+                }
+
+                if (linha.startsWith("Voltas por piloto") || (partes.includes("Num.") && modoResumo)) {
+                    modoResumo = false;
+                    modoVoltas = true;
+                    return;
+                }
+
+                if (modoResumo && /^\d{2}$/.test(partes[0])) {
+                    let numOrdem = partes[0];
+                    let possivelPiloto = partes[1];
+                    let possivelPos = partes[2];
+                    let possivelVoltas = partes[3];
+                    let possivelTempo = partes[4] || "00:00,000";
+
+                    if (isNaN(possivelPiloto) && /^\d+º?$/.test(possivelPos)) {
+                        let pilotoNome = possivelPiloto;
+                        let posStr = possivelPos.includes('º') ? possivelPos : possivelPos + 'º';
+
+                        pilotosMap[pilotoNome] = {
+                            pos: posStr,
+                            piloto: pilotoNome,
+                            bateriaKey: batKey,
+                            sessao: sessaoNome,
+                            voltasTotais: parseInt(possivelVoltas) || 0,
+                            tempoTotal: possivelTempo,
+                            melhorVoltaVal: 0,
+                            melhorVoltaTxt: "00,000s",
+                            mediaVal: 0,
+                            mediaTxt: "00,000s",
+                            desvioVal: 0,
+                            desvio: "±0,000s",
+                            badgeColor: "#ffb703",
+                            laps: []
+                        };
+                        ordemPilotos.push(pilotoNome);
+                    }
+                }
+
+                if (modoVoltas && /^\d+$/.test(partes[0])) {
+                    let numVolta = parseInt(partes[0], 10);
+                    let colIdx = 1;
+
+                    ordemPilotos.forEach(pName => {
+                        while (colIdx < partes.length) {
+                            let token = partes[colIdx];
+                            if (token && token !== "-" && (/\d+[,.]\d+/.test(token) || /\d+:\d+[,.]\d+/.test(token))) {
+                                let tempoLimpo = token.split('-')[0].trim();
+                                let tempoNum = 0;
+
+                                if (tempoLimpo.includes(':')) {
+                                    let partesTempo = tempoLimpo.split(':');
+                                    let minutos = parseInt(partesTempo[0], 10);
+                                    let segundos = parseFloat(partesTempo[1].replace(',', '.'));
+                                    tempoNum = (minutos * 60) + segundos;
+                                } else {
+                                    tempoNum = parseFloat(tempoLimpo.replace(',', '.'));
+                                }
+
+                                if (!isNaN(tempoNum) && tempoNum > 0) {
+                                    pilotosMap[pName].laps[numVolta - 1] = parseFloat(tempoNum.toFixed(3));
+                                    colIdx++;
+                                    break;
+                                }
+                            }
+                            colIdx++;
+                        }
+                    });
+                }
+            });
+
+            let resultadoFinal = [];
+            let coresBadge = ["#ffb703", "#e76f51", "#2ec4b6", "#3a86ff", "#e63946"];
+            let contador = 0;
+
+            Object.keys(pilotosMap).forEach(pName => {
+                let pObj = pilotosMap[pName];
+                pObj.laps = pObj.laps.filter(val => val !== undefined && !isNaN(val));
+
+                if (pObj.laps.length > 0) {
+                    let melhor = Math.min(...pObj.laps);
+                    let soma = pObj.laps.reduce((a, b) => a + b, 0);
+                    let media = soma / pObj.laps.length;
+                    let variancia = pObj.laps.reduce((sum, t) => sum + Math.pow(t - media, 2), 0) / pObj.laps.length;
+                    let desvio = Math.sqrt(variancia);
+
+                    pObj.melhorVoltaVal = parseFloat(melhor.toFixed(3));
+                    pObj.melhorVoltaTxt = melhor.toFixed(3).replace('.', ',') + 's';
+                    pObj.mediaVal = parseFloat(media.toFixed(3));
+                    pObj.mediaTxt = media.toFixed(3).replace('.', ',') + 's';
+                    pObj.desvioVal = parseFloat(desvio.toFixed(3));
+                    pObj.desvio = `±${desvio.toFixed(3).replace('.', ',')}s`;
+                    pObj.voltasTotais = pObj.laps.length;
+                }
+
+                pObj.badgeColor = coresBadge[contador % coresBadge.length];
+                contador++;
+                resultadoFinal.push(pObj);
+            });
+
+            return resultadoFinal;
+        }
+
+        function atualizarListaUploadHistorico() {
+            const ul = document.getElementById('upload-lista-historico');
+            if (!ul) return;
+            ul.innerHTML = "";
+            if (!bateriasNuvemCache || bateriasNuvemCache.length === 0) {
+                ul.innerHTML = `<li style="color: var(--text-muted); text-align: center; padding: 10px;">Nenhum arquivo na nuvem.</li>`;
+                return;
+            }
+            bateriasNuvemCache.forEach((item, index) => {
+                let nomeExibicao = item.sessao || `ID ${item.id}`;
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span>📄 <strong>${nomeExibicao}</strong></span>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn-text-action" onclick="inspecionarJsonUpload(${index})">🔍 Inspecionar</button>
+                        <button class="btn-text-action" style="color: var(--accent-red);" onclick="excluirArquivoNuvem('${item.firebaseKey}', '${nomeExibicao}')">🗑️ Excluir</button>
+                    </div>`;
+                ul.appendChild(li);
+            });
+        }
+
+        function inspecionarJsonUpload(index) {
+            const item = bateriasNuvemCache[index];
+            if (item) document.getElementById('upload-json-viewer').textContent = JSON.stringify(item, null, 4);
+        }
+
+        function excluirArquivoNuvem(firebaseKey, nomeExibicao) {
+            if (!db) return;
+            if (confirm(`Deseja excluir "${nomeExibicao}" da nuvem?`)) {
+                db.ref('baterias/' + firebaseKey).remove().then(() => alert("Excluído com sucesso!"));
+            }
+        }
+    </script>
+</body>
+</html>
