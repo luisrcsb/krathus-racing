@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Krathus Racing - Central de Telemetria</title>
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Firebase SDK (Compat) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
     <style>
@@ -29,58 +27,25 @@
         body { background-color: var(--bg-body); color: var(--text-main); padding: 24px; }
         .dashboard-container { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
 
-        #mobile-orientation-warning {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background-color: rgba(13, 17, 26, 0.96);
-            z-index: 9999;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 20px;
-            box-sizing: border-box;
-            gap: 15px;
-            overflow-y: auto;
-        }
-        .orientation-icon { font-size: 3rem; animation: rotatePhone 2s infinite ease-in-out; }
-        .orientation-title { font-size: 1.2rem; font-weight: 700; color: var(--text-title); max-width: 90%; }
-        .orientation-text { font-size: 0.85rem; color: var(--text-muted); max-width: 280px; line-height: 1.4; }
-        
-        @keyframes rotatePhone {
-            0% { transform: rotate(0deg); }
-            50% { transform: rotate(90deg); }
-            100% { transform: rotate(0deg); }
-        }
-
-        @media screen and (max-width: 768px) and (orientation: portrait) {
-            #mobile-orientation-warning { display: flex; }
-        }
-
         .header { display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 20px 24px; border-radius: 12px; border: 1px solid var(--border-card); flex-wrap: wrap; gap: 15px; }
         .brand-title h1 { font-size: 1.5rem; color: var(--text-title); letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
         .brand-title p { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
 
         .header-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-        .btn { padding: 10px 18px; border-radius: 8px; border: none; font-weight: 600; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: opacity 0.2s; }
+        .btn { padding: 10px 18px; border-radius: 8px; border: none; font-weight: 600; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 8px; }
         .btn-text-action { background: transparent; border: none; color: var(--accent-blue); font-size: 0.78rem; font-weight: 600; cursor: pointer; padding: 0; text-align: left; }
         .btn-text-action:hover { text-decoration: underline; }
 
-        .btn-pdf-global { background: linear-gradient(135deg, #ff5722 0%, #e63946 100%); color: #ffffff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 4px 15px rgba(255, 87, 34, 0.4); width: fit-content; }
-        .btn-upload-global { background: linear-gradient(135deg, #3a86ff 0%, #2ec4b6 100%); color: #ffffff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 4px 15px rgba(58, 134, 255, 0.4); width: fit-content; }
+        .btn-pdf-global { background: linear-gradient(135deg, #ff5722 0%, #e63946 100%); color: #ffffff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; }
+        .btn-upload-global { background: linear-gradient(135deg, #3a86ff 0%, #2ec4b6 100%); color: #ffffff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; text-decoration: none; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px;}
         
-        .btn-share { background: rgba(58, 134, 255, 0.15); color: var(--accent-blue); border: 1px solid var(--accent-blue); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.2s; }
-        .btn-share:hover { background: rgba(58, 134, 255, 0.3); }
+        .btn-share { background: rgba(58, 134, 255, 0.15); color: var(--accent-blue); border: 1px solid var(--accent-blue); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; }
+        .btn-like { background: rgba(230, 57, 70, 0.15); color: var(--accent-red); border: 1px solid var(--accent-red); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; }
 
-        .btn-like { background: rgba(230, 57, 70, 0.15); color: var(--accent-red); border: 1px solid var(--accent-red); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s; }
-        .btn-like:hover { background: rgba(230, 57, 70, 0.3); transform: scale(1.05); }
-
-        .piloto-link { color: var(--accent-blue); text-decoration: none; font-weight: 700; cursor: pointer; transition: color 0.2s; }
+        .piloto-link { color: var(--accent-blue); text-decoration: none; font-weight: 700; cursor: pointer; }
         .piloto-link:hover { color: var(--accent-gold); text-decoration: underline; }
 
-        /* Modais */
-        #piloto-modal, #upload-modal {
+        #piloto-modal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
@@ -101,33 +66,17 @@
             max-height: 90vh;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             overflow: hidden;
         }
         .modal-header { padding: 20px 24px; background: var(--bg-card-header); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-card); }
         .modal-title { font-size: 1.25rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 10px; }
-        .modal-close { background: transparent; border: none; color: var(--text-muted); font-size: 1.4rem; cursor: pointer; font-weight: bold; transition: color 0.2s; }
-        .modal-close:hover { color: var(--accent-red); }
+        .modal-close { background: transparent; border: none; color: var(--text-muted); font-size: 1.4rem; cursor: pointer; font-weight: bold; }
         .modal-body { padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
-        
-        .badges-podium-container { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 5px; }
-        .badge-achievement { background: linear-gradient(135deg, rgba(255, 183, 3, 0.2) 0%, rgba(255, 183, 3, 0.05) 100%); border: 1px solid var(--accent-gold); color: var(--accent-gold); padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 6px; }
-        .badge-achievement.silver { background: linear-gradient(135deg, rgba(132, 146, 166, 0.2) 0%, rgba(132, 146, 166, 0.05) 100%); border-color: var(--text-muted); color: var(--text-title); }
-        .badge-achievement.green-tag { background: linear-gradient(135deg, rgba(46, 196, 182, 0.2) 0%, rgba(46, 196, 182, 0.05) 100%); border-color: var(--accent-green); color: var(--accent-green); }
 
         .dossier-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
         .dossier-kpi { background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 4px; text-align: center; }
         .dossier-kpi-label { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
         .dossier-kpi-value { font-size: 1.25rem; font-weight: 700; color: var(--accent-gold); }
-
-        .positions-ranking-box { background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
-        .positions-ranking-title { font-size: 0.85rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase; }
-        .positions-pills-grid { display: flex; flex-wrap: wrap; gap: 10px; }
-        .position-pill { background: var(--bg-card); border: 1px solid var(--border-card); padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
-        .position-pill span { font-weight: 700; color: var(--text-title); }
-
-        .dossier-report-box { background: var(--bg-input); border-left: 4px solid var(--accent-blue); border-radius: 8px; padding: 18px; font-size: 0.9rem; line-height: 1.6; color: var(--text-main); display: flex; flex-direction: column; gap: 10px; }
-        .dossier-report-title { font-size: 0.85rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase; }
 
         .tab-content { display: flex; flex-direction: column; gap: 20px; }
         .filters-card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 18px; }
@@ -160,22 +109,21 @@
         .chart-container { position: relative; height: 280px; width: 100%; }
 
         .position-analysis-container { margin-top: 20px; background: var(--bg-input); border-left: 4px solid var(--accent-gold); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-        .position-analysis-title { font-size: 0.85rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase; letter-spacing: 0.5px; }
+        .position-analysis-title { font-size: 0.85rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase; }
         .position-log-list { display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; line-height: 1.5; max-height: 220px; overflow-y: auto; }
         .position-log-item { background: rgba(21, 28, 40, 0.5); padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border-card); }
         .tag-gain { color: var(--accent-green); font-weight: 700; }
         .tag-loss { color: var(--accent-red); font-weight: 700; }
 
-        /* Comentários */
         .comments-section { margin-top: 15px; background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-        .comments-title { font-size: 0.85rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
+        .comments-title { font-size: 0.85rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase; display: flex; align-items: center; gap: 6px; }
         .comments-list { display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto; }
         .comment-item { background: rgba(21, 28, 40, 0.6); padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border-card); font-size: 0.85rem; display: flex; flex-direction: column; gap: 6px; }
         .comment-header-row { display: flex; justify-content: space-between; align-items: center; }
         .comment-author { font-weight: 700; color: var(--accent-gold); }
         .comment-text { color: var(--text-main); word-break: break-word; line-height: 1.4; }
         .comment-reactions { display: flex; gap: 12px; margin-top: 4px; align-items: center; }
-        .btn-comment-reaction { background: rgba(28, 38, 59, 0.8); border: 1px solid var(--border-card); color: var(--text-muted); padding: 3px 8px; border-radius: 6px; font-size: 0.78rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+        .btn-comment-reaction { background: rgba(28, 38, 59, 0.8); border: 1px solid var(--border-card); color: var(--text-muted); padding: 3px 8px; border-radius: 6px; font-size: 0.78rem; font-weight: 600; cursor: pointer; }
         
         .comment-form { display: flex; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
         .comment-input-name { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 6px; padding: 8px 12px; color: var(--text-main); font-size: 0.85rem; width: 160px; }
@@ -192,15 +140,10 @@
         .pos-badge { background: var(--accent-gold); color: #000; font-weight: bold; font-size: 0.8rem; padding: 4px 8px; border-radius: 4px; display: inline-block; }
         .session-badge { background: #1d3557; color: var(--accent-blue); padding: 4px 10px; border-radius: 4px; font-size: 0.80rem; font-weight: 600; display: inline-block; }
         .text-green { color: var(--accent-green); font-weight: 700; }
-
         .analysis-subrow-box { background: rgba(28, 38, 59, 0.6); border-left: 4px solid var(--accent-blue); border-radius: 6px; padding: 14px 18px; font-size: 0.86rem; color: var(--text-main); line-height: 1.6; }
-        .analysis-subrow-box strong.title { color: var(--accent-blue); text-transform: uppercase; font-size: 0.78rem; display: block; margin-bottom: 6px; letter-spacing: 0.5px; }
+        .analysis-subrow-box strong.title { color: var(--accent-blue); text-transform: uppercase; font-size: 0.78rem; display: block; margin-bottom: 6px; }
         
-        .fastest-lap-highlight { background-color: rgba(46, 196, 182, 0.15) !important; color: var(--accent-green) !important; font-weight: bold; border-radius: 4px; padding: 4px 8px; border: 1px solid var(--accent-green); }
-        .absolute-fastest-lap-highlight { background-color: rgba(255, 183, 3, 0.25) !important; color: var(--accent-gold) !important; font-weight: bold; border-radius: 4px; padding: 4px 8px; border: 1px solid var(--accent-gold); box-shadow: 0 0 10px rgba(255, 183, 3, 0.2); }
-        .gato-lap-highlight { background-color: rgba(230, 57, 70, 0.2) !important; border: 1px solid var(--accent-red) !important; color: var(--accent-red) !important; border-radius: 4px; padding: 4px 8px; text-decoration: line-through; }
         .lap-cell-inline { display: inline-flex; align-items: baseline; gap: 6px; white-space: nowrap; }
-        .lap-diff-inline { font-size: 0.75rem; color: var(--accent-green); font-weight: 600; }
 
         .footer-container { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px 24px; display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 10px; }
         .footer-meta-info { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 16px; font-size: 0.82rem; color: var(--text-muted); background: var(--bg-input); padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border-card); }
@@ -211,13 +154,12 @@
         @media print {
             body, body * { color: #000000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             body { background-color: #ffffff !important; padding: 10px !important; font-size: 11px !important; }
-            .header-actions, .filters-card, .btn-pdf-global, .btn-upload-global, .comments-section, .welcome-card, #piloto-modal, #upload-modal { display: none !important; }
+            .header-actions, .filters-card, .btn-pdf-global, .btn-upload-global, .comments-section, .welcome-card, #piloto-modal { display: none !important; }
         }
     </style>
 </head>
 <body>
 
-    <!-- MODAL / FICHA DO PILOTO -->
     <div id="piloto-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -228,41 +170,6 @@
         </div>
     </div>
 
-    <!-- MODAL / UPLOAD DE RELATÓRIOS PDF -->
-    <div id="upload-modal">
-        <div class="modal-content" style="max-width: 1000px;">
-            <div class="modal-header">
-                <div class="modal-title">📂 Central de Upload e Gestão de Relatórios PDF (Nuvem)</div>
-                <button class="modal-close" onclick="fecharUploadModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div style="background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px;">
-                    <div style="font-weight: 700; color: var(--accent-gold); text-transform: uppercase; font-size: 0.85rem;">Selecionar Arquivos PDF do ZRound</div>
-                    <p style="font-size: 0.88rem; color: var(--text-muted);">Envie os relatórios PDF para processamento completo no Firebase.</p>
-                    <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
-                        <input type="file" id="input-pdf-upload" accept=".pdf" multiple style="background: var(--bg-card); padding: 8px; border-radius: 6px; border: 1px solid var(--border-card); color: var(--text-main); flex: 1;">
-                        <button class="btn btn-upload-global" onclick="processarUploadEEnviarNuvem()">🚀 Processar e Enviar para Nuvem</button>
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div class="card" style="padding: 14px; margin: 0;">
-                        <div class="card-header" style="margin-bottom: 10px;">📋 Arquivos na Nuvem (Mais recentes no topo)</div>
-                        <div style="max-height: 250px; overflow-y: auto;">
-                            <ul id="upload-lista-historico" style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 0.88rem;">
-                                <li>Carregando dados da nuvem...</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="card" style="padding: 14px; margin: 0;">
-                        <div class="card-header" style="margin-bottom: 10px;">🔍 Visualizador de Estrutura do JSON</div>
-                        <pre id="upload-json-viewer" style="background: var(--bg-body); color: var(--accent-green); padding: 12px; border-radius: 6px; font-size: 0.78rem; max-height: 250px; overflow: auto; border: 1px solid var(--border-card);">Selecione um arquivo ao lado para inspecionar...</pre>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div class="dashboard-container">
         <header class="header">
             <div class="brand-title">
@@ -270,7 +177,7 @@
                 <p>Central de Telemetria e Análise de Desempenho (Tempo Real - Nuvem)</p>
             </div>
             <div class="header-actions">
-                <button class="btn btn-upload-global" onclick="abrirUploadModal()">📤 Upload de Relatórios PDF</button>
+                <a href="uploads.html" class="btn-upload-global">📤 Ir para Upload de Relatórios PDF</a>
                 <button class="btn btn-pdf-global" onclick="gerarRelatórioPDF()">📄 Gerar Relatório PDF Completo</button>
             </div>
         </header>
@@ -281,7 +188,7 @@
                     <div class="filter-group">
                         <div class="filter-group-header">
                             <label class="group-title">SESSÕES / BATERIAS (Mais recentes no topo)</label>
-                            <button class="btn-text-action" onclick="limparSelecao('filter-bateria')">🗑️ Limpar Seleção</button>
+                            <button class="btn-text-action" onclick="limparSelecao('filter-bateria')">🗑️ Limpar</button>
                         </div>
                         <div class="checkbox-container" id="filtro-baterias-container"></div>
                     </div>
@@ -289,7 +196,7 @@
                     <div class="filter-group">
                         <div class="filter-group-header">
                             <label class="group-title">PILOTOS</label>
-                            <button class="btn-text-action" onclick="limparSelecao('filter-piloto')">🗑️ Limpar Seleção</button>
+                            <button class="btn-text-action" onclick="limparSelecao('filter-piloto')">🗑️ Limpar</button>
                         </div>
                         <div class="checkbox-container" id="filtro-pilotos-container"></div>
                     </div>
@@ -297,21 +204,20 @@
                     <div class="filter-group">
                         <div class="filter-group-header">
                             <label class="group-title">MÓDULOS VISÍVEIS</label>
-                            <button class="btn-text-action" onclick="limparSelecao('filter-modulo')">🗑️ Limpar Seleção</button>
+                            <button class="btn-text-action" onclick="limparSelecao('filter-modulo')">🗑️ Limpar</button>
                         </div>
                         <div class="checkbox-container">
-                            <label class="checkbox-item"><input type="checkbox" value="mod-grafico" class="filter-modulo" checked onchange="atualizarDashboard()"> 📈 Evolução de Ritmo (Lap Times)</label>
-                            <label class="checkbox-item"><input type="checkbox" value="mod-grafico-posicao" class="filter-modulo" checked onchange="atualizarDashboard()"> 📊 Posição Volta a Volta (Race Position)</label>
-                            <label class="checkbox-item"><input type="checkbox" value="mod-log-posicao" class="filter-modulo" checked onchange="atualizarDashboard()"> 📝 Relatório Detalhado de Ultrapassagens</label>
-                            <label class="checkbox-item"><input type="checkbox" value="mod-velocidade" class="filter-modulo" checked onchange="atualizarDashboard()"> 🏎️ Velocidade Média e Escala Real (1/28)</label>
-                            <label class="checkbox-item"><input type="checkbox" value="mod-classificacao-analise" class="filter-modulo" checked onchange="atualizarDashboard()"> 🏆 Consistência (Ritmo, Comportamento e Pontos Críticos)</label>
-                            <label class="checkbox-item"><input type="checkbox" value="mod-tabela-geral" class="filter-modulo" checked onchange="atualizarDashboard()"> ⏱️ Tabela Geral Volta a Volta (com Gaps ao Lado)</label>
+                            <label class="checkbox-item"><input type="checkbox" value="mod-grafico" class="filter-modulo" checked onchange="atualizarDashboard()"> 📈 Evolução de Ritmo</label>
+                            <label class="checkbox-item"><input type="checkbox" value="mod-grafico-posicao" class="filter-modulo" checked onchange="atualizarDashboard()"> 📊 Posição Volta a Volta</label>
+                            <label class="checkbox-item"><input type="checkbox" value="mod-log-posicao" class="filter-modulo" checked onchange="atualizarDashboard()"> 📝 Relatório de Ultrapassagens</label>
+                            <label class="checkbox-item"><input type="checkbox" value="mod-velocidade" class="filter-modulo" checked onchange="atualizarDashboard()"> 🏎️ Velocidade Real (1/28)</label>
+                            <label class="checkbox-item"><input type="checkbox" value="mod-classificacao-analise" class="filter-modulo" checked onchange="atualizarDashboard()"> 🏆 Consistência e Laudo</label>
+                            <label class="checkbox-item"><input type="checkbox" value="mod-tabela-geral" class="filter-modulo" checked onchange="atualizarDashboard()"> ⏱️ Tabela Geral com Gaps</label>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- KPIs -->
             <section class="kpi-grid">
                 <div class="kpi-card">
                     <span class="kpi-label">Piloto com Mais Vitórias</span>
@@ -333,7 +239,7 @@
                     <span class="kpi-label">Média Global do Grid</span>
                     <div class="kpi-value" id="kpi-media-global">--</div>
                     <div class="kpi-value" id="kpi-media-global-vel" style="color: var(--accent-gold); margin-top: 2px;">--</div>
-                    <span class="kpi-subtext">Média geral das sessões</span>
+                    <span class="kpi-subtext">Média geral</span>
                 </div>
             </section>
 
@@ -342,7 +248,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.4.0 (Todos os Módulos e Gráficos Restaurados com Sucesso)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.5.0 (Painel Completo)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -367,7 +273,6 @@
         let db = null;
         let listaJsonsCache = [];
         let chartInstances = [];
-        const SENHA_ADMIN = "krathus2026";
 
         try {
             firebase.initializeApp(firebaseConfig);
@@ -376,7 +281,6 @@
             console.warn("Erro Firebase:", e);
         }
 
-        // Formatação para Bateria XX (DD/MM/AAAA)
         function formatarNomeSessao(sessaoStr) {
             if (!sessaoStr) return "Bateria";
             let match = sessaoStr.match(/(\d{2})[-/](\d{2})[-/](\d{2}).*?\((\d+)\)/);
@@ -393,7 +297,6 @@
             return sessaoStr;
         }
 
-        // Parser para ordenação estrita por data + sequencial
         function extrairPesoOrdenacao(sessaoStr) {
             if (!sessaoStr) return 0;
             let matchData = sessaoStr.match(/(\d{2})[-/](\d{2})[-/](\d{2})/);
@@ -428,7 +331,6 @@
 
                     gerarFiltrosDinamicos();
                     atualizarDashboard();
-                    atualizarListaUploadHistorico();
                 });
             }
         });
@@ -486,80 +388,6 @@
             atualizarDashboard();
         }
 
-        window.abrirUploadModal = function() {
-            let senha = prompt("Digite a senha de Administrador:");
-            if (senha === SENHA_ADMIN) {
-                document.getElementById('upload-modal').style.display = 'flex';
-                atualizarListaUploadHistorico();
-            } else if (senha !== null) { alert("Senha incorreta!"); }
-        };
-
-        window.fecharUploadModal = function() { document.getElementById('upload-modal').style.display = 'none'; };
-
-        window.processarUploadEEnviarNuvem = function() {
-            const input = document.getElementById('input-pdf-upload');
-            if (!input.files || input.files.length === 0) { alert("Selecione ao menos um PDF."); return; }
-            if (!db) { alert("Firebase não conectado."); return; }
-
-            for (let i = 0; i < input.files.length; i++) {
-                const arquivo = input.files[i];
-                const nomeArq = arquivo.name;
-                const batKey = "bat_" + nomeArq.toLowerCase().replace(/[^a-z0-9]/g, "_");
-                const sessaoNome = nomeArq.replace(/\.[^/.]+$/, "");
-
-                const novoRegistro = {
-                    bateriaKey: batKey,
-                    sessao: sessaoNome,
-                    id: Date.now() + i,
-                    dados: [
-                        {
-                            pos: "1º", piloto: "Raphael", bateriaKey: batKey, sessao: sessaoNome,
-                            voltasTotais: 15, tempoTotal: "02:45,100", melhorVoltaVal: 10.120, melhorVoltaTxt: "10,120s", mediaVal: 11.000, mediaTxt: "11,000s", badgeColor: "#ffb703",
-                            laps: [11.2, 10.9, 10.120, 11.5, 10.8]
-                        },
-                        {
-                            pos: "2º", piloto: "DJ", bateriaKey: batKey, sessao: sessaoNome,
-                            voltasTotais: 15, tempoTotal: "02:48,300", melhorVoltaVal: 10.450, melhorVoltaTxt: "10,450s", mediaVal: 11.200, mediaTxt: "11,200s", badgeColor: "#8492a6",
-                            laps: [11.5, 11.0, 10.450, 11.8, 11.1]
-                        }
-                    ]
-                };
-                db.ref('baterias').push(novoRegistro);
-            }
-            alert("Upload processado e salvo na nuvem com sucesso!");
-            input.value = "";
-        };
-
-        function atualizarListaUploadHistorico() {
-            const ul = document.getElementById('upload-lista-historico');
-            if (!ul) return;
-            ul.innerHTML = "";
-            if (!listaJsonsCache || listaJsonsCache.length === 0) {
-                ul.innerHTML = `<li style="color: var(--text-muted); text-align: center; padding: 10px;">Nenhum arquivo.</li>`;
-                return;
-            }
-            listaJsonsCache.forEach((item, index) => {
-                let nomeExibicao = formatarNomeSessao(item.sessao || `ID ${item.id}`);
-                const li = document.createElement('li');
-                li.style.cssText = "background: var(--bg-input); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-card); display: flex; justify-content: space-between; align-items: center;";
-                li.innerHTML = `<span>📄 <strong>${nomeExibicao}</strong></span><div style="display: flex; gap: 8px;"><button class="btn-text-action" onclick="inspecionarJsonUpload(${index})">🔍 Inspecionar</button><button class="btn-text-action" style="color: var(--accent-red);" onclick="excluirArquivoNuvem('${item.firebaseKey}', '${nomeExibicao}')">🗑️ Excluir</button></div>`;
-                ul.appendChild(li);
-            });
-        }
-
-        window.inspecionarJsonUpload = function(index) {
-            const item = listaJsonsCache[index];
-            if (item) document.getElementById('upload-json-viewer').textContent = JSON.stringify(item, null, 4);
-        };
-
-        window.excluirArquivoNuvem = function(firebaseKey, nomeExibicao) {
-            if (!db) return;
-            if (confirm(`Excluir "${nomeExibicao}" da nuvem?`)) {
-                db.ref('baterias/' + firebaseKey).remove().then(() => alert("Excluído!"));
-            }
-        };
-
-        // Ficha do Piloto
         window.abrirDossiePiloto = function(nomePiloto) {
             const modal = document.getElementById('piloto-modal');
             document.getElementById('modal-piloto-nome').innerHTML = `🏎️ Ficha do Piloto: <span style="color: var(--accent-gold);">${nomePiloto}</span>`;
@@ -595,7 +423,6 @@
 
         window.onclick = function(event) {
             if (event.target === document.getElementById('piloto-modal')) document.getElementById('piloto-modal').style.display = 'none';
-            if (event.target === document.getElementById('upload-modal')) document.getElementById('upload-modal').style.display = 'none';
         };
 
         window.curtirSessao = function(bateriaKey) {
@@ -687,7 +514,6 @@
             });
 
             if (dadosFiltrados.length > 0) {
-                // Cálculo de Vencedores para KPIs
                 let vencedorContador = {};
                 bateriasSel.forEach(batKey => {
                     let itens = dadosBase.filter(d => d.bateriaKey === batKey);
@@ -705,7 +531,6 @@
                 document.getElementById('kpi-vencedor').innerHTML = maisVitorioso !== "--" ? `<a class="piloto-link" onclick="abrirDossiePiloto('${maisVitorioso}')">${maisVitorioso}</a>` : "Nenhum";
                 document.getElementById('kpi-vencedor-sub').innerText = maxV > 0 ? `${maxV} vitória(s)` : "Sem vitórias";
 
-                // Melhor Volta Geral
                 let melhorVoltaObj = null, melhorVoltaValGeral = 999999, melhorVoltaNum = 0;
                 dadosFiltrados.forEach(item => {
                     if (item.laps) {
@@ -735,10 +560,10 @@
                 document.getElementById('kpi-total-voltas').innerText = "0";
             }
 
-            renderizarSessõesCompletas(dadosBase, bateriasSel, pilotosSel, modulosSel, melhorVoltaAbsolutaVal);
+            renderizarSessõesCompletas(dadosBase, bateriasSel, pilotosSel, modulosSel);
         }
 
-        function renderizarSessõesCompletas(dadosBase, bateriasSel, pilotosSel, modulosSel, melhorVoltaAbsolutaVal) {
+        function renderizarSessõesCompletas(dadosBase, bateriasSel, pilotosSel, modulosSel) {
             chartInstances.forEach(c => c.destroy());
             chartInstances = [];
             const mainContainer = document.getElementById('sessions-container');
@@ -774,32 +599,25 @@
                     </div>
                 `;
 
-                // Módulo 1: Gráfico de Lap Times
                 if (modulosSel.includes('mod-grafico')) {
-                    html += `<div class="card"><div class="card-header">Evolução de Ritmo (Lap Times) - ${nomeSessaoFormatado}</div><div class="chart-container"><canvas id="chart-${bateriaKey}"></canvas></div></div>`;
+                    html += `<div class="card"><div class="card-header">Evolução de Ritmo (Lap Times)</div><div class="chart-container"><canvas id="chart-${bateriaKey}"></canvas></div></div>`;
                 }
-                // Módulo 2: Gráfico de Posições
                 if (modulosSel.includes('mod-grafico-posicao')) {
-                    html += `<div class="card"><div class="card-header">📊 Posição Volta a Volta (Race Position) - ${nomeSessaoFormatado}</div><div class="chart-container"><canvas id="chart-pos-${bateriaKey}"></canvas></div></div>`;
+                    html += `<div class="card"><div class="card-header">📊 Posição Volta a Volta (Race Position)</div><div class="chart-container"><canvas id="chart-pos-${bateriaKey}"></canvas></div></div>`;
                 }
-                // Módulo 3: Log de Ultrapassagens
                 if (modulosSel.includes('mod-log-posicao')) {
-                    html += `<div class="card"><div class="card-header">📝 Relatório Detalhado de Ultrapassagens - ${nomeSessaoFormatado}</div><div class="position-analysis-container" style="margin-top:0;"><div class="position-analysis-title">Histórico Volta a Volta</div><div class="position-log-list" id="pos-logs-${bateriaKey}"></div></div></div>`;
+                    html += `<div class="card"><div class="card-header">📝 Relatório Detalhado de Ultrapassagens</div><div class="position-analysis-container" style="margin-top:0;"><div class="position-analysis-title">Histórico Volta a Volta</div><div class="position-log-list" id="pos-logs-${bateriaKey}"></div></div></div>`;
                 }
-                // Módulo 4: Velocidade e Escala 1/28
                 if (modulosSel.includes('mod-velocidade')) {
-                    html += `<div class="card"><div class="card-header">🏎️ Velocidade Média e Escala Real (1/28 - Pista 26m) - ${nomeSessaoFormatado}</div><div class="table-container"><table><thead><tr><th>PILOTO</th><th>MELHOR TEMPO</th><th>VELO. PISTA (Melhor)</th><th>VELO. ESCALA REAL (1/28)</th><th>MÉDIA DA SESSÃO</th></tr></thead><tbody id="tabela-velocidade-${bateriaKey}"></tbody></table></div></div>`;
+                    html += `<div class="card"><div class="card-header">🏎️ Velocidade Média e Escala Real (1/28 - Pista 26m)</div><div class="table-container"><table><thead><tr><th>PILOTO</th><th>MELHOR TEMPO</th><th>VELO. PISTA</th><th>VELO. ESCALA REAL (1/28)</th><th>MÉDIA</th></tr></thead><tbody id="tabela-velocidade-${bateriaKey}"></tbody></table></div></div>`;
                 }
-                // Módulo 5: Análise de Consistência
                 if (modulosSel.includes('mod-classificacao-analise')) {
-                    html += `<div class="card"><div class="card-header">🏆 Consistência (Ritmo, Comportamento e Pontos Críticos) - ${nomeSessaoFormatado}</div><div class="table-container"><table><thead><tr><th>POS</th><th>PILOTO</th><th>SESSÃO</th><th>TOTAL DE VOLTAS</th><th>MELHOR</th><th>MÉDIA</th><th>DESVIO</th></tr></thead><tbody id="tabela-unificada-${bateriaKey}"></tbody></table></div></div>`;
+                    html += `<div class="card"><div class="card-header">🏆 Consistência (Ritmo e Laudo Técnico)</div><div class="table-container"><table><thead><tr><th>POS</th><th>PILOTO</th><th>SESSÃO</th><th>VOLTAS</th><th>MELHOR</th><th>MÉDIA</th><th>DESVIO</th></tr></thead><tbody id="tabela-unificada-${bateriaKey}"></tbody></table></div></div>`;
                 }
-                // Módulo 6: Tabela Geral Volta a Volta com Gaps
                 if (modulosSel.includes('mod-tabela-geral')) {
-                    html += `<div class="card"><div class="card-header">⏱️ Tabela Geral Volta a Volta (com Gaps ao Lado) - ${nomeSessaoFormatado}</div><div class="table-container"><table><thead><tr id="head-lapbyLap-${bateriaKey}"><th>VOLTA</th></tr></thead><tbody id="body-lapbyLap-${bateriaKey}"></tbody></table></div></div>`;
+                    html += `<div class="card"><div class="card-header">⏱️ Tabela Geral Volta a Volta</div><div class="table-container"><table><thead><tr id="head-lapbyLap-${bateriaKey}"><th>VOLTA</th></tr></thead><tbody id="body-lapbyLap-${bateriaKey}"></tbody></table></div></div>`;
                 }
 
-                // Seção de Comentários
                 html += `
                     <div class="comments-section">
                         <div class="comments-title">💬 Comentários e Reações</div>
@@ -818,10 +636,10 @@
                 escutarCurtidas(bateriaKey);
                 escutarComentarios(bateriaKey);
 
-                // Renderização Gráfico Lap Times
                 let paleta = ["#2ec4b6", "#ffb703", "#e63946", "#3a86ff", "#ff006e", "#8338ec"];
+                let maxV = Math.max(...dadosSessao.map(d => d.laps ? d.laps.length : 0));
+
                 if (modulosSel.includes('mod-grafico')) {
-                    let maxV = Math.max(...dadosSessao.map(d => d.laps ? d.laps.length : 0));
                     let labels = Array.from({length: maxV}, (_, i) => `V${i+1}`);
                     let datasets = dadosSessao.map((d, idx) => ({
                         label: d.piloto,
@@ -835,7 +653,6 @@
                     }));
                 }
 
-                // Cálculo Matriz de Posições Volta a Volta para o Gráfico e Logs
                 let maxVPos = Math.max(...todosBat.map(d => d.laps ? d.laps.length : 0));
                 let matrizPos = {};
                 todosBat.forEach(d => { matrizPos[d.piloto] = []; });
@@ -858,7 +675,6 @@
                     });
                 }
 
-                // Renderização Gráfico Posições
                 if (modulosSel.includes('mod-grafico-posicao')) {
                     let labelsPos = Array.from({length: maxVPos}, (_, i) => `Volta ${i+1}`);
                     let datasetsPos = dadosSessao.map((d, idx) => ({
@@ -881,7 +697,6 @@
                     }));
                 }
 
-                // Renderização Log de Ultrapassagens
                 if (modulosSel.includes('mod-log-posicao')) {
                     let logContainer = document.getElementById(`pos-logs-${bateriaKey}`);
                     let logsHtml = '';
@@ -891,16 +706,15 @@
                             let arr = matrizPos[d.piloto] || [];
                             let pAnt = arr[v-1], pAtu = arr[v];
                             if (pAnt && pAtu && pAtu !== pAnt) {
-                                if (pAtu < pAnt) mudancas.push(`🔥 <strong style="color:${paleta[0]}">${d.piloto}</strong> ganhou posição (<span class="tag-gain">${pAnt}º para ${pAtu}º</span>)`);
-                                else mudancas.push(`💧 <strong style="color:${paleta[0]}">${d.piloto}</strong> perdeu posição (<span class="tag-loss">${pAnt}º para ${pAtu}º</span>)`);
+                                if (pAtu < pAnt) mudancas.push(`🔥 <strong style="color:${paleta[0]}">${d.piloto}</strong> ganhou (<span class="tag-gain">${pAnt}º para ${pAtu}º</span>)`);
+                                else mudancas.push(`💧 <strong style="color:${paleta[0]}">${d.piloto}</strong> perdeu (<span class="tag-loss">${pAnt}º para ${pAtu}º</span>)`);
                             }
                         });
                         if (mudancas.length > 0) logsHtml += `<div class="position-log-item">🔄 <strong>Volta ${v+1}:</strong> ${mudancas.join(' | ')}</div>`;
                     }
-                    logContainer.innerHTML = logsHtml || `<div class="position-log-item">Prova estável sem trocas de posição expressivas.</div>`;
+                    logContainer.innerHTML = logsHtml || `<div class="position-log-item">Prova estável sem trocas de posição.</div>`;
                 }
 
-                // Renderização Velocidades
                 if (modulosSel.includes('mod-velocidade')) {
                     let tbodyVel = document.getElementById(`tabela-velocidade-${bateriaKey}`);
                     dadosSessao.forEach(d => {
@@ -909,12 +723,10 @@
                         let melhor = Math.min(...laps);
                         let media = laps.reduce((a,b)=>a+b,0) / laps.length;
                         let velMelhorKmh = (26 / melhor) * 3.6 * 28;
-                        let velMediaKmh = (26 / media) * 3.6 * 28;
                         tbodyVel.innerHTML += `<tr><td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${d.piloto}')">${d.piloto}</a></strong></td><td class="text-green">${melhor.toFixed(3)}s</td><td>${((26/melhor)*3.6).toFixed(2)} km/h</td><td><strong style="color:var(--accent-gold);">${velMelhorKmh.toFixed(1)} km/h</strong></td><td>${media.toFixed(3)}s</td></tr>`;
                     });
                 }
 
-                // Renderização Análise de Consistência
                 if (modulosSel.includes('mod-classificacao-analise')) {
                     let tbodyCons = document.getElementById(`tabela-unificada-${bateriaKey}`);
                     dadosSessao.forEach(d => {
@@ -925,17 +737,15 @@
                         let desvio = Math.sqrt(laps.reduce((sum, t) => sum + Math.pow(t - media, 2), 0) / laps.length);
                         tbodyCons.innerHTML += `
                             <tr class="main-row"><td><span class="pos-badge">${d.pos}</span></td><td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${d.piloto}')">${d.piloto}</a></strong></td><td><span class="session-badge">${nomeSessaoFormatado}</span></td><td>${laps.length} voltas</td><td class="text-green">${melhor.toFixed(3)}s</td><td>${media.toFixed(3)}s</td><td>±${desvio.toFixed(3)}s</td></tr>
-                            <tr class="sub-row"><td colspan="7"><div class="analysis-subrow-box"><strong class="title">Laudo Técnico - ${d.piloto}</strong>Desvio padrão de ±${desvio.toFixed(3)}s. Ritmo consistente com excelente manutenção de traçado nas tangências.</div></td></tr>`;
+                            <tr class="sub-row"><td colspan="7"><div class="analysis-subrow-box"><strong class="title">Laudo Técnico - ${d.piloto}</strong>Desvio padrão de ±${desvio.toFixed(3)}s. Ritmo consistente.</div></td></tr>`;
                     });
                 }
 
-                // Renderização Tabela Geral Volta a Volta com Gaps
                 if (modulosSel.includes('mod-tabela-geral')) {
                     let headLap = document.getElementById(`head-lapbyLap-${bateriaKey}`);
                     let bodyLap = document.getElementById(`body-lapbyLap-${bateriaKey}`);
                     dadosSessao.forEach(d => { headLap.innerHTML += `<th>${d.piloto}</th>`; });
 
-                    let maxV = Math.max(...dadosSessao.map(d => d.laps ? d.laps.length : 0));
                     for (let i = 0; i < maxV; i++) {
                         let linha = `<td><strong>Volta ${i+1}</strong></td>`;
                         dadosSessao.forEach(d => {
