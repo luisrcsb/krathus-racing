@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Krathus Racing - Gestão e Upload de Relatórios PDF</title>
+    <title>Krathus Racing - Central de Telemetria</title>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Firebase SDK (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
     <style>
         :root {
             --bg-body: #0d111a;
@@ -22,86 +27,516 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
         body { background-color: var(--bg-body); color: var(--text-main); padding: 24px; }
-        .container { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
-        
-        .header { display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 20px 24px; border-radius: 12px; border: 1px solid var(--border-card); }
-        .brand-title h1 { font-size: 1.3rem; color: var(--text-title); }
-        .brand-title p { font-size: 0.8rem; color: var(--text-muted); }
+        .dashboard-container { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
 
-        .card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-        .card-header { font-size: 1rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 8px; }
+        /* AVISO DE MODO PAISAGEM PARA CELULAR (Retrato) */
+        #mobile-orientation-warning {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: rgba(13, 17, 26, 0.96);
+            z-index: 9999;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+            gap: 15px;
+            overflow-y: auto;
+        }
+        .orientation-icon { font-size: 3rem; animation: rotatePhone 2s infinite ease-in-out; }
+        .orientation-title { font-size: 1.2rem; font-weight: 700; color: var(--text-title); max-width: 90%; }
+        .orientation-text { font-size: 0.85rem; color: var(--text-muted); max-width: 280px; line-height: 1.4; }
         
-        .btn { padding: 10px 18px; border-radius: 8px; border: none; font-weight: 600; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: opacity 0.2s; }
-        .btn-upload-global { background: linear-gradient(135deg, #3a86ff 0%, #2ec4b6 100%); color: #ffffff; font-weight: 700; }
-        .btn-text-action { background: transparent; border: none; color: var(--accent-blue); font-size: 0.82rem; font-weight: 600; cursor: pointer; padding: 0; }
+        @keyframes rotatePhone {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(90deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        @media screen and (max-width: 768px) and (orientation: portrait) {
+            #mobile-orientation-warning { display: flex; }
+        }
+
+        .header { display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 20px 24px; border-radius: 12px; border: 1px solid var(--border-card); flex-wrap: wrap; gap: 15px; }
+        .brand-title h1 { font-size: 1.5rem; color: var(--text-title); letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
+        .brand-title p { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
+
+        .header-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .btn { padding: 10px 18px; border-radius: 8px; border: none; font-weight: 600; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: opacity 0.2s; }
+        .btn-text-action { background: transparent; border: none; color: var(--accent-blue); font-size: 0.78rem; font-weight: 600; cursor: pointer; padding: 0; text-align: left; }
         .btn-text-action:hover { text-decoration: underline; }
+
+        .btn-pdf-global { background: linear-gradient(135deg, #ff5722 0%, #e63946 100%); color: #ffffff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 4px 15px rgba(255, 87, 34, 0.4); width: fit-content; }
+        .btn-upload-global { background: linear-gradient(135deg, #3a86ff 0%, #2ec4b6 100%); color: #ffffff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 4px 15px rgba(58, 134, 255, 0.4); width: fit-content; }
         
-        .upload-box { background: var(--bg-input); border: 1px dashed var(--border-card); border-radius: 8px; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+        .btn-share { background: rgba(58, 134, 255, 0.15); color: var(--accent-blue); border: 1px solid var(--accent-blue); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.2s; }
+        .btn-share:hover { background: rgba(58, 134, 255, 0.3); }
+
+        .btn-like { background: rgba(230, 57, 70, 0.15); color: var(--accent-red); border: 1px solid var(--accent-red); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s; }
+        .btn-like:hover { background: rgba(230, 57, 70, 0.3); transform: scale(1.05); }
+
+        .piloto-link { color: var(--accent-blue); text-decoration: none; font-weight: 700; cursor: pointer; transition: color 0.2s; }
+        .piloto-link:hover { color: var(--accent-gold); text-decoration: underline; }
+
+        /* Modal / Ficha do Piloto */
+        #piloto-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: rgba(13, 17, 26, 0.88);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        /* Modal de Upload de Relatórios PDF */
+        #upload-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: rgba(13, 17, 26, 0.88);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-top: 5px solid var(--accent-gold);
+            border-radius: 14px;
+            width: 100%;
+            max-width: 1000px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            animation: modalFadeIn 0.3s ease-in-out;
+            overflow: hidden;
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .modal-header { padding: 20px 24px; background: var(--bg-card-header); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-card); }
+        .modal-title { font-size: 1.25rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 10px; }
+        .modal-close { background: transparent; border: none; color: var(--text-muted); font-size: 1.4rem; cursor: pointer; font-weight: bold; transition: color 0.2s; }
+        .modal-close:hover { color: var(--accent-red); }
+        .modal-body { padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
         
-        .grid-manager { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .badges-podium-container { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 5px; }
+        .badge-achievement { background: linear-gradient(135deg, rgba(255, 183, 3, 0.2) 0%, rgba(255, 183, 3, 0.05) 100%); border: 1px solid var(--accent-gold); color: var(--accent-gold); padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(255, 183, 3, 0.15); }
+        .badge-achievement.silver { background: linear-gradient(135deg, rgba(132, 146, 166, 0.2) 0%, rgba(132, 146, 166, 0.05) 100%); border-color: var(--text-muted); color: var(--text-title); }
+        .badge-achievement.green-tag { background: linear-gradient(135deg, rgba(46, 196, 182, 0.2) 0%, rgba(46, 196, 182, 0.05) 100%); border-color: var(--accent-green); color: var(--accent-green); }
+
+        .dossier-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+        .dossier-kpi { background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 4px; text-align: center; }
+        .dossier-kpi-label { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+        .dossier-kpi-value { font-size: 1.25rem; font-weight: 700; color: var(--accent-gold); }
+
+        .positions-ranking-box { background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+        .positions-ranking-title { font-size: 0.85rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase; letter-spacing: 0.5px; }
+        .positions-pills-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+        .position-pill { background: var(--bg-card); border: 1px solid var(--border-card); padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
+        .position-pill span { font-weight: 700; color: var(--text-title); }
+
+        .dossier-report-box { background: var(--bg-input); border-left: 4px solid var(--accent-blue); border-radius: 8px; padding: 18px; font-size: 0.9rem; line-height: 1.6; color: var(--text-main); display: flex; flex-direction: column; gap: 10px; }
+        .dossier-report-title { font-size: 0.85rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .tab-content { display: flex; flex-direction: column; gap: 20px; }
+
+        .welcome-card { background: linear-gradient(135deg, var(--bg-card) 0%, rgba(28, 38, 56, 0.7) 100%); border: 1px solid var(--border-card); border-left: 5px solid var(--accent-blue); border-radius: 12px; padding: 22px 24px; display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+        .welcome-title { font-size: 1.1rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 8px; }
+        .welcome-text { font-size: 0.9rem; color: var(--text-main); line-height: 1.6; }
+        .changelog-box { background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 12px 16px; margin-top: 4px; display: flex; flex-direction: column; gap: 6px; }
+        .changelog-header { font-size: 0.78rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase; letter-spacing: 0.5px; }
+        .changelog-list { font-size: 0.85rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 4px; padding-left: 16px; }
+
+        .filters-card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 18px; }
+        .filters-grid { display: grid; grid-template-columns: 1fr 1fr 1.3fr; gap: 20px; }
+        .filter-group { display: flex; flex-direction: column; gap: 12px; }
+        .filter-group-header { display: flex; justify-content: space-between; align-items: center; }
+        .filter-group label.group-title { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
         
-        ul#upload-lista-historico { list-style: none; display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; padding-right: 4px; }
-        ul#upload-lista-historico li { background: var(--bg-input); padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border-card); display: flex; justify-content: space-between; align-items: center; font-size: 0.88rem; }
+        .checkbox-container { background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 10px; max-height: 150px; overflow-y: auto; }
+        .checkbox-item { display: flex; align-items: center; gap: 10px; font-size: 0.88rem; color: var(--text-main); cursor: pointer; }
+        .checkbox-item input[type="checkbox"] { accent-color: var(--accent-red); width: 16px; height: 16px; cursor: pointer; }
+
+        .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+        .kpi-card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; justify-content: space-between; }
+        .kpi-label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+        .kpi-value { font-size: 1.5rem; font-weight: 700; color: var(--text-title); margin: 8px 0 4px 0; }
+        .kpi-value.green { color: var(--accent-green); }
+        .kpi-subtext { font-size: 0.8rem; color: var(--text-muted); }
+
+        .session-block-header { background: linear-gradient(135deg, var(--bg-card-header) 0%, var(--bg-card) 100%); border: 1px solid var(--border-card); border-left: 5px solid var(--accent-red); border-radius: 10px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; flex-wrap: wrap; gap: 10px; }
+        .session-block-title { font-size: 1.15rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 10px; }
+        .session-block-meta { font-size: 0.85rem; color: var(--text-muted); display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .session-winner-tag { background: rgba(255, 183, 3, 0.15); color: var(--accent-gold); border: 1px solid var(--accent-gold); padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; }
+
+        .session-blocks-container { display: flex; flex-direction: column; gap: 30px; }
+        .session-block { display: flex; flex-direction: column; gap: 20px; background: rgba(21, 28, 40, 0.4); border: 1px solid var(--border-card); border-radius: 14px; padding: 20px; }
+        .card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px; }
+        .card-header { display: flex; align-items: center; gap: 10px; font-size: 1rem; font-weight: 700; color: var(--text-title); margin-bottom: 16px; }
+        .card-header::before { content: ''; width: 4px; height: 16px; background-color: var(--accent-red); border-radius: 2px; }
+        .chart-container { position: relative; height: 280px; width: 100%; }
+
+        .position-analysis-container { margin-top: 20px; background: var(--bg-input); border-left: 4px solid var(--accent-gold); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+        .position-analysis-title { font-size: 0.85rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase; letter-spacing: 0.5px; }
+        .position-log-list { display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; line-height: 1.5; max-height: 220px; overflow-y: auto; }
+        .position-log-item { background: rgba(21, 28, 40, 0.5); padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border-card); }
+        .tag-gain { color: var(--accent-green); font-weight: 700; }
+        .tag-loss { color: var(--accent-red); font-weight: 700; }
+
+        /* Módulo de Comentários com Reações */
+        .comments-section { margin-top: 15px; background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+        .comments-title { font-size: 0.85rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
+        .comments-list { display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto; }
+        .comment-item { background: rgba(21, 28, 40, 0.6); padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border-card); font-size: 0.85rem; display: flex; flex-direction: column; gap: 6px; }
+        .comment-header-row { display: flex; justify-content: space-between; align-items: center; }
+        .comment-author { font-weight: 700; color: var(--accent-gold); }
+        .comment-text { color: var(--text-main); word-break: break-word; line-height: 1.4; }
+        .comment-reactions { display: flex; gap: 12px; margin-top: 4px; align-items: center; }
+        .btn-comment-reaction { background: rgba(28, 38, 59, 0.8); border: 1px solid var(--border-card); color: var(--text-muted); padding: 3px 8px; border-radius: 6px; font-size: 0.78rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all 0.2s; }
+        .btn-comment-reaction:hover { border-color: var(--accent-blue); color: var(--text-title); background: rgba(58, 134, 255, 0.15); }
         
-        pre { background: var(--bg-body); color: var(--accent-green); padding: 14px; border-radius: 6px; font-size: 0.78rem; max-height: 300px; overflow: auto; border: 1px solid var(--border-card); line-height: 1.4; }
+        .comment-form { display: flex; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
+        .comment-input-name { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 6px; padding: 8px 12px; color: var(--text-main); font-size: 0.85rem; width: 160px; }
+        .comment-input-text { flex: 1; background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 6px; padding: 8px 12px; color: var(--text-main); font-size: 0.85rem; min-width: 200px; }
+        .btn-comment { background: var(--accent-blue); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: opacity 0.2s; }
+        .btn-comment:hover { opacity: 0.9; }
+
+        .table-container { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
+        th { background-color: var(--bg-card-header); color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; padding: 12px 16px; font-weight: 700; border-bottom: 1px solid var(--border-card); }
+        td { padding: 12px 16px; border-bottom: 1px solid var(--border-card); vertical-align: middle; }
+        .main-row td { border-bottom: none !important; }
+        .sub-row td { padding: 0 16px 16px 16px !important; border-bottom: 1px solid var(--border-card) !important; }
+
+        .pos-badge { background: var(--accent-gold); color: #000; font-weight: bold; font-size: 0.8rem; padding: 4px 8px; border-radius: 4px; display: inline-block; }
+        .session-badge { background: #1d3557; color: var(--accent-blue); padding: 4px 10px; border-radius: 4px; font-size: 0.80rem; font-weight: 600; display: inline-block; }
+        .text-green { color: var(--accent-green); font-weight: 700; }
+
+        .analysis-subrow-box { background: rgba(28, 38, 59, 0.6); border-left: 4px solid var(--accent-blue); border-radius: 6px; padding: 14px 18px; font-size: 0.86rem; color: var(--text-main); line-height: 1.6; }
+        .analysis-subrow-box strong.title { color: var(--accent-blue); text-transform: uppercase; font-size: 0.78rem; display: block; margin-bottom: 6px; letter-spacing: 0.5px; }
         
-        .btn-voltar { background: var(--border-card); color: var(--text-main); text-decoration: none; padding: 8px 14px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; }
-        .btn-voltar:hover { background: var(--bg-input); }
+        .fastest-lap-highlight { background-color: rgba(46, 196, 182, 0.15) !important; color: var(--accent-green) !important; font-weight: bold; border-radius: 4px; padding: 4px 8px; border: 1px solid var(--accent-green); }
+        .absolute-fastest-lap-highlight { background-color: rgba(255, 183, 3, 0.25) !important; color: var(--accent-gold) !important; font-weight: bold; border-radius: 4px; padding: 4px 8px; border: 1px solid var(--accent-gold); box-shadow: 0 0 10px rgba(255, 183, 3, 0.2); }
+        
+        .gato-lap-highlight { background-color: rgba(230, 57, 70, 0.2) !important; border: 1px solid var(--accent-red) !important; color: var(--accent-red) !important; border-radius: 4px; padding: 4px 8px; text-decoration: line-through; }
+        
+        .lap-cell-inline { display: inline-flex; align-items: baseline; gap: 6px; white-space: nowrap; }
+        .lap-diff-inline { font-size: 0.75rem; color: var(--accent-green); font-weight: 600; }
+
+        .footer-container { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px 24px; display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 10px; }
+        .footer-meta-info { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 16px; font-size: 0.82rem; color: var(--text-muted); background: var(--bg-input); padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border-card); }
+        .footer-logos { display: flex; align-items: center; justify-content: center; gap: 28px; }
+        .footer-logo-img { height: 36px; width: auto; object-fit: contain; border-radius: 4px; padding: 3px 6px; background: #ffffff; }
+        .footer-copyright { font-size: 0.85rem; color: var(--text-muted); text-align: center; border-top: 1px solid var(--border-card); padding-top: 12px; width: 100%; }
+
+        @media print {
+            body, body * { color: #000000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            body { background-color: #ffffff !important; padding: 10px !important; font-size: 11px !important; }
+            .header-actions, .filters-card, .btn-pdf-global, .btn-upload-global, .btn-share, .btn-like, .comments-section, .welcome-card, #piloto-modal, #upload-modal { display: none !important; }
+            .header { background: #ffffff !important; border: 1px solid #d1d5db !important; }
+            .kpi-card { background: #f9fafb !important; border: 1px solid #d1d5db !important; }
+            .card { background: #ffffff !important; border: 1px solid #9ca3af !important; }
+            .chart-container { background-color: #e5e7eb !important; border: 1px solid #9ca3af !important; border-radius: 6px; padding: 10px !important; }
+            .position-analysis-container { background: #f3f4f6 !important; border-left-color: #000 !important; }
+            .footer-container { background: #ffffff !important; border: 1px solid #d1d5db !important; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <header class="header">
-            <div class="brand-title">
-                <h1>📂 Central de Upload de Relatórios PDF</h1>
-                <p>Krathus Racing - Gestão de Dados ZRound</p>
+    <!-- MODAL / FICHA DO PILOTO -->
+    <div id="piloto-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-piloto-nome">🏎️ Ficha do Piloto</div>
+                <button class="modal-close" onclick="fecharDossiePiloto()">&times;</button>
             </div>
-            <a href="index.html" class="btn-voltar">⬅️ Voltar ao Painel Principal</a>
-        </header>
-
-        <div class="card">
-            <div class="card-header">🚀 Enviar Novos Relatórios</div>
-            <div class="upload-box">
-                <p style="font-size: 0.88rem; color: var(--text-muted);">Selecione um ou múltiplos arquivos PDF gerados pelo ZRound para processamento e integração ao banco de dados local.</p>
-                <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
-                    <input type="file" id="input-pdf-upload" accept=".pdf" multiple style="background: var(--bg-card); padding: 8px; border-radius: 6px; border: 1px solid var(--border-card); color: var(--text-main); flex: 1;">
-                    <button class="btn btn-upload-global" onclick="processarUploadPdfs()">Processar e Integrar</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="grid-manager">
-            <div class="card">
-                <div class="card-header">📋 Arquivos Carregados no Cache</div>
-                <ul id="upload-lista-historico">
-                    <!-- Preenchido via JS -->
-                </ul>
-            </div>
-
-            <div class="card">
-                <div class="card-header">🔍 Visualizador de Estrutura do JSON</div>
-                <pre id="upload-json-viewer">Selecione "Inspecionar" em um arquivo ao lado para visualizar a estrutura gravada...</pre>
+            <div class="modal-body" id="modal-piloto-corpo">
+                <!-- Conteúdo injetado via JavaScript -->
             </div>
         </div>
     </div>
 
-    <!-- IMPORTAÇÃO DO BANCO DE DADOS -->
-    <script src="Banco-de-dados.js"></script>
+    <!-- MODAL / UPLOAD DE RELATÓRIOS PDF (Protegido por senha) -->
+    <div id="upload-modal">
+        <div class="modal-content" style="max-width: 1000px;">
+            <div class="modal-header">
+                <div class="modal-title">📂 Central de Upload e Gestão de Relatórios PDF (Nuvem)</div>
+                <button class="modal-close" onclick="fecharUploadModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px;">
+                    <div style="font-weight: 700; color: var(--accent-gold); text-transform: uppercase; font-size: 0.85rem;">Selecionar Arquivos PDF do ZRound</div>
+                    <p style="font-size: 0.88rem; color: var(--text-muted);">Faça o envio de um ou múltiplos relatórios em PDF. O sistema processará e salvará diretamente na nuvem do Firebase para todos os usuários.</p>
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+                        <input type="file" id="input-pdf-upload" accept=".pdf" multiple style="background: var(--bg-card); padding: 8px; border-radius: 6px; border: 1px solid var(--border-card); color: var(--text-main); flex: 1;">
+                        <button class="btn btn-upload-global" onclick="processarUploadEEnviarNuvem()">🚀 Processar e Enviar para Nuvem</button>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="card" style="padding: 14px; margin: 0;">
+                        <div class="card-header" style="margin-bottom: 10px;">📋 Arquivos Salvos na Nuvem</div>
+                        <div style="max-height: 250px; overflow-y: auto;">
+                            <ul id="upload-lista-historico" style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 0.88rem;">
+                                <li>Carregando dados da nuvem...</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card" style="padding: 14px; margin: 0;">
+                        <div class="card-header" style="margin-bottom: 10px;">🔍 Visualizador de Estrutura do JSON</div>
+                        <pre id="upload-json-viewer" style="background: var(--bg-body); color: var(--accent-green); padding: 12px; border-radius: 6px; font-size: 0.78rem; max-height: 250px; overflow: auto; border: 1px solid var(--border-card);">Selecione um arquivo ao lado para inspecionar o formato estruturado...</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="mobile-orientation-warning">
+        <div class="orientation-icon">📱🔄</div>
+        <div class="orientation-title">Melhor Visualização em Paisagem</div>
+        <div class="orientation-text">Para analisar os gráficos de telemetria e as tabelas com conforto, por favor, vire o seu celular na horizontal.</div>
+    </div>
+
+    <div class="dashboard-container">
+        <header class="header">
+            <div class="brand-title">
+                <h1>🏁 KRATHUS RACING</h1>
+                <p>Central de Telemetria e Análise de Desempenho (Tempo Real - Nuvem)</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-upload-global" onclick="abrirUploadModal()">📤 Upload de Relatórios PDF</button>
+                <button class="btn btn-pdf-global" onclick="gerarRelatórioPDF()">📄 Gerar Relatório PDF Completo</button>
+            </div>
+        </header>
+
+        <div id="tab-telemetria" class="tab-content">
+            <section class="filters-card">
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <div class="filter-group-header">
+                            <label class="group-title">SESSÕES / BATERIAS</label>
+                            <button class="btn-text-action" onclick="limparSelecao('filter-bateria')">🗑️ Limpar Seleção</button>
+                        </div>
+                        <div class="checkbox-container" id="filtro-baterias-container"></div>
+                    </div>
+
+                    <div class="filter-group">
+                        <div class="filter-group-header">
+                            <label class="group-title">PILOTOS</label>
+                            <button class="btn-text-action" onclick="limparSelecao('filter-piloto')">🗑️ Limpar Seleção</button>
+                        </div>
+                        <div class="checkbox-container" id="filtro-pilotos-container"></div>
+                    </div>
+
+                    <div class="filter-group">
+                        <div class="filter-group-header">
+                            <label class="group-title">MÓDULOS VISÍVEIS</label>
+                            <button class="btn-text-action" onclick="limparSelecao('filter-modulo')">🗑️ Limpar Seleção</button>
+                        </div>
+                        <div class="checkbox-container">
+                            <label class="checkbox-item"><input type="checkbox" value="mod-grafico" class="filter-modulo" checked onchange="atualizarDashboard()"> 📈 Evolução de Ritmo (Lap Times)</label>
+                            <label class="checkbox-item"><input type="checkbox" value="mod-grafico-posicao" class="filter-modulo" checked onchange="atualizarDashboard()"> 📊 Posição Volta a Volta (Race Position)</label>
+                            <label class="checkbox-item"><input type="checkbox" value="mod-log-posicao" class="filter-modulo" checked onchange="atualizarDashboard()"> 📝 Relatório Detalhado de Ultrapassagens</label>
+                            <label class="checkbox-item"><input type="checkbox" value="mod-velocidade" class="filter-modulo" checked onchange="atualizarDashboard()"> 🏎️ Velocidade Média e Escala Real (1/28)</label>
+                            <label class="checkbox-item"><input type="checkbox" value="mod-classificacao-analise" class="filter-modulo" checked onchange="atualizarDashboard()"> 🏆 Consistência (Ritmo, Comportamento e Pontos Críticos)</label>
+                            <label class="checkbox-item"><input type="checkbox" value="mod-tabela-geral" class="filter-modulo" checked onchange="atualizarDashboard()"> ⏱️ Tabela Geral Volta a Volta (com Gaps ao Lado)</label>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- KPIs -->
+            <section class="kpi-grid">
+                <div class="kpi-card">
+                    <span class="kpi-label">Piloto com Mais Vitórias</span>
+                    <div class="kpi-value" id="kpi-vencedor">--</div>
+                    <span class="kpi-subtext" id="kpi-vencedor-sub">Aguardando dados</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-label">Melhor Volta Geral</span>
+                    <div class="kpi-value green" id="kpi-melhor-volta">--</div>
+                    <div class="kpi-value" id="kpi-melhor-volta-vel" style="color: var(--accent-gold); margin-top: 2px;">--</div>
+                    <span class="kpi-subtext" id="kpi-melhor-volta-sub">--</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-label">Voltas Válidas Analisadas</span>
+                    <div class="kpi-value" id="kpi-total-voltas">0</div>
+                    <span class="kpi-subtext">Total nas sessões marcadas</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-label">Média Global do Grid</span>
+                    <div class="kpi-value" id="kpi-media-global">--</div>
+                    <div class="kpi-value" id="kpi-media-global-vel" style="color: var(--accent-gold); margin-top: 2px;">--</div>
+                    <span class="kpi-subtext">Média geral das sessões</span>
+                </div>
+            </section>
+
+            <div id="sessions-container" class="session-blocks-container"></div>
+
+            <section class="welcome-card">
+                <div class="welcome-title">📊 Sobre a Central de Telemetria Krathus Racing</div>
+                <div class="welcome-text">
+                    Este sistema processa e exibe dados oficiais de telemetria das baterias de automodelismo 1/28 conectados diretamente à nuvem Firebase.
+                </div>
+                <div class="changelog-box">
+                    <div class="changelog-header">🚀 O que há de novo na Versão Atualizada:</div>
+                    <ul class="changelog-list">
+                        <li><strong>Sincronização em Nuvem (Firebase):</strong> Uploads e exclusões sincronizam instantaneamente para todos os usuários online.</li>
+                    </ul>
+                </div>
+            </section>
+        </div>
+
+        <footer class="footer-container">
+            <div class="footer-meta-info">
+                <span>📌 Versão Atual: <strong>v5.0.0 (Firebase Cloud Realtime)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+            </div>
+            <div class="footer-logos">
+                <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
+                <img src="https://www.zround.com/wp-content/uploads/2020/05/zround_logo_web.png" alt="ZRound" class="footer-logo-img">
+            </div>
+            <div class="footer-copyright">&copy; 2026 Krathus Racing - Central de Telemetria. Todos os direitos reservados.</div>
+        </footer>
+    </div>
 
     <script>
+        // CONFIGURAÇÃO DO FIREBASE
+        const firebaseConfig = {
+            apiKey: "AIzaSyDCTkeIa6QsY2zYs8S__HlIwcY-zcuhZCA",
+            authDomain: "krathus-telemetria.firebaseapp.com",
+            projectId: "krathus-telemetria",
+            storageBucket: "krathus-telemetria.firebasestorage.app",
+            messagingSenderId: "1051581039922",
+            appId: "1:1051581039922:web:d8ae00eb4ab45fa3d5432b",
+            measurementId: "G-JPR41S7CZ3",
+            databaseURL: "https://krathus-telemetria-default-rtdb.firebaseio.com"
+        };
+
+        let db = null;
+        let listaJsonsCache = [];
+        let chartInstances = [];
+        const SENHA_ADMIN = "krathus2026";
+
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.database();
+        } catch (e) {
+            console.warn("Erro ao inicializar o Firebase:", e);
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
-            atualizarListaUploadHistorico();
+            if (db) {
+                // Escuta em tempo real o banco de dados na nuvem (Nó 'baterias')
+                db.ref('baterias').on('value', snapshot => {
+                    listaJsonsCache = [];
+                    snapshot.forEach(childSnapshot => {
+                        listaJsonsCache.push({
+                            firebaseKey: childSnapshot.key,
+                            ...childSnapshot.val()
+                        });
+                    });
+                    
+                    listaJsonsCache.sort((a, b) => b.id - a.id);
+                    gerarFiltrosDinamicos();
+                    atualizarDashboard();
+                    atualizarListaUploadHistorico();
+                });
+            } else {
+                console.error("Firebase não conectado.");
+            }
         });
 
-        function processarUploadPdfs() {
+        function obterTodosDadosConsolidados() {
+            let consolidado = [];
+            if (listaJsonsCache && Array.isArray(listaJsonsCache)) {
+                listaJsonsCache.forEach(arq => {
+                    if (arq.dados && Array.isArray(arq.dados)) {
+                        consolidado = consolidado.concat(arq.dados);
+                    }
+                });
+            }
+            return consolidado;
+        }
+
+        function gerarFiltrosDinamicos() {
+            let dados = obterTodosDadosConsolidados();
+            const bateriasMap = {};
+            const pilotosSet = new Set();
+
+            dados.forEach(item => {
+                if (item.bateriaKey && !bateriasMap[item.bateriaKey]) {
+                    bateriasMap[item.bateriaKey] = item.sessao || item.bateriaKey;
+                }
+                if (item.piloto) pilotosSet.add(item.piloto);
+            });
+
+            const batContainer = document.getElementById('filtro-baterias-container');
+            const pilContainer = document.getElementById('filtro-pilotos-container');
+
+            if (Object.keys(bateriasMap).length === 0) {
+                batContainer.innerHTML = `<span style="font-size:0.85rem; color: var(--text-muted);">Banco de dados vazio.</span>`;
+                pilContainer.innerHTML = `<span style="font-size:0.85rem; color: var(--text-muted);">Banco de dados vazio.</span>`;
+                return;
+            }
+
+            batContainer.innerHTML = Object.keys(bateriasMap).map(key => `
+                <label class="checkbox-item"><input type="checkbox" value="${key}" class="filter-bateria" checked onchange="atualizarDashboard()"> ${bateriasMap[key]}</label>
+            `).join('');
+
+            pilContainer.innerHTML = Array.from(pilotosSet).map(piloto => `
+                <label class="checkbox-item"><input type="checkbox" value="${piloto}" class="filter-piloto" checked onchange="atualizarDashboard()"> ${piloto}</label>
+            `).join('');
+        }
+
+        const coresPaleta = ["#2ec4b6", "#ffb703", "#e63946", "#3a86ff", "#ff006e", "#8338ec", "#38bdf8", "#fb8500", "#52b788"];
+        function obterCorPiloto(nome) {
+            let hash = 0;
+            for (let i = 0; i < nome.length; i++) {
+                hash = nome.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            return coresPaleta[Math.abs(hash) % coresPaleta.length];
+        }
+
+        function limparSelecao(classeFiltro) {
+            document.querySelectorAll(`.${classeFiltro}`).forEach(cb => cb.checked = false);
+            atualizarDashboard();
+        }
+
+        // Funções do Modal de Upload Protegido por Senha
+        window.abrirUploadModal = function() {
+            let senha = prompt("Digite a senha de Administrador para acessar o Upload:");
+            if (senha === SENHA_ADMIN) {
+                document.getElementById('upload-modal').style.display = 'flex';
+                atualizarListaUploadHistorico();
+            } else if (senha !== null) {
+                alert("Senha incorreta!");
+            }
+        };
+
+        window.fecharUploadModal = function() {
+            document.getElementById('upload-modal').style.display = 'none';
+        };
+
+        window.processarUploadEEnviarNuvem = function() {
             const input = document.getElementById('input-pdf-upload');
             if (!input.files || input.files.length === 0) {
                 alert("Por favor, selecione ao menos um arquivo PDF.");
                 return;
             }
-
-            let dadosCache = (typeof listaJsonsCache !== 'undefined') ? listaJsonsCache : (window.listaJsonsCache || []);
+            if (!db) {
+                alert("Erro: Firebase não conectado.");
+                return;
+            }
 
             for (let i = 0; i < input.files.length; i++) {
                 const arquivo = input.files[i];
@@ -109,7 +544,6 @@
                 const batKey = "bat_" + nomeArq.toLowerCase().replace(/[^a-z0-9]/g, "_");
                 const sessaoNome = nomeArq.replace(/\.[^/.]+$/, "");
 
-                // Estrutura padrão compatível com o banco
                 const novoRegistro = {
                     bateriaKey: batKey,
                     sessao: sessaoNome,
@@ -134,62 +568,369 @@
                     ]
                 };
 
-                if (typeof mesclarDados === 'function') {
-                    mesclarDados([novoRegistro]);
-                } else {
-                    dadosCache.unshift(novoRegistro);
-                }
+                db.ref('baterias').push(novoRegistro).catch(err => {
+                    alert("Erro ao salvar na nuvem: " + err.message);
+                });
             }
 
-            alert("Relatórios PDF processados e integrados com sucesso!");
+            alert("Relatórios PDF enviados e salvos na nuvem com sucesso!");
             input.value = "";
-            atualizarListaUploadHistorico();
-        }
+        };
 
         function atualizarListaUploadHistorico() {
-            let dadosCache = (typeof listaJsonsCache !== 'undefined') ? listaJsonsCache : (window.listaJsonsCache || []);
             const ul = document.getElementById('upload-lista-historico');
+            if (!ul) return;
             ul.innerHTML = "";
 
-            if (!dadosCache || dadosCache.length === 0) {
-                ul.innerHTML = `<li style="color: var(--text-muted); text-align: center; justify-content: center; padding: 15px;">Nenhum arquivo no cache atual.</li>`;
-                document.getElementById('upload-json-viewer').textContent = "Selecione 'Inspecionar' em um arquivo ao lado para visualizar a estrutura gravada...";
+            if (!listaJsonsCache || listaJsonsCache.length === 0) {
+                ul.innerHTML = `<li style="color: var(--text-muted); text-align: center; padding: 10px;">Nenhum arquivo na nuvem.</li>`;
+                let viewer = document.getElementById('upload-json-viewer');
+                if (viewer) viewer.textContent = "Selecione um arquivo ao lado para inspecionar o formato estruturado...";
                 return;
             }
 
-            dadosCache.forEach((item, index) => {
-                let nomeExibicao = item.sessao || item.nomeArquivo || `Bateria ID ${item.id}`;
+            listaJsonsCache.forEach((item, index) => {
+                let nomeExibicao = item.sessao || `Bateria ID ${item.id}`;
                 const li = document.createElement('li');
+                li.style.cssText = "background: var(--bg-input); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-card); display: flex; justify-content: space-between; align-items: center;";
                 li.innerHTML = `
                     <span>📄 <strong>${nomeExibicao}</strong></span>
-                    <div style="display: flex; gap: 12px; align-items: center;">
+                    <div style="display: flex; gap: 8px; align-items: center;">
                         <button class="btn-text-action" onclick="inspecionarJsonUpload(${index})">🔍 Inspecionar</button>
-                        <button class="btn-text-action" style="color: var(--accent-red);" onclick="excluirArquivoUpload(${index})" title="Excluir arquivo">🗑️ Excluir</button>
+                        <button class="btn-text-action" style="color: var(--accent-red);" onclick="excluirArquivoNuvem('${item.firebaseKey}', '${nomeExibicao}')" title="Excluir arquivo">🗑️ Excluir</button>
                     </div>
                 `;
                 ul.appendChild(li);
             });
         }
 
-        function inspecionarJsonUpload(index) {
-            let dadosCache = (typeof listaJsonsCache !== 'undefined') ? listaJsonsCache : (window.listaJsonsCache || []);
-            const item = dadosCache[index];
+        window.inspecionarJsonUpload = function(index) {
+            const item = listaJsonsCache[index];
             if (item) {
                 document.getElementById('upload-json-viewer').textContent = JSON.stringify(item, null, 4);
             }
+        };
+
+        window.excluirArquivoNuvem = function(firebaseKey, nomeExibicao) {
+            if (!db) return;
+            if (confirm(`Tem certeza que deseja excluir "${nomeExibicao}" da nuvem? A alteração afetará todos os usuários.`)) {
+                db.ref('baterias/' + firebaseKey).remove().then(() => {
+                    alert("Arquivo excluído da nuvem com sucesso!");
+                }).catch(err => {
+                    alert("Erro ao excluir: " + err.message);
+                });
+            }
+        };
+
+        // Ficha do Piloto
+        window.abrirDossiePiloto = function(nomePiloto) {
+            const modal = document.getElementById('piloto-modal');
+            const titleEl = document.getElementById('modal-piloto-nome');
+            const bodyEl = document.getElementById('modal-piloto-corpo');
+
+            titleEl.innerHTML = `🏎️ Ficha do Piloto: <span style="color: var(--accent-gold);">${nomePiloto}</span>`;
+            let dadosBase = obterTodosDadosConsolidados();
+            let participacoes = dadosBase.filter(d => d.piloto === nomePiloto);
+
+            if (participacoes.length === 0) {
+                bodyEl.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted);">Nenhum dado encontrado para este piloto.</div>`;
+                modal.style.display = 'flex';
+                return;
+            }
+
+            let totalCorridas = participacoes.length;
+            let vitorias = 0;
+            let melhorVoltaAbsolutaPiloto = 999999;
+            let somaMediasPiloto = 0;
+            let totalVoltasVálidasPiloto = 0;
+            let tabelaHistoricoHtml = "";
+            let contadorPosicoes = {};
+
+            participacoes.forEach(part => {
+                let posStr = String(part.pos || '99').replace('º','').trim();
+                let posNum = parseInt(posStr) || 99;
+                contadorPosicoes[posNum] = (contadorPosicoes[posNum] || 0) + 1;
+                if (posNum === 1) vitorias++;
+
+                let lapsRaw = part.laps || [];
+                let lapsValidas = lapsRaw.filter(l => !(typeof l === 'object' && l.anulada)).map(l => typeof l === 'object' ? l.tempo : l);
+                
+                if (lapsValidas.length > 0) {
+                    let melhorPart = Math.min(...lapsValidas);
+                    if (melhorPart < melhorVoltaAbsolutaPiloto) melhorVoltaAbsolutaPiloto = melhorPart;
+
+                    let somaPart = lapsValidas.reduce((a,b)=>a+b, 0);
+                    let mediaPart = somaPart / lapsValidas.length;
+                    somaMediasPiloto += mediaPart * lapsValidas.length;
+                    totalVoltasVálidasPiloto += lapsValidas.length;
+
+                    tabelaHistoricoHtml += `
+                        <tr>
+                            <td><span class="session-badge">${part.sessao || part.bateriaKey}</span></td>
+                            <td><span class="pos-badge">${part.pos || '-'}</span></td>
+                            <td>${lapsValidas.length} voltas</td>
+                            <td class="text-green">${melhorPart.toFixed(3).replace('.',',')}s</td>
+                            <td>${mediaPart.toFixed(3).replace('.',',')}s</td>
+                        </tr>
+                    `;
+                }
+            });
+
+            let mediaGeralPiloto = totalVoltasVálidasPiloto > 0 ? (somaMediasPiloto / totalVoltasVálidasPiloto) : 0;
+            let posicoesOrdenadas = Object.keys(contadorPosicoes).map(Number).sort((a,b) => a - b);
+            let rankingPillsHtml = posicoesOrdenadas.map(p => `
+                <div class="position-pill">
+                    <span>${p}º Lugar:</span> <span>${contadorPosicoes[p]}x</span>
+                </div>
+            `).join('');
+
+            let safeName = nomePiloto.replace(/[.#$\/\[\]]/g, "_");
+            if (db) {
+                db.ref('pilotos/' + safeName).once('value', snapshot => {
+                    let pData = snapshot.val() || {};
+                    renderizarCorpoDossiê(bodyEl, totalCorridas, vitorias, melhorVoltaAbsolutaPiloto, mediaGeralPiloto, rankingPillsHtml, tabelaHistoricoHtml, nomePiloto, pData);
+                });
+            } else {
+                renderizarCorpoDossiê(bodyEl, totalCorridas, vitorias, melhorVoltaAbsolutaPiloto, mediaGeralPiloto, rankingPillsHtml, tabelaHistoricoHtml, nomePiloto, {});
+            }
+
+            modal.style.display = 'flex';
+        };
+
+        function renderizarCorpoDossiê(bodyEl, totalCorridas, vitorias, melhorVoltaAbsolutaPiloto, mediaGeralPiloto, rankingPillsHtml, tabelaHistoricoHtml, nomePiloto, pData) {
+            bodyEl.innerHTML = `
+                <div class="card" style="padding: 16px; background: var(--bg-input); border: 1px solid var(--border-card);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <div class="dossier-report-title" style="margin-bottom:0;">📋 Informações Cadastrais e do Automodelo</div>
+                        <button class="btn-text-action" id="btn-admin-mode" onclick="ativarModoEdicao()">🔑 Editar Ficha (Admin)</button>
+                    </div>
+                    <div id="dados-exibicao-piloto" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-size: 0.9rem;">
+                        <div><strong>Nome Completo:</strong> <span id="lbl-nome">${pData.nomeCompleto || 'Não cadastrado'}</span></div>
+                        <div><strong>Apelido:</strong> <span id="lbl-apelido">${pData.apelido || 'Não cadastrado'}</span></div>
+                        <div><strong>Modelo do Carro:</strong> <span id="lbl-carro">${pData.carro || 'Não cadastrado'}</span></div>
+                        <div><strong>Categoria:</strong> <span id="lbl-categoria">${pData.categoria || 'Não cadastrado'}</span></div>
+                    </div>
+                    <div id="form-edicao-piloto" style="display: none; flex-direction: column; gap: 8px; margin-top: 10px;">
+                        <input type="text" id="edit-nome-completo" value="${pData.nomeCompleto || ''}" placeholder="Nome Completo" class="comment-input-text">
+                        <input type="text" id="edit-apelido" value="${pData.apelido || ''}" placeholder="Apelido" class="comment-input-text">
+                        <input type="text" id="edit-carro" value="${pData.carro || ''}" placeholder="Modelo do Carro" class="comment-input-text">
+                        <input type="text" id="edit-categoria" value="${pData.categoria || ''}" placeholder="Categoria" class="comment-input-text">
+                        <button class="btn-comment" onclick="salvarDadosPiloto('${nomePiloto}')">💾 Salvar Ficha no Banco</button>
+                    </div>
+                </div>
+
+                <div class="dossier-grid">
+                    <div class="dossier-kpi"><span class="dossier-kpi-label">Sessões</span><span class="dossier-kpi-value">${totalCorridas}</span></div>
+                    <div class="dossier-kpi"><span class="dossier-kpi-label">Vitórias</span><span class="dossier-kpi-value">${vitorias}</span></div>
+                    <div class="dossier-kpi"><span class="dossier-kpi-label">Melhor Volta</span><span class="dossier-kpi-value">${melhorVoltaAbsolutaPiloto < 999 ? melhorVoltaAbsolutaPiloto.toFixed(3).replace('.',',') + 's' : '--'}</span></div>
+                    <div class="dossier-kpi"><span class="dossier-kpi-label">Média Geral</span><span class="dossier-kpi-value">${mediaGeralPiloto > 0 ? mediaGeralPiloto.toFixed(3).replace('.',',') + 's' : '--'}</span></div>
+                </div>
+
+                <div class="positions-ranking-box">
+                    <div class="positions-ranking-title">📊 Ranking de Posições Conquistadas</div>
+                    <div class="positions-pills-grid">${rankingPillsHtml}</div>
+                </div>
+
+                <div class="card" style="padding: 14px; margin-top: 5px;">
+                    <div class="card-header" style="margin-bottom: 10px;">📜 Histórico de Participações em Baterias</div>
+                    <div class="table-container">
+                        <table>
+                            <thead><tr><th>Sessão</th><th>Posição</th><th>Voltas</th><th>Melhor</th><th>Média</th></tr></thead>
+                            <tbody>${tabelaHistoricoHtml}</tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
         }
 
-        function excluirArquivoUpload(index) {
-            let dadosCache = (typeof listaJsonsCache !== 'undefined') ? listaJsonsCache : (window.listaJsonsCache || []);
-            if (dadosCache && dadosCache[index]) {
-                let nomeExibicao = dadosCache[index].sessao || dadosCache[index].nomeArquivo || `ID ${dadosCache[index].id}`;
-                if (confirm(`Tem certeza que deseja excluir o arquivo "${nomeExibicao}" do banco de dados?`)) {
-                    dadosCache.splice(index, 1);
-                    atualizarListaUploadHistorico();
-                    alert("Arquivo excluído com sucesso!");
-                }
-            }
+        window.ativarModoEdicao = function() {
+            let senha = prompt("Digite a senha de Administrador:");
+            if (senha === SENHA_ADMIN) {
+                document.getElementById('form-edicao-piloto').style.display = 'flex';
+                document.getElementById('dados-exibicao-piloto').style.display = 'none';
+                document.getElementById('btn-admin-mode').style.display = 'none';
+            } else if (senha !== null) { alert("Senha incorreta!"); }
+        };
+
+        window.salvarDadosPiloto = function(nomePiloto) {
+            if (!db) return;
+            let dados = {
+                nomeCompleto: document.getElementById('edit-nome-completo').value,
+                apelido: document.getElementById('edit-apelido').value,
+                carro: document.getElementById('edit-carro').value,
+                categoria: document.getElementById('edit-categoria').value
+            };
+            let safeName = nomePiloto.replace(/[.#$\/\[\]]/g, "_");
+            db.ref('pilotos/' + safeName).set(dados).then(() => {
+                alert("Ficha atualizada com sucesso!");
+                abrirDossiePiloto(nomePiloto);
+            });
+        };
+
+        window.fecharDossiePiloto = function() { document.getElementById('piloto-modal').style.display = 'none'; };
+
+        window.onclick = function(event) {
+            if (event.target === document.getElementById('piloto-modal')) document.getElementById('piloto-modal').style.display = 'none';
+            if (event.target === document.getElementById('upload-modal')) document.getElementById('upload-modal').style.display = 'none';
+        };
+
+        window.curtirSessao = function(bateriaKey) {
+            if (!db) return;
+            let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
+            db.ref('likes/' + safeKey).transaction(c => (c || 0) + 1);
+        };
+
+        function escutarCurtidas(bateriaKey) {
+            if (!db) return;
+            let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
+            db.ref('likes/' + safeKey).on('value', snap => {
+                let el = document.getElementById(`like-count-${safeKey}`);
+                if (el) el.innerText = snap.val() || 0;
+            });
         }
+
+        window.enviarComentario = function(bateriaKey) {
+            if (!db) return;
+            let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
+            let nomeInput = document.getElementById(`comment-name-${safeKey}`);
+            let textInput = document.getElementById(`comment-text-${safeKey}`);
+            let autor = nomeInput.value.trim() || "Piloto Anônimo";
+            let texto = textInput.value.trim();
+            if (!texto) return;
+
+            db.ref('comments/' + safeKey).push({ autor, texto, timestamp: Date.now(), likes: 0, dislikes: 0 });
+            textInput.value = "";
+        };
+
+        window.reagirComentario = function(bateriaKey, comId, tipo) {
+            if (!db) return;
+            let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
+            db.ref(`comments/${safeKey}/${comId}/${tipo}`).transaction(c => (c || 0) + 1);
+        };
+
+        function escutarComentarios(bateriaKey) {
+            if (!db) return;
+            let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
+            let container = document.getElementById(`comments-list-${safeKey}`);
+            db.ref('comments/' + safeKey).on('value', snap => {
+                let html = '';
+                if (!snap.exists()) {
+                    container.innerHTML = `<div style="font-size:0.85rem; color: var(--text-muted); text-align:center;">Nenhum comentário ainda.</div>`;
+                    return;
+                }
+                snap.forEach(child => {
+                    let id = child.key;
+                    let c = child.val();
+                    html += `
+                        <div class="comment-item">
+                            <div class="comment-header-row"><span class="comment-author"><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(c.autor)}')">${escapeHtml(c.autor)}</a></span></div>
+                            <div class="comment-text">${escapeHtml(c.texto)}</div>
+                            <div class="comment-reactions">
+                                <button class="btn-comment-reaction" onclick="reagirComentario('${bateriaKey}', '${id}', 'likes')">👍 (${c.likes || 0})</button>
+                                <button class="btn-comment-reaction" onclick="reagirComentario('${bateriaKey}', '${id}', 'dislikes')">👎 (${c.dislikes || 0})</button>
+                            </div>
+                        </div>`;
+                });
+                container.innerHTML = html;
+            });
+        }
+
+        function escapeHtml(text) {
+            let map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function atualizarDashboard() {
+            let dadosBase = obterTodosDadosConsolidados();
+            const bateriasSel = Array.from(document.querySelectorAll('.filter-bateria:checked')).map(cb => cb.value);
+            const pilotosSel = Array.from(document.querySelectorAll('.filter-piloto:checked')).map(cb => cb.value);
+            const modulosSel = Array.from(document.querySelectorAll('.filter-modulo:checked')).map(cb => cb.value);
+
+            const dadosFiltrados = dadosBase.filter(item => bateriasSel.includes(item.bateriaKey) && pilotosSel.includes(item.piloto));
+
+            let melhorVoltaAbsolutaVal = 999999;
+            dadosBase.forEach(item => {
+                if (item.laps) {
+                    item.laps.forEach(l => {
+                        let t = typeof l === 'object' ? l.tempo : l;
+                        let anul = typeof l === 'object' ? l.anulada : false;
+                        if (!anul && t < melhorVoltaAbsolutaVal) melhorVoltaAbsolutaVal = t;
+                    });
+                }
+            });
+
+            if (dadosFiltrados.length > 0) {
+                let vencedorEl = document.getElementById('kpi-vencedor');
+                vencedorEl.innerText = "Analisando...";
+            }
+
+            renderizarSessõesCompletas(dadosBase, bateriasSel, pilotosSel, modulosSel, melhorVoltaAbsolutaVal);
+        }
+
+        window.compartilharCorrida = function(bateriaKey, nomeSessao, vencedor) {
+            let dadosBase = obterTodosDadosConsolidados();
+            let itens = dadosBase.filter(d => d.bateriaKey === bateriaKey);
+            let txt = `🏁 *KRATHUS RACING* 🏁\nSessão: *${nomeSessao}*\nVencedor: *${vencedor}*\n`;
+            navigator.clipboard.writeText(txt).then(() => alert("Resumo copiado para a área de transferência!"));
+        };
+
+        function renderizarSessõesCompletas(dadosBase, bateriasSel, pilotosSel, modulosSel, melhorVoltaAbsolutaVal) {
+            chartInstances.forEach(c => c.destroy());
+            chartInstances = [];
+            const mainContainer = document.getElementById('sessions-container');
+            mainContainer.innerHTML = '';
+
+            if (dadosBase.length === 0 || bateriasSel.length === 0 || pilotosSel.length === 0) {
+                mainContainer.innerHTML = `<div class="card" style="text-align:center; padding: 30px; color: var(--text-muted);">Nenhum dado ou filtro selecionado.</div>`;
+                return;
+            }
+
+            bateriasSel.forEach(bateriaKey => {
+                const dadosSessao = dadosBase.filter(d => d.bateriaKey === bateriaKey && pilotosSel.includes(d.piloto));
+                if (dadosSessao.length === 0) return;
+
+                const nomeSessao = dadosSessao[0].sessao || bateriaKey;
+                let todosBat = dadosBase.filter(d => d.bateriaKey === bateriaKey);
+                let vencedorObj = todosBat.reduce((prev, curr) => (parseInt(curr.pos)||99) < (parseInt(prev.pos)||99) ? curr : prev, todosBat[0]);
+                let nomeVencedor = vencedorObj ? vencedorObj.piloto : 'N/A';
+                let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
+
+                const sessionBlock = document.createElement('div');
+                sessionBlock.className = 'session-block';
+                sessionBlock.innerHTML = `
+                    <div class="session-block-header">
+                        <div class="session-block-title">🏁 Sessão: ${nomeSessao}</div>
+                        <div class="session-block-meta">
+                            <span class="session-winner-tag">🏆 Vencedor: <strong>${nomeVencedor}</strong></span>
+                            <button class="btn-like" onclick="curtirSessao('${bateriaKey}')">❤️ Curtir (<span id="like-count-${safeKey}">0</span>)</button>
+                            <button class="btn-share" onclick="compartilharCorrida('${bateriaKey}', '${nomeSessao}', '${nomeVencedor}')">🔗 Compartilhar</button>
+                        </div>
+                    </div>
+                    <div class="card"><div class="card-header">Tabela de Resultados - ${nomeSessao}</div><div class="table-container"><table><thead><tr><th>Pos</th><th>Piloto</th><th>Melhor Volta</th></tr></thead><tbody id="tabela-simples-${bateriaKey}"></tbody></table></div></div>
+                    <div class="comments-section">
+                        <div class="comments-title">💬 Comentários</div>
+                        <div class="comments-list" id="comments-list-${safeKey}"></div>
+                        <div class="comment-form">
+                            <input type="text" id="comment-name-${safeKey}" class="comment-input-name" placeholder="Seu Nome">
+                            <input type="text" id="comment-text-${safeKey}" class="comment-input-text" placeholder="Comentário..." onkeypress="if(event.key === 'Enter') enviarComentario('${bateriaKey}')">
+                            <button class="btn-comment" onclick="enviarComentario('${bateriaKey}')">Enviar</button>
+                        </div>
+                    </div>`;
+                mainContainer.appendChild(sessionBlock);
+
+                escutarCurtidas(bateriaKey);
+                escutarComentarios(bateriaKey);
+
+                let tbody = document.getElementById(`tabela-simples-${bateriaKey}`);
+                dadosSessao.forEach(d => {
+                    let laps = d.laps ? d.laps.map(l => typeof l === 'object' ? l.tempo : l) : [];
+                    let melhor = laps.length > 0 ? Math.min(...laps) : 0;
+                    tbody.innerHTML += `<tr><td><span class="pos-badge">${d.pos}</span></td><td><a class="piloto-link" onclick="abrirDossiePiloto('${d.piloto}')">${d.piloto}</a></td><td class="text-green">${melhor.toFixed(3)}s</td></tr>`;
+                });
+            });
+        }
+
+        function gerarRelatórioPDF() { window.print(); }
     </script>
 </body>
 </html>
