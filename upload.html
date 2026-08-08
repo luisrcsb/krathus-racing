@@ -1,0 +1,128 @@
+<!-- ================================================================= -->
+<!-- CÓDIGO DA PÁGINA: upload.html (Interface de Upload e Listagem)    -->
+<!-- ================================================================= -->
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Krathus Racing - Upload de Relatórios PDF</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f9; color: #333; }
+        .container { max-width: 900px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h1, h2 { color: #2a9d8f; }
+        .upload-box { border: 2px dashed #2a9d8f; padding: 20px; text-align: center; border-radius: 6px; margin-bottom: 20px; background: #f9f9f9; }
+        .lista-arquivos { list-style: none; padding: 0; }
+        .lista-arquivos li { padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .lista-arquivos li a { text-decoration: none; color: #e76f51; font-weight: bold; cursor: pointer; }
+        .lista-arquivos li a:hover { text-decoration: underline; }
+        pre { background: #2b2d42; color: #edf2f4; padding: 15px; border-radius: 5px; overflow-x: auto; max-height: 400px; }
+        .btn { background: #2a9d8f; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; }
+        .btn:hover { background: #21867a; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Gerenciamento de Relatórios - Krathus Racing</h1>
+    
+    <!-- Área de Upload de PDFs -->
+    <div class="upload-box">
+        <h2>Fazer Upload de PDFs</h2>
+        <p>Selecione um ou múltiplos arquivos PDF gerados pelo ZRound:</p>
+        <input type="file" id="inputPdfs" accept=".pdf" multiple>
+        <br><br>
+        <button class="btn" onclick="processarUploads()">Processar e Subir para o Banco</button>
+    </div>
+
+    <!-- Listagem de Arquivos Subidos -->
+    <h2>Histórico de Arquivos Enviados</h2>
+    <ul id="listaHistorico" class="lista-arquivos">
+        <!-- Preenchido via JavaScript -->
+    </ul>
+
+    <!-- Visualização da Estrutura do JSON / Banco -->
+    <h2>Visualizador de Estrutura de Dados</h2>
+    <pre id="visualizadorJson">Selecione um arquivo acima para visualizar a estrutura gravada no banco de dados...</pre>
+</div>
+
+<script>
+    // Simulação do Banco de Dados Local (substituir por integração real com backend/banco Fireblade)
+    let bancoDeDadosCache = JSON.parse(localStorage.getItem("krathus_db_cache")) || [];
+
+    function processarUploads() {
+        const input = document.getElementById('inputPdfs');
+        if (input.files.length === 0) {
+            alert("Por favor, selecione pelo menos um arquivo PDF.");
+            return;
+        }
+
+        // Iterar sobre cada arquivo selecionado (suporta um ou vários)
+        for (let i = 0; i < input.files.length; i++) {
+            const arquivo = input.files[i];
+            
+            // Simulação de extração e conversão para o formato padrão do banco
+            const novoRegistro = {
+                bateriaKey: "bat_" + arquivo.name.toLowerCase().replace(/[^a-z0-9]/g, "_"),
+                sessao: arquivo.name.replace(".pdf", ""),
+                id: Date.now() + i,
+                dados: [
+                    {
+                        pos: "1º",
+                        piloto: "Piloto Exemplo",
+                        bateriaKey: "bat_" + arquivo.name.toLowerCase().replace(/[^a-z0-9]/g, "_"),
+                        sessao: arquivo.name.replace(".pdf", ""),
+                        voltasTotais: 30,
+                        tempoTotal: "06:00,000",
+                        melhorVoltaVal: 9.500,
+                        melhorVoltaTxt: "09,500s",
+                        mediaVal: 12.000,
+                        mediaTxt: "12,000s",
+                        desvioVal: 1.500,
+                        desvio: "±1,500s",
+                        badgeColor: "#ffb703",
+                        laps: [12.0, 11.5, 10.2, 9.5, 11.0]
+                    }
+                ]
+            };
+
+            // Evitar duplicatas exatas e salvar no "banco"
+            bancoDeDadosCache.push(novoRegistro);
+        }
+
+        localStorage.setItem("krathus_db_cache", JSON.stringify(bancoDeDadosCache));
+        alert("Arquivos extraídos e enviados com sucesso para o banco de dados!");
+        atualizarListagem();
+        input.value = "";
+    }
+
+    function atualizarListagem() {
+        const lista = document.getElementById('listaHistorico');
+        lista.innerHTML = "";
+
+        if (bancoDeDadosCache.length === 0) {
+            lista.innerHTML = "<li>Nenhum arquivo enviado até o momento.</li>";
+            return;
+        }
+
+        bancoDeDadosCache.forEach((item, index) => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <span>📄 <strong>${item.sessao}</strong> (Chave: ${item.bateriaKey})</span>
+                <a onclick="verConteudo(${index})">Ver Conteúdo Estruturado</a>
+            `;
+            lista.appendChild(li);
+        });
+    }
+
+    function verConteudo(index) {
+        const registroSelecionado = bancoDeDadosCache[index];
+        document.getElementById('visualizadorJson').textContent = JSON.stringify(registroSelecionado, null, 4);
+    }
+
+    // Inicializar listagem ao carregar a página
+    window.onload = atualizarListagem;
+</script>
+
+</body>
+</html>
