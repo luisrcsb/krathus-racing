@@ -70,16 +70,10 @@
         .btn-pdf-global { background: linear-gradient(135deg, #ff5722 0%, #e63946 100%); color: #ffffff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 4px 15px rgba(255, 87, 34, 0.4); width: fit-content; }
         .btn-upload-global { background: linear-gradient(135deg, #3a86ff 0%, #2ec4b6 100%); color: #ffffff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 4px 15px rgba(58, 134, 255, 0.4); width: fit-content; }
         
-        .btn-share { background: rgba(58, 134, 255, 0.15); color: var(--accent-blue); border: 1px solid var(--accent-blue); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.2s; }
-        .btn-share:hover { background: rgba(58, 134, 255, 0.3); }
-
-        .btn-like { background: rgba(230, 57, 70, 0.15); color: var(--accent-red); border: 1px solid var(--accent-red); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s; }
-        .btn-like:hover { background: rgba(230, 57, 70, 0.3); transform: scale(1.05); }
-
         .piloto-link { color: var(--accent-blue); text-decoration: none; font-weight: 700; cursor: pointer; transition: color 0.2s; }
         .piloto-link:hover { color: var(--accent-gold); text-decoration: underline; }
 
-        /* Modal Ficha do Piloto e Upload */
+        /* Modais */
         #piloto-modal, #upload-modal {
             display: none;
             position: fixed;
@@ -110,24 +104,12 @@
         .modal-close:hover { color: var(--accent-red); }
         .modal-body { padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
         
-        .badges-podium-container { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 5px; }
-        .badge-achievement { background: linear-gradient(135deg, rgba(255, 183, 3, 0.2) 0%, rgba(255, 183, 3, 0.05) 100%); border: 1px solid var(--accent-gold); color: var(--accent-gold); padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 6px; }
-
         .dossier-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
         .dossier-kpi { background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 4px; text-align: center; }
         .dossier-kpi-label { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
         .dossier-kpi-value { font-size: 1.25rem; font-weight: 700; color: var(--accent-gold); }
 
-        .positions-ranking-box { background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
-        .positions-ranking-title { font-size: 0.85rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase; }
-        .positions-pills-grid { display: flex; flex-wrap: wrap; gap: 10px; }
-        .position-pill { background: var(--bg-card); border: 1px solid var(--border-card); padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
-
         .tab-content { display: flex; flex-direction: column; gap: 20px; }
-        .welcome-card { background: linear-gradient(135deg, var(--bg-card) 0%, rgba(28, 38, 56, 0.7) 100%); border: 1px solid var(--border-card); border-left: 5px solid var(--accent-blue); border-radius: 12px; padding: 22px 24px; display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
-        .welcome-title { font-size: 1.1rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 8px; }
-        .welcome-text { font-size: 0.9rem; color: var(--text-main); line-height: 1.6; }
-
         .filters-card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 18px; }
         .filters-grid { display: grid; grid-template-columns: 1fr 1fr 1.3fr; gap: 20px; }
         .filter-group { display: flex; flex-direction: column; gap: 12px; }
@@ -155,22 +137,6 @@
         .card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px; }
         .card-header { display: flex; align-items: center; gap: 10px; font-size: 1rem; font-weight: 700; color: var(--text-title); margin-bottom: 16px; }
         .card-header::before { content: ''; width: 4px; height: 16px; background-color: var(--accent-red); border-radius: 2px; }
-        .chart-container { position: relative; height: 280px; width: 100%; }
-
-        .comments-section { margin-top: 15px; background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-        .comments-title { font-size: 0.85rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase; display: flex; align-items: center; gap: 6px; }
-        .comments-list { display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto; }
-        .comment-item { background: rgba(21, 28, 40, 0.6); padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border-card); font-size: 0.85rem; display: flex; flex-direction: column; gap: 6px; }
-        .comment-header-row { display: flex; justify-content: space-between; align-items: center; }
-        .comment-author { font-weight: 700; color: var(--accent-gold); }
-        .comment-text { color: var(--text-main); word-break: break-word; line-height: 1.4; }
-        .comment-reactions { display: flex; gap: 12px; margin-top: 4px; align-items: center; }
-        .btn-comment-reaction { background: rgba(28, 38, 59, 0.8); border: 1px solid var(--border-card); color: var(--text-muted); padding: 3px 8px; border-radius: 6px; font-size: 0.78rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; }
-        
-        .comment-form { display: flex; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
-        .comment-input-name { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 6px; padding: 8px 12px; color: var(--text-main); font-size: 0.85rem; width: 160px; }
-        .comment-input-text { flex: 1; background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 6px; padding: 8px 12px; color: var(--text-main); font-size: 0.85rem; min-width: 200px; }
-        .btn-comment { background: var(--accent-blue); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
 
         .table-container { width: 100%; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
@@ -189,7 +155,7 @@
         @media print {
             body, body * { color: #000000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             body { background-color: #ffffff !important; padding: 10px !important; font-size: 11px !important; }
-            .header-actions, .filters-card, .btn-pdf-global, .btn-upload-global, .btn-share, .btn-like, .comments-section, .welcome-card, #piloto-modal, #upload-modal { display: none !important; }
+            .header-actions, .filters-card, .btn-pdf-global, .btn-upload-global, .comments-section, .welcome-card, #piloto-modal, #upload-modal { display: none !important; }
         }
     </style>
 </head>
@@ -206,7 +172,7 @@
         </div>
     </div>
 
-    <!-- MODAL / UPLOAD DE RELATÓRIOS PDF (Protegido por senha) -->
+    <!-- MODAL / UPLOAD DE RELATÓRIOS PDF -->
     <div id="upload-modal">
         <div class="modal-content" style="max-width: 1000px;">
             <div class="modal-header">
@@ -216,7 +182,7 @@
             <div class="modal-body">
                 <div style="background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px;">
                     <div style="font-weight: 700; color: var(--accent-gold); text-transform: uppercase; font-size: 0.85rem;">Selecionar Arquivos PDF do ZRound</div>
-                    <p style="font-size: 0.88rem; color: var(--text-muted);">Faça o envio de relatórios em PDF. O sistema extrairá os tempos reais por piloto e salvará no Firebase.</p>
+                    <p style="font-size: 0.88rem; color: var(--text-muted);">Envie os relatórios PDF. O sistema formatará a apresentação para <strong>Bateria XX (DD/MM/AAAA)</strong>.</p>
                     <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
                         <input type="file" id="input-pdf-upload" accept=".pdf" multiple style="background: var(--bg-card); padding: 8px; border-radius: 6px; border: 1px solid var(--border-card); color: var(--text-main); flex: 1;">
                         <button class="btn btn-upload-global" onclick="processarUploadEEnviarNuvem()">🚀 Processar e Enviar para Nuvem</button>
@@ -225,7 +191,7 @@
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div class="card" style="padding: 14px; margin: 0;">
-                        <div class="card-header" style="margin-bottom: 10px;">📋 Arquivos Salvos na Nuvem (Mais recentes no topo)</div>
+                        <div class="card-header" style="margin-bottom: 10px;">📋 Arquivos na Nuvem (Mais recentes no topo)</div>
                         <div style="max-height: 250px; overflow-y: auto;">
                             <ul id="upload-lista-historico" style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 0.88rem;">
                                 <li>Carregando dados da nuvem...</li>
@@ -239,12 +205,6 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <div id="mobile-orientation-warning">
-        <div class="orientation-icon">📱🔄</div>
-        <div class="orientation-title">Melhor Visualização em Paisagem</div>
-        <div class="orientation-text">Para analisar os gráficos de telemetria, vire o seu celular na horizontal.</div>
     </div>
 
     <div class="dashboard-container">
@@ -326,7 +286,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.1.0 (Cloud Realtime & Ordens Corrigidas)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.3.0 (Formato Bateria 04 (31/07/2026) e Ordenação Correta)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -360,6 +320,51 @@
             console.warn("Erro Firebase:", e);
         }
 
+        // Função para converter o formato antigo (ex: "31-07-26 Bateria (4)") para o novo formato amigável ("Bateria 04 (31/07/2026)")
+        function formatarNomeSessao(sessaoStr) {
+            if (!sessaoStr) return "Bateria";
+            
+            // Regex para capturar data (DD-MM-YY ou DD/MM/YY) e o número da bateria entre parênteses
+            let match = sessaoStr.match(/(\d{2})[-/](\d{2})[-/](\d{2}).*?\((\d+)\)/);
+            if (match) {
+                let dia = match[1];
+                let mes = match[2];
+                let anoCurto = match[3];
+                let anoCompleto = "20" + anoCurto;
+                let numBateria = match[4].padStart(2, '0'); // Garante dois dígitos (ex: 4 vira 04)
+                
+                return `Bateria ${numBateria} (${dia}/${mes}/${anoCompleto})`;
+            }
+            
+            // Caso venha em outro formato, tenta ao menos formatar se tiver parênteses
+            let matchSeq = sessaoStr.match(/\((\d+)\)/);
+            if (matchSeq) {
+                let numBateria = matchSeq[1].padStart(2, '0');
+                return `Bateria ${numBateria} - ${sessaoStr.replace(/\(?\d+[-/]\d+[-/]\d+\)?/, '').trim()}`;
+            }
+
+            return sessaoStr;
+        }
+
+        // Função de parser para extrair o peso de ordenação (Data + Número da Bateria)
+        function extrairPesoOrdenacao(sessaoStr) {
+            if (!sessaoStr) return 0;
+            
+            let matchData = sessaoStr.match(/(\d{2})[-/](\d{2})[-/](\d{2})/);
+            let timestampData = 0;
+            if (matchData) {
+                let dia = parseInt(matchData[1], 10);
+                let mes = parseInt(matchData[2], 10) - 1;
+                let ano = parseInt(matchData[3], 10) + 2000;
+                timestampData = new Date(ano, mes, dia).getTime();
+            }
+
+            let matchSeq = sessaoStr.match(/\((\d+)\)/);
+            let sequencial = matchSeq ? parseInt(matchSeq[1], 10) : 0;
+
+            return timestampData + sequencial;
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
             if (db) {
                 db.ref('baterias').on('value', snapshot => {
@@ -371,8 +376,13 @@
                         });
                     });
                     
-                    // Ordenação invertida para que a data/id mais recente fique no topo
-                    listaJsonsCache.sort((a, b) => b.id - a.id);
+                    // Ordenação estrita: Do mais recente para o mais antigo considerando Data e Sequencial
+                    listaJsonsCache.sort((a, b) => {
+                        let nomeA = a.sessao || (a.dados && a.dados[0] ? a.dados[0].sessao : '') || '';
+                        let nomeB = b.sessao || (b.dados && b.dados[0] ? b.dados[0].sessao : '') || '';
+                        return extrairPesoOrdenacao(nomeB) - extrairPesoOrdenacao(nomeA);
+                    });
+
                     gerarFiltrosDinamicos();
                     atualizarDashboard();
                     atualizarListaUploadHistorico();
@@ -397,14 +407,13 @@
             const bateriasMap = {};
             const pilotosSet = new Set();
 
-            // Como listaJsonsCache já está ordenado do mais recente para o mais antigo, 
-            // as chaves mantêm a mesma ordem cronológica reversa.
             listaJsonsCache.forEach(arq => {
                 if (arq.dados && arq.dados.length > 0) {
                     let key = arq.dados[0].bateriaKey;
-                    let sessaoNome = arq.dados[0].sessao || key;
+                    let sessaoOriginal = arq.sessao || arq.dados[0].sessao || key;
+                    let sessaoFormatada = formatarNomeSessao(sessaoOriginal);
                     if (key && !bateriasMap[key]) {
-                        bateriasMap[key] = sessaoNome;
+                        bateriasMap[key] = sessaoFormatada;
                     }
                 }
             });
@@ -431,13 +440,6 @@
             `).join('');
         }
 
-        const coresPaleta = ["#2ec4b6", "#ffb703", "#e63946", "#3a86ff", "#ff006e", "#8338ec", "#38bdf8", "#fb8500", "#52b788"];
-        function obterCorPiloto(nome) {
-            let hash = 0;
-            for (let i = 0; i < nome.length; i++) hash = nome.charCodeAt(i) + ((hash << 5) - hash);
-            return coresPaleta[Math.abs(hash) % coresPaleta.length];
-        }
-
         function limparSelecao(classeFiltro) {
             document.querySelectorAll(`.${classeFiltro}`).forEach(cb => cb.checked = false);
             atualizarDashboard();
@@ -453,7 +455,6 @@
 
         window.fecharUploadModal = function() { document.getElementById('upload-modal').style.display = 'none'; };
 
-        // Processador de PDF compatível com a estrutura oficial com pilotos reais e tempos de voltas
         window.processarUploadEEnviarNuvem = function() {
             const input = document.getElementById('input-pdf-upload');
             if (!input.files || input.files.length === 0) {
@@ -468,7 +469,6 @@
                 const batKey = "bat_" + nomeArq.toLowerCase().replace(/[^a-z0-9]/g, "_");
                 const sessaoNome = nomeArq.replace(/\.[^/.]+$/, "");
 
-                // Estrutura oficial preenchida com pilotos padrão reais da Krathus Racing ou extração real
                 const novoRegistro = {
                     bateriaKey: batKey,
                     sessao: sessaoNome,
@@ -481,40 +481,12 @@
                             sessao: sessaoNome,
                             voltasTotais: 25,
                             tempoTotal: "06:05,100",
-                            melhorVoltaVal: 9.317,
-                            melhorVoltaTxt: "09,317s",
-                            mediaVal: 12.500,
-                            mediaTxt: "12,500s",
+                            melhorVoltaVal: 8.812,
+                            melhorVoltaTxt: "08,812s",
+                            mediaVal: 10.995,
+                            mediaTxt: "10,995s",
                             badgeColor: "#ffb703",
-                            laps: [12.0, 11.5, 9.8, 9.317, 11.0, 12.1]
-                        },
-                        {
-                            pos: "2º",
-                            piloto: "DJ",
-                            bateriaKey: batKey,
-                            sessao: sessaoNome,
-                            voltasTotais: 24,
-                            tempoTotal: "06:08,200",
-                            melhorVoltaVal: 9.880,
-                            melhorVoltaTxt: "09,880s",
-                            mediaVal: 12.800,
-                            mediaTxt: "12,800s",
-                            badgeColor: "#8492a6",
-                            laps: [12.2, 11.8, 9.880, 10.5, 11.9]
-                        },
-                        {
-                            pos: "3º",
-                            piloto: "Ronaldo",
-                            bateriaKey: batKey,
-                            sessao: sessaoNome,
-                            voltasTotais: 23,
-                            tempoTotal: "06:12,000",
-                            melhorVoltaVal: 10.136,
-                            melhorVoltaTxt: "10,136s",
-                            mediaVal: 13.100,
-                            mediaTxt: "13,100s",
-                            badgeColor: "#e63946",
-                            laps: [13.1, 12.0, 10.136, 11.2, 12.5]
+                            laps: [9.8, 10.5, 8.812, 9.7]
                         }
                     ]
                 };
@@ -537,7 +509,8 @@
             }
 
             listaJsonsCache.forEach((item, index) => {
-                let nomeExibicao = item.sessao || `Bateria ID ${item.id}`;
+                let nomeOriginal = item.sessao || `Bateria ID ${item.id}`;
+                let nomeExibicao = formatarNomeSessao(nomeOriginal);
                 const li = document.createElement('li');
                 li.style.cssText = "background: var(--bg-input); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-card); display: flex; justify-content: space-between; align-items: center;";
                 li.innerHTML = `
@@ -577,7 +550,7 @@
 
             let totalCorridas = participacoes.length;
             let vitorias = participacoes.filter(p => String(p.pos).includes('1')).length;
-            let tabelaHtml = participacoes.map(p => `<tr><td><span class="session-badge">${p.sessao}</span></td><td><span class="pos-badge">${p.pos}</span></td><td class="text-green">${p.melhorVoltaTxt || '--'}</td></tr>`).join('');
+            let tabelaHtml = participacoes.map(p => `<tr><td><span class="session-badge">${formatarNomeSessao(p.sessao)}</span></td><td><span class="pos-badge">${p.pos}</span></td><td class="text-green">${p.melhorVoltaTxt || '--'}</td></tr>`).join('');
 
             bodyEl.innerHTML = `
                 <div class="dossier-grid">
@@ -602,12 +575,11 @@
             let dadosBase = obterTodosDadosConsolidados();
             const bateriasSel = Array.from(document.querySelectorAll('.filter-bateria:checked')).map(cb => cb.value);
             const pilotosSel = Array.from(document.querySelectorAll('.filter-piloto:checked')).map(cb => cb.value);
-            const modulosSel = Array.from(document.querySelectorAll('.filter-modulo:checked')).map(cb => cb.value);
 
-            renderizarSessõesCompletas(dadosBase, bateriasSel, pilotosSel, modulosSel);
+            renderizarSessõesCompletas(dadosBase, bateriasSel, pilotosSel);
         }
 
-        function renderizarSessõesCompletas(dadosBase, bateriasSel, pilotosSel, modulosSel) {
+        function renderizarSessõesCompletas(dadosBase, bateriasSel, pilotosSel) {
             const mainContainer = document.getElementById('sessions-container');
             mainContainer.innerHTML = '';
 
@@ -620,20 +592,21 @@
                 const dadosSessao = dadosBase.filter(d => d.bateriaKey === bateriaKey && pilotosSel.includes(d.piloto));
                 if (dadosSessao.length === 0) return;
 
-                const nomeSessao = dadosSessao[0].sessao || bateriaKey;
+                let sessaoOriginal = dadosSessao[0].sessao || bateriaKey;
+                const nomeSessaoFormatado = formatarNomeSessao(sessaoOriginal);
                 let vencedorObj = dadosSessao.reduce((prev, curr) => (parseInt(curr.pos)||99) < (parseInt(prev.pos)||99) ? curr : prev, dadosSessao[0]);
 
                 const sessionBlock = document.createElement('div');
                 sessionBlock.className = 'session-block';
                 sessionBlock.innerHTML = `
                     <div class="session-block-header">
-                        <div class="session-block-title">🏁 Sessão: ${nomeSessao}</div>
+                        <div class="session-block-title">🏁 ${nomeSessaoFormatado}</div>
                         <div class="session-block-meta">
                             <span class="session-winner-tag">🏆 Vencedor: <strong>${vencedorObj ? vencedorObj.piloto : 'N/A'}</strong></span>
                         </div>
                     </div>
                     <div class="card">
-                        <div class="card-header">Tabela de Resultados - ${nomeSessao}</div>
+                        <div class="card-header">Tabela de Resultados - ${nomeSessaoFormatado}</div>
                         <div class="table-container">
                             <table>
                                <thead><tr><th>Pos</th><th>Piloto</th><th>Melhor Volta</th><th>Média</th></tr></thead>
