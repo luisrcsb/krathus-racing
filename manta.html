@@ -11,14 +11,16 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
         
-        // CONFIGURAÇÃO DO SEU FIREBASE (Substitua pelas chaves do seu projeto)
+        // CONFIGURAÇÃO OFICIAL DO SEU FIREBASE
         const firebaseConfig = {
-            apiKey: "SUA_API_KEY",
-            authDomain: "SEU_AUTH_DOMAIN",
-            projectId: "SEU_PROJECT_ID",
-            storageBucket: "SEU_STORAGE_BUCKET",
-            messagingSenderId: "SEU_SENDER_ID",
-            appId: "SEU_APP_ID"
+            apiKey: "AIzaSyDCTkeIa6QsY2zYs8S__HlIwcY-zcuhZCA",
+            authDomain: "krathus-telemetria.firebaseapp.com",
+            projectId: "krathus-telemetria",
+            storageBucket: "krathus-telemetria.firebasestorage.app",
+            messagingSenderId: "1051581039922",
+            appId: "1:1051581039922:web:d8ae00eb4ab45fa3d5432b",
+            measurementId: "G-JPR41S7CZ3",
+            databaseURL: "https://krathus-telemetria-default-rtdb.firebaseio.com"
         };
 
         const app = initializeApp(firebaseConfig);
