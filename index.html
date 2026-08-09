@@ -74,6 +74,8 @@
         .merge-select { background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-card); padding: 8px 12px; border-radius: 6px; flex: 1; font-size: 0.85rem; }
         .btn-merge { background: var(--accent-blue); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
         .btn-merge:hover { background: #2b6cb0; }
+        .btn-unmerge { background: var(--accent-red); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
+        .btn-unmerge:hover { background: #c53030; }
 
         .filters-card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 18px; }
         .filters-grid { display: grid; grid-template-columns: 1fr 1fr 1.3fr; gap: 20px; }
@@ -282,7 +284,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.14.0 (Mesclagem de Pilotos)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.15.0 (Mesclagem e Desfazimento)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -351,9 +353,14 @@
                 db.ref('baterias').on('value', snapshot => {
                     listaJsonsCache = [];
                     snapshot.forEach(childSnapshot => {
+                        let val = childSnapshot.val();
+                        // Garantir suporte a log de alteração/histórico de nomes originais para o unmerge
+                        if (!val.historicoNomesOriginais) {
+                            val.historicoNomesOriginais = {};
+                        }
                         listaJsonsCache.push({
                             firebaseKey: childSnapshot.key,
-                            ...childSnapshot.val()
+                            ...val
                         });
                     });
                     
@@ -418,11 +425,18 @@
 
                     const dadosExtraidos = parsearTextoConvertido(textoExtraido, sessaoNome, batKey);
 
+                    // Mapeia nomes originais individuais de cada piloto para permitir o desfazer a mesclagem (unmerge)
+                    let historicoOriginal = {};
+                    dadosExtraidos.forEach(d => {
+                        historicoOriginal[d.piloto] = d.piloto;
+                    });
+
                     const novoRegistro = {
                         bateriaKey: batKey,
                         sessao: sessaoNome,
                         id: Date.now() + i,
-                        dados: dadosExtraidos
+                        dados: dadosExtraidos,
+                        historicoNomesOriginais: historicoOriginal
                     };
 
                     await db.ref('baterias').push(novoRegistro);
@@ -706,6 +720,24 @@
             dadosBase.forEach(d => { if(d.piloto && d.piloto !== nomePiloto) todosPilotosSet.add(d.piloto); });
             let opcoesPilotos = Array.from(todosPilotosSet);
 
+            // Descobrir quais nomes originais foram mesclados para este piloto atual (para permitir desfazer)
+            let nomesOriginaisMescladosNeste = new Set();
+            listaJsonsCache.forEach(arq => {
+                if (arq.historicoNomesOriginais && arq.dados) {
+                    arq.dados.forEach(d => {
+                        if (d.piloto === nomePiloto) {
+                            // Encontrar a chave original correspondente
+                            for (let [orig, dest] of Object.entries(arq.historicoNomesOriginais)) {
+                                if (dest === nomePiloto && orig !== nomePiloto) {
+                                    nomesOriginaisMescladosNeste.add(orig);
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+            let opcoesDesfazer = Array.from(nomesOriginaisMescladosNeste);
+
             let totalCorridas = participacoes.length;
             let vitorias = participacoes.filter(p => String(p.pos).includes('1')).length;
             let melhorVoltaP = Math.min(...participacoes.map(p => p.melhorVoltaVal || 999));
@@ -714,7 +746,7 @@
             let mergeHtml = '';
             if (opcoesPilotos.length > 0) {
                 let optionsList = opcoesPilotos.map(op => `<option value="${op}">${op}</option>`).join('');
-                mergeHtml = `
+                mergeHtml += `
                     <div class="merge-section">
                         <label>🔗 Mesclar outro piloto para "${nomePiloto}"</label>
                         <div class="merge-controls">
@@ -723,6 +755,22 @@
                                 ${optionsList}
                             </select>
                             <button class="btn-merge" onclick="executarMesclagemPilotos('${nomePiloto}')">Mesclar Dados</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (opcoesDesfazer.length > 0) {
+                let optionsUnmergeList = opcoesDesfazer.map(op => `<option value="${op}">${op}</option>`).join('');
+                mergeHtml += `
+                    <div class="merge-section" style="border-color: rgba(230, 57, 70, 0.3);">
+                        <label style="color: var(--accent-red);">↩️ Desfazer Mesclagem (Restaurar Nome Original)</label>
+                        <div class="merge-controls">
+                            <select id="select-piloto-desfazer" class="merge-select">
+                                <option value="">Selecione o nome original para restaurar...</option>
+                                ${optionsUnmergeList}
+                            </select>
+                            <button class="btn-unmerge" onclick="executarDesfazerMesclagem('${nomePiloto}')">Desfazer Mesclagem</button>
                         </div>
                     </div>
                 `;
@@ -751,7 +799,7 @@
                 return;
             }
 
-            if (!confirm(`Deseja realmente mesclar todos os registros de "${nomeOrigem}" para "${nomeDestino}"? Esta alteração atualizará os dados na nuvem.`)) {
+            if (!confirm(`Deseja realmente mesclar todos os registros de "${nomeOrigem}" para "${nomeDestino}"?`)) {
                 return;
             }
 
@@ -766,10 +814,25 @@
             listaJsonsCache.forEach(arq => {
                 if (arq.dados && Array.isArray(arq.dados)) {
                     let houveMudancaNoArquivo = false;
+                    let historico = arq.historicoNomesOriginais || {};
+                    
                     let novosDados = arq.dados.map(d => {
-                        if (d.piloto === nomeOrigem) {
+                        // Se o piloto atual bate com o nome origem ou se no histórico original ele pertencia a origem
+                        let nomeOriginalReal = null;
+                        for (let [orig, dest] of Object.entries(historico)) {
+                            if (dest === nomeDestino && orig === nomeOrigem && d.piloto === nomeDestino) {
+                                nomeOriginalReal = orig;
+                            }
+                        }
+
+                        if (d.piloto === nomeOrigem || nomeOriginalReal) {
                             houveMudancaNoArquivo = true;
                             countAlterados++;
+                            // Atualiza o histórico para lembrar que este registro agora aponta para o destino
+                            let chaveOrig = d.piloto === nomeOrigem ? nomeOrigem : Object.keys(historico).find(k => historico[k] === nomeDestino);
+                            if (chaveOrig) {
+                                historico[chaveOrig] = nomeDestino;
+                            }
                             return { ...d, piloto: nomeDestino };
                         }
                         return d;
@@ -777,6 +840,7 @@
 
                     if (houveMudancaNoArquivo) {
                         atualizacoes[arq.firebaseKey + '/dados'] = novosDados;
+                        atualizacoes[arq.firebaseKey + '/historicoNomesOriginais'] = historico;
                     }
                 }
             });
@@ -784,7 +848,7 @@
             if (countAlterados > 0) {
                 try {
                     await db.ref('baterias').update(atualizacoes);
-                    alert(`Sucesso! ${countAlterados} registro(s) de "${nomeOrigem}" foram mesclados com "${nomeDestino}".`);
+                    alert(`Sucesso! Registros de "${nomeOrigem}" foram mesclados com "${nomeDestino}".`);
                     window.fecharDossiePiloto();
                 } catch (err) {
                     console.error("Erro ao mesclar pilotos:", err);
@@ -792,6 +856,65 @@
                 }
             } else {
                 alert("Nenhum registro encontrado para o piloto de origem selecionado.");
+            }
+        };
+
+        window.executarDesfazerMesclagem = async function(nomeAtual) {
+            const selectDesfazer = document.getElementById('select-piloto-desfazer');
+            if (!selectDesfazer) return;
+            const nomeOriginal = selectDesfazer.value;
+            if (!nomeOriginal) {
+                alert("Selecione o nome original para restaurar.");
+                return;
+            }
+
+            if (!confirm(`Deseja desfazer a mesclagem e restaurar o nome original "${nomeOriginal}"?`)) {
+                return;
+            }
+
+            if (!db) {
+                alert("Erro: Banco de dados não conectado.");
+                return;
+            }
+
+            let atualizacoes = {};
+            let countRestaurados = 0;
+
+            listaJsonsCache.forEach(arq => {
+                if (arq.dados && Array.isArray(arq.dados) && arq.historicoNomesOriginais) {
+                    let houveMudanca = false;
+                    let historico = { ...arq.historicoNomesOriginais };
+
+                    let novosDados = arq.dados.map(d => {
+                        // Verifica se este dado pertencia originalmente ao nomeOriginal
+                        if (d.piloto === nomeAtual && historico[nomeOriginal] === nomeAtual) {
+                            houveMudanca = true;
+                            countRestaurados++;
+                            // Restaura o histórico apontando de volta para ele mesmo
+                            historico[nomeOriginal] = nomeOriginal;
+                            return { ...d, piloto: nomeOriginal };
+                        }
+                        return d;
+                    });
+
+                    if (houveMudanca) {
+                        atualizacoes[arq.firebaseKey + '/dados'] = novosDados;
+                        atualizacoes[arq.firebaseKey + '/historicoNomesOriginais'] = historico;
+                    }
+                }
+            });
+
+            if (countRestaurados > 0) {
+                try {
+                    await db.ref('baterias').update(atualizacoes);
+                    alert(`Sucesso! O nome original "${nomeOriginal}" foi restaurado.`);
+                    window.fecharDossiePiloto();
+                } catch (err) {
+                    console.error("Erro ao desfazer mesclagem:", err);
+                    alert("Erro ao desfazer mesclagem: " + err.message);
+                }
+            } else {
+                alert("Nenhum registro encontrado para restaurar.");
             }
         };
 
