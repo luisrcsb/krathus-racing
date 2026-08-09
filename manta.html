@@ -18,7 +18,7 @@
             projectId: "SEU_PROJECT_ID",
             storageBucket: "SEU_STORAGE_BUCKET",
             messagingSenderId: "SEU_SENDER_ID",
-            appId: "SEU_APP_ID"
+            appId: "SUA_APP_ID"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -41,48 +41,72 @@
 </head>
 <body class="p-4 md:p-8 flex justify-center items-center min-h-screen">
     
-    <div class="w-full max-w-md bg-white shadow-xl border border-gray-200 rounded-lg overflow-hidden">
+    <div class="w-full max-w-md bg-white shadow-xl border border-gray-200 rounded-lg overflow-hidden flex flex-col justify-between">
         
-        <!-- Cabeçalho Institucional Manta -->
-        <header class="manta-dark p-6 text-center">
-            <h1 class="text-3xl font-light tracking-[0.25em]">MANTA</h1>
-            <p class="text-[10px] uppercase tracking-[0.3em] mt-1 text-gray-300">Eco Retreat - Gestão de Obra</p>
-        </header>
+        <div>
+            <!-- Cabeçalho Institucional Manta -->
+            <header class="manta-dark p-6 text-center">
+                <h1 class="text-3xl font-light tracking-[0.25em]">MANTA</h1>
+                <p class="text-[10px] uppercase tracking-[0.3em] mt-1 text-gray-300">Eco Retreat - Gestão de Obra</p>
+            </header>
 
-        <!-- Etapa 1: Tela de Login Protegida por Senha -->
-        <div id="login-section" class="p-6 space-y-4">
-            <p class="text-xs text-gray-600 text-center uppercase tracking-wider">Área restrita de controle</p>
-            <input type="password" id="password" placeholder="Senha de Acesso" class="w-full p-3 border border-gray-300 rounded text-sm focus:outline-none focus:border-[#002e26]">
-            <button onclick="login()" class="w-full manta-dark py-3 uppercase text-xs font-bold tracking-widest rounded transition hover:opacity-90">Entrar no Sistema</button>
+            <!-- Etapa 1: Tela de Login Protegida por Senha -->
+            <div id="login-section" class="p-6 space-y-6">
+                <p class="text-xs text-gray-600 text-center uppercase tracking-wider">Área restrita de controle</p>
+                <input type="password" id="password" placeholder="Senha de Acesso" class="w-full p-3 border border-gray-300 rounded text-sm focus:outline-none focus:border-[#002e26]">
+                <button onclick="login()" class="w-full manta-dark py-3 uppercase text-xs font-bold tracking-widest rounded transition hover:opacity-90">Entrar no Sistema</button>
+                
+                <!-- Caixa de Resumo das Atualizações (Logo na Entrada) -->
+                <div class="mt-6 border border-[#9db2a2] bg-[#f4f7f5] p-4 rounded text-xs space-y-2">
+                    <h3 class="font-bold text-[#002e26] uppercase tracking-wider border-b border-[#9db2a2] pb-1">Resumo das Atualizações</h3>
+                    <ul class="list-disc list-inside text-gray-700 space-y-1">
+                        <li>Implementação da interface responsiva otimizada para dispositivos móveis.</li>
+                        <li>Integração com o banco de dados em nuvem do Firebase Firestore.</li>
+                        <li>Configuração dos módulos de upload, inspeção e exclusão segura.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Etapa 2: Aplicação Principal (Oculta até o login) -->
+            <div id="app-section" class="hidden p-6 space-y-6">
+                
+                <!-- Menu de Navegação Interno -->
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="showSection('upload-tab')" class="manta-sage py-2.5 text-xs uppercase font-bold tracking-wider rounded transition">Upload Dados</button>
+                    <button onclick="carregarDados(); showSection('inspecao-tab')" class="manta-sage py-2.5 text-xs uppercase font-bold tracking-wider rounded transition">Inspeção / Banco</button>
+                </div>
+                
+                <!-- Aba 1: Upload e Envio -->
+                <div id="upload-tab" class="space-y-4">
+                    <label class="block text-xs uppercase font-semibold text-gray-700">Novo Registro / Relatório Diário</label>
+                    <input type="file" id="fileInput" class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-[#9db2a2] file:text-[#002e26] hover:file:opacity-80">
+                    <button onclick="salvarNoFirebase()" class="w-full manta-dark py-3 uppercase text-xs font-bold tracking-widest rounded shadow">Salvar no Firebase</button>
+                    <div id="upload-status" class="text-xs text-center font-medium"></div>
+                </div>
+
+                <!-- Aba 2: Inspeção e Exclusão -->
+                <div id="inspecao-tab" class="hidden space-y-4">
+                    <h2 class="text-xs uppercase font-bold tracking-wider text-gray-700">Registros Ativos no Mês</h2>
+                    <div id="data-container" class="max-h-52 overflow-y-auto border border-gray-200 p-2 text-xs space-y-2 bg-gray-50 rounded">
+                        Carregando registros...
+                    </div>
+                    <div class="space-y-2 pt-2 border-t">
+                        <input type="text" id="deleteId" placeholder="Cole o ID do registro para exclusão" class="w-full p-2 text-xs border border-gray-300 rounded">
+                        <button onclick="excluirRegistro()" class="w-full bg-red-700 text-white py-2.5 uppercase text-xs font-bold tracking-widest rounded hover:bg-red-800 transition">Excluir Registro</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- Etapa 2: Aplicação Principal (Oculta até o login) -->
-        <div id="app-section" class="hidden p-6 space-y-6">
-            
-            <!-- Menu de Navegação Interno -->
-            <div class="grid grid-cols-2 gap-2">
-                <button onclick="showSection('upload-tab')" class="manta-sage py-2.5 text-xs uppercase font-bold tracking-wider rounded transition">Upload Dados</button>
-                <button onclick="carregarDados(); showSection('inspecao-tab')" class="manta-sage py-2.5 text-xs uppercase font-bold tracking-wider rounded transition">Inspeção / Banco</button>
+        <!-- Caixa Inferior: O que já foi feito e Próximos Passos (Visível após entrar) -->
+        <div id="footer-status-box" class="hidden m-6 mt-0 border border-gray-200 bg-gray-50 p-4 rounded text-xs space-y-3">
+            <div class="border-b pb-2">
+                <span class="font-bold text-[#002e26] uppercase tracking-wider block mb-1">✓ O que já foi feito:</span>
+                <p class="text-gray-600">Estruturação da identidade visual (Pininfarina/Manta), sistema de login por senha, painel responsivo mobile e integração Firebase.</p>
             </div>
-            
-            <!-- Aba 1: Upload e Envio -->
-            <div id="upload-tab" class="space-y-4">
-                <label class="block text-xs uppercase font-semibold text-gray-700">Novo Registro / Relatório Diário</label>
-                <input type="file" id="fileInput" class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-[#9db2a2] file:text-[#002e26] hover:file:opacity-80">
-                <button onclick="salvarNoFirebase()" class="w-full manta-dark py-3 uppercase text-xs font-bold tracking-widest rounded shadow">Salvar no Firebase</button>
-                <div id="upload-status" class="text-xs text-center font-medium"></div>
-            </div>
-
-            <!-- Aba 2: Inspeção e Exclusão -->
-            <div id="inspecao-tab" class="hidden space-y-4">
-                <h2 class="text-xs uppercase font-bold tracking-wider text-gray-700">Registros Ativos no Mês</h2>
-                <div id="data-container" class="max-h-52 overflow-y-auto border border-gray-200 p-2 text-xs space-y-2 bg-gray-50 rounded">
-                    Carregando registros...
-                </div>
-                <div class="space-y-2 pt-2 border-t">
-                    <input type="text" id="deleteId" placeholder="Cole o ID do registro para exclusão" class="w-full p-2 text-xs border border-gray-300 rounded">
-                    <button onclick="excluirRegistro()" class="w-full bg-red-700 text-white py-2.5 uppercase text-xs font-bold tracking-widest rounded hover:bg-red-800 transition">Excluir Registro</button>
-                </div>
+            <div>
+                <span class="font-bold text-amber-800 uppercase tracking-wider block mb-1">⏳ Próximos Passos:</span>
+                <p class="text-gray-600">Automação completa do parse das planilhas Excel carregadas e geração dinâmica dos arquivos de saída em Excel/PDF para o relatório mensal.</p>
             </div>
         </div>
     </div>
@@ -94,6 +118,7 @@
             if(pwd === 'manta2026') {
                 document.getElementById('login-section').classList.add('hidden');
                 document.getElementById('app-section').classList.remove('hidden');
+                document.getElementById('footer-status-box').classList.remove('hidden');
             } else {
                 alert('Senha incorreta.');
             }
