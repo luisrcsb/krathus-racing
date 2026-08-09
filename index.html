@@ -1,3 +1,4 @@
+<!-- Index.html para o site Krathus Racing -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -169,15 +170,15 @@
     <div id="upload-modal" class="custom-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">📤 Central de Upload de Relatórios PDF (ZRound)</div>
+                <div class="modal-title">📤 Central de Upload de Relatórios (PDF ou HTML)</div>
                 <button class="modal-close" onclick="fecharModalUpload()">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="upload-grid-manager">
                     <div class="upload-box">
-                        <p style="font-size: 0.85rem; color: var(--text-muted);">Selecione os relatórios PDF oficiais do ZRound. O sistema converte automaticamente, evita duplicidades e atualiza o painel.</p>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Selecione relatórios PDF ou HTML oficiais do ZRound. O sistema converte automaticamente, evita duplicidades e atualiza o painel.</p>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-                            <input type="file" id="input-pdf-upload" accept=".pdf" multiple style="background: var(--bg-card); padding: 8px; border-radius: 6px; border: 1px solid var(--border-card); color: var(--text-main); flex: 1; font-size: 0.85rem;">
+                            <input type="file" id="input-pdf-upload" accept=".pdf,.html,.htm" multiple style="background: var(--bg-card); padding: 8px; border-radius: 6px; border: 1px solid var(--border-card); color: var(--text-main); flex: 1; font-size: 0.85rem;">
                             <button class="btn btn-upload-modal-trigger" onclick="processarUploadEEnviarNuvem()">Converter e Enviar</button>
                         </div>
                     </div>
@@ -274,7 +275,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.11.0 (Fix Coleta Integral de Voltas)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.13.0 (Suporte Duplo PDF + HTML)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -368,7 +369,7 @@
         window.processarUploadEEnviarNuvem = async function() {
             const input = document.getElementById('input-pdf-upload');
             if (!input.files || input.files.length === 0) {
-                alert("Por favor, selecione ao menos um arquivo PDF.");
+                alert("Por favor, selecione ao menos um arquivo (PDF ou HTML).");
                 return;
             }
             if (!db) {
@@ -396,8 +397,19 @@
                 }
 
                 try {
-                    const textoPdf = await converterPdfParaTexto(arquivo);
-                    const dadosExtraidos = parsearTextoConvertido(textoPdf, sessaoNome, batKey);
+                    let textoExtraido = "";
+                    const extensao = nomeArq.split('.').pop().toLowerCase();
+
+                    if (extensao === 'html' || extensao === 'htm') {
+                        const htmlText = await arquivo.text();
+                        const parser = new DOMParser();
+                        const docHtml = parser.parseFromString(htmlText, 'text/html');
+                        textoExtraido = docHtml.body.innerText;
+                    } else {
+                        textoExtraido = await converterPdfParaTexto(arquivo);
+                    }
+
+                    const dadosExtraidos = parsearTextoConvertido(textoExtraido, sessaoNome, batKey);
 
                     const novoRegistro = {
                         bateriaKey: batKey,
@@ -409,13 +421,13 @@
                     await db.ref('baterias').push(novoRegistro);
                     arquivosNovosEnviados++;
                 } catch (err) {
-                    console.error("Erro ao processar PDF:", err);
+                    console.error("Erro ao processar arquivo:", err);
                     alert("Erro ao converter o arquivo " + nomeArq + ": " + err.message);
                 }
             }
 
             if (arquivosNovosEnviados > 0 && arquivosDuplicados.length === 0) {
-                alert("Relatório(s) PDF processado(s) e salvo(s) na nuvem com sucesso!");
+                alert("Relatório(s) processado(s) e salvo(s) na nuvem com sucesso!");
             } else if (arquivosNovosEnviados > 0 && arquivosDuplicados.length > 0) {
                 alert(`Processado com sucesso! ${arquivosDuplicados.length} arquivo(s) foram ignorados por já existirem na nuvem.`);
             } else if (arquivosDuplicados.length > 0) {
@@ -516,8 +528,6 @@
 
                 if (modoVoltas && /^\d+$/.test(partes[0])) {
                     let numVolta = parseInt(partes[0], 10);
-                    
-                    // Extração flexível e independente de marcadores hifenizados de coluna
                     let temposEncontrados = [];
                     for (let i = 1; i < partes.length; i++) {
                         let token = partes[i].split('-')[0].trim();
@@ -537,7 +547,6 @@
                         }
                     }
 
-                    // Associa os tempos encontrados na linha estritamente na ordem dos pilotos identificados
                     temposEncontrados.forEach((tempoVal, idx) => {
                         if (ordemPilotos[idx]) {
                             let pName = ordemPilotos[idx];
@@ -553,8 +562,6 @@
 
             Object.keys(pilotosMap).forEach(pName => {
                 let pObj = pilotosMap[pName];
-                
-                // Consolidação integral das voltas preenchendo lacunas vazias se houver
                 let lapsLimpos = [];
                 if (Array.isArray(pObj.laps)) {
                     for (let i = 0; i < pObj.laps.length; i++) {
