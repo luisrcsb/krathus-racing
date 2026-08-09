@@ -50,7 +50,6 @@
         .piloto-link { color: var(--accent-blue); text-decoration: none; font-weight: 700; cursor: pointer; }
         .piloto-link:hover { color: var(--accent-gold); text-decoration: underline; }
 
-        /* Estilo dos Modais (Ficha do Piloto e Central de Uploads) */
         .custom-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background-color: rgba(13, 17, 26, 0.88); z-index: 10000; justify-content: center; align-items: center; padding: 20px; overflow-y: auto;
@@ -78,7 +77,6 @@
         .checkbox-item { display: flex; align-items: center; gap: 10px; font-size: 0.88rem; color: var(--text-main); cursor: pointer; }
         .checkbox-item input[type="checkbox"] { accent-color: var(--accent-red); width: 16px; height: 16px; cursor: pointer; }
 
-        /* Estilos Internos do Modal de Upload */
         .upload-grid-manager { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .upload-box { background: var(--bg-input); border: 1px dashed var(--border-card); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
         ul#upload-lista-historico { list-style: none; display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; padding-right: 4px; }
@@ -276,7 +274,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.7.0 (Modal de Uploads)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.8.0 (Leitura Nomes Compostos)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -364,7 +362,6 @@
             }
         });
 
-        // 📤 Funções do Modal de Uploads
         window.abrirModalUpload = function() { document.getElementById('upload-modal').style.display = 'flex'; };
         window.fecharModalUpload = function() { document.getElementById('upload-modal').style.display = 'none'; };
 
@@ -479,16 +476,23 @@
                     return;
                 }
 
-                if (modoResumo && /^\d{2}$/.test(partes[0])) {
+                if (modoResumo && /^\d{1,2}$/.test(partes[0])) {
                     let numOrdem = partes[0];
                     let possivelPiloto = partes[1];
                     let possivelPos = partes[2];
                     let possivelVoltas = partes[3];
                     let possivelTempo = partes[4] || "00:00,000";
 
-                    if (isNaN(possivelPiloto) && /^\d+º?$/.test(possivelPos)) {
+                    if (isNaN(possivelPiloto) && (/^\d+º?$/.test(possivelPos) || /^\d+$/.test(possivelVoltas))) {
                         let pilotoNome = possivelPiloto;
-                        let posStr = possivelPos.includes('º') ? possivelPos : possivelPos + 'º';
+                        if (partes[2] && isNaN(partes[2]) && !/^\d+º?$/.test(partes[2])) {
+                            pilotoNome = `${possivelPiloto} ${partes[2]}`;
+                            possivelPos = partes[3];
+                            possivelVoltas = partes[4];
+                            possivelTempo = partes[5] || "00:00,000";
+                        }
+
+                        let posStr = String(possivelPos).includes('º') ? possivelPos : possivelPos + 'º';
 
                         pilotosMap[pilotoNome] = {
                             pos: posStr,
