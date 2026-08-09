@@ -1,3 +1,6 @@
+// =========================================================================
+    // Index.html - Krathus Racing
+    // =========================================================================
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -274,7 +277,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.8.0 (Leitura Nomes Compostos)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.11.0 (Fix Coleta Integral de Voltas)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -452,6 +455,7 @@
             return textoCompleto;
         }
 
+        // 🏎️ Parser Blindado para varredura e mapeamento absoluto de todas as voltas e pilotos
         function parsearTextoConvertido(texto, sessaoNome, batKey) {
             let pilotosMap = {};
             let linhas = texto.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
@@ -477,7 +481,6 @@
                 }
 
                 if (modoResumo && /^\d{1,2}$/.test(partes[0])) {
-                    let numOrdem = partes[0];
                     let possivelPiloto = partes[1];
                     let possivelPos = partes[2];
                     let possivelVoltas = partes[3];
@@ -516,31 +519,32 @@
 
                 if (modoVoltas && /^\d+$/.test(partes[0])) {
                     let numVolta = parseInt(partes[0], 10);
-                    let colIdx = 1;
-
-                    ordemPilotos.forEach(pName => {
-                        while (colIdx < partes.length) {
-                            let token = partes[colIdx];
-                            if (token && token !== "-" && (/\d+[,.]\d+/.test(token) || /\d+:\d+[,.]\d+/.test(token))) {
-                                let tempoLimpo = token.split('-')[0].trim();
-                                let tempoNum = 0;
-
-                                if (tempoLimpo.includes(':')) {
-                                    let partesTempo = tempoLimpo.split(':');
-                                    let minutos = parseInt(partesTempo[0], 10);
-                                    let segundos = parseFloat(partesTempo[1].replace(',', '.'));
-                                    tempoNum = (minutos * 60) + segundos;
-                                } else {
-                                    tempoNum = parseFloat(tempoLimpo.replace(',', '.'));
-                                }
-
-                                if (!isNaN(tempoNum) && tempoNum > 0) {
-                                    pilotosMap[pName].laps[numVolta - 1] = parseFloat(tempoNum.toFixed(3));
-                                    colIdx++;
-                                    break;
-                                }
+                    
+                    // Extração flexível e independente de marcadores hifenizados de coluna
+                    let temposEncontrados = [];
+                    for (let i = 1; i < partes.length; i++) {
+                        let token = partes[i].split('-')[0].trim();
+                        if (token && (/\d+[,.]\d+/.test(token) || /\d+:\d+[,.]\d+/.test(token))) {
+                            let tempoNum = 0;
+                            if (token.includes(':')) {
+                                let partesTempo = token.split(':');
+                                let minutos = parseInt(partesTempo[0], 10);
+                                let segundos = parseFloat(partesTempo[1].replace(',', '.'));
+                                tempoNum = (minutos * 60) + segundos;
+                            } else {
+                                tempoNum = parseFloat(token.replace(',', '.'));
                             }
-                            colIdx++;
+                            if (!isNaN(tempoNum) && tempoNum > 0) {
+                                temposEncontrados.push(parseFloat(tempoNum.toFixed(3)));
+                            }
+                        }
+                    }
+
+                    // Associa os tempos encontrados na linha estritamente na ordem dos pilotos identificados
+                    temposEncontrados.forEach((tempoVal, idx) => {
+                        if (ordemPilotos[idx]) {
+                            let pName = ordemPilotos[idx];
+                            pilotosMap[pName].laps[numVolta - 1] = tempoVal;
                         }
                     });
                 }
@@ -552,7 +556,17 @@
 
             Object.keys(pilotosMap).forEach(pName => {
                 let pObj = pilotosMap[pName];
-                pObj.laps = pObj.laps.filter(val => val !== undefined && !isNaN(val));
+                
+                // Consolidação integral das voltas preenchendo lacunas vazias se houver
+                let lapsLimpos = [];
+                if (Array.isArray(pObj.laps)) {
+                    for (let i = 0; i < pObj.laps.length; i++) {
+                        if (pObj.laps[i] !== undefined && !isNaN(pObj.laps[i])) {
+                            lapsLimpos.push(pObj.laps[i]);
+                        }
+                    }
+                }
+                pObj.laps = lapsLimpos;
 
                 if (pObj.laps.length > 0) {
                     let melhor = Math.min(...pObj.laps);
