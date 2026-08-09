@@ -18,7 +18,7 @@
             projectId: "SEU_PROJECT_ID",
             storageBucket: "SEU_STORAGE_BUCKET",
             messagingSenderId: "SEU_SENDER_ID",
-            appId: "SUA_APP_ID"
+            appId: "SEU_APP_ID"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -56,14 +56,9 @@
                 <input type="password" id="password" placeholder="Senha de Acesso" class="w-full p-3 border border-gray-300 rounded text-sm focus:outline-none focus:border-[#002e26]">
                 <button onclick="login()" class="w-full manta-dark py-3 uppercase text-xs font-bold tracking-widest rounded transition hover:opacity-90">Entrar no Sistema</button>
                 
-                <!-- Caixa de Resumo das Atualizações (Logo na Entrada) -->
-                <div class="mt-6 border border-[#9db2a2] bg-[#f4f7f5] p-4 rounded text-xs space-y-2">
-                    <h3 class="font-bold text-[#002e26] uppercase tracking-wider border-b border-[#9db2a2] pb-1">Resumo das Atualizações</h3>
-                    <ul class="list-disc list-inside text-gray-700 space-y-1">
-                        <li>Implementação da interface responsiva otimizada para dispositivos móveis.</li>
-                        <li>Integração com o banco de dados em nuvem do Firebase Firestore.</li>
-                        <li>Configuração dos módulos de upload, inspeção e exclusão segura.</li>
-                    </ul>
+                <!-- Versão do Site (Logo na Entrada) -->
+                <div class="mt-6 text-center text-xs text-gray-500 font-semibold uppercase tracking-widest">
+                    Versão do Sistema: 1.0.0-PROD
                 </div>
             </div>
 
@@ -98,8 +93,16 @@
             </div>
         </div>
 
-        <!-- Caixa Inferior: O que já foi feito e Próximos Passos (Visível após entrar) -->
+        <!-- Caixa Inferior: Resumo das Atualizações, O que já foi feito e Próximos Passos (Visível após entrar) -->
         <div id="footer-status-box" class="hidden m-6 mt-0 border border-gray-200 bg-gray-50 p-4 rounded text-xs space-y-3">
+            <div class="border-b pb-2">
+                <span class="font-bold text-[#002e26] uppercase tracking-wider block mb-1">📋 Resumo das Atualizações:</span>
+                <ul class="list-disc list-inside text-gray-600 space-y-1">
+                    <li>Implementação da interface responsiva otimizada para dispositivos móveis.</li>
+                    <li>Integração com o banco de dados em nuvem do Firebase Firestore.</li>
+                    <li>Configuração dos módulos de upload, inspeção e exclusão segura.</li>
+                </ul>
+            </div>
             <div class="border-b pb-2">
                 <span class="font-bold text-[#002e26] uppercase tracking-wider block mb-1">✓ O que já foi feito:</span>
                 <p class="text-gray-600">Estruturação da identidade visual (Pininfarina/Manta), sistema de login por senha, painel responsivo mobile e integração Firebase.</p>
