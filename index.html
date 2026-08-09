@@ -68,6 +68,13 @@
         .dossier-kpi-label { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
         .dossier-kpi-value { font-size: 1.25rem; font-weight: 700; color: var(--accent-gold); }
 
+        .merge-section { background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+        .merge-section label { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+        .merge-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .merge-select { background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-card); padding: 8px 12px; border-radius: 6px; flex: 1; font-size: 0.85rem; }
+        .btn-merge { background: var(--accent-blue); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
+        .btn-merge:hover { background: #2b6cb0; }
+
         .filters-card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 18px; }
         .filters-grid { display: grid; grid-template-columns: 1fr 1fr 1.3fr; gap: 20px; }
         .filter-group { display: flex; flex-direction: column; gap: 12px; }
@@ -275,7 +282,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.13.0 (Suporte Duplo PDF + HTML)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.14.0 (Mesclagem de Pilotos)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -464,7 +471,6 @@
             return textoCompleto;
         }
 
-        // 🏎️ Parser Blindado para varredura e mapeamento absoluto de todas as voltas e pilotos
         function parsearTextoConvertido(texto, sessaoNome, batKey) {
             let pilotosMap = {};
             let linhas = texto.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
@@ -695,10 +701,32 @@
                 return;
             }
 
+            // Descobrir outros pilotos disponíveis para mesclagem
+            let todosPilotosSet = new Set();
+            dadosBase.forEach(d => { if(d.piloto && d.piloto !== nomePiloto) todosPilotosSet.add(d.piloto); });
+            let opcoesPilotos = Array.from(todosPilotosSet);
+
             let totalCorridas = participacoes.length;
             let vitorias = participacoes.filter(p => String(p.pos).includes('1')).length;
             let melhorVoltaP = Math.min(...participacoes.map(p => p.melhorVoltaVal || 999));
             let tabelaHtml = participacoes.map(p => `<tr><td><span class="session-badge">${formatarNomeSessao(p.sessao)}</span></td><td><span class="pos-badge">${p.pos}</span></td><td class="text-green">${p.melhorVoltaTxt || '--'}</td></tr>`).join('');
+
+            let mergeHtml = '';
+            if (opcoesPilotos.length > 0) {
+                let optionsList = opcoesPilotos.map(op => `<option value="${op}">${op}</option>`).join('');
+                mergeHtml = `
+                    <div class="merge-section">
+                        <label>🔗 Mesclar outro piloto para "${nomePiloto}"</label>
+                        <div class="merge-controls">
+                            <select id="select-piloto-origem" class="merge-select">
+                                <option value="">Selecione o piloto duplicado/errado...</option>
+                                ${optionsList}
+                            </select>
+                            <button class="btn-merge" onclick="executarMesclagemPilotos('${nomePiloto}')">Mesclar Dados</button>
+                        </div>
+                    </div>
+                `;
+            }
 
             bodyEl.innerHTML = `
                 <div class="dossier-grid">
@@ -706,11 +734,65 @@
                     <div class="dossier-kpi"><span class="dossier-kpi-label">Vitórias</span><span class="dossier-kpi-value">${vitorias}</span></div>
                     <div class="dossier-kpi"><span class="dossier-kpi-label">Melhor Pessoal</span><span class="dossier-kpi-value">${melhorVoltaP < 999 ? melhorVoltaP.toFixed(3) + 's' : '--'}</span></div>
                 </div>
+                ${mergeHtml}
                 <div class="card" style="padding: 14px;">
                     <div class="card-header" style="margin-bottom: 10px;">📜 Histórico de Baterias</div>
                     <div class="table-container"><table><thead><tr><th>Sessão</th><th>Pos</th><th>Melhor Volta</th></tr></thead><tbody>${tabelaHtml}</tbody></table></div>
                 </div>`;
             modal.style.display = 'flex';
+        };
+
+        window.executarMesclagemPilotos = async function(nomeDestino) {
+            const selectOrigem = document.getElementById('select-piloto-origem');
+            if (!selectOrigem) return;
+            const nomeOrigem = selectOrigem.value;
+            if (!nomeOrigem) {
+                alert("Selecione um piloto para mesclar.");
+                return;
+            }
+
+            if (!confirm(`Deseja realmente mesclar todos os registros de "${nomeOrigem}" para "${nomeDestino}"? Esta alteração atualizará os dados na nuvem.`)) {
+                return;
+            }
+
+            if (!db) {
+                alert("Erro: Banco de dados não conectado.");
+                return;
+            }
+
+            let atualizacoes = {};
+            let countAlterados = 0;
+
+            listaJsonsCache.forEach(arq => {
+                if (arq.dados && Array.isArray(arq.dados)) {
+                    let houveMudancaNoArquivo = false;
+                    let novosDados = arq.dados.map(d => {
+                        if (d.piloto === nomeOrigem) {
+                            houveMudancaNoArquivo = true;
+                            countAlterados++;
+                            return { ...d, piloto: nomeDestino };
+                        }
+                        return d;
+                    });
+
+                    if (houveMudancaNoArquivo) {
+                        atualizacoes[arq.firebaseKey + '/dados'] = novosDados;
+                    }
+                }
+            });
+
+            if (countAlterados > 0) {
+                try {
+                    await db.ref('baterias').update(atualizacoes);
+                    alert(`Sucesso! ${countAlterados} registro(s) de "${nomeOrigem}" foram mesclados com "${nomeDestino}".`);
+                    window.fecharDossiePiloto();
+                } catch (err) {
+                    console.error("Erro ao mesclar pilotos:", err);
+                    alert("Erro ao executar a mesclagem: " + err.message);
+                }
+            } else {
+                alert("Nenhum registro encontrado para o piloto de origem selecionado.");
+            }
         };
 
         window.fecharDossiePiloto = function() { document.getElementById('piloto-modal').style.display = 'none'; };
