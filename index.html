@@ -57,7 +57,7 @@
             background-color: rgba(13, 17, 26, 0.88); z-index: 10000; justify-content: center; align-items: center; padding: 20px; overflow-y: auto;
         }
         .modal-content {
-            background: var(--bg-card); border: 1px solid var(--border-card); border-top: 5px solid var(--accent-gold); border-radius: 14px; width: 100%; max-width: 950px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden;
+            background: var(--bg-card); border: 1px solid var(--border-card); border-top: 5px solid var(--accent-gold); border-radius: 14px; width: 100%; max-width: 1000px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden;
         }
         .modal-header { padding: 20px 24px; background: var(--bg-card-header); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-card); }
         .modal-title { font-size: 1.25rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 10px; }
@@ -219,13 +219,13 @@
     <div id="campeonatos-modal" class="custom-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">🏆 Gerenciamento de Campeonatos, Provas e Classificação</div>
+                <div class="modal-title">🏆 Gerenciamento Avançado de Campeonatos</div>
                 <button class="modal-close" onclick="fecharModalCampeonatos()">&times;</button>
             </div>
             <div class="modal-body">
                 <div style="display: flex; flex-direction: column; gap: 20px;">
                     <div class="upload-box">
-                        <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase;">🔒 Criar Novo Campeonato (Protegido por Senha)</span>
+                        <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase;">🔒 Criar Novo Campeonato (Protegido por Senha Unificada)</span>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
                             <input type="text" id="input-nome-campeonato" class="config-input" placeholder="Nome do Campeonato (Ex: Copa Krathus 2026)">
                             <button class="btn-action-primary" onclick="criarCampeonatoProtegido()">Criar Campeonato</button>
@@ -233,16 +233,13 @@
                     </div>
 
                     <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Campeonatos Cadastrados, Provas Vinculadas e Classificação</span>
-                        <ul id="campeonatos-lista-modal" style="list-style: none; display: flex; flex-direction: column; gap: 14px; max-height: 480px; overflow-y: auto;">
+                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Lista de Campeonatos (Clique para Configurações, Provas e Grid)</span>
+                        <ul id="campeonatos-lista-modal" style="list-style: none; display: flex; flex-direction: column; gap: 12px; max-height: 520px; overflow-y: auto;">
                             <li>Carregando campeonatos...</li>
                         </ul>
                     </div>
 
-                    <div>
-                        <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Inspetor de Estrutura da Prova (Campeonato)</span>
-                        <pre id="campeonato-json-viewer" style="background: var(--bg-body); color: var(--accent-green); padding: 12px; border-radius: 6px; font-size: 0.75rem; max-height: 200px; overflow: auto; border: 1px solid var(--border-card); line-height: 1.4; margin-top: 6px;">Selecione "Inspecionar" em uma prova do campeonato ao lado para visualizar os dados...</pre>
-                    </div>
+                    <div id="container-config-campeonato-selecionado"></div>
                 </div>
             </div>
         </div>
@@ -327,7 +324,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.20.0 (Gerenciamento de Provas no Modal de Campeonatos)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.22.0 (Configurações e Grid Invertido no Modal de Campeonatos)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -338,6 +335,8 @@
     </div>
 
     <script>
+        const SENHA_UNIFICADA = "1234";
+
         const firebaseConfig = {
             apiKey: "AIzaSyDCTkeIa6QsY2zYs8S__HlIwcY-zcuhZCA",
             authDomain: "krathus-telemetria.firebaseapp.com",
@@ -442,9 +441,9 @@
         window.fecharModalCampeonatos = function() { document.getElementById('campeonatos-modal').style.display = 'none'; };
 
         window.criarCampeonatoProtegido = async function() {
-            let senha = prompt("🔒 Digite a senha para criar um novo campeonato:");
+            let senha = prompt("🔒 Digite a senha unificada de segurança para criar um novo campeonato:");
             if (senha === null) return;
-            if (senha !== "1234") {
+            if (senha !== SENHA_UNIFICADA) {
                 alert("❌ Senha incorreta!");
                 return;
             }
@@ -465,6 +464,11 @@
             let novoCamp = {
                 chave: campKey,
                 nome: nomeCamp,
+                configuracoes: {
+                    numeroProvas: 4,
+                    pilotosPorProva: 10,
+                    inverterSegundaBateria: true
+                },
                 configuracaoPadrao: {
                     pontuacao: { "1": 25, "2": 18, "3": 15, "4": 12, "5": 10, "6": 8, "7": 6, "8": 4, "9": 2, "10": 1 },
                     descarteProvas: 0
@@ -490,68 +494,130 @@
 
             keys.forEach(key => {
                 let camp = campeonatosCache[key];
-                let tabelaPontos = calcularClassificacaoCampeonato(camp);
-
-                let linhasTabela = "";
-                if (tabelaPontos.length === 0) {
-                    linhasTabela = `<tr><td colspan="3" style="text-align:center; color: var(--text-muted);">Sem provas pontuadas neste campeonato.</td></tr>`;
-                } else {
-                    tabelaPontos.forEach((p, idx) => {
-                        let meta = pilotosMetadadosCache[p.piloto] || {};
-                        let nomeExib = meta.apelido ? `${p.piloto} (${meta.apelido})` : p.piloto;
-                        linhasTabela += `
-                            <tr>
-                                <td><span class="pos-badge">${idx + 1}º</span></td>
-                                <td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${p.piloto}')">${nomeExib}</a></strong></td>
-                                <td style="text-align: right; color: var(--accent-gold); font-weight: 700;">${p.pontos} pts</td>
-                            </tr>`;
-                    });
-                }
-
-                // Renderiza a lista de provas vinculadas ao campeonato com opções de inspecionar e excluir
-                let provasHtml = "";
-                let provasIds = camp.provasIds || [];
-                if (provasIds.length === 0) {
-                    provasHtml = `<div style="font-size: 0.82rem; color: var(--text-muted); padding: 4px 0;">Nenhuma prova enviada para este campeonato ainda.</div>`;
-                } else {
-                    provasHtml = `<div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;"><span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Provas Enviadas:</span>`;
-                    provasIds.forEach(batKey => {
-                        let provaObj = listaJsonsCache.find(a => a.bateriaKey === batKey || a.firebaseKey === batKey);
-                        let nomeProva = provaObj ? (provaObj.sessao || provaObj.bateriaKey) : batKey;
-                        provasHtml += `
-                            <div style="background: var(--bg-card); padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-card); display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem;">
-                                <span>📄 <strong>${nomeProva}</strong></span>
-                                <div style="display: flex; gap: 8px;">
-                                    <button class="btn-text-action" onclick="inspecionarProvaCampeonato('${batKey}')">🔍 Inspecionar</button>
-                                    <button class="btn-text-action" style="color: var(--accent-red);" onclick="excluirProvaCampeonato('${key}', '${batKey}', '${nomeProva}')">🗑️ Excluir</button>
-                                </div>
-                            </div>`;
-                    });
-                    provasHtml += `</div>`;
-                }
-
                 const li = document.createElement('li');
                 li.style.background = "var(--bg-input)";
-                li.style.padding = "16px";
-                li.style.borderRadius = "10px";
+                li.style.padding = "14px 18px";
+                li.style.borderRadius = "8px";
                 li.style.border = "1px solid var(--border-card)";
                 li.style.display = "flex";
-                li.style.flexDirection = "column";
-                li.style.gap = "12px";
+                li.style.justifyContent = "space-between";
+                li.style.alignItems = "center";
+                li.style.flexWrap = "wrap";
+                li.style.gap = "10px";
 
                 li.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                        <span style="font-size: 1.05rem; font-weight: 700; color: var(--text-title);">🏆 ${camp.nome} (${provasIds.length} Prova(s))</span>
-                        <div style="display: flex; gap: 10px; align-items: center;">
-                            <input type="file" id="file-camp-${key}" accept=".pdf,.html,.htm" style="display:none;" onchange="uploadProvaCampeonato(event, '${key}')">
-                            <button class="btn-action-primary" style="padding: 6px 12px; font-size: 0.82rem;" onclick="document.getElementById('file-camp-${key}').click()">📁 Enviar Prova</button>
-                            <button class="btn-text-action" style="color: var(--accent-red);" onclick="excluirCampeonato('${key}')">🗑️ Excluir Campeonato</button>
+                    <span style="font-size: 1.05rem; font-weight: 700; color: var(--text-title);">🏆 ${camp.nome} (${camp.provasIds ? camp.provasIds.length : 0} Prova(s))</span>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <button class="btn-action-primary" style="padding: 6px 14px; font-size: 0.82rem;" onclick="abrirConfiguracoesCampeonato('${key}')">⚙️ Configurações & Provas</button>
+                        <button class="btn-text-action" style="color: var(--accent-red);" onclick="excluirCampeonato('${key}')">🗑️ Excluir</button>
+                    </div>`;
+                ul.appendChild(li);
+            });
+        }
+
+        window.abrirConfiguracoesCampeonato = function(campKey) {
+            let camp = campeonatosCache[campKey];
+            if (!camp) return;
+
+            let conf = camp.configuracoes || { numeroProvas: 4, pilotosPorProva: 10, inverterSegundaBateria: true };
+            let container = document.getElementById('container-config-campeonato-selecionado');
+
+            let provasIds = camp.provasIds || [];
+            let provasHtml = "";
+            if (provasIds.length === 0) {
+                provasHtml = `<div style="font-size: 0.82rem; color: var(--text-muted); padding: 6px 0;">Nenhum arquivo de prova enviado ainda.</div>`;
+            } else {
+                provasHtml = `<div style="display: flex; flex-direction: column; gap: 6px; margin-top: 6px;">`;
+                provasIds.forEach((batKey, index) => {
+                    let provaObj = listaJsonsCache.find(a => a.bateriaKey === batKey || a.firebaseKey === batKey);
+                    let nomeProva = provaObj ? (provaObj.sessao || provaObj.bateriaKey) : batKey;
+                    provasHtml += `
+                        <div style="background: var(--bg-card); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-card); display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem;">
+                            <span>📄 <strong>Prova ${index + 1}:</strong> ${nomeProva}</span>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="btn-text-action" onclick="inspecionarProvaCampeonato('${batKey}')">🔍 Inspecionar</button>
+                                <button class="btn-text-action" style="color: var(--accent-red);" onclick="excluirProvaCampeonato('${campKey}', '${batKey}', '${nomeProva}')">🗑️ Excluir</button>
+                            </div>
+                        </div>`;
+                });
+                provasHtml += `</div>`;
+            }
+
+            let tabelaPontos = calcularClassificacaoCampeonato(camp);
+            let linhasTabela = "";
+            if (tabelaPontos.length === 0) {
+                linhasTabela = `<tr><td colspan="3" style="text-align:center; color: var(--text-muted);">Sem pontuação computada.</td></tr>`;
+            } else {
+                tabelaPontos.forEach((p, idx) => {
+                    let meta = pilotosMetadadosCache[p.piloto] || {};
+                    let nomeExib = meta.apelido ? `${p.piloto} (${meta.apelido})` : p.piloto;
+                    linhasTabela += `
+                        <tr>
+                            <td><span class="pos-badge">${idx + 1}º</span></td>
+                            <td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${p.piloto}')">${nomeExib}</a></strong></td>
+                            <td style="text-align: right; color: var(--accent-gold); font-weight: 700;">${p.pontos} pts</td>
+                        </tr>`;
+                });
+            }
+
+            // Geração da simulação de Grid de Largada (se inverter segunda bateria estiver ativo e houver pelo menos 1 prova)
+            let gridHtml = "";
+            if (conf.inverterSegundaBateria && provasIds.length > 0) {
+                let ultimaProvaKey = provasIds[provasIds.length - 1];
+                let provaObj = listaJsonsCache.find(a => a.bateriaKey === ultimaProvaKey || a.firebaseKey === ultimaProvaKey);
+                if (provaObj && provaObj.dados) {
+                    let dadosOrdenados = [...provaObj.dados].sort((a, b) => {
+                        let posA = parseInt(String(a.pos).replace('º', '').trim(), 10) || 99;
+                        let posB = parseInt(String(b.pos).replace('º', '').trim(), 10) || 99;
+                        return posA - posB;
+                    });
+                    let gridInvertido = [...dadosOrdenados].reverse();
+                    let linhasGrid = gridInvertido.map((d, i) => `<tr><td><span class="pos-badge">${i + 1}º</span></td><td>${d.piloto}</td></tr>`).join('');
+                    gridHtml = `
+                        <div style="margin-top: 10px;">
+                            <span style="font-size: 0.78rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase;">🔄 Simulação de Grid Invertido para a Próxima Prova</span>
+                            <div class="table-container" style="margin-top: 6px;">
+                                <table><thead><tr><th>Posição Grid</th><th>Piloto</th></tr></thead><tbody>${linhasGrid}</tbody></table>
+                            </div>
+                        </div>`;
+                }
+            }
+
+            container.innerHTML = `
+                <div class="config-panel" style="border: 2px solid var(--accent-gold);">
+                    <div class="config-panel-title">⚙️ Configurações e Gestão: ${camp.nome}</div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 6px;">
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">Número de Provas</label>
+                            <input type="number" id="cfg-num-provas-${campKey}" class="config-input" value="${conf.numeroProvas}">
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">Pilotos por Prova</label>
+                            <input type="number" id="cfg-pilotos-prova-${campKey}" class="config-input" value="${conf.pilotosPorProva}">
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 4px; justify-content: flex-end;">
+                            <label class="checkbox-item" style="font-size: 0.85rem;"><input type="checkbox" id="cfg-inverter-${campKey}" ${conf.inverterSegundaBateria ? 'checked' : ''}> Inverter Grid 2ª Prova</label>
                         </div>
                     </div>
-                    ${provasHtml}
-                    <div style="margin-top: 4px;">
-                        <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Classificação do Campeonato</span>
-                        <div class="table-container" style="margin-top: 6px;">
+                    <div style="display: flex; justify-content: flex-end; margin-top: 6px;">
+                        <button class="btn-action-primary" onclick="salvarConfiguracoesCampeonato('${campKey}')">Salvar Configurações</button>
+                    </div>
+
+                    <div style="border-top: 1px solid var(--border-card); padding-top: 14px; margin-top: 10px;">
+                        <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase;">📁 Upload de Arquivos da Prova (PDF ou HTML)</span>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 8px;">
+                            <input type="file" id="input-file-camp-detalhe-${campKey}" accept=".pdf,.html,.htm" multiple style="background: var(--bg-card); padding: 8px; border-radius: 6px; border: 1px solid var(--border-card); color: var(--text-main); flex: 1; font-size: 0.85rem;">
+                            <button class="btn btn-upload-modal-trigger" onclick="uploadProvasCampeonatoDetalhe('${campKey}')">Converter e Enviar Prova</button>
+                        </div>
+                        ${provasHtml}
+                    </div>
+
+                    ${gridHtml}
+
+                    <div style="border-top: 1px solid var(--border-card); padding-top: 14px; margin-top: 10px;">
+                        <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase;">🏆 Classificação Geral do Campeonato</span>
+                        <div class="table-container" style="margin-top: 8px;">
                             <table>
                                 <thead>
                                     <tr>
@@ -565,15 +631,104 @@
                                 </tbody>
                             </table>
                         </div>
-                    </div>`;
-                ul.appendChild(li);
-            });
-        }
+                    </div>
+                </div>
+            `;
+        };
+
+        window.salvarConfiguracoesCampeonato = async function(campKey) {
+            let senha = prompt("🔒 Digite a senha unificada de segurança para salvar as configurações:");
+            if (senha === null) return;
+            if (senha !== SENHA_UNIFICADA) {
+                alert("❌ Senha incorreta!");
+                return;
+            }
+
+            let numProvas = parseInt(document.getElementById(`cfg-num-provas-${campKey}`).value, 10) || 4;
+            let pilotosProva = parseInt(document.getElementById(`cfg-pilotos-prova-${campKey}`).value, 10) || 10;
+            let inverter = document.getElementById(`cfg-inverter-${campKey}`).checked;
+
+            if (!db) return;
+
+            try {
+                await db.ref(`campeonatos/${campKey}/configuracoes`).set({
+                    numeroProvas: numProvas,
+                    pilotosPorProva: pilotosProva,
+                    inverterSegundaBateria: inverter
+                });
+                alert("Configurações do campeonato salvas com sucesso!");
+                abrirConfiguracoesCampeonato(campKey);
+            } catch (err) {
+                console.error("Erro ao salvar configurações:", err);
+                alert("Erro ao salvar: " + err.message);
+            }
+        };
+
+        window.uploadProvasCampeonatoDetalhe = async function(campKey) {
+            const inputEl = document.getElementById(`input-file-camp-detalhe-${campKey}`);
+            if (!inputEl || !inputEl.files || inputEl.files.length === 0) {
+                alert("Selecione ao menos um arquivo PDF ou HTML.");
+                return;
+            }
+            if (!db) return;
+
+            for (let file of inputEl.files) {
+                let nomeArq = file.name;
+                let sessaoNome = nomeArq.replace(/\.[^/.]+$/, "").trim();
+                let batKey = "bat_" + sessaoNome.toLowerCase().replace(/[^a-z0-9]/g, "_") + "_" + Date.now();
+
+                try {
+                    let textoExtraido = "";
+                    const extensao = nomeArq.split('.').pop().toLowerCase();
+
+                    if (extensao === 'html' || extensao === 'htm') {
+                        const htmlText = await file.text();
+                        const parser = new DOMParser();
+                        const docHtml = parser.parseFromString(htmlText, 'text/html');
+                        textoExtraido = docHtml.body.innerText;
+                    } else {
+                        textoExtraido = await converterPdfParaTexto(file);
+                    }
+
+                    const dadosExtraidos = parsearTextoConvertido(textoExtraido, sessaoNome, batKey);
+
+                    let historicoOriginal = {};
+                    dadosExtraidos.forEach(d => {
+                        historicoOriginal[d.piloto] = d.piloto;
+                    });
+
+                    let novoRegistro = {
+                        bateriaKey: batKey,
+                        sessao: sessaoNome,
+                        id: Date.now(),
+                        dados: dadosExtraidos,
+                        historicoNomesOriginais: historicoOriginal
+                    };
+
+                    await db.ref('baterias/' + batKey).set(novoRegistro);
+
+                    let camp = campeonatosCache[campKey];
+                    let provas = camp.provasIds || [];
+                    if (!provas.includes(batKey)) {
+                        provas.push(batKey);
+                        await db.ref(`campeonatos/${campKey}/provasIds`).set(provas);
+                    }
+                } catch (err) {
+                    console.error("Erro ao processar prova:", err);
+                    alert("Erro ao processar arquivo " + nomeArq + ": " + err.message);
+                }
+            }
+
+            inputEl.value = "";
+            alert("Upload(s) processado(s) e vinculado(s) ao campeonato com sucesso!");
+            renderizarListaCampeonatosModal();
+            abrirConfiguracoesCampeonato(campKey);
+        };
 
         window.inspecionarProvaCampeonato = function(batKey) {
             let provaObj = listaJsonsCache.find(a => a.bateriaKey === batKey || a.firebaseKey === batKey);
             if (provaObj) {
-                document.getElementById('campeonato-json-viewer').textContent = JSON.stringify(provaObj, null, 4);
+                alert(JSON.stringify(provaObj, null, 2));
             } else {
                 alert("Dados da prova não encontrados no cache.");
             }
@@ -581,8 +736,8 @@
 
         window.excluirProvaCampeonato = async function(campKey, batKey, nomeProva) {
             if (!db) return;
-            let senha = prompt(`🔒 Digite a senha para excluir a prova "${nomeProva}" do campeonato:`);
-            if (senha !== "1234") {
+            let senha = prompt(`🔒 Digite a senha unificada de segurança para excluir a prova "${nomeProva}" do campeonato:`);
+            if (senha !== SENHA_UNIFICADA) {
                 alert("❌ Senha incorreta!");
                 return;
             }
@@ -594,6 +749,7 @@
                     await db.ref(`campeonatos/${campKey}/provasIds`).set(provas);
                     alert("Prova removida do campeonato com sucesso!");
                     renderizarListaCampeonatosModal();
+                    abrirConfiguracoesCampeonato(campKey);
                 } catch (err) {
                     console.error("Erro ao excluir prova do campeonato:", err);
                     alert("Erro ao excluir prova: " + err.message);
@@ -603,72 +759,18 @@
 
         window.excluirCampeonato = function(key) {
             if (!db) return;
-            let senha = prompt("🔒 Digite a senha para excluir o campeonato:");
-            if (senha !== "1234") {
+            let senha = prompt("🔒 Digite a senha unificada de segurança para excluir o campeonato:");
+            if (senha !== SENHA_UNIFICADA) {
                 alert("❌ Senha incorreta!");
                 return;
             }
             if (confirm("Deseja realmente excluir este campeonato?")) {
                 db.ref('campeonatos/' + key).remove().then(() => {
                     alert("Campeonato excluído!");
+                    document.getElementById('container-config-campeonato-selecionado').innerHTML = "";
                     renderizarListaCampeonatosModal();
                 });
             }
-        };
-
-        window.uploadProvaCampeonato = async function(event, campKey) {
-            const file = event.target.files[0];
-            if (!file) return;
-            if (!db) return;
-
-            let nomeArq = file.name;
-            let sessaoNome = nomeArq.replace(/\.[^/.]+$/, "").trim();
-            let batKey = "bat_" + sessaoNome.toLowerCase().replace(/[^a-z0-9]/g, "_");
-
-            try {
-                let textoExtraido = "";
-                const extensao = nomeArq.split('.').pop().toLowerCase();
-
-                if (extensao === 'html' || extensao === 'htm') {
-                    const htmlText = await file.text();
-                    const parser = new DOMParser();
-                    const docHtml = parser.parseFromString(htmlText, 'text/html');
-                    textoExtraido = docHtml.body.innerText;
-                } else {
-                    textoExtraido = await converterPdfParaTexto(file);
-                }
-
-                const dadosExtraidos = parsearTextoConvertido(textoExtraido, sessaoNome, batKey);
-
-                let historicoOriginal = {};
-                dadosExtraidos.forEach(d => {
-                    historicoOriginal[d.piloto] = d.piloto;
-                });
-
-                let novoRegistro = {
-                    bateriaKey: batKey,
-                    sessao: sessaoNome,
-                    id: Date.now(),
-                    dados: dadosExtraidos,
-                    historicoNomesOriginais: historicoOriginal
-                };
-
-                await db.ref('baterias/' + batKey).set(novoRegistro);
-
-                let camp = campeonatosCache[campKey];
-                let provas = camp.provasIds || [];
-                if (!provas.includes(batKey)) {
-                    provas.push(batKey);
-                    await db.ref(`campeonatos/${campKey}/provasIds`).set(provas);
-                }
-
-                alert(`Prova "${sessaoNome}" enviada e vinculada ao campeonato com sucesso!`);
-                renderizarListaCampeonatosModal();
-            } catch (err) {
-                console.error("Erro ao processar prova do campeonato:", err);
-                alert("Erro ao processar arquivo: " + err.message);
-            }
-            event.target.value = "";
         };
 
         function calcularClassificacaoCampeonato(camp) {
@@ -997,9 +1099,9 @@
         };
 
         window.solicitarSenhaConfiguracao = function(nomePiloto) {
-            let senha = prompt("🔒 Digite a senha para acessar as configurações protegidas do piloto:");
+            let senha = prompt("🔒 Digite a senha unificada de segurança para acessar as configurações protegidas do piloto:");
             if (senha === null) return;
-            if (senha !== "1234") {
+            if (senha !== SENHA_UNIFICADA) {
                 alert("❌ Senha incorreta!");
                 return;
             }
