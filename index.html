@@ -219,11 +219,11 @@
     <div id="campeonatos-modal" class="custom-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">🏆 Gerenciamento de Campeonatos e Provas</div>
+                <div class="modal-title">🏆 Gerenciamento de Campeonatos, Provas e Classificação</div>
                 <button class="modal-close" onclick="fecharModalCampeonatos()">&times;</button>
             </div>
             <div class="modal-body">
-                <div style="display: flex; flex-direction: column; gap: 16px;">
+                <div style="display: flex; flex-direction: column; gap: 20px;">
                     <div class="upload-box">
                         <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase;">🔒 Criar Novo Campeonato (Protegido por Senha)</span>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
@@ -233,10 +233,15 @@
                     </div>
 
                     <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Campeonatos Cadastrados e Classificações</span>
-                        <ul id="campeonatos-lista-modal" style="list-style: none; display: flex; flex-direction: column; gap: 14px; max-height: 450px; overflow-y: auto;">
+                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Campeonatos Cadastrados, Provas Vinculadas e Classificação</span>
+                        <ul id="campeonatos-lista-modal" style="list-style: none; display: flex; flex-direction: column; gap: 14px; max-height: 480px; overflow-y: auto;">
                             <li>Carregando campeonatos...</li>
                         </ul>
+                    </div>
+
+                    <div>
+                        <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Inspetor de Estrutura da Prova (Campeonato)</span>
+                        <pre id="campeonato-json-viewer" style="background: var(--bg-body); color: var(--accent-green); padding: 12px; border-radius: 6px; font-size: 0.75rem; max-height: 200px; overflow: auto; border: 1px solid var(--border-card); line-height: 1.4; margin-top: 6px;">Selecione "Inspecionar" em uma prova do campeonato ao lado para visualizar os dados...</pre>
                     </div>
                 </div>
             </div>
@@ -322,7 +327,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.19.0 (Campeonatos Exclusivos no Modal)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.20.0 (Gerenciamento de Provas no Modal de Campeonatos)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -503,6 +508,28 @@
                     });
                 }
 
+                // Renderiza a lista de provas vinculadas ao campeonato com opções de inspecionar e excluir
+                let provasHtml = "";
+                let provasIds = camp.provasIds || [];
+                if (provasIds.length === 0) {
+                    provasHtml = `<div style="font-size: 0.82rem; color: var(--text-muted); padding: 4px 0;">Nenhuma prova enviada para este campeonato ainda.</div>`;
+                } else {
+                    provasHtml = `<div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;"><span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Provas Enviadas:</span>`;
+                    provasIds.forEach(batKey => {
+                        let provaObj = listaJsonsCache.find(a => a.bateriaKey === batKey || a.firebaseKey === batKey);
+                        let nomeProva = provaObj ? (provaObj.sessao || provaObj.bateriaKey) : batKey;
+                        provasHtml += `
+                            <div style="background: var(--bg-card); padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-card); display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem;">
+                                <span>📄 <strong>${nomeProva}</strong></span>
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="btn-text-action" onclick="inspecionarProvaCampeonato('${batKey}')">🔍 Inspecionar</button>
+                                    <button class="btn-text-action" style="color: var(--accent-red);" onclick="excluirProvaCampeonato('${key}', '${batKey}', '${nomeProva}')">🗑️ Excluir</button>
+                                </div>
+                            </div>`;
+                    });
+                    provasHtml += `</div>`;
+                }
+
                 const li = document.createElement('li');
                 li.style.background = "var(--bg-input)";
                 li.style.padding = "16px";
@@ -514,30 +541,65 @@
 
                 li.innerHTML = `
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                        <span style="font-size: 1.05rem; font-weight: 700; color: var(--text-title);">🏆 ${camp.nome} (${camp.provasIds ? camp.provasIds.length : 0} Prova(s))</span>
+                        <span style="font-size: 1.05rem; font-weight: 700; color: var(--text-title);">🏆 ${camp.nome} (${provasIds.length} Prova(s))</span>
                         <div style="display: flex; gap: 10px; align-items: center;">
                             <input type="file" id="file-camp-${key}" accept=".pdf,.html,.htm" style="display:none;" onchange="uploadProvaCampeonato(event, '${key}')">
                             <button class="btn-action-primary" style="padding: 6px 12px; font-size: 0.82rem;" onclick="document.getElementById('file-camp-${key}').click()">📁 Enviar Prova</button>
-                            <button class="btn-text-action" style="color: var(--accent-red);" onclick="excluirCampeonato('${key}')">🗑️ Excluir</button>
+                            <button class="btn-text-action" style="color: var(--accent-red);" onclick="excluirCampeonato('${key}')">🗑️ Excluir Campeonato</button>
                         </div>
                     </div>
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Pos</th>
-                                    <th>Piloto</th>
-                                    <th style="text-align: right;">Pontos</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${linhasTabela}
-                            </tbody>
-                        </table>
+                    ${provasHtml}
+                    <div style="margin-top: 4px;">
+                        <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Classificação do Campeonato</span>
+                        <div class="table-container" style="margin-top: 6px;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Pos</th>
+                                        <th>Piloto</th>
+                                        <th style="text-align: right;">Pontos</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${linhasTabela}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>`;
                 ul.appendChild(li);
             });
         }
+
+        window.inspecionarProvaCampeonato = function(batKey) {
+            let provaObj = listaJsonsCache.find(a => a.bateriaKey === batKey || a.firebaseKey === batKey);
+            if (provaObj) {
+                document.getElementById('campeonato-json-viewer').textContent = JSON.stringify(provaObj, null, 4);
+            } else {
+                alert("Dados da prova não encontrados no cache.");
+            }
+        };
+
+        window.excluirProvaCampeonato = async function(campKey, batKey, nomeProva) {
+            if (!db) return;
+            let senha = prompt(`🔒 Digite a senha para excluir a prova "${nomeProva}" do campeonato:`);
+            if (senha !== "1234") {
+                alert("❌ Senha incorreta!");
+                return;
+            }
+
+            if (confirm(`Deseja realmente remover a prova "${nomeProva}" deste campeonato?`)) {
+                try {
+                    let camp = campeonatosCache[campKey];
+                    let provas = (camp.provasIds || []).filter(id => id !== batKey);
+                    await db.ref(`campeonatos/${campKey}/provasIds`).set(provas);
+                    alert("Prova removida do campeonato com sucesso!");
+                    renderizarListaCampeonatosModal();
+                } catch (err) {
+                    console.error("Erro ao excluir prova do campeonato:", err);
+                    alert("Erro ao excluir prova: " + err.message);
+                }
+            }
+        };
 
         window.excluirCampeonato = function(key) {
             if (!db) return;
