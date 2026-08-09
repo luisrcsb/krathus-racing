@@ -68,14 +68,21 @@
         .dossier-kpi-label { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
         .dossier-kpi-value { font-size: 1.25rem; font-weight: 700; color: var(--accent-gold); }
 
-        .merge-section { background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
-        .merge-section label { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
-        .merge-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-        .merge-select { background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-card); padding: 8px 12px; border-radius: 6px; flex: 1; font-size: 0.85rem; }
-        .btn-merge { background: var(--accent-blue); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
-        .btn-merge:hover { background: #2b6cb0; }
-        .btn-unmerge { background: var(--accent-red); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
-        .btn-unmerge:hover { background: #c53030; }
+        .config-box-trigger { display: flex; justify-content: flex-end; }
+        .btn-config-open { background: var(--bg-input); border: 1px solid var(--border-card); color: var(--accent-gold); padding: 6px 14px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .btn-config-open:hover { background: rgba(255, 183, 3, 0.1); }
+
+        .config-panel { background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+        .config-panel-title { font-size: 0.82rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid var(--border-card); padding-bottom: 8px; }
+        
+        .config-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .config-input { background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-card); padding: 8px 12px; border-radius: 6px; flex: 1; font-size: 0.85rem; }
+        .config-select { background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-card); padding: 8px 12px; border-radius: 6px; flex: 1; font-size: 0.85rem; }
+
+        .btn-action-primary { background: var(--accent-blue); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
+        .btn-action-primary:hover { background: #2b6cb0; }
+        .btn-action-danger { background: var(--accent-red); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
+        .btn-action-danger:hover { background: #c53030; }
 
         .filters-card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 18px; }
         .filters-grid { display: grid; grid-template-columns: 1fr 1fr 1.3fr; gap: 20px; }
@@ -143,6 +150,7 @@
 
         .pos-badge { background: var(--accent-gold); color: #000; font-weight: bold; font-size: 0.8rem; padding: 4px 8px; border-radius: 4px; display: inline-block; }
         .session-badge { background: #1d3557; color: var(--accent-blue); padding: 4px 10px; border-radius: 4px; font-size: 0.80rem; font-weight: 600; display: inline-block; }
+        .category-badge { background: rgba(46, 196, 182, 0.15); color: var(--accent-green); border: 1px solid var(--accent-green); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; display: inline-block; }
         .text-green { color: var(--accent-green); font-weight: 700; }
         .analysis-subrow-box { background: rgba(28, 38, 59, 0.6); border-left: 4px solid var(--accent-blue); border-radius: 6px; padding: 14px 18px; font-size: 0.86rem; color: var(--text-main); line-height: 1.6; }
         .analysis-subrow-box strong.title { color: var(--accent-blue); text-transform: uppercase; font-size: 0.78rem; display: block; margin-bottom: 6px; }
@@ -175,7 +183,7 @@
         </div>
     </div>
 
-    <!-- 📤 Modal Central de Uploads (Acionado pelo botão no topo) -->
+    <!-- 📤 Modal Central de Uploads -->
     <div id="upload-modal" class="custom-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -284,7 +292,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.15.0 (Mesclagem e Desfazimento)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.16.0 (Painel Protegido de Configuração e Categorias)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -309,6 +317,7 @@
         let db = null;
         let listaJsonsCache = [];
         let chartInstances = [];
+        let pilotosMetadadosCache = {}; // Armazena apelidos e categorias locais/remotas
 
         try {
             firebase.initializeApp(firebaseConfig);
@@ -350,6 +359,12 @@
 
         document.addEventListener("DOMContentLoaded", () => {
             if (db) {
+                // Carregar metadados globais de pilotos (apelidos e categorias)
+                db.ref('pilotosMetadados').on('value', snapshot => {
+                    pilotosMetadadosCache = snapshot.val() || {};
+                    atualizarDashboard();
+                });
+
                 db.ref('baterias').on('value', snapshot => {
                     listaJsonsCache = [];
                     snapshot.forEach(childSnapshot => {
@@ -652,7 +667,16 @@
             if (listaJsonsCache && Array.isArray(listaJsonsCache)) {
                 listaJsonsCache.forEach(arq => {
                     if (arq.dados && Array.isArray(arq.dados)) {
-                        consolidado = consolidado.concat(arq.dados);
+                        arq.dados.forEach(d => {
+                            let metaKey = d.piloto;
+                            let meta = pilotosMetadadosCache[metaKey] || {};
+                            consolidado.push({
+                                ...d,
+                                pilotoExibicao: meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto,
+                                apelido: meta.apelido || '',
+                                categoria: meta.categoria || 'WL Toys 4x4'
+                            });
+                        });
                     }
                 });
             }
@@ -690,9 +714,11 @@
                 <label class="checkbox-item"><input type="checkbox" value="${key}" class="filter-bateria" checked onchange="atualizarDashboard()"> ${bateriasMap[key]}</label>
             `).join('');
 
-            pilContainer.innerHTML = Array.from(pilotosSet).map(piloto => `
-                <label class="checkbox-item"><input type="checkbox" value="${piloto}" class="filter-piloto" checked onchange="atualizarDashboard()"> ${piloto}</label>
-            `).join('');
+            pilContainer.innerHTML = Array.from(pilotosSet).map(piloto => {
+                let meta = pilotosMetadadosCache[piloto] || {};
+                let labelExib = meta.apelido ? `${piloto} (${meta.apelido})` : piloto;
+                return `<label class="checkbox-item"><input type="checkbox" value="${piloto}" class="filter-piloto" checked onchange="atualizarDashboard()"> ${labelExib}</label>`;
+            }).join('');
         }
 
         window.limparSelecao = function(classeFiltro) {
@@ -702,7 +728,11 @@
 
         window.abrirDossiePiloto = function(nomePiloto) {
             const modal = document.getElementById('piloto-modal');
-            document.getElementById('modal-piloto-nome').innerHTML = `🏎️ Ficha do Piloto: <span style="color: var(--accent-gold);">${nomePiloto}</span>`;
+            let meta = pilotosMetadadosCache[nomePiloto] || {};
+            let tituloNome = meta.apelido ? `${nomePiloto} (${meta.apelido})` : nomePiloto;
+
+            document.getElementById('modal-piloto-nome').innerHTML = `🏎️ Ficha do Piloto: <span style="color: var(--accent-gold);">${tituloNome}</span> <span class="category-badge">${meta.categoria || 'WL Toys 4x4'}</span>`;
+            
             let dadosBase = obterTodosDadosConsolidados();
             let participacoes = dadosBase.filter(d => d.piloto === nomePiloto);
             let bodyEl = document.getElementById('modal-piloto-corpo');
@@ -713,6 +743,44 @@
                 return;
             }
 
+            let totalCorridas = participacoes.length;
+            let vitorias = participacoes.filter(p => String(p.pos).includes('1')).length;
+            let melhorVoltaP = Math.min(...participacoes.map(p => p.melhorVoltaVal || 999));
+            let tabelaHtml = participacoes.map(p => `<tr><td><span class="session-badge">${formatarNomeSessao(p.sessao)}</span></td><td><span class="pos-badge">${p.pos}</span></td><td class="text-green">${p.melhorVoltaTxt || '--'}</td></tr>`).join('');
+
+            bodyEl.innerHTML = `
+                <div class="dossier-grid">
+                    <div class="dossier-kpi"><span class="dossier-kpi-label">Sessões</span><span class="dossier-kpi-value">${totalCorridas}</span></div>
+                    <div class="dossier-kpi"><span class="dossier-kpi-label">Vitórias</span><span class="dossier-kpi-value">${vitorias}</span></div>
+                    <div class="dossier-kpi"><span class="dossier-kpi-label">Melhor Pessoal</span><span class="dossier-kpi-value">${melhorVoltaP < 999 ? melhorVoltaP.toFixed(3) + 's' : '--'}</span></div>
+                </div>
+
+                <div class="config-box-trigger">
+                    <button class="btn-config-open" onclick="solicitarSenhaConfiguracao('${nomePiloto}')">⚙️ Configurações Protegidas</button>
+                </div>
+
+                <div id="container-config-protegido"></div>
+
+                <div class="card" style="padding: 14px;">
+                    <div class="card-header" style="margin-bottom: 10px;">📜 Histórico de Baterias</div>
+                    <div class="table-container"><table><thead><tr><th>Sessão</th><th>Pos</th><th>Melhor Volta</th></tr></thead><tbody>${tabelaHtml}</tbody></table></div>
+                </div>`;
+            modal.style.display = 'flex';
+        };
+
+        window.solicitarSenhaConfiguracao = function(nomePiloto) {
+            let senha = prompt("🔒 Digite a senha para acessar as configurações protegidas do piloto:");
+            if (senha === null) return;
+            if (senha !== "1234") { // Senha padrão configurada para proteção
+                alert("❌ Senha incorreta!");
+                return;
+            }
+
+            let meta = pilotosMetadadosCache[nomePiloto] || {};
+            let apelidoAtual = meta.apelido || '';
+            let categoriaAtual = meta.categoria || 'WL Toys 4x4';
+
+            let dadosBase = obterTodosDadosConsolidados();
             let todosPilotosSet = new Set();
             dadosBase.forEach(d => { if(d.piloto && d.piloto !== nomePiloto) todosPilotosSet.add(d.piloto); });
             let opcoesPilotos = Array.from(todosPilotosSet);
@@ -733,56 +801,120 @@
             });
             let opcoesDesfazer = Array.from(nomesOriginaisMescladosNeste);
 
-            let totalCorridas = participacoes.length;
-            let vitorias = participacoes.filter(p => String(p.pos).includes('1')).length;
-            let melhorVoltaP = Math.min(...participacoes.map(p => p.melhorVoltaVal || 999));
-            let tabelaHtml = participacoes.map(p => `<tr><td><span class="session-badge">${formatarNomeSessao(p.sessao)}</span></td><td><span class="pos-badge">${p.pos}</span></td><td class="text-green">${p.melhorVoltaTxt || '--'}</td></tr>`).join('');
+            let optionsList = opcoesPilotos.length > 0 ? opcoesPilotos.map(op => `<option value="${op}">${op}</option>`).join('') : '<option value="">Nenhum outro piloto disponível</option>';
+            let optionsUnmergeList = opcoesDesfazer.length > 0 ? opcoesDesfazer.map(op => `<option value="${op}">${op}</option>`).join('') : '<option value="">Nenhum histórico de mesclagem</option>';
 
-            let mergeHtml = '';
-            if (opcoesPilotos.length > 0) {
-                let optionsList = opcoesPilotos.map(op => `<option value="${op}">${op}</option>`).join('');
-                mergeHtml += `
-                    <div class="merge-section">
-                        <label>🔗 Mesclar outro piloto para "${nomePiloto}"</label>
-                        <div class="merge-controls">
-                            <select id="select-piloto-origem" class="merge-select">
-                                <option value="">Selecione o piloto duplicado/errado...</option>
-                                ${optionsList}
-                            </select>
-                            <button class="btn-merge" onclick="executarMesclagemPilotos('${nomePiloto}')">Mesclar Dados</button>
+            let containerConfig = document.getElementById('container-config-protegido');
+            containerConfig.innerHTML = `
+                <div class="config-panel">
+                    <div class="config-panel-title">🛡️ Painel de Configurações Avançadas do Piloto</div>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Renomear / Apelido do Piloto</label>
+                        <div class="config-row">
+                            <input type="text" id="input-novo-nome" class="config-input" placeholder="Novo nome oficial" value="${nomePiloto}">
+                            <input type="text" id="input-apelido" class="config-input" placeholder="Apelido (Ex: Speedy)" value="${apelidoAtual}">
+                            <button class="btn-action-primary" onclick="salvarMetadadosPiloto('${nomePiloto}')">Salvar Dados</button>
                         </div>
                     </div>
-                `;
-            }
 
-            if (opcoesDesfazer.length > 0) {
-                let optionsUnmergeList = opcoesDesfazer.map(op => `<option value="${op}">${op}</option>`).join('');
-                mergeHtml += `
-                    <div class="merge-section" style="border-color: rgba(230, 57, 70, 0.3);">
-                        <label style="color: var(--accent-red);">↩️ Desfazer Mesclagem (Restaurar Nome Original)</label>
-                        <div class="merge-controls">
-                            <select id="select-piloto-desfazer" class="merge-select">
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Categoria do Piloto</label>
+                        <div class="config-row">
+                            <select id="select-categoria" class="config-select">
+                                <option value="WL Toys 4x4" ${categoriaAtual === 'WL Toys 4x4' ? 'selected' : ''}>WL Toys 4x4</option>
+                                <option value="Mini Z" ${categoriaAtual === 'Mini Z' ? 'selected' : ''}>Mini Z</option>
+                            </select>
+                            <button class="btn-action-primary" onclick="salvarMetadadosPiloto('${nomePiloto}')">Atualizar Categoria</button>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">🔗 Mesclar Outro Piloto</label>
+                        <div class="config-row">
+                            <select id="select-piloto-origem" class="config-select">
+                                <option value="">Selecione o piloto duplicado para mesclar...</option>
+                                ${optionsList}
+                            </select>
+                            <button class="btn-action-primary" onclick="executarMesclagemPilotos('${nomePiloto}')">Mesclar</button>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <label style="font-size: 0.75rem; font-weight: 700; color: var(--accent-red); text-transform: uppercase;">↩️ Desfazer Mesclagem (Histórico Mantido)</label>
+                        <div class="config-row">
+                            <select id="select-piloto-desfazer" class="config-select">
                                 <option value="">Selecione o nome original para restaurar...</option>
                                 ${optionsUnmergeList}
                             </select>
-                            <button class="btn-unmerge" onclick="executarDesfazerMesclagem('${nomePiloto}')">Desfazer Mesclagem</button>
+                            <button class="btn-action-danger" onclick="executarDesfazerMesclagem('${nomePiloto}')">Desfazer</button>
                         </div>
                     </div>
-                `;
+                </div>
+            `;
+        };
+
+        window.salvarMetadadosPiloto = async function(nomeAtual) {
+            let novoNome = document.getElementById('input-novo-nome').value.trim();
+            let novoApelido = document.getElementById('input-apelido').value.trim();
+            let novaCategoria = document.getElementById('select-categoria').value;
+
+            if (!novoNome) {
+                alert("O nome do piloto não pode ficar vazio.");
+                return;
             }
 
-            bodyEl.innerHTML = `
-                <div class="dossier-grid">
-                    <div class="dossier-kpi"><span class="dossier-kpi-label">Sessões</span><span class="dossier-kpi-value">${totalCorridas}</span></div>
-                    <div class="dossier-kpi"><span class="dossier-kpi-label">Vitórias</span><span class="dossier-kpi-value">${vitorias}</span></div>
-                    <div class="dossier-kpi"><span class="dossier-kpi-label">Melhor Pessoal</span><span class="dossier-kpi-value">${melhorVoltaP < 999 ? melhorVoltaP.toFixed(3) + 's' : '--'}</span></div>
-                </div>
-                ${mergeHtml}
-                <div class="card" style="padding: 14px;">
-                    <div class="card-header" style="margin-bottom: 10px;">📜 Histórico de Baterias</div>
-                    <div class="table-container"><table><thead><tr><th>Sessão</th><th>Pos</th><th>Melhor Volta</th></tr></thead><tbody>${tabelaHtml}</tbody></table></div>
-                </div>`;
-            modal.style.display = 'flex';
+            if (!db) {
+                alert("Erro: Banco de dados não conectado.");
+                return;
+            }
+
+            try {
+                // Atualizar metadados globais
+                let atualizacoesMeta = {};
+                atualizacoesMeta[novoNome] = { apelido: novoApelido, categoria: novaCategoria };
+                if (novoNome !== nomeAtual) {
+                    atualizacoesMeta[nomeAtual] = null; // Remove o registro antigo se renomeado
+                }
+                await db.ref('pilotosMetadados').update(atualizacoesMeta);
+
+                // Se o nome oficial mudou, atualizar também nos dados das baterias salvas
+                if (novoNome !== nomeAtual) {
+                    let atualizacoesBat = {};
+                    listaJsonsCache.forEach(arq => {
+                        if (arq.dados && Array.isArray(arq.dados)) {
+                            let houveMudanca = false;
+                            let novosDados = arq.dados.map(d => {
+                                if (d.piloto === nomeAtual) {
+                                    houveMudanca = true;
+                                    return { ...d, piloto: novoNome };
+                                }
+                                return d;
+                            });
+                            let historico = arq.historicoNomesOriginais || {};
+                            for (let [orig, dest] of Object.entries(historico)) {
+                                if (dest === nomeAtual) {
+                                    houveMudanca = true;
+                                    historico[orig] = novoNome;
+                                }
+                            }
+                            if (houveMudanca) {
+                                atualizacoesBat[arq.firebaseKey + '/dados'] = novosDados;
+                                atualizacoesBat[arq.firebaseKey + '/historicoNomesOriginais'] = historico;
+                            }
+                        }
+                    });
+                    if (Object.keys(atualizacoesBat).length > 0) {
+                        await db.ref('baterias').update(atualizacoesBat);
+                    }
+                }
+
+                alert("Configurações salvas com sucesso!");
+                window.abrirDossiePiloto(novoNome);
+            } catch (err) {
+                console.error("Erro ao salvar configurações:", err);
+                alert("Erro ao salvar: " + err.message);
+            }
         };
 
         window.executarMesclagemPilotos = async function(nomeDestino) {
@@ -842,7 +974,7 @@
                 try {
                     await db.ref('baterias').update(atualizacoes);
                     alert(`Sucesso! Registros de "${nomeOrigem}" foram mesclados com "${nomeDestino}".`);
-                    window.fecharDossiePiloto();
+                    window.abrirDossiePiloto(nomeDestino);
                 } catch (err) {
                     console.error("Erro ao mesclar pilotos:", err);
                     alert("Erro ao executar a mesclagem: " + err.message);
@@ -861,7 +993,7 @@
                 return;
             }
 
-            if (!confirm(`Deseja desfazer a mesclagem e restaurar o nome original "${nomeOriginal}"?`)) {
+            if (!confirm(`Deseja desfazer a mesclagem e restaurar o nome original "${nomeOriginal}"? O histórico será preservado.`)) {
                 return;
             }
 
@@ -882,7 +1014,7 @@
                         if (d.piloto === nomeAtual && historico[nomeOriginal] === nomeAtual) {
                             houveMudanca = true;
                             countRestaurados++;
-                            historico[nomeOriginal] = nomeOriginal;
+                            historico[nomeOriginal] = nomeOriginal; // Restaura no histórico mantendo rastreabilidade
                             return { ...d, piloto: nomeOriginal };
                         }
                         return d;
@@ -898,8 +1030,8 @@
             if (countRestaurados > 0) {
                 try {
                     await db.ref('baterias').update(atualizacoes);
-                    alert(`Sucesso! O nome original "${nomeOriginal}" foi restaurado.`);
-                    window.fecharDossiePiloto();
+                    alert(`Sucesso! O nome original "${nomeOriginal}" foi restaurado com seu histórico mantido.`);
+                    window.abrirDossiePiloto(nomeAtual);
                 } catch (err) {
                     console.error("Erro ao desfazer mesclagem:", err);
                     alert("Erro ao desfazer mesclagem: " + err.message);
@@ -1025,7 +1157,10 @@
                     if (v > maxV) { maxV = v; maisVitorioso = p; }
                 }
                 
-                document.getElementById('kpi-vencedor').innerHTML = maisVitorioso !== "--" ? `<a class="piloto-link" onclick="abrirDossiePiloto('${maisVitorioso}')">${maisVitorioso}</a>` : "Nenhum";
+                let metaVencedor = pilotosMetadadosCache[maisVitorioso] || {};
+                let nomeVencExib = metaVencedor.apelido ? `${maisVitorioso} (${metaVencedor.apelido})` : maisVitorioso;
+
+                document.getElementById('kpi-vencedor').innerHTML = maisVitorioso !== "--" ? `<a class="piloto-link" onclick="abrirDossiePiloto('${maisVitorioso}')">${nomeVencExib}</a>` : "Nenhum";
                 document.getElementById('kpi-vencedor-sub').innerText = maxV > 0 ? `${maxV} vitória(s)` : "Sem vitórias";
 
                 let melhorVoltaObj = null, melhorVoltaValGeral = 999999, melhorVoltaNum = 0;
@@ -1043,10 +1178,13 @@
                 });
 
                 if (melhorVoltaObj) {
+                    let metaMelhor = pilotosMetadadosCache[melhorVoltaObj.piloto] || {};
+                    let nomeMelhorExib = metaMelhor.apelido ? `${melhorVoltaObj.piloto} (${metaMelhor.apelido})` : melhorVoltaObj.piloto;
                     let velEscala = (26 / melhorVoltaValGeral) * 3.6 * 28;
+
                     document.getElementById('kpi-melhor-volta').innerText = `${melhorVoltaValGeral.toFixed(3)}s`;
                     document.getElementById('kpi-melhor-volta-vel').innerText = `${velEscala.toFixed(1)} km/h`;
-                    document.getElementById('kpi-melhor-volta-sub').innerHTML = `<a class="piloto-link" onclick="abrirDossiePiloto('${melhorVoltaObj.piloto}')">${melhorVoltaObj.piloto}</a> (Volta ${melhorVoltaNum})`;
+                    document.getElementById('kpi-melhor-volta-sub').innerHTML = `<a class="piloto-link" onclick="abrirDossiePiloto('${melhorVoltaObj.piloto}')">${nomeMelhorExib}</a> (Volta ${melhorVoltaNum})`;
                 }
 
                 let totalV = dadosFiltrados.reduce((acc, item) => acc + (item.laps ? item.laps.length : 0), 0);
@@ -1080,6 +1218,9 @@
                 let todosBat = dadosBase.filter(d => d.bateriaKey === bateriaKey);
                 let vencedorObj = todosBat.find(d => String(d.pos).replace('º','').trim() === "1") || todosBat[0];
                 let nomeVencedor = vencedorObj ? vencedorObj.piloto : 'N/A';
+                
+                let metaVenc = pilotosMetadadosCache[nomeVencedor] || {};
+                let nomeVencExib = metaVenc.apelido ? `${nomeVencedor} (${metaVenc.apelido})` : nomeVencedor;
                 let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
 
                 const sessionBlock = document.createElement('div');
@@ -1089,9 +1230,9 @@
                     <div class="session-block-header">
                         <div class="session-block-title">🏁 ${nomeSessaoFormatado}</div>
                         <div class="session-block-meta">
-                            <span class="session-winner-tag">🏆 Vencedor: <strong><a class="piloto-link" onclick="abrirDossiePiloto('${nomeVencedor}')">${nomeVencedor}</a></strong></span>
+                            <span class="session-winner-tag">🏆 Vencedor: <strong><a class="piloto-link" onclick="abrirDossiePiloto('${nomeVencedor}')">${nomeVencExib}</a></strong></span>
                             <button class="btn-like" onclick="curtirSessao('${bateriaKey}')">❤️ Curtir (<span id="like-count-${safeKey}">0</span>)</button>
-                            <button class="btn-share" onclick="compartilharCorrida('${bateriaKey}', '${nomeSessaoFormatado}', '${nomeVencedor}')">🔗 Compartilhar</button>
+                            <button class="btn-share" onclick="compartilharCorrida('${bateriaKey}', '${nomeSessaoFormatado}', '${nomeVencExib}')">🔗 Compartilhar</button>
                         </div>
                     </div>
                 `;
@@ -1106,10 +1247,10 @@
                     html += `<div class="card"><div class="card-header">📝 Relatório Detalhado de Ultrapassagens</div><div class="position-analysis-container" style="margin-top:0;"><div class="position-analysis-title">Histórico Volta a Volta</div><div class="position-log-list" id="pos-logs-${bateriaKey}"></div></div></div>`;
                 }
                 if (modulosSel.includes('mod-velocidade')) {
-                    html += `<div class="card"><div class="card-header">🏎️ Velocidade Média e Escala Real (1/28 - Pista 26m)</div><div class="table-container"><table><thead><tr><th>PILOTO</th><th>MELHOR TEMPO</th><th>VELO. PISTA</th><th>VELO. ESCALA REAL (1/28)</th><th>MÉDIA</th></tr></thead><tbody id="tabela-velocidade-${bateriaKey}"></tbody></table></div></div>`;
+                    html += `<div class="card"><div class="card-header">🏎️ Velocidade Média e Escala Real (1/28 - Pista 26m)</div><div class="table-container"><table><thead><tr><th>PILOTO</th><th>CATEGORIA</th><th>MELHOR TEMPO</th><th>VELO. PISTA</th><th>VELO. ESCALA REAL (1/28)</th><th>MÉDIA</th></tr></thead><tbody id="tabela-velocidade-${bateriaKey}"></tbody></table></div></div>`;
                 }
                 if (modulosSel.includes('mod-classificacao-analise')) {
-                    html += `<div class="card"><div class="card-header">🏆 Consistência (Ritmo e Laudo Técnico)</div><div class="table-container"><table><thead><tr><th>POS</th><th>PILOTO</th><th>SESSÃO</th><th>VOLTAS</th><th>MELHOR</th><th>MÉDIA</th><th>DESVIO</th></tr></thead><tbody id="tabela-unificada-${bateriaKey}"></tbody></table></div></div>`;
+                    html += `<div class="card"><div class="card-header">🏆 Consistência (Ritmo e Laudo Técnico)</div><div class="table-container"><table><thead><tr><th>POS</th><th>PILOTO</th><th>CATEGORIA</th><th>SESSÃO</th><th>VOLTAS</th><th>MELHOR</th><th>MÉDIA</th><th>DESVIO</th></tr></thead><tbody id="tabela-unificada-${bateriaKey}"></tbody></table></div></div>`;
                 }
                 if (modulosSel.includes('mod-tabela-geral')) {
                     html += `<div class="card"><div class="card-header">⏱️ Tabela Geral Volta a Volta</div><div class="table-container"><table><thead><tr id="head-lapbyLap-${bateriaKey}"><th>VOLTA</th></tr></thead><tbody id="body-lapbyLap-${bateriaKey}"></tbody></table></div></div>`;
@@ -1138,13 +1279,17 @@
 
                 if (modulosSel.includes('mod-grafico')) {
                     let labels = Array.from({length: maxV}, (_, i) => `V${i+1}`);
-                    let datasets = dadosSessao.map((d, idx) => ({
-                        label: d.piloto,
-                        data: (d.laps || []).map(l => typeof l === 'object' ? l.tempo : l),
-                        borderColor: paleta[idx % paleta.length],
-                        backgroundColor: paleta[idx % paleta.length],
-                        borderWidth: 2, tension: 0.2
-                    }));
+                    let datasets = dadosSessao.map((d, idx) => {
+                        let meta = pilotosMetadadosCache[d.piloto] || {};
+                        let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
+                        return {
+                            label: nomeExib,
+                            data: (d.laps || []).map(l => typeof l === 'object' ? l.tempo : l),
+                            borderColor: paleta[idx % paleta.length],
+                            backgroundColor: paleta[idx % paleta.length],
+                            borderWidth: 2, tension: 0.2
+                        };
+                    });
                     chartInstances.push(new Chart(document.getElementById(`chart-${bateriaKey}`).getContext('2d'), {
                         type: 'line', data: { labels, datasets }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#8492a6' } } } }
                     }));
@@ -1174,13 +1319,17 @@
 
                 if (modulosSel.includes('mod-grafico-posicao')) {
                     let labelsPos = Array.from({length: maxVPos}, (_, i) => `Volta ${i+1}`);
-                    let datasetsPos = dadosSessao.map((d, idx) => ({
-                        label: d.piloto,
-                        data: matrizPos[d.piloto] || [],
-                        borderColor: paleta[idx % paleta.length],
-                        backgroundColor: paleta[idx % paleta.length],
-                        borderWidth: 3, tension: 0.1, spanGaps: true
-                    }));
+                    let datasetsPos = dadosSessao.map((d, idx) => {
+                        let meta = pilotosMetadadosCache[d.piloto] || {};
+                        let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
+                        return {
+                            label: nomeExib,
+                            data: matrizPos[d.piloto] || [],
+                            borderColor: paleta[idx % paleta.length],
+                            backgroundColor: paleta[idx % paleta.length],
+                            borderWidth: 3, tension: 0.1, spanGaps: true
+                        };
+                    });
                     chartInstances.push(new Chart(document.getElementById(`chart-pos-${bateriaKey}`).getContext('2d'), {
                         type: 'line', data: { labels: labelsPos, datasets: datasetsPos },
                         options: {
@@ -1202,9 +1351,11 @@
                         todosBat.forEach(d => {
                             let arr = matrizPos[d.piloto] || [];
                             let pAnt = arr[v-1], pAtu = arr[v];
+                            let meta = pilotosMetadadosCache[d.piloto] || {};
+                            let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
                             if (pAnt && pAtu && pAtu !== pAnt) {
-                                if (pAtu < pAnt) mudancas.push(`🔥 <strong style="color:${paleta[0]}">${d.piloto}</strong> ganhou (<span class="tag-gain">${pAnt}º para ${pAtu}º</span>)`);
-                                else mudancas.push(`💧 <strong style="color:${paleta[0]}">${d.piloto}</strong> perdeu (<span class="tag-loss">${pAnt}º para ${pAtu}º</span>)`);
+                                if (pAtu < pAnt) mudancas.push(`🔥 <strong style="color:${paleta[0]}">${nomeExib}</strong> ganhou (<span class="tag-gain">${pAnt}º para ${pAtu}º</span>)`);
+                                else mudancas.push(`💧 <strong style="color:${paleta[0]}">${nomeExib}</strong> perdeu (<span class="tag-loss">${pAnt}º para ${pAtu}º</span>)`);
                             }
                         });
                         if (mudancas.length > 0) logsHtml += `<div class="position-log-item">🔄 <strong>Volta ${v+1}:</strong> ${mudancas.join(' | ')}</div>`;
@@ -1220,7 +1371,9 @@
                         let melhor = Math.min(...laps);
                         let media = laps.reduce((a,b)=>a+b,0) / laps.length;
                         let velMelhorKmh = (26 / melhor) * 3.6 * 28;
-                        tbodyVel.innerHTML += `<tr><td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${d.piloto}')">${d.piloto}</a></strong></td><td class="text-green">${melhor.toFixed(3)}s</td><td>${((26/melhor)*3.6).toFixed(2)} km/h</td><td><strong style="color:var(--accent-gold);">${velMelhorKmh.toFixed(1)} km/h</strong></td><td>${media.toFixed(3)}s</td></tr>`;
+                        let meta = pilotosMetadadosCache[d.piloto] || {};
+                        let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
+                        tbodyVel.innerHTML += `<tr><td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${d.piloto}')">${nomeExib}</a></strong></td><td><span class="category-badge">${meta.categoria || 'WL Toys 4x4'}</span></td><td class="text-green">${melhor.toFixed(3)}s</td><td>${((26/melhor)*3.6).toFixed(2)} km/h</td><td><strong style="color:var(--accent-gold);">${velMelhorKmh.toFixed(1)} km/h</strong></td><td>${media.toFixed(3)}s</td></tr>`;
                     });
                 }
 
@@ -1232,16 +1385,22 @@
                         let melhor = Math.min(...laps);
                         let media = laps.reduce((a,b)=>a+b,0) / laps.length;
                         let desvio = Math.sqrt(laps.reduce((sum, t) => sum + Math.pow(t - media, 2), 0) / laps.length);
+                        let meta = pilotosMetadadosCache[d.piloto] || {};
+                        let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
                         tbodyCons.innerHTML += `
-                            <tr class="main-row"><td><span class="pos-badge">${d.pos}</span></td><td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${d.piloto}')">${d.piloto}</a></strong></td><td><span class="session-badge">${nomeSessaoFormatado}</span></td><td>${laps.length} voltas</td><td class="text-green">${melhor.toFixed(3)}s</td><td>${media.toFixed(3)}s</td><td>±${desvio.toFixed(3)}s</td></tr>
-                            <tr class="sub-row"><td colspan="7"><div class="analysis-subrow-box"><strong class="title">Laudo Técnico - ${d.piloto}</strong>Desvio padrão de ±${desvio.toFixed(3)}s. Ritmo consistente.</div></td></tr>`;
+                            <tr class="main-row"><td><span class="pos-badge">${d.pos}</span></td><td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${d.piloto}')">${nomeExib}</a></strong></td><td><span class="category-badge">${meta.categoria || 'WL Toys 4x4'}</span></td><td><span class="session-badge">${nomeSessaoFormatado}</span></td><td>${laps.length} voltas</td><td class="text-green">${melhor.toFixed(3)}s</td><td>${media.toFixed(3)}s</td><td>±${desvio.toFixed(3)}s</td></tr>
+                            <tr class="sub-row"><td colspan="8"><div class="analysis-subrow-box"><strong class="title">Laudo Técnico - ${nomeExib}</strong>Desvio padrão de ±${desvio.toFixed(3)}s. Ritmo consistente.</div></td></tr>`;
                     });
                 }
 
                 if (modulosSel.includes('mod-tabela-geral')) {
                     let headLap = document.getElementById(`head-lapbyLap-${bateriaKey}`);
                     let bodyLap = document.getElementById(`body-lapbyLap-${bateriaKey}`);
-                    dadosSessao.forEach(d => { headLap.innerHTML += `<th>${d.piloto}</th>`; });
+                    dadosSessao.forEach(d => {
+                        let meta = pilotosMetadadosCache[d.piloto] || {};
+                        let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
+                        headLap.innerHTML += `<th>${nomeExib}</th>`;
+                    });
 
                     for (let i = 0; i < maxV; i++) {
                         let linha = `<td><strong>Volta ${i+1}</strong></td>`;
