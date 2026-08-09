@@ -292,7 +292,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.16.0 (Painel Protegido de Configuração e Categorias)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.17.0 (Média Global Corrigida e Funcional)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -317,7 +317,7 @@
         let db = null;
         let listaJsonsCache = [];
         let chartInstances = [];
-        let pilotosMetadadosCache = {}; // Armazena apelidos e categorias locais/remotas
+        let pilotosMetadadosCache = {};
 
         try {
             firebase.initializeApp(firebaseConfig);
@@ -359,7 +359,6 @@
 
         document.addEventListener("DOMContentLoaded", () => {
             if (db) {
-                // Carregar metadados globais de pilotos (apelidos e categorias)
                 db.ref('pilotosMetadados').on('value', snapshot => {
                     pilotosMetadadosCache = snapshot.val() || {};
                     atualizarDashboard();
@@ -771,7 +770,7 @@
         window.solicitarSenhaConfiguracao = function(nomePiloto) {
             let senha = prompt("🔒 Digite a senha para acessar as configurações protegidas do piloto:");
             if (senha === null) return;
-            if (senha !== "1234") { // Senha padrão configurada para proteção
+            if (senha !== "1234") {
                 alert("❌ Senha incorreta!");
                 return;
             }
@@ -870,15 +869,13 @@
             }
 
             try {
-                // Atualizar metadados globais
                 let atualizacoesMeta = {};
                 atualizacoesMeta[novoNome] = { apelido: novoApelido, categoria: novaCategoria };
                 if (novoNome !== nomeAtual) {
-                    atualizacoesMeta[nomeAtual] = null; // Remove o registro antigo se renomeado
+                    atualizacoesMeta[nomeAtual] = null;
                 }
                 await db.ref('pilotosMetadados').update(atualizacoesMeta);
 
-                // Se o nome oficial mudou, atualizar também nos dados das baterias salvas
                 if (novoNome !== nomeAtual) {
                     let atualizacoesBat = {};
                     listaJsonsCache.forEach(arq => {
@@ -1014,7 +1011,7 @@
                         if (d.piloto === nomeAtual && historico[nomeOriginal] === nomeAtual) {
                             houveMudanca = true;
                             countRestaurados++;
-                            historico[nomeOriginal] = nomeOriginal; // Restaura no histórico mantendo rastreabilidade
+                            historico[nomeOriginal] = nomeOriginal;
                             return { ...d, piloto: nomeOriginal };
                         }
                         return d;
@@ -1189,10 +1186,40 @@
 
                 let totalV = dadosFiltrados.reduce((acc, item) => acc + (item.laps ? item.laps.length : 0), 0);
                 document.getElementById('kpi-total-voltas').innerText = totalV;
+
+                // --- CÁLCULO REANALISADO DA MÉDIA GLOBAL DO GRID ---
+                let somaTemposValidos = 0;
+                let totalVoltasValidas = 0;
+
+                dadosFiltrados.forEach(item => {
+                    if (item.laps && Array.isArray(item.laps)) {
+                        item.laps.forEach(l => {
+                            let t = typeof l === 'object' ? l.tempo : l;
+                            if (t && !isNaN(t) && t > 0) {
+                                somaTemposValidos += t;
+                                totalVoltasValidas++;
+                            }
+                        });
+                    }
+                });
+
+                if (totalVoltasValidas > 0) {
+                    let mediaGlobalSegundos = somaTemposValidos / totalVoltasValidas;
+                    let mediaGlobalVelKmh = (26 / mediaGlobalSegundos) * 3.6 * 28;
+
+                    document.getElementById('kpi-media-global').innerText = `${mediaGlobalSegundos.toFixed(3)}s`;
+                    document.getElementById('kpi-media-global-vel').innerText = `${mediaGlobalVelKmh.toFixed(1)} km/h`;
+                } else {
+                    document.getElementById('kpi-media-global').innerText = "--";
+                    document.getElementById('kpi-media-global-vel').innerText = "--";
+                }
+
             } else {
                 document.getElementById('kpi-vencedor').innerText = "--";
                 document.getElementById('kpi-melhor-volta').innerText = "--";
                 document.getElementById('kpi-total-voltas').innerText = "0";
+                document.getElementById('kpi-media-global').innerText = "--";
+                document.getElementById('kpi-media-global-vel').innerText = "--";
             }
 
             renderizarSessõesCompletas(dadosBase, bateriasSel, pilotosSel, modulosSel);
