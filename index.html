@@ -354,7 +354,6 @@
                     listaJsonsCache = [];
                     snapshot.forEach(childSnapshot => {
                         let val = childSnapshot.val();
-                        // Garantir suporte a log de alteração/histórico de nomes originais para o unmerge
                         if (!val.historicoNomesOriginais) {
                             val.historicoNomesOriginais = {};
                         }
@@ -425,7 +424,6 @@
 
                     const dadosExtraidos = parsearTextoConvertido(textoExtraido, sessaoNome, batKey);
 
-                    // Mapeia nomes originais individuais de cada piloto para permitir o desfazer a mesclagem (unmerge)
                     let historicoOriginal = {};
                     dadosExtraidos.forEach(d => {
                         historicoOriginal[d.piloto] = d.piloto;
@@ -715,18 +713,15 @@
                 return;
             }
 
-            // Descobrir outros pilotos disponíveis para mesclagem
             let todosPilotosSet = new Set();
             dadosBase.forEach(d => { if(d.piloto && d.piloto !== nomePiloto) todosPilotosSet.add(d.piloto); });
             let opcoesPilotos = Array.from(todosPilotosSet);
 
-            // Descobrir quais nomes originais foram mesclados para este piloto atual (para permitir desfazer)
             let nomesOriginaisMescladosNeste = new Set();
             listaJsonsCache.forEach(arq => {
                 if (arq.historicoNomesOriginais && arq.dados) {
                     arq.dados.forEach(d => {
                         if (d.piloto === nomePiloto) {
-                            // Encontrar a chave original correspondente
                             for (let [orig, dest] of Object.entries(arq.historicoNomesOriginais)) {
                                 if (dest === nomePiloto && orig !== nomePiloto) {
                                     nomesOriginaisMescladosNeste.add(orig);
@@ -817,7 +812,6 @@
                     let historico = arq.historicoNomesOriginais || {};
                     
                     let novosDados = arq.dados.map(d => {
-                        // Se o piloto atual bate com o nome origem ou se no histórico original ele pertencia a origem
                         let nomeOriginalReal = null;
                         for (let [orig, dest] of Object.entries(historico)) {
                             if (dest === nomeDestino && orig === nomeOrigem && d.piloto === nomeDestino) {
@@ -828,7 +822,6 @@
                         if (d.piloto === nomeOrigem || nomeOriginalReal) {
                             houveMudancaNoArquivo = true;
                             countAlterados++;
-                            // Atualiza o histórico para lembrar que este registro agora aponta para o destino
                             let chaveOrig = d.piloto === nomeOrigem ? nomeOrigem : Object.keys(historico).find(k => historico[k] === nomeDestino);
                             if (chaveOrig) {
                                 historico[chaveOrig] = nomeDestino;
@@ -886,11 +879,9 @@
                     let historico = { ...arq.historicoNomesOriginais };
 
                     let novosDados = arq.dados.map(d => {
-                        // Verifica se este dado pertencia originalmente ao nomeOriginal
                         if (d.piloto === nomeAtual && historico[nomeOriginal] === nomeAtual) {
                             houveMudanca = true;
                             countRestaurados++;
-                            // Restaura o histórico apontando de volta para ele mesmo
                             historico[nomeOriginal] = nomeOriginal;
                             return { ...d, piloto: nomeOriginal };
                         }
