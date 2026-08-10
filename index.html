@@ -477,7 +477,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.25.15 (Gaps com contagem de voltas atrás para pilotos retardatários)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.25.16 (Correção de sintaxe e estabilidade de módulos)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -2068,7 +2068,7 @@
                                 let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
                                 if (pAnt && pAtu && pAtu !== pAnt) {
                                     if (pAtu < pAnt) mudancas.push(`🔥 <strong style="color:${paleta[0]}">${escapeHtml(nomeExib)}</strong> ganhou (<span class="tag-gain">${pAnt}º para ${pAtu}º</span>)`);
-                                    else mudancas.push(`💧 <strong style="color:${paleta[0]}">${escapeHtml(nomeExib)}</strong> perdeu (<span class="tag-loss">${pAnt}º para ${pAtu}º</span>)`;
+                                    else mudancas.push(`💧 <strong style="color:${paleta[0]}">${escapeHtml(nomeExib)}</strong> perdeu (<span class="tag-loss">${pAnt}º para ${pAtu}º</span>)`);
                                 }
                             });
                             if (mudancas.length > 0) logsHtml += `<div class="position-log-item">🔄 <strong>Volta ${v+1}:</strong> ${mudancas.join(' | ')}</div>`;
@@ -2125,10 +2125,7 @@
                             headLap.innerHTML += `<th>${escapeHtml(nomeExib)}</th>`;
                         });
 
-                        // Para cada volta i (de 0 até maxV - 1)
                         for (let i = 0; i < maxV; i++) {
-                            // 1. Descobrir qual é o menor tempo acumulado ou quem é o líder em voltas completadas até a volta i
-                            // Vamos rastrear o número máximo de voltas completadas até o índice i entre todos os pilotos
                             let maxVoltasCompletadasAteI = -1;
                             dadosSessao.forEach(d => {
                                 if (d.laps) {
@@ -2143,7 +2140,6 @@
                                 }
                             });
 
-                            // Descobrir o menor tempo acumulado entre os pilotos que atingiram maxVoltasCompletadasAteI
                             let menorTempoAcumuladoLider = 99999999;
                             dadosSessao.forEach(d => {
                                 if (d.laps) {
@@ -2167,7 +2163,6 @@
                                 if (d.laps && d.laps[i] !== undefined && !isNaN(d.laps[i])) {
                                     let t = typeof d.laps[i] === 'object' ? d.laps[i].tempo : d.laps[i];
                                     
-                                    // Calcular quantas voltas este piloto completou até a volta i
                                     let voltasDesteAteI = 0;
                                     let somaDesteAteI = 0;
                                     for (let k = 0; k <= i; k++) {
@@ -2182,12 +2177,9 @@
                                     let tagHtml = "";
 
                                     if (voltasAtras > 0) {
-                                        // Piloto está voltas atrás do líder nesta altura da prova
                                         let txtVoltas = voltasAtras === 1 ? "1 volta atrás" : `${voltasAtras} voltas atrás`;
                                         tagHtml = `<span class="lap-gap">(+${txtVoltas})</span>`;
                                     } else {
-                                        // Está na mesma volta do líder (ou é o líder)
-                                        // Vamos verificar se é o líder absoluto do acumulado ou está em tempo relativo
                                         let isLiderAbsoluto = (Math.abs(somaDesteAteI - menorTempoAcumuladoLider) < 0.0005);
                                         if (isLiderAbsoluto) {
                                             tagHtml = `<span class="leader-badge">Líder</span>`;
