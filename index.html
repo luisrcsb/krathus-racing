@@ -438,6 +438,7 @@
                             <label class="checkbox-item"><input type="checkbox" value="mod-velocidade" class="filter-modulo" checked onchange="atualizarDashboard()"> 🏎️ Velocidade Real (1/28)</label>
                             <label class="checkbox-item"><input type="checkbox" value="mod-classificacao-analise" class="filter-modulo" checked onchange="atualizarDashboard()"> 🏆 Consistência e Laudo</label>
                             <label class="checkbox-item"><input type="checkbox" value="mod-tabela-geral" class="filter-modulo" checked onchange="atualizarDashboard()"> ⏱️ Tabela Geral com Gaps</label>
+                            <label class="checkbox-item"><input type="checkbox" value="mod-comentarios" class="filter-modulo" checked onchange="atualizarDashboard()"> 💬 Comentários e Reações</label>
                         </div>
                     </div>
                 </div>
@@ -473,7 +474,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.25.10 (Correção Absoluta de Leitura de Vencedores por Bateria)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.25.13 (Adicionado Módulo de Comentários Selecionável)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -1208,43 +1209,64 @@
                     return;
                 }
 
-                if (capturandoResumo && /^\d{1,2}$/.test(partes[0])) {
-                    let posStr = partes[0] + 'º';
-                    let startIndex = 1;
-                    if (/^\d+$/.test(partes[1])) {
+                if (capturandoResumo) {
+                    let posDetectada = null;
+                    let startIndex = 0;
+
+                    if (/^\d{1,2}$/.test(partes[0])) {
+                        posDetectada = partes[0] + 'º';
+                        startIndex = 1;
+                        if (/^\d+$/.test(partes[1])) {
+                            startIndex = 2;
+                        }
+                    } else if (partes.length >= 2 && /^\d+$/.test(partes[0]) && /^\d{1,2}$/.test(partes[1])) {
+                        posDetectada = partes[1] + 'º';
                         startIndex = 2;
-                    }
-                    
-                    let nomePartes = [];
-                    for (let i = startIndex; i < partes.length; i++) {
-                        let p = partes[i];
-                        if (/^\d+$/.test(p) && i > startIndex + 1) break;
-                        if (/^\d+[:.,]\d+/.test(p)) break;
-                        nomePartes.push(p);
+                    } else if (partes.length >= 1 && /^\d{1,2}$/.test(partes[0].replace('º', ''))) {
+                        posDetectada = partes[0].includes('º') ? partes[0] : partes[0] + 'º';
+                        startIndex = 1;
+                        if (/^\d+$/.test(partes[1])) {
+                            startIndex = 2;
+                        }
                     }
 
-                    if (nomePartes.length > 0) {
-                        let pilotoNome = nomePartes.join(' ');
-                        pilotoNome = pilotoNome.replace(/\s+\d+$/, '').trim();
+                    if (posDetectada) {
+                        let nomePartes = [];
+                        for (let i = startIndex; i < partes.length; i++) {
+                            let p = partes[i];
+                            if (/^\d+$/.test(p) && i > startIndex + 1) break;
+                            if (/^\d+[:.,]\d+/.test(p)) break;
+                            if (p.includes('s') && /^\d+[,.]\d+s?$/.test(p)) break;
+                            nomePartes.push(p);
+                        }
 
-                        if (pilotoNome && !pilotosMap[pilotoNome]) {
-                            pilotosMap[pilotoNome] = {
-                                pos: posStr,
-                                piloto: pilotoNome,
-                                bateriaKey: batKey,
-                                sessao: sessaoNome,
-                                voltasTotais: 0,
-                                tempoTotal: "00:00,000",
-                                melhorVoltaVal: 0,
-                                melhorVoltaTxt: "00,000s",
-                                mediaVal: 0,
-                                mediaTxt: "00,000s",
-                                desvioVal: 0,
-                                desvio: "±0,000s",
-                                badgeColor: "#ffb703",
-                                laps: []
-                            };
-                            ordemPilotos.push(pilotoNome);
+                        if (nomePartes.length > 0) {
+                            let pilotoNome = nomePartes.join(' ');
+                            pilotoNome = pilotoNome.replace(/\s+\d+$/, '').trim();
+
+                            if (pilotoNome) {
+                                if (!pilotosMap[pilotoNome]) {
+                                    pilotosMap[pilotoNome] = {
+                                        pos: posDetectada,
+                                        piloto: pilotoNome,
+                                        bateriaKey: batKey,
+                                        sessao: sessaoNome,
+                                        voltasTotais: 0,
+                                        tempoTotal: "00:00,000",
+                                        melhorVoltaVal: 0,
+                                        melhorVoltaTxt: "00,000s",
+                                        mediaVal: 0,
+                                        mediaTxt: "00,000s",
+                                        desvioVal: 0,
+                                        desvio: "±0,000s",
+                                        badgeColor: "#ffb703",
+                                        laps: []
+                                    };
+                                    ordemPilotos.push(pilotoNome);
+                                } else {
+                                    pilotosMap[pilotoNome].pos = posDetectada;
+                                }
+                            }
                         }
                     }
                 }
@@ -1933,24 +1955,27 @@
                 if (modulosSel.includes('mod-tabela-geral')) {
                     html += `<div class="card"><div class="card-header">⏱️ Tabela Geral Volta a Volta</div><div class="table-container"><table><thead><tr id="head-lapbyLap-${bateriaKey}"><th>VOLTA</th></tr></thead><tbody id="body-lapbyLap-${bateriaKey}"></tbody></table></div></div>`;
                 }
-
-                html += `
-                    <div class="comments-section">
-                        <div class="comments-title">💬 Comentários e Reações</div>
-                        <div class="comments-list" id="comments-list-${safeKey}"></div>
-                        <div class="comment-form">
-                            <input type="text" id="comment-name-${safeKey}" class="comment-input-name" placeholder="Seu Nome">
-                            <input type="text" id="comment-text-${safeKey}" class="comment-input-text" placeholder="Escreva seu comentário..." onkeypress="if(event.key === 'Enter') enviarComentario('${bateriaKey}')">
-                            <button class="btn-comment" onclick="enviarComentario('${bateriaKey}')">Enviar</button>
+                if (modulosSel.includes('mod-comentarios')) {
+                    html += `
+                        <div class="comments-section">
+                            <div class="comments-title">💬 Comentários e Reações</div>
+                            <div class="comments-list" id="comments-list-${safeKey}"></div>
+                            <div class="comment-form">
+                                <input type="text" id="comment-name-${safeKey}" class="comment-input-name" placeholder="Seu Nome">
+                                <input type="text" id="comment-text-${safeKey}" class="comment-input-text" placeholder="Escreva seu comentário..." onkeypress="if(event.key === 'Enter') enviarComentario('${bateriaKey}')">
+                                <button class="btn-comment" onclick="enviarComentario('${bateriaKey}')">Enviar</button>
+                            </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                }
 
                 sessionBlock.innerHTML = html;
                 mainContainer.appendChild(sessionBlock);
 
                 escutarCurtidas(bateriaKey);
-                escutarComentarios(bateriaKey);
+                if (modulosSel.includes('mod-comentarios')) {
+                    escutarComentarios(bateriaKey);
+                }
 
                 let paleta = ["#2ec4b6", "#ffb703", "#e63946", "#3a86ff", "#ff006e", "#8338ec"];
                 let maxV = Math.max(...dadosSessao.map(d => d.laps ? d.laps.length : 0));
