@@ -220,7 +220,7 @@
         </div>
     </div>
 
-    <!-- 🏆 Modal Gerenciamento de Campeonatos (Championship Manager) -->
+    <!-- 🏆 Modal Championship Manager -->
     <div id="campeonatos-modal" class="custom-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -456,7 +456,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.24.4 (Correção de Exibição dos Blocos de Sessão)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.24.5 (Renderização Forçada de Módulos)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -1279,14 +1279,22 @@
                 return;
             }
 
-            batContainer.innerHTML = Object.keys(bateriasMap).map(key => `
-                <label class="checkbox-item"><input type="checkbox" value="${key}" class="filter-bateria" checked onchange="atualizarDashboard()"> ${bateriasMap[key]}</label>
-            `).join('');
+            // Preserva o estado atual dos checkboxes se já existirem, senão marca por padrão
+            let bateriasSelecionadasAntigas = Array.from(document.querySelectorAll('.filter-bateria:checked')).map(cb => cb.value);
+            let pilotosSelecionadosAntigos = Array.from(document.querySelectorAll('.filter-piloto:checked')).map(cb => cb.value);
+            let primeiraVezBat = bateriasSelecionadasAntigas.length === 0;
+            let primeiraVezPil = pilotosSelecionadosAntigos.length === 0;
+
+            batContainer.innerHTML = Object.keys(bateriasMap).map(key => {
+                let marcado = primeiraVezBat || bateriasSelecionadasAntigas.includes(key) ? 'checked' : '';
+                return `<label class="checkbox-item"><input type="checkbox" value="${key}" class="filter-bateria" ${marcado} onchange="atualizarDashboard()"> ${bateriasMap[key]}</label>`;
+            }).join('');
 
             pilContainer.innerHTML = Array.from(pilotosSet).map(piloto => {
                 let meta = pilotosMetadadosCache[piloto] || {};
                 let labelExib = meta.apelido ? `${piloto} (${meta.apelido})` : piloto;
-                return `<label class="checkbox-item"><input type="checkbox" value="${piloto}" class="filter-piloto" checked onchange="atualizarDashboard()"> ${labelExib}</label>`;
+                let marcado = primeiraVezPil || pilotosSelecionadosAntigos.includes(piloto) ? 'checked' : '';
+                return `<label class="checkbox-item"><input type="checkbox" value="${piloto}" class="filter-piloto" ${marcado} onchange="atualizarDashboard()"> ${labelExib}</label>`;
             }).join('');
         }
 
@@ -1458,7 +1466,7 @@
             const pilotosSel = Array.from(document.querySelectorAll('.filter-piloto:checked')).map(cb => cb.value);
             const modulosSel = Array.from(document.querySelectorAll('.filter-modulo:checked')).map(cb => cb.value);
 
-            const dadosFiltrados = dadosBase.filter(item => bateriasSel.includes(item.bateriaKey) && pilotosSel.includes(item.piloto));
+            const dadosFiltrados = dadosBase.filter(item => bateriasSel.includes(item.bateriaKey) && (pilotosSel.length === 0 || pilotosSel.includes(item.piloto)));
 
             if (dadosFiltrados.length > 0) {
                 let vencedorContador = {};
@@ -1466,7 +1474,7 @@
                     let itensDaBateria = dadosBase.filter(d => d.bateriaKey === batKey);
                     if (itensDaBateria.length > 0) {
                         let vencedor = itensDaBateria.find(d => String(d.pos).replace('º','').trim() === "1");
-                        if (vencedor && pilotosSel.includes(vencedor.piloto)) {
+                        if (vencedor && (pilotosSel.length === 0 || pilotosSel.includes(vencedor.piloto))) {
                             vencedorContador[vencedor.piloto] = (vencedorContador[vencedor.piloto] || 0) + 1;
                         }
                     }
@@ -1541,10 +1549,9 @@
             chartInstances.forEach(c => c.destroy());
             chartInstances = [];
             const mainContainer = document.getElementById('sessions-container');
+            if (!mainContainer) return;
             mainContainer.innerHTML = '';
 
-            // CORREÇÃO: Remividas as travas estritas (bateriasSel.length === 0 || pilotosSel.length === 0 || modulosSel.length === 0)
-            // Agora o painel renderiza os blocos para as baterias selecionadas mesmo se algum filtro for alterado individualmente.
             if (dadosBase.length === 0 || bateriasSel.length === 0) {
                 mainContainer.innerHTML = `<div class="card" style="text-align:center; padding: 30px; color: var(--text-muted);">Nenhuma bateria selecionada.</div>`;
                 return;
@@ -1619,21 +1626,24 @@
                 let maxV = Math.max(...dadosSessao.map(d => d.laps ? d.laps.length : 0));
 
                 if (modulosSel.includes('mod-grafico')) {
-                    let labels = Array.from({length: maxV}, (_, i) => `V${i+1}`);
-                    let datasets = dadosSessao.map((d, idx) => {
-                        let meta = pilotosMetadadosCache[d.piloto] || {};
-                        let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
-                        return {
-                            label: nomeExib,
-                            data: (d.laps || []).map(l => typeof l === 'object' ? l.tempo : l),
-                            borderColor: paleta[idx % paleta.length],
-                            backgroundColor: paleta[idx % paleta.length],
-                            borderWidth: 2, tension: 0.2
-                        };
-                    });
-                    chartInstances.push(new Chart(document.getElementById(`chart-${bateriaKey}`).getContext('2d'), {
-                        type: 'line', data: { labels, datasets }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#8492a6' } } } }
-                    }));
+                    let canvasEl = document.getElementById(`chart-${bateriaKey}`);
+                    if (canvasEl) {
+                        let labels = Array.from({length: maxV}, (_, i) => `V${i+1}`);
+                        let datasets = dadosSessao.map((d, idx) => {
+                            let meta = pilotosMetadadosCache[d.piloto] || {};
+                            let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
+                            return {
+                                label: nomeExib,
+                                data: (d.laps || []).map(l => typeof l === 'object' ? l.tempo : l),
+                                borderColor: paleta[idx % paleta.length],
+                                backgroundColor: paleta[idx % paleta.length],
+                                borderWidth: 2, tension: 0.2
+                            };
+                        });
+                        chartInstances.push(new Chart(canvasEl.getContext('2d'), {
+                            type: 'line', data: { labels, datasets }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#8492a6' } } } }
+                        }));
+                    }
                 }
 
                 let maxVPos = Math.max(...todosBat.map(d => d.laps ? d.laps.length : 0));
@@ -1659,54 +1669,60 @@
                 }
 
                 if (modulosSel.includes('mod-grafico-posicao')) {
-                    let labelsPos = Array.from({length: maxVPos}, (_, i) => `Volta ${i+1}`);
-                    let datasetsPos = dadosSessao.map((d, idx) => {
-                        let meta = pilotosMetadadosCache[d.piloto] || {};
-                        let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
-                        return {
-                            label: nomeExib,
-                            data: matrizPos[d.piloto] || [],
-                            borderColor: paleta[idx % paleta.length],
-                            backgroundColor: paleta[idx % paleta.length],
-                            borderWidth: 3, tension: 0.1, spanGaps: true
-                        };
-                    });
-                    chartInstances.push(new Chart(document.getElementById(`chart-pos-${bateriaKey}`).getContext('2d'), {
-                        type: 'line', data: { labels: labelsPos, datasets: datasetsPos },
-                        options: {
-                            responsive: true, maintainAspectRatio: false,
-                            scales: {
-                                y: { reverse: true, min: 1, max: todosBat.length + 0.5, ticks: { stepSize: 1, color: '#8492a6' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-                                x: { ticks: { color: '#8492a6' }, grid: { color: 'rgba(255,255,255,0.05)' } }
-                            },
-                            plugins: { legend: { labels: { color: '#8492a6' } } }
-                        }
-                    }));
+                    let canvasPosEl = document.getElementById(`chart-pos-${bateriaKey}`);
+                    if (canvasPosEl) {
+                        let labelsPos = Array.from({length: maxVPos}, (_, i) => `Volta ${i+1}`);
+                        let datasetsPos = dadosSessao.map((d, idx) => {
+                            let meta = pilotosMetadadosCache[d.piloto] || {};
+                            let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
+                            return {
+                                label: nomeExib,
+                                data: matrizPos[d.piloto] || [],
+                                borderColor: paleta[idx % paleta.length],
+                                backgroundColor: paleta[idx % paleta.length],
+                                borderWidth: 3, tension: 0.1, spanGaps: true
+                            };
+                        });
+                        chartInstances.push(new Chart(canvasPosEl.getContext('2d'), {
+                            type: 'line', data: { labels: labelsPos, datasets: datasetsPos },
+                            options: {
+                                responsive: true, maintainAspectRatio: false,
+                                scales: {
+                                    y: { reverse: true, min: 1, max: todosBat.length + 0.5, ticks: { stepSize: 1, color: '#8492a6' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                                    x: { ticks: { color: '#8492a6' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                                },
+                                plugins: { legend: { labels: { color: '#8492a6' } } }
+                            }
+                        }));
+                    }
                 }
 
                 if (modulosSel.includes('mod-log-posicao')) {
                     let logContainer = document.getElementById(`pos-logs-${bateriaKey}`);
-                    let logsHtml = '';
-                    for (let v = 1; v < maxVPos; v++) {
-                        let mudancas = [];
-                        todosBat.forEach(d => {
-                            let arr = matrizPos[d.piloto] || [];
-                            let pAnt = arr[v-1], pAtu = arr[v];
-                            let meta = pilotosMetadadosCache[d.piloto] || {};
-                            let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
-                            if (pAnt && pAtu && pAtu !== pAnt) {
-                                if (pAtu < pAnt) mudancas.push(`🔥 <strong style="color:${paleta[0]}">${escapeHtml(nomeExib)}</strong> ganhou (<span class="tag-gain">${pAnt}º para ${pAtu}º</span>)`);
-                                else mudancas.push(`💧 <strong style="color:${paleta[0]}">${escapeHtml(nomeExib)}</strong> perdeu (<span class="tag-loss">${pAnt}º para ${pAtu}º</span>)`);
-                            }
-                        });
-                        if (mudancas.length > 0) logsHtml += `<div class="position-log-item">🔄 <strong>Volta ${v+1}:</strong> ${mudancas.join(' | ')}</div>`;
+                    if (logContainer) {
+                        let logsHtml = '';
+                        for (let v = 1; v < maxVPos; v++) {
+                            let mudancas = [];
+                            todosBat.forEach(d => {
+                                let arr = matrizPos[d.piloto] || [];
+                                let pAnt = arr[v-1], pAtu = arr[v];
+                                let meta = pilotosMetadadosCache[d.piloto] || {};
+                                let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
+                                if (pAnt && pAtu && pAtu !== pAnt) {
+                                    if (pAtu < pAnt) mudancas.push(`🔥 <strong style="color:${paleta[0]}">${escapeHtml(nomeExib)}</strong> ganhou (<span class="tag-gain">${pAnt}º para ${pAtu}º</span>)`);
+                                    else mudancas.push(`💧 <strong style="color:${paleta[0]}">${escapeHtml(nomeExib)}</strong> perdeu (<span class="tag-loss">${pAnt}º para ${pAtu}º</span>)`);
+                                }
+                            });
+                            if (mudancas.length > 0) logsHtml += `<div class="position-log-item">🔄 <strong>Volta ${v+1}:</strong> ${mudancas.join(' | ')}</div>`;
+                        }
+                        logContainer.innerHTML = logsHtml || `<div class="position-log-item">Prova estável sem trocas de posição.</div>`;
                     }
-                    if (logContainer) logContainer.innerHTML = logsHtml || `<div class="position-log-item">Prova estável sem trocas de posição.</div>`;
                 }
 
                 if (modulosSel.includes('mod-velocidade')) {
                     let tbodyVel = document.getElementById(`tabela-velocidade-${bateriaKey}`);
                     if (tbodyVel) {
+                        tbodyVel.innerHTML = "";
                         dadosSessao.forEach(d => {
                             let laps = (d.laps || []).map(l => typeof l === 'object' ? l.tempo : l).filter(Boolean);
                             if (laps.length === 0) return;
@@ -1723,6 +1739,7 @@
                 if (modulosSel.includes('mod-classificacao-analise')) {
                     let tbodyCons = document.getElementById(`tabela-unificada-${bateriaKey}`);
                     if (tbodyCons) {
+                        tbodyCons.innerHTML = "";
                         dadosSessao.forEach(d => {
                             let laps = (d.laps || []).map(l => typeof l === 'object' ? l.tempo : l).filter(Boolean);
                             if (laps.length === 0) return;
@@ -1742,6 +1759,8 @@
                     let headLap = document.getElementById(`head-lapbyLap-${bateriaKey}`);
                     let bodyLap = document.getElementById(`body-lapbyLap-${bateriaKey}`);
                     if (headLap && bodyLap) {
+                        headLap.innerHTML = `<th>VOLTA</th>`;
+                        bodyLap.innerHTML = "";
                         dadosSessao.forEach(d => {
                             let meta = pilotosMetadadosCache[d.piloto] || {};
                             let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
