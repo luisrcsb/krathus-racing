@@ -71,9 +71,11 @@
         .dossier-kpi-label { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
         .dossier-kpi-value { font-size: 1.25rem; font-weight: 700; color: var(--accent-gold); }
 
-        .config-box-trigger { display: flex; justify-content: flex-end; }
+        .config-box-trigger { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
         .btn-config-open { background: var(--bg-input); border: 1px solid var(--border-card); color: var(--accent-gold); padding: 6px 14px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px; }
         .btn-config-open:hover { background: rgba(255, 183, 3, 0.1); }
+        .btn-merge-open { background: var(--bg-input); border: 1px solid var(--border-card); color: var(--accent-green); padding: 6px 14px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .btn-merge-open:hover { background: rgba(46, 196, 182, 0.1); }
 
         .config-panel { background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
         .config-panel-title { font-size: 0.82rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid var(--border-card); padding-bottom: 8px; }
@@ -471,7 +473,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.25.4 (Correção de Ordenação e Estabilidade de Baterias)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.25.5 (Funcionalidade de Mesclagem e Desfazimento de Pilotos)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -500,6 +502,7 @@
         let campeonatosCache = {};
         let chartInstances = [];
         let pilotosMetadadosCache = {};
+        let mesclagensCache = {};
         let campeonatoAtivoKey = null;
 
         try {
@@ -547,6 +550,12 @@
                     gerarFiltrosDinamicos();
                     atualizarDashboard();
                     preencherSelectPilotosGerais();
+                });
+
+                db.ref('mesclagensPilotos').on('value', snapshot => {
+                    mesclagensCache = snapshot.val() || {};
+                    gerarFiltrosDinamicos();
+                    atualizarDashboard();
                 });
 
                 db.ref('campeonatos').on('value', snapshot => {
@@ -1399,12 +1408,21 @@
                 listaJsonsCache.forEach(arq => {
                     if (arq.dados && Array.isArray(arq.dados)) {
                         arq.dados.forEach(d => {
-                            let metaKey = d.piloto;
+                            let pilotoReal = d.piloto;
+                            // Verifica se este piloto foi mesclado para outro nome
+                            let safeNomeKey = pilotoReal.replace(/[.#$\/\[\]]/g, "_");
+                            if (mesclagensCache[safeNomeKey]) {
+                                pilotoReal = mesclagensCache[safeNomeKey];
+                            }
+
+                            let metaKey = pilotoReal;
                             let meta = pilotosMetadadosCache[metaKey] || {};
                             consolidado.push({
                                 ...d,
+                                piloto: pilotoReal,
+                                pilotoOriginal: d.piloto,
                                 bateriaKey: arq.firebaseKey,
-                                pilotoExibicao: meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto,
+                                pilotoExibicao: meta.apelido ? `${pilotoReal} (${meta.apelido})` : pilotoReal,
                                 apelido: meta.apelido || '',
                                 categoria: meta.categoria || 'WL Toys 4x4'
                             });
@@ -1423,8 +1441,20 @@
             const pilotosSet = new Set();
             listaJsonsCache.forEach(arq => {
                 if (arq.dados && Array.isArray(arq.dados)) {
-                    arq.dados.forEach(d => { if (d.piloto) pilotosSet.add(d.piloto); });
+                    arq.dados.forEach(d => { 
+                        if (d.piloto) {
+                            let pReal = d.piloto;
+                            let safeKey = pReal.replace(/[.#$\/\[\]]/g, "_");
+                            if (mesclagensCache[safeKey]) pReal = mesclagensCache[safeKey];
+                            pilotosSet.add(pReal); 
+                        } 
+                    });
                 }
+            });
+            Object.keys(pilotosMetadadosCache).forEach(p => {
+                let safeKey = p.replace(/[.#$\/\[\]]/g, "_");
+                let pReal = mesclagensCache[safeKey] || p;
+                pilotosSet.add(pReal);
             });
 
             if (listaJsonsCache.length === 0) {
@@ -1481,6 +1511,33 @@
             let melhorVoltaP = Math.min(...participacoes.map(p => p.melhorVoltaVal || 999));
             let tabelaHtml = participacoes.map(p => `<tr><td><span class="session-badge">${formatarNomeSessao(p.sessao)}</span></td><td><span class="pos-badge">${p.pos}</span></td><td class="text-green">${p.melhorVoltaTxt || '--'}</td></tr>`).join('');
 
+            // Verificar se este piloto tem sub-nomes mesclados nele para poder exibir a opção de desfazer
+            let subNomesMesclados = [];
+            Object.keys(mesclagensCache).forEach(origKey => {
+                if (mesclagensCache[origKey] === nomePiloto) {
+                    // Recuperar o nome original formatado (revertendo o _ para espaço ou similar, ou guardando)
+                    // Vamos buscar em todosDadosConsolidados com pilotoOriginal se necessário ou restaurar string
+                    subNomesMesclados.push(origKey);
+                }
+            });
+
+            let desmesclarHtml = "";
+            if (subNomesMesclados.length > 0) {
+                let itensDesfazer = subNomesMesclados.map(subKey => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-card); margin-top: 4px; font-size: 0.85rem;">
+                        <span>🔗 Mesclado de: <strong>${escapeHtml(subKey)}</strong></span>
+                        <button class="btn-text-action" style="color: var(--accent-red);" onclick="desfazerMesclagemPiloto('${escapeHtml(subKey)}')">Desfazer Mesclagem</button>
+                    </div>
+                `).join('');
+
+                desmesclarHtml = `
+                    <div style="background: rgba(230, 57, 70, 0.08); padding: 12px; border-radius: 8px; border: 1px solid var(--border-card); margin-top: 10px;">
+                        <span style="font-size: 0.78rem; font-weight: 700; color: var(--accent-red); text-transform: uppercase; display: block; margin-bottom: 6px;">Pilotos Mesclados a Este Perfil</span>
+                        ${itensDesfazer}
+                    </div>
+                `;
+            }
+
             bodyEl.innerHTML = `
                 <div class="dossier-grid">
                     <div class="dossier-kpi"><span class="dossier-kpi-label">Sessões</span><span class="dossier-kpi-value">${totalCorridas}</span></div>
@@ -1489,16 +1546,105 @@
                 </div>
 
                 <div class="config-box-trigger">
+                    <button class="btn-merge-open" onclick="abrirPainelMesclagem('${escapeHtml(nomePiloto)}')">🔀 Mesclar Outro Piloto Aqui</button>
                     <button class="btn-config-open" onclick="solicitarSenhaConfiguracao('${escapeHtml(nomePiloto)}')">⚙️ Configurações Protegidas</button>
                 </div>
 
                 <div id="container-config-protegido"></div>
+                <div id="container-mesclagem-protegido"></div>
+                ${desmesclarHtml}
 
                 <div class="card" style="padding: 14px;">
                     <div class="card-header" style="margin-bottom: 10px;">📜 Histórico de Baterias</div>
                     <div class="table-container"><table><thead><tr><th>Sessão</th><th>Pos</th><th>Melhor Volta</th></tr></thead><tbody>${tabelaHtml}</tbody></table></div>
                 </div>`;
             modal.style.display = 'flex';
+        };
+
+        window.abrirPainelMesclagem = function(nomePilotoDestino) {
+            let senha = prompt("🔒 Digite a senha unificada de segurança para mesclar perfis de pilotos:");
+            if (senha === null) return;
+            if (senha !== SENHA_UNIFICADA) {
+                alert("❌ Senha incorreta!");
+                return;
+            }
+
+            // Coletar todas as opções de pilotos existentes (excluindo o atual destino)
+            let todosPilotosSet = new Set();
+            listaJsonsCache.forEach(arq => {
+                if (arq.dados) {
+                    arq.dados.forEach(d => {
+                        if (d.piloto && d.piloto !== nomePilotoDestino) {
+                            todosPilotosSet.add(d.piloto);
+                        }
+                    });
+                }
+            });
+            Object.keys(pilotosMetadadosCache).forEach(p => {
+                if (p !== nomePilotoDestino) todosPilotosSet.add(p);
+            });
+
+            let optionsHtml = `<option value="">Selecione o piloto a ser absorvido/mesclado...</option>`;
+            Array.from(todosPilotosSet).sort().forEach(p => {
+                optionsHtml += `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`;
+            });
+
+            let container = document.getElementById('container-mesclagem-protegido');
+            container.innerHTML = `
+                <div class="config-panel" style="border-color: var(--accent-green);">
+                    <div class="config-panel-title" style="color: var(--accent-green);">🔀 Mesclar Histórico de Outro Piloto em "${escapeHtml(nomePilotoDestino)}"</div>
+                    <p style="font-size: 0.82rem; color: var(--text-muted);">Selecione abaixo o piloto cujas participações anteriores serão fundidas neste perfil principal:</p>
+                    <div class="config-row">
+                        <select id="select-piloto-origem-mesclagem" class="config-select">${optionsHtml}</select>
+                        <button class="btn-action-primary" style="background: var(--accent-green); color: #000; font-weight: 700;" onclick="executarMesclagemPiloto('${escapeHtml(nomePilotoDestino)}')">Confirmar Mesclagem</button>
+                    </div>
+                </div>`;
+        };
+
+        window.executarMesclagemPiloto = async function(nomeDestino) {
+            let select = document.getElementById('select-piloto-origem-mesclagem');
+            if (!select) return;
+            let origem = select.value;
+            if (!origem) {
+                alert("Selecione um piloto válido para mesclar.");
+                return;
+            }
+
+            if (!db) {
+                alert("Erro: Firebase desconectado.");
+                return;
+            }
+
+            let safeOrigKey = origem.replace(/[.#$\/\[\]]/g, "_");
+            try {
+                await db.ref(`mesclagensPilotos/${safeOrigKey}`).set(nomeDestino);
+                alert(`Piloto "${origem}" mesclado com sucesso para "${nomeDestino}"!`);
+                window.abrirDossiePiloto(nomeDestino);
+            } catch (err) {
+                alert("Erro ao realizar mesclagem: " + err.message);
+            }
+        };
+
+        window.desfazerMesclagemPiloto = async function(origemKey) {
+            let senha = prompt("🔒 Digite a senha unificada de segurança para desfazer a mesclagem:");
+            if (senha === null) return;
+            if (senha !== SENHA_UNIFICADA) {
+                alert("❌ Senha incorreta!");
+                return;
+            }
+
+            if (!db) {
+                alert("Erro: Firebase desconectado.");
+                return;
+            }
+
+            try {
+                await db.ref(`mesclagensPilotos/${origemKey}`).remove();
+                alert(`A mesclagem do piloto "${origemKey}" foi desfeita com sucesso!`);
+                fecharDossiePiloto();
+            } catch (err) {
+                alert("Erro ao desfazer mesclagem: " + err.message);
+            }
         };
 
         window.solicitarSenhaConfiguracao = function(nomePiloto) {
