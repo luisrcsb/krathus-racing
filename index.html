@@ -477,7 +477,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.26.0 (Vencedor por Maior Nº de Voltas e Menor Tempo)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.27.0 (Filtro e Descarte de Seção Top 10 no Parser)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -547,7 +547,6 @@
             return timestampData + sequencial;
         }
 
-        // Função unificada para determinar o vencedor de uma bateria (Maior número de voltas, depois menor tempo acumulado)
         function determinarVencedorBateria(participantesValidos) {
             if (!participantesValidos || participantesValidos.length === 0) return null;
             
@@ -556,10 +555,9 @@
                 let voltasB = b.laps ? b.laps.length : 0;
                 
                 if (voltasA !== voltasB) {
-                    return voltasB - voltasA; // Maior número de voltas primeiro
+                    return voltasB - voltasA;
                 }
                 
-                // Em caso de empate no número de voltas, menor tempo acumulado total
                 let tempoA = (a.laps || []).reduce((acc, l) => acc + (typeof l === 'object' ? l.tempo : l), 0);
                 let tempoB = (b.laps || []).reduce((acc, l) => acc + (typeof l === 'object' ? l.tempo : l), 0);
                 return tempoA - tempoB;
@@ -1221,6 +1219,14 @@
                 let partes = linhaLimpa.split(/\s+/).filter(Boolean);
                 if (partes.length === 0) return;
 
+                // Ignora seções de resumo ou Top X (ex: Top 10) para evitar duplicidades ou dados irrelevantes
+                let linhaLower = linhaLimpa.toLowerCase();
+                if (linhaLower.startsWith("top ") || linhaLower.includes("top 10") || linhaLower.includes("top 5")) {
+                    capturandoResumo = false;
+                    capturandoVoltas = false;
+                    return;
+                }
+
                 if (linhaLimpa.includes("Piloto") && (linhaLimpa.includes("Voltas") || linhaLimpa.includes("Tempo"))) {
                     capturandoResumo = true;
                     capturandoVoltas = false;
@@ -1747,10 +1753,8 @@
             }
 
             try {
-                // Salva o novo nome e apelido na raiz 'pilotosMetadados' do banco de dados
                 await db.ref(`pilotosMetadados/${novoNome}`).set({ apelido: novoApelido, categoria: 'WL Toys 4x4' });
                 
-                // Se o nome foi alterado, remove o registro antigo e cria regra de mesclagem automática para consistência de histórico
                 if (novoNome !== nomeAtual) {
                     await db.ref(`pilotosMetadados/${nomeAtual}`).remove();
                     let safeOldKey = nomeAtual.replace(/[.#$\/\[\]]/g, "_");
@@ -1961,7 +1965,7 @@
                 let nomeVencedor = vencedorObj ? vencedorObj.piloto : 'N/A';
                 
                 let metaVenc = pilotosMetadadosCache[nomeVencedor] || {};
-                let nomeVencExib = metaVenc.apelido ? `${nomeVencedor} (${metaVencedor.apelido})` : nomeVencedor;
+                let nomeVencExib = metaVenc.apelido ? `${nomeVencedor} (${metaVenc.apelido})` : nomeVencedor;
                 let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
 
                 const sessionBlock = document.createElement('div');
