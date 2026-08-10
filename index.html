@@ -44,6 +44,7 @@
 
         .btn-pdf-global { background: linear-gradient(135deg, #ff5722 0%, #e63946 100%); color: #ffffff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; }
         .btn-upload-modal-trigger { background: linear-gradient(135deg, #3a86ff 0%, #2ec4b6 100%); color: #ffffff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-campeonatos-trigger { background: linear-gradient(135deg, #ffb703 0%, #fb8500 100%); color: #000; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
         
         .btn-share { background: rgba(58, 134, 255, 0.15); color: var(--accent-blue); border: 1px solid var(--accent-blue); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; }
         .btn-like { background: rgba(230, 57, 70, 0.15); color: var(--accent-red); border: 1px solid var(--accent-red); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; }
@@ -214,6 +215,34 @@
         </div>
     </div>
 
+    <!-- 🏆 Modal Gerenciamento de Campeonatos -->
+    <div id="campeonatos-modal" class="custom-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">🏆 Gerenciamento de Campeonatos e Provas</div>
+                <button class="modal-close" onclick="fecharModalCampeonatos()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    <div class="upload-box">
+                        <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase;">🔒 Criar Novo Campeonato (Protegido por Senha)</span>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                            <input type="text" id="input-nome-campeonato" class="config-input" placeholder="Nome do Campeonato (Ex: Copa Krathus 2026)">
+                            <button class="btn-action-primary" onclick="criarCampeonatoProtegido()">Criar Campeonato</button>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Campeonatos Cadastrados</span>
+                        <ul id="campeonatos-lista-modal" style="list-style: none; display: flex; flex-direction: column; gap: 10px; max-height: 300px; overflow-y: auto;">
+                            <li>Carregando campeonatos...</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="dashboard-container">
         <header class="header">
             <div class="brand-title">
@@ -222,6 +251,7 @@
             </div>
             <div class="header-actions">
                 <button class="btn btn-upload-modal-trigger" onclick="abrirModalUpload()">📤 Uploads</button>
+                <button class="btn btn-campeonatos-trigger" onclick="abrirModalCampeonatos()">🏆 Campeonatos</button>
                 <button class="btn btn-pdf-global" onclick="gerarRelatórioPDF()">📄 Gerar Relatório PDF Completo</button>
             </div>
         </header>
@@ -287,12 +317,20 @@
                 </div>
             </section>
 
-            <div id="sessions-container" class="session-blocks-container"></div>
+            <!-- Container de Campeonatos Listados ao Lado / Aba Principal -->
+            <section class="card" style="margin-top: 20px;">
+                <div class="card-header">🏆 Campeonatos Ativos e Classificação Geral</div>
+                <div id="campeonatos-grid-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; margin-top: 15px;">
+                    <div style="color: var(--text-muted); font-size: 0.85rem;">Nenhum campeonato cadastrado.</div>
+                </div>
+            </section>
+
+            <div id="sessions-container" class="session-blocks-container" style="margin-top: 20px;"></div>
         </div>
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.17.0 (Média Global Corrigida e Funcional)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.18.0 (Módulo de Campeonatos Integrado)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -316,6 +354,7 @@
 
         let db = null;
         let listaJsonsCache = [];
+        let campeonatosCache = {};
         let chartInstances = [];
         let pilotosMetadadosCache = {};
 
@@ -364,6 +403,11 @@
                     atualizarDashboard();
                 });
 
+                db.ref('campeonatos').on('value', snapshot => {
+                    campeonatosCache = snapshot.val() || {};
+                    renderizarCampeonatosNaTela();
+                });
+
                 db.ref('baterias').on('value', snapshot => {
                     listaJsonsCache = [];
                     snapshot.forEach(childSnapshot => {
@@ -393,82 +437,236 @@
         window.abrirModalUpload = function() { document.getElementById('upload-modal').style.display = 'flex'; };
         window.fecharModalUpload = function() { document.getElementById('upload-modal').style.display = 'none'; };
 
-        window.processarUploadEEnviarNuvem = async function() {
-            const input = document.getElementById('input-pdf-upload');
-            if (!input.files || input.files.length === 0) {
-                alert("Por favor, selecione ao menos um arquivo (PDF ou HTML).");
+        window.abrirModalCampeonatos = function() {
+            document.getElementById('campeonatos-modal').style.display = 'flex';
+            renderizarListaCampeonatosModal();
+        };
+        window.fecharModalCampeonatos = function() { document.getElementById('campeonatos-modal').style.display = 'none'; };
+
+        window.criarCampeonatoProtegido = async function() {
+            let senha = prompt("🔒 Digite a senha para criar um novo campeonato:");
+            if (senha === null) return;
+            if (senha !== "1234") {
+                alert("❌ Senha incorreta!");
                 return;
             }
+
+            let nomeCamp = document.getElementById('input-nome-campeonato').value.trim();
+            if (!nomeCamp) {
+                alert("Digite o nome do campeonato.");
+                return;
+            }
+
             if (!db) {
                 alert("Erro: Firebase não conectado.");
                 return;
             }
 
-            let arquivosNovosEnviados = 0;
-            let arquivosDuplicados = [];
+            let campKey = "camp_" + nomeCamp.toLowerCase().replace(/[^a-z0-9]/g, "_");
+            
+            let novoCamp = {
+                chave: campKey,
+                nome: nomeCamp,
+                configuracaoPadrao: {
+                    pontuacao: { "1": 25, "2": 18, "3": 15, "4": 12, "5": 10, "6": 8, "7": 6, "8": 4, "9": 2, "10": 1 },
+                    descarteProvas: 0
+                },
+                provasIds: []
+            };
 
-            for (let i = 0; i < input.files.length; i++) {
-                const arquivo = input.files[i];
-                const nomeArq = arquivo.name;
-                const sessaoNome = nomeArq.replace(/\.[^/.]+$/, "").trim();
-                const batKey = "bat_" + sessaoNome.toLowerCase().replace(/[^a-z0-9]/g, "_");
-
-                const jaExiste = listaJsonsCache.some(item => 
-                    (item.sessao && item.sessao.toLowerCase() === sessaoNome.toLowerCase()) || 
-                    item.bateriaKey === batKey
-                );
-
-                if (jaExiste) {
-                    arquivosDuplicados.push(nomeArq);
-                    continue;
-                }
-
-                try {
-                    let textoExtraido = "";
-                    const extensao = nomeArq.split('.').pop().toLowerCase();
-
-                    if (extensao === 'html' || extensao === 'htm') {
-                        const htmlText = await arquivo.text();
-                        const parser = new DOMParser();
-                        const docHtml = parser.parseFromString(htmlText, 'text/html');
-                        textoExtraido = docHtml.body.innerText;
-                    } else {
-                        textoExtraido = await converterPdfParaTexto(arquivo);
-                    }
-
-                    const dadosExtraidos = parsearTextoConvertido(textoExtraido, sessaoNome, batKey);
-
-                    let historicoOriginal = {};
-                    dadosExtraidos.forEach(d => {
-                        historicoOriginal[d.piloto] = d.piloto;
-                    });
-
-                    const novoRegistro = {
-                        bateriaKey: batKey,
-                        sessao: sessaoNome,
-                        id: Date.now() + i,
-                        dados: dadosExtraidos,
-                        historicoNomesOriginais: historicoOriginal
-                    };
-
-                    await db.ref('baterias').push(novoRegistro);
-                    arquivosNovosEnviados++;
-                } catch (err) {
-                    console.error("Erro ao processar arquivo:", err);
-                    alert("Erro ao converter o arquivo " + nomeArq + ": " + err.message);
-                }
-            }
-
-            if (arquivosNovosEnviados > 0 && arquivosDuplicados.length === 0) {
-                alert("Relatório(s) processado(s) e salvo(s) na nuvem com sucesso!");
-            } else if (arquivosNovosEnviados > 0 && arquivosDuplicados.length > 0) {
-                alert(`Processado com sucesso! ${arquivosDuplicados.length} arquivo(s) foram ignorados por já existirem na nuvem.`);
-            } else if (arquivosDuplicados.length > 0) {
-                alert(`⚠️ Envio cancelado: O(s) arquivo(s) já está(ão) cadastrado(s) na nuvem! Sem duplicações.`);
-            }
-
-            input.value = "";
+            await db.ref('campeonatos/' + campKey).set(novoCamp);
+            document.getElementById('input-nome-campeonato').value = "";
+            alert(`Campeonato "${nomeCamp}" criado com sucesso!`);
+            renderizarListaCampeonatosModal();
         };
+
+        function renderizarListaCampeonatosModal() {
+            const ul = document.getElementById('campeonatos-lista-modal');
+            if (!ul) return;
+            ul.innerHTML = "";
+            let keys = Object.keys(campeonatosCache);
+            if (keys.length === 0) {
+                ul.innerHTML = `<li style="color: var(--text-muted); text-align: center; padding: 6px;">Nenhum campeonato cadastrado.</li>`;
+                return;
+            }
+
+            keys.forEach(key => {
+                let camp = campeonatosCache[key];
+                let qtdProvas = camp.provasIds ? camp.provasIds.length : 0;
+                const li = document.createElement('li');
+                li.style.background = "var(--bg-input)";
+                li.style.padding = "10px 14px";
+                li.style.borderRadius = "6px";
+                li.style.border = "1px solid var(--border-card)";
+                li.style.display = "flex";
+                li.style.justifyContent = "space-between";
+                li.style.alignItems = "center";
+                li.innerHTML = `
+                    <span>🏆 <strong>${camp.nome}</strong> (${qtdProvas} provas vinculadas)</span>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="file" id="file-camp-${key}" accept=".pdf,.html,.htm" style="display:none;" onchange="uploadProvaCampeonato(event, '${key}')">
+                        <button class="btn-action-primary" style="padding: 4px 10px; font-size: 0.78rem;" onclick="document.getElementById('file-camp-${key}').click()">📁 Enviar Prova</button>
+                        <button class="btn-text-action" style="color: var(--accent-red);" onclick="excluirCampeonato('${key}')">🗑️ Excluir</button>
+                    </div>`;
+                ul.appendChild(li);
+            });
+        }
+
+        window.excluirCampeonato = function(key) {
+            if (!db) return;
+            let senha = prompt("🔒 Digite a senha para excluir o campeonato:");
+            if (senha !== "1234") {
+                alert("❌ Senha incorreta!");
+                return;
+            }
+            if (confirm("Deseja realmente excluir este campeonato?")) {
+                db.ref('campeonatos/' + key).remove().then(() => {
+                    alert("Campeonato excluído!");
+                    renderizarListaCampeonatosModal();
+                });
+            }
+        };
+
+        window.uploadProvaCampeonato = async function(event, campKey) {
+            const file = event.target.files[0];
+            if (!file) return;
+            if (!db) return;
+
+            let nomeArq = file.name;
+            let sessaoNome = nomeArq.replace(/\.[^/.]+$/, "").trim();
+            let batKey = "bat_" + sessaoNome.toLowerCase().replace(/[^a-z0-9]/g, "_");
+
+            try {
+                let textoExtraido = "";
+                const extensao = nomeArq.split('.').pop().toLowerCase();
+
+                if (extensao === 'html' || extensao === 'htm') {
+                    const htmlText = await file.text();
+                    const parser = new DOMParser();
+                    const docHtml = parser.parseFromString(htmlText, 'text/html');
+                    textoExtraido = docHtml.body.innerText;
+                } else {
+                    textoExtraido = await converterPdfParaTexto(file);
+                }
+
+                const dadosExtraidos = parsearTextoConvertido(textoExtraido, sessaoNome, batKey);
+
+                let historicoOriginal = {};
+                dadosExtraidos.forEach(d => {
+                    historicoOriginal[d.piloto] = d.piloto;
+                });
+
+                let novoRegistro = {
+                    bateriaKey: batKey,
+                    sessao: sessaoNome,
+                    id: Date.now(),
+                    dados: dadosExtraidos,
+                    historicoNomesOriginais: historicoOriginal
+                };
+
+                // Salva a bateria globalmente se não existir
+                await db.ref('baterias/' + batKey).set(novoRegistro);
+
+                // Vincula ao campeonato
+                let camp = campeonatosCache[campKey];
+                let provas = camp.provasIds || [];
+                if (!provas.includes(batKey)) {
+                    provas.push(batKey);
+                    await db.ref(`campeonatos/${campKey}/provasIds`).set(provas);
+                }
+
+                alert(`Prova "${sessaoNome}" enviada e vinculada ao campeonato com sucesso!`);
+                renderizarListaCampeonatosModal();
+            } catch (err) {
+                console.error("Erro ao processar prova do campeonato:", err);
+                alert("Erro ao processar arquivo: " + err.message);
+            }
+            event.target.value = "";
+        };
+
+        function renderizarCampeonatosNaTela() {
+            const container = document.getElementById('campeonatos-grid-container');
+            if (!container) return;
+            let keys = Object.keys(campeonatosCache);
+            if (keys.length === 0) {
+                container.innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem;">Nenhum campeonato cadastrado.</div>`;
+                return;
+            }
+
+            let html = "";
+            keys.forEach(key => {
+                let camp = campeonatosCache[key];
+                let tabelaPontos = calcularClassificacaoCampeonato(camp);
+
+                let linhasTabela = "";
+                if (tabelaPontos.length === 0) {
+                    linhasTabela = `<tr><td colspan="3" style="text-align:center; color: var(--text-muted);">Sem provas pontuadas.</td></tr>`;
+                } else {
+                    tabelaPontos.forEach((p, idx) => {
+                        let meta = pilotosMetadadosCache[p.piloto] || {};
+                        let nomeExib = meta.apelido ? `${p.piloto} (${meta.apelido})` : p.piloto;
+                        linhasTabela += `
+                            <tr>
+                                <td><span class="pos-badge">${idx + 1}º</span></td>
+                                <td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${p.piloto}')">${nomeExib}</a></strong></td>
+                                <td style="text-align: right; color: var(--accent-gold); font-weight: 700;">${p.pontos} pts</td>
+                            </tr>`;
+                    });
+                }
+
+                html += `
+                    <div style="background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+                        <div style="font-size: 1rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; justify-content: space-between;">
+                            <span>🏆 ${camp.nome}</span>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">${camp.provasIds ? camp.provasIds.length : 0} Prova(s)</span>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Pos</th>
+                                        <th>Piloto</th>
+                                        <th style="text-align: right;">Pontos</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${linhasTabela}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>`;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function calcularClassificacaoCampeonato(camp) {
+            if (!camp.provasIds || camp.provasIds.length === 0) return [];
+            let pontuacaoTabela = camp.configuracaoPadrao?.pontuacao || { "1": 25, "2": 18, "3": 15, "4": 12, "5": 10 };
+            let pilotoPontos = {};
+
+            camp.provasIds.forEach(batKey => {
+                let arq = listaJsonsCache.find(a => a.bateriaKey === batKey || a.firebaseKey === batKey);
+                if (arq && arq.dados) {
+                    arq.dados.forEach(d => {
+                        let posNum = parseInt(String(d.pos).replace('º', '').trim(), 10);
+                        let pts = pontuacaoTabela[posNum] || 0;
+                        if (pts > 0) {
+                            if (!pilotoPontos[d.piloto]) pilotoPontos[d.piloto] = 0;
+                            pilotoPontos[d.piloto] += pts;
+                        }
+                    });
+                }
+            });
+
+            let ranking = [];
+            for (let [piloto, pontos] of Object.entries(pilotoPontos)) {
+                ranking.push({ piloto, pontos });
+            }
+
+            ranking.sort((a, b) => b.pontos - a.pontos);
+            return ranking;
+        }
 
         async function converterPdfParaTexto(arquivo) {
             const arrayBuffer = await arquivo.arrayBuffer();
@@ -1043,6 +1241,7 @@
         window.onclick = function(event) {
             if (event.target === document.getElementById('piloto-modal')) document.getElementById('piloto-modal').style.display = 'none';
             if (event.target === document.getElementById('upload-modal')) document.getElementById('upload-modal').style.display = 'none';
+            if (event.target === document.getElementById('campeonatos-modal')) document.getElementById('campeonatos-modal').style.display = 'none';
         };
 
         window.curtirSessao = function(bateriaKey) {
@@ -1187,7 +1386,6 @@
                 let totalV = dadosFiltrados.reduce((acc, item) => acc + (item.laps ? item.laps.length : 0), 0);
                 document.getElementById('kpi-total-voltas').innerText = totalV;
 
-                // --- CÁLCULO REANALISADO DA MÉDIA GLOBAL DO GRID ---
                 let somaTemposValidos = 0;
                 let totalVoltasValidas = 0;
 
