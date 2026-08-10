@@ -313,10 +313,21 @@
                         <div id="zround-aba-3" class="zround-aba-content" style="display: none; flex-direction: column; gap: 12px;">
                             <div class="upload-box">
                                 <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase;">📤 Upload e Seleção de Provas (Banco de Dados Separado)</span>
-                                <p style="font-size: 0.82rem; color: var(--text-muted);">Adicione arquivos de provas (PDF/HTML) ou importe relatórios já existentes no banco principal do site para o banco de dados dedicado deste campeonato.</p>
+                                <p style="font-size: 0.82rem; color: var(--text-muted);">Adicione novos arquivos de provas (PDF/HTML) ou importe relatórios que já estão salvos no banco principal do site para o banco dedicado deste campeonato.</p>
                                 <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 6px;">
                                     <input type="file" id="zround-input-file-prova" accept=".pdf,.html,.htm" multiple style="background: var(--bg-card); padding: 8px; border-radius: 6px; border: 1px solid var(--border-card); color: var(--text-main); flex: 1; font-size: 0.85rem;">
                                     <button class="btn btn-upload-modal-trigger" onclick="uploadProvasBancoSeparado()">Enviar Prova (Banco Separado)</button>
+                                </div>
+                            </div>
+                            <!-- SUB-OPÇÃO DE IMPORTAÇÃO DO BANCO PRINCIPAL PARA O BANCO SEPARADO -->
+                            <div class="upload-box" style="border-style: solid; border-color: var(--accent-gold);">
+                                <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase;">📥 Importar Provas Existentes do Banco Principal do Site</span>
+                                <p style="font-size: 0.82rem; color: var(--text-muted);">Selecione uma prova já processada no banco principal para utilizá-la neste campeonato sem precisar reenviar o arquivo.</p>
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 6px;">
+                                    <select id="zround-select-prova-banco-principal" class="config-select">
+                                        <option value="">Selecione uma prova do banco principal...</option>
+                                    </select>
+                                    <button class="btn-action-primary" onclick="importarProvaDoBancoPrincipalParaCampeonato()">Importar para o Banco Separado</button>
                                 </div>
                             </div>
                             <div style="display: flex; flex-direction: column; gap: 8px;">
@@ -445,7 +456,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.24.0 (ZRound Championship Manager Integral com 5 Abas e Banco Separado)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.24.1 (Filtros de Dashboard Restaurados + ZRound Manager)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -518,6 +529,7 @@
             if (db) {
                 db.ref('pilotosMetadados').on('value', snapshot => {
                     pilotosMetadadosCache = snapshot.val() || {};
+                    gerarFiltrosDinamicos();
                     atualizarDashboard();
                     preencherSelectPilotosGerais();
                 });
@@ -551,6 +563,7 @@
 
                     gerarFiltrosDinamicos();
                     atualizarListaUploadHistoricoPrincipal();
+                    preencherSelectProvasBancoPrincipal();
                     atualizarDashboard();
                 });
             }
@@ -563,6 +576,7 @@
             document.getElementById('campeonatos-modal').style.display = 'flex';
             renderizarListaCampeonatosModal();
             preencherSelectPilotosGerais();
+            preencherSelectProvasBancoPrincipal();
         };
         window.fecharModalCampeonatos = function() { document.getElementById('campeonatos-modal').style.display = 'none'; };
 
@@ -693,6 +707,17 @@
             select.innerHTML = optionsHtml;
         }
 
+        function preencherSelectProvasBancoPrincipal() {
+            let select = document.getElementById('zround-select-prova-banco-principal');
+            if (!select) return;
+            let optionsHtml = `<option value="">Selecione uma prova do banco principal...</option>`;
+            listaJsonsCache.forEach(arq => {
+                let nomeExib = arq.sessao || (arq.dados && arq.dados[0] ? arq.dados[0].sessao : arq.bateriaKey);
+                optionsHtml += `<option value="${arq.firebaseKey}">${escapeHtml(formatarNomeSessao(nomeExib))}</option>`;
+            });
+            select.innerHTML = optionsHtml;
+        }
+
         window.importarPilotoBancoGeral = async function() {
             if (!campeonatoAtivoKey || !db) return;
             let select = document.getElementById('zround-select-piloto-geral');
@@ -794,7 +819,6 @@
                         dados: dadosExtraidos
                     };
 
-                    // SALVA NO BANCO DE DADOS SEPARADO EXCLUSIVO DESTE CAMPEONATO
                     await db.ref(`campeonatos/${campeonatoAtivoKey}/bateriasBancoSeparado/${batKey}`).set(novoRegistro);
                 } catch (err) {
                     console.error("Erro ao processar prova:", err);
@@ -805,6 +829,42 @@
             inputEl.value = "";
             alert("Prova(s) convertida(s) e salva(s) com sucesso no BANCO SEPARADO do campeonato!");
             atualizarInterfacePainelZRound();
+        };
+
+        window.importarProvaDoBancoPrincipalParaCampeonato = async function() {
+            if (!campeonatoAtivoKey || !db) {
+                alert("Nenhum campeonato selecionado.");
+                return;
+            }
+            let select = document.getElementById('zround-select-prova-banco-principal');
+            let firebaseKey = select.value;
+            if (!firebaseKey) {
+                alert("Selecione uma prova do banco principal.");
+                return;
+            }
+
+            let provaObj = listaJsonsCache.find(item => item.firebaseKey === firebaseKey);
+            if (!provaObj) {
+                alert("Prova não encontrada no cache do banco principal.");
+                return;
+            }
+
+            let batKey = "bat_sep_imp_" + Date.now();
+            let registroCopia = {
+                bateriaKey: batKey,
+                sessao: provaObj.sessao || "Prova Importada",
+                id: Date.now(),
+                dados: provaObj.dados || []
+            };
+
+            try {
+                await db.ref(`campeonatos/${campeonatoAtivoKey}/bateriasBancoSeparado/${batKey}`).set(registroCopia);
+                alert("Prova importada com sucesso do banco principal para o banco separado deste campeonato!");
+                select.value = "";
+                atualizarInterfacePainelZRound();
+            } catch (err) {
+                alert("Erro ao importar prova: " + err.message);
+            }
         };
 
         window.excluirProvaBancoSeparado = async function(batKey) {
@@ -819,7 +879,6 @@
             if (!campeonatoAtivoKey || !campeonatosCache[campeonatoAtivoKey]) return;
             let camp = campeonatosCache[campeonatoAtivoKey];
 
-            // 2. Renderizar Pilotos Inscritos (Aba 2)
             let tbodyPilotos = document.getElementById('zround-tabela-pilotos-inscritos');
             let pilotosInscritos = camp.pilotosInscritos || {};
             let pKeys = Object.keys(pilotosInscritos);
@@ -833,7 +892,6 @@
                     </tr>`).join('');
             }
 
-            // 3. Renderizar Provas do Banco Separado (Aba 3)
             let ulProvas = document.getElementById('zround-lista-provas-banco-separado');
             let provasSep = camp.bateriasBancoSeparado || {};
             let provKeys = Object.keys(provasSep);
@@ -851,7 +909,6 @@
                 }).join('');
             }
 
-            // 4. Renderizar Grid Invertido (Aba 4)
             let tbodyGrid = document.getElementById('zround-tabela-grid-gerado');
             if (provKeys.length === 0) {
                 tbodyGrid.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">Envie ou selecione provas no banco separado para gerar o grid.</td></tr>`;
@@ -878,7 +935,6 @@
                 }
             }
 
-            // 5. Renderizar Classificação Geral (Aba 5)
             let tbodyClass = document.getElementById('zround-tabela-classificacao-geral');
             let ranking = calcularClassificacaoBancoSeparado(camp);
             if (ranking.length === 0) {
@@ -1215,6 +1271,7 @@
 
             const batContainer = document.getElementById('filtro-baterias-container');
             const pilContainer = document.getElementById('filtro-pilotos-container');
+            if (!batContainer || !pilContainer) return;
 
             if (Object.keys(bateriasMap).length === 0) {
                 batContainer.innerHTML = `<span style="font-size:0.85rem; color: var(--text-muted);">Nenhum arquivo.</span>`;
