@@ -473,7 +473,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.25.9 (Correção Robusta de Varredura e ConTAGem Global de Vitórias)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.25.10 (Correção Absoluta de Leitura de Vencedores por Bateria)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -1512,7 +1512,10 @@
             }
 
             let totalCorridas = participacoes.length;
-            let vitorias = participacoes.filter(p => String(p.pos).replace('º','').trim() === "1").length;
+            let vitorias = participacoes.filter(p => {
+                let pNum = parseInt(String(p.pos).replace('º','').trim(), 10);
+                return pNum === 1;
+            }).length;
             let melhorVoltaP = Math.min(...participacoes.map(p => p.melhorVoltaVal || 999));
             let tabelaHtml = participacoes.map(p => `<tr><td><span class="session-badge">${formatarNomeSessao(p.sessao)}</span></td><td><span class="pos-badge">${p.pos}</span></td><td class="text-green">${p.melhorVoltaTxt || '--'}</td></tr>`).join('');
 
@@ -1782,7 +1785,6 @@
                     let participantesValidos = itensDaBateria.filter(d => d.laps && d.laps.length > 0);
                     
                     if (participantesValidos.length > 0) {
-                        // Encontra quem tem a menor posição numérica (1º lugar)
                         let vencedor = participantesValidos.reduce((melhor, atual) => {
                             let posMelhor = parseInt(String(melhor.pos).replace('º','').trim(), 10) || 999;
                             let posAtual = parseInt(String(atual.pos).replace('º','').trim(), 10) || 999;
@@ -1886,7 +1888,13 @@
                 let sessaoOriginal = dadosSessao[0].sessao || bateriaKey;
                 const nomeSessaoFormatado = formatarNomeSessao(sessaoOriginal);
                 let todosBat = dadosBase.filter(d => d.bateriaKey === bateriaKey && d.laps && d.laps.length > 0);
-                let vencedorObj = todosBat.find(d => String(d.pos).replace('º','').trim() === "1") || todosBat[0];
+                
+                let vencedorObj = todosBat.reduce((melhor, atual) => {
+                    let posMelhor = parseInt(String(melhor.pos).replace('º','').trim(), 10) || 999;
+                    let posAtual = parseInt(String(atual.pos).replace('º','').trim(), 10) || 999;
+                    return posAtual < posMelhor ? atual : melhor;
+                }, todosBat[0] || null);
+
                 let nomeVencedor = vencedorObj ? vencedorObj.piloto : 'N/A';
                 
                 let metaVenc = pilotosMetadadosCache[nomeVencedor] || {};
