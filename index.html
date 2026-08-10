@@ -473,7 +473,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.25.5 (Funcionalidade de Mesclagem e Desfazimento de Pilotos)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.25.6 (Filtro Automático de Pilotos Sem Voltas/Zero Voltas)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -1049,7 +1049,7 @@
                 if (inscritosArr.length === 0 && provKeys.length > 0) {
                     let primeiraP = provasSep[provKeys[0]];
                     if (primeiraP && primeiraP.dados) {
-                        inscritosArr = primeiraP.dados.map(d => d.piloto);
+                        inscritosArr = primeiraP.dados.filter(d => d.laps && d.laps.length > 0).map(d => d.piloto);
                     }
                 }
                 gridBaseInicial = inscritosArr;
@@ -1068,7 +1068,7 @@
                 } else {
                     let provaAnteriorKey = provaKeysArr[g - 1];
                     if (provaAnteriorKey && provasSep[provaAnteriorKey] && provasSep[provaAnteriorKey].dados) {
-                        let dadosAnt = [...provasSep[provaAnteriorKey].dados].sort((a, b) => {
+                        let dadosAnt = [...provasSep[provaAnteriorKey].dados].filter(d => d.laps && d.laps.length > 0).sort((a, b) => {
                             let posA = parseInt(String(a.pos).replace('º', '').trim(), 10) || 99;
                             let posB = parseInt(String(b.pos).replace('º', '').trim(), 10) || 99;
                             return posA - posB;
@@ -1137,6 +1137,7 @@
             Object.values(provasSep).forEach(arq => {
                 if (arq && arq.dados) {
                     arq.dados.forEach(d => {
+                        if (!d.laps || d.laps.length === 0) return; // Ignora pilotos sem voltas
                         let posNum = parseInt(String(d.pos).replace('º', '').trim(), 10);
                         let pts = (posNum > 0 && posNum <= tabelaPontosArr.length) ? tabelaPontosArr[posNum - 1] : 0;
                         if (pts > 0) {
@@ -1298,6 +1299,11 @@
                 }
                 pObj.laps = lapsLimpos;
 
+                // FILTRAGEM AUTOMÁTICA: Ignora pilotos que não possuem nenhuma volta válida (como o Ronaldo na bateria 11)
+                if (pObj.laps.length === 0) {
+                    return; 
+                }
+
                 if (pObj.laps.length > 0) {
                     let melhor = Math.min(...pObj.laps);
                     let soma = pObj.laps.reduce((a, b) => a + b, 0);
@@ -1408,8 +1414,8 @@
                 listaJsonsCache.forEach(arq => {
                     if (arq.dados && Array.isArray(arq.dados)) {
                         arq.dados.forEach(d => {
+                            if (!d.laps || d.laps.length === 0) return; // Garante exclusão de sem voltas
                             let pilotoReal = d.piloto;
-                            // Verifica se este piloto foi mesclado para outro nome
                             let safeNomeKey = pilotoReal.replace(/[.#$\/\[\]]/g, "_");
                             if (mesclagensCache[safeNomeKey]) {
                                 pilotoReal = mesclagensCache[safeNomeKey];
@@ -1442,7 +1448,7 @@
             listaJsonsCache.forEach(arq => {
                 if (arq.dados && Array.isArray(arq.dados)) {
                     arq.dados.forEach(d => { 
-                        if (d.piloto) {
+                        if (d.piloto && d.laps && d.laps.length > 0) {
                             let pReal = d.piloto;
                             let safeKey = pReal.replace(/[.#$\/\[\]]/g, "_");
                             if (mesclagensCache[safeKey]) pReal = mesclagensCache[safeKey];
@@ -1497,7 +1503,7 @@
             document.getElementById('modal-piloto-nome').innerHTML = `🏎️ Ficha do Piloto: <span style="color: var(--accent-gold);">${escapeHtml(tituloNome)}</span> <span class="category-badge">${meta.categoria || 'WL Toys 4x4'}</span>`;
             
             let dadosBase = obterTodosDadosConsolidados();
-            let participacoes = dadosBase.filter(d => d.piloto === nomePiloto);
+            let participacoes = dadosBase.filter(d => d.piloto === nomePiloto && d.laps && d.laps.length > 0);
             let bodyEl = document.getElementById('modal-piloto-corpo');
 
             if (participacoes.length === 0) {
@@ -1511,12 +1517,9 @@
             let melhorVoltaP = Math.min(...participacoes.map(p => p.melhorVoltaVal || 999));
             let tabelaHtml = participacoes.map(p => `<tr><td><span class="session-badge">${formatarNomeSessao(p.sessao)}</span></td><td><span class="pos-badge">${p.pos}</span></td><td class="text-green">${p.melhorVoltaTxt || '--'}</td></tr>`).join('');
 
-            // Verificar se este piloto tem sub-nomes mesclados nele para poder exibir a opção de desfazer
             let subNomesMesclados = [];
             Object.keys(mesclagensCache).forEach(origKey => {
                 if (mesclagensCache[origKey] === nomePiloto) {
-                    // Recuperar o nome original formatado (revertendo o _ para espaço ou similar, ou guardando)
-                    // Vamos buscar em todosDadosConsolidados com pilotoOriginal se necessário ou restaurar string
                     subNomesMesclados.push(origKey);
                 }
             });
@@ -1569,7 +1572,6 @@
                 return;
             }
 
-            // Coletar todas as opções de pilotos existentes (excluindo o atual destino)
             let todosPilotosSet = new Set();
             listaJsonsCache.forEach(arq => {
                 if (arq.dados) {
@@ -1776,7 +1778,7 @@
             if (dadosFiltrados.length > 0) {
                 let vencedorContador = {};
                 bateriasSel.forEach(batKey => {
-                    let itensDaBateria = dadosBase.filter(d => d.bateriaKey === batKey);
+                    let itensDaBateria = dadosBase.filter(d => d.bateriaKey === batKey && d.laps && d.laps.length > 0);
                     if (itensDaBateria.length > 0) {
                         let vencedor = itensDaBateria.find(d => String(d.pos).replace('º','').trim() === "1");
                         if (vencedor && (pilotosSel.length === 0 || pilotosSel.includes(vencedor.piloto))) {
@@ -1863,12 +1865,12 @@
             }
 
             bateriasSel.forEach(bateriaKey => {
-                const dadosSessao = dadosBase.filter(d => d.bateriaKey === bateriaKey && (pilotosSel.length === 0 || pilotosSel.includes(d.piloto)));
+                const dadosSessao = dadosBase.filter(d => d.bateriaKey === bateriaKey && d.laps && d.laps.length > 0 && (pilotosSel.length === 0 || pilotosSel.includes(d.piloto)));
                 if (dadosSessao.length === 0) return;
 
                 let sessaoOriginal = dadosSessao[0].sessao || bateriaKey;
                 const nomeSessaoFormatado = formatarNomeSessao(sessaoOriginal);
-                let todosBat = dadosBase.filter(d => d.bateriaKey === bateriaKey);
+                let todosBat = dadosBase.filter(d => d.bateriaKey === bateriaKey && d.laps && d.laps.length > 0);
                 let vencedorObj = todosBat.find(d => String(d.pos).replace('º','').trim() === "1") || todosBat[0];
                 let nomeVencedor = vencedorObj ? vencedorObj.piloto : 'N/A';
                 
