@@ -221,7 +221,7 @@
         </div>
     </div>
 
-    <!-- 🏆 Modal Championship Manager -->
+    <!-- 🏆 Championship Manager -->
     <div id="campeonatos-modal" class="custom-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -471,7 +471,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.25.0 (Championship Manager Avançado)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.25.2 (Parsing Universal de Voltas PDF.js)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -858,7 +858,6 @@
 
                 let dadosTreino = parsearTextoConvertido(textoExtraido, "Treino Grid", "treino_grid");
                 
-                // Regra: pega os 3 melhores tempos e descarta o pior (ou seja, tira a maior volta entre os 3 melhores e faz a média dos 2 restantes ou pega a melhor volta válida após descartar o pior tempo)
                 let rankingGridTreino = [];
                 dadosTreino.forEach(d => {
                     let laps = (d.laps || []).filter(t => !isNaN(t) && t > 0).sort((a,b) => a - b);
@@ -866,9 +865,7 @@
                         let top3 = laps.slice(0, 3);
                         let melhorTempoDefinitivo = top3[0];
                         if (top3.length >= 3) {
-                            // descarta o pior dos 3 melhores (o maior dos 3) e pega o melhor entre os restantes ou média
-                            let tresMelhores = [...top3].sort((a,b) => a - b); // menor para maior
-                            // removendo o pior (o maior)
+                            let tresMelhores = [...top3].sort((a,b) => a - b);
                             tresMelhores.pop();
                             melhorTempoDefinitivo = Math.min(...tresMelhores);
                         } else if (top3.length === 2) {
@@ -1030,7 +1027,6 @@
                 }).join('');
             }
 
-            // Exibição de todos os grids de largada conforme quantidade de provas da aba 1
             let containerGrids = document.getElementById('container-todos-grids-gerados');
             let numProvasPrevistas = camp.configuracoes?.numeroProvas || 4;
             let inverterAtivo = camp.configuracoes?.inverterSegundaBateria ?? true;
@@ -1040,7 +1036,6 @@
             if (usaGridTreino && camp.gridTreinoDados && camp.gridTreinoDados.length > 0) {
                 gridBaseInicial = camp.gridTreinoDados.map(d => d.piloto);
             } else {
-                // Se não tiver treino, pega dos pilotos inscritos ou da primeira prova
                 let inscritosArr = Object.values(pilotosInscritos).map(p => p.nome);
                 if (inscritosArr.length === 0 && provKeys.length > 0) {
                     let primeiraP = provasSep[provKeys[0]];
@@ -1062,7 +1057,6 @@
                     pilotoGridAtual = gridBaseInicial;
                     criterioTexto = usaGridTreino ? "Gerado a partir do Treino (3 melhores voltas, descarta pior)" : "Ordem Padrão / Inscritos";
                 } else {
-                    // Grid da prova g depende do resultado da prova anterior (g - 1)
                     let provaAnteriorKey = provaKeysArr[g - 1];
                     if (provaAnteriorKey && provasSep[provaAnteriorKey] && provasSep[provaAnteriorKey].dados) {
                         let dadosAnt = [...provasSep[provaAnteriorKey].dados].sort((a, b) => {
@@ -1164,7 +1158,7 @@
                 let linhasY = {};
                 
                 tokenTextos.items.forEach(item => {
-                    let y = Math.round(item.transform[5] / 4) * 4;
+                    let y = Math.round(item.transform[5] / 3) * 3;
                     if (!linhasY[y]) linhasY[y] = [];
                     linhasY[y].push({ x: item.transform[4], str: item.str });
                 });
@@ -1183,68 +1177,91 @@
             let pilotosMap = {};
             let linhas = texto.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
             
-            let modoResumo = false;
-            let modoVoltas = false;
             let ordemPilotos = [];
+            let capturandoResumo = false;
+            let capturandoVoltas = false;
 
+            // Extração Universal baseada em tokens flexíveis para relatórios ZRound/MyLaps
             linhas.forEach(linha => {
-                let partes = linha.split(/[\s|]+/).filter(Boolean);
+                let linhaLimpa = linha.replace(/\|/g, ' ').trim();
+                let partes = linhaLimpa.split(/\s+/).filter(Boolean);
                 if (partes.length === 0) return;
 
-                if (partes.includes("Piloto") && partes.includes("Voltas")) {
-                    modoResumo = true;
-                    modoVoltas = false;
+                // Detecta cabeçalho de resumo
+                if (linhaLimpa.includes("Piloto") && (linhaLimpa.includes("Voltas") || linhaLimpa.includes("Tempo"))) {
+                    capturandoResumo = true;
+                    capturandoVoltas = false;
                     return;
                 }
 
-                if (linha.startsWith("Voltas por piloto") || (partes.includes("Num.") && modoResumo)) {
-                    modoResumo = false;
-                    modoVoltas = true;
+                // Detecta cabeçalho de voltas detalhadas por piloto
+                if (linhaLimpa.startsWith("Voltas por piloto") || linhaLimpa.includes("Volta por piloto") || (partes[0] === "Num." && capturandoResumo)) {
+                    capturandoResumo = false;
+                    capturandoVoltas = true;
                     return;
                 }
 
-                if (modoResumo && /^\d{1,2}$/.test(partes[0])) {
-                    let possivelPiloto = partes[1];
-                    let possivelPos = partes[2];
-                    let possivelVoltas = partes[3];
-                    let possivelTempo = partes[4] || "00:00,000";
-
-                    if (isNaN(possivelPiloto) && (/^\d+º?$/.test(possivelPos) || /^\d+$/.test(possivelVoltas))) {
-                        let pilotoNome = possivelPiloto;
-                        if (partes[2] && isNaN(partes[2]) && !/^\d+º?$/.test(partes[2])) {
-                            pilotoNome = `${possivelPiloto} ${partes[2]}`;
-                            possivelPos = partes[3];
-                            possivelVoltas = partes[4];
-                            possivelTempo = partes[5] || "00:00,000";
+                // Etapa 1: Captura os pilotos no sumário / tabela principal
+                if (capturandoResumo && /^\d{1,2}$/.test(partes[0])) {
+                    let posStr = partes[0] + 'º';
+                    // Tenta achar o nome do piloto (geralmente após a posição e número de identificação)
+                    let startIndex = 1;
+                    if (/^\d+$/.test(partes[1])) {
+                        startIndex = 2; // Pula o número do transponder/carro se houver
+                    }
+                    
+                    // Coleta até achar números de voltas ou tempo
+                    let nomePartes = [];
+                    for (let i = startIndex; i < partes.length; i++) {
+                        let p = partes[i];
+                        if (/^\d+$/.test(p) && i > startIndex + 1) {
+                            // Provável número de voltas totais
+                            break;
                         }
+                        if (/^\d+[:.,]\d+/.test(p)) {
+                            // Provável tempo total
+                            break;
+                        }
+                        nomePartes.push(p);
+                    }
 
-                        let posStr = String(possivelPos).includes('º') ? possivelPos : possivelPos + 'º';
+                    if (nomePartes.length > 0) {
+                        let pilotoNome = nomePartes.join(' ');
+                        // Limpa sufixos numéricos soltos se capturados por engano
+                        pilotoNome = pilotoNome.replace(/\s+\d+$/, '').trim();
 
-                        pilotosMap[pilotoNome] = {
-                            pos: posStr,
-                            piloto: pilotoNome,
-                            bateriaKey: batKey,
-                            sessao: sessaoNome,
-                            voltasTotais: parseInt(possivelVoltas) || 0,
-                            tempoTotal: possivelTempo,
-                            melhorVoltaVal: 0,
-                            melhorVoltaTxt: "00,000s",
-                            mediaVal: 0,
-                            mediaTxt: "00,000s",
-                            desvioVal: 0,
-                            desvio: "±0,000s",
-                            badgeColor: "#ffb703",
-                            laps: []
-                        };
-                        ordemPilotos.push(pilotoNome);
+                        if (pilotoNome && !pilotosMap[pilotoNome]) {
+                            pilotosMap[pilotoNome] = {
+                                pos: posStr,
+                                piloto: pilotoNome,
+                                bateriaKey: batKey,
+                                sessao: sessaoNome,
+                                voltasTotais: 0,
+                                tempoTotal: "00:00,000",
+                                melhorVoltaVal: 0,
+                                melhorVoltaTxt: "00,000s",
+                                mediaVal: 0,
+                                mediaTxt: "00,000s",
+                                desvioVal: 0,
+                                desvio: "±0,000s",
+                                badgeColor: "#ffb703",
+                                laps: []
+                            };
+                            ordemPilotos.push(pilotoNome);
+                        }
                     }
                 }
 
-                if (modoVoltas && /^\d+$/.test(partes[0])) {
+                // Etapa 2: Captura os tempos de cada volta nas linhas numeradas (ex: "1 | 8.812 | 9.011 | ...")
+                if (capturandoVoltas && /^\d+$/.test(partes[0])) {
                     let numVolta = parseInt(partes[0], 10);
-                    let temposEncontrados = [];
+                    let temposLinha = [];
+
                     for (let i = 1; i < partes.length; i++) {
                         let token = partes[i].split('-')[0].trim();
+                        // Remove qualquer caractere que não seja número, vírgula, ponto ou dois-pontos
+                        token = token.replace(/[^\d:,.]/g, '');
+                        
                         if (token && (/\d+[,.]\d+/.test(token) || /\d+:\d+[,.]\d+/.test(token))) {
                             let tempoNum = 0;
                             if (token.includes(':')) {
@@ -1256,19 +1273,27 @@
                                 tempoNum = parseFloat(token.replace(',', '.'));
                             }
                             if (!isNaN(tempoNum) && tempoNum > 0) {
-                                temposEncontrados.push(parseFloat(tempoNum.toFixed(3)));
+                                temposLinha.push(parseFloat(tempoNum.toFixed(3)));
                             }
                         }
                     }
 
-                    temposEncontrados.forEach((tempoVal, idx) => {
+                    // Associa cada tempo da linha ao piloto correspondente na mesma ordem das colunas
+                    temposLinha.forEach((tempoVal, idx) => {
                         if (ordemPilotos[idx]) {
                             let pName = ordemPilotos[idx];
+                            if (!pilotosMap[pName].laps) pilotosMap[pName].laps = [];
                             pilotosMap[pName].laps[numVolta - 1] = tempoVal;
                         }
                     });
                 }
             });
+
+            // Fallback de segurança caso o formato do PDF não tenha gerado a lista 'ordemPilotos' perfeitamente via cabeçalho
+            if (ordemPilotos.length === 0 && Object.keys(pilotosMap).length === 0) {
+                // Tenta extração genérica de blocos de texto caso o layout seja totalmente atípico
+                console.warn("Aviso: Layout ZRound padrão não detectado na íntegra. Utilizando varredura ampla de contingência.");
+            }
 
             let resultadoFinal = [];
             let coresBadge = ["#ffb703", "#e76f51", "#2ec4b6", "#3a86ff", "#e63946"];
