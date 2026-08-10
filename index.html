@@ -473,7 +473,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.25.8 (Cálculo Global Absoluto de Vitórias nas Baterias)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.25.9 (Correção Robusta de Varredura e ConTAGem Global de Vitórias)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -1774,14 +1774,23 @@
 
             const dadosFiltrados = dadosBase.filter(item => bateriasSel.includes(item.bateriaKey) && (pilotosSel.length === 0 || pilotosSel.includes(item.piloto)));
 
-            if (dadosBase.length > 0) {
+            if (listaJsonsCache.length > 0) {
                 let vencedorContadorGlobal = {};
+                
                 listaJsonsCache.forEach(arq => {
                     let itensDaBateria = arq.dados || [];
                     let participantesValidos = itensDaBateria.filter(d => d.laps && d.laps.length > 0);
+                    
                     if (participantesValidos.length > 0) {
-                        let vencedor = participantesValidos.find(d => String(d.pos).replace('º','').trim() === "1");
-                        if (vencedor) {
+                        // Encontra quem tem a menor posição numérica (1º lugar)
+                        let vencedor = participantesValidos.reduce((melhor, atual) => {
+                            let posMelhor = parseInt(String(melhor.pos).replace('º','').trim(), 10) || 999;
+                            let posAtual = parseInt(String(atual.pos).replace('º','').trim(), 10) || 999;
+                            return posAtual < posMelhor ? atual : melhor;
+                        }, participantesValidos[0]);
+
+                        let posVencedorNum = parseInt(String(vencedor.pos).replace('º','').trim(), 10);
+                        if (posVencedorNum === 1) {
                             let pilotoReal = vencedor.piloto;
                             let safeNomeKey = pilotoReal.replace(/[.#$\/\[\]]/g, "_");
                             if (mesclagensCache[safeNomeKey]) {
