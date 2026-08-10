@@ -477,7 +477,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.25.16 (Correção de sintaxe e estabilidade de módulos)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.25.17 (Persistência de Metadados e Ajuste Automático no Parser)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -1708,11 +1708,27 @@
             let novoApelido = document.getElementById('input-apelido').value.trim();
             if (!novoNome) return;
             
-            await db.ref(`pilotosMetadados/${novoNome}`).set({ apelido: novoApelido, categoria: 'WL Toys 4x4' });
-            if (novoNome !== nomeAtual) await db.ref(`pilotosMetadados/${nomeAtual}`).remove();
-            
-            alert("Salvo com sucesso!");
-            window.abrirDossiePiloto(novoNome);
+            if (!db) {
+                alert("Erro: Firebase desconectado.");
+                return;
+            }
+
+            try {
+                // Salva o novo nome e apelido na raiz 'pilotosMetadados' do banco de dados
+                await db.ref(`pilotosMetadados/${novoNome}`).set({ apelido: novoApelido, categoria: 'WL Toys 4x4' });
+                
+                // Se o nome foi alterado, remove o registro antigo e cria regra de mesclagem automática para consistência de histórico
+                if (novoNome !== nomeAtual) {
+                    await db.ref(`pilotosMetadados/${nomeAtual}`).remove();
+                    let safeOldKey = nomeAtual.replace(/[.#$\/\[\]]/g, "_");
+                    await db.ref(`mesclagensPilotos/${safeOldKey}`).set(novoNome);
+                }
+                
+                alert("Configurações do piloto salvas com sucesso no banco de dados!");
+                window.abrirDossiePiloto(novoNome);
+            } catch (err) {
+                alert("Erro ao salvar metadados: " + err.message);
+            }
         };
 
         window.fecharDossiePiloto = function() { document.getElementById('piloto-modal').style.display = 'none'; };
