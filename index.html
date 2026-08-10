@@ -477,7 +477,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.25.14 (Tabela Geral com Gaps Volta a Volta e Tag de Líder)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.25.15 (Gaps com contagem de voltas atrás para pilotos retardatários)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -1956,7 +1956,7 @@
                     html += `<div class="card"><div class="card-header">🏆 Consistência (Ritmo e Laudo Técnico)</div><div class="table-container"><table><thead><tr><th>POS</th><th>PILOTO</th><th>CATEGORIA</th><th>SESSÃO</th><th>VOLTAS</th><th>MELHOR</th><th>MÉDIA</th><th>DESVIO</th></tr></thead><tbody id="tabela-unificada-${bateriaKey}"></tbody></table></div></div>`;
                 }
                 if (modulosSel.includes('mod-tabela-geral')) {
-                    html += `<div class="card"><div class="card-header">⏱️ Tabela Geral Volta a Volta (com Gaps para o Líder)</div><div class="table-container"><table><thead><tr id="head-lapbyLap-${bateriaKey}"><th>VOLTA</th></tr></thead><tbody id="body-lapbyLap-${bateriaKey}"></tbody></table></div></div>`;
+                    html += `<div class="card"><div class="card-header">⏱️ Tabela Geral Volta a Volta (com Gaps e Voltas Atrás)</div><div class="table-container"><table><thead><tr id="head-lapbyLap-${bateriaKey}"><th>VOLTA</th></tr></thead><tbody id="body-lapbyLap-${bateriaKey}"></tbody></table></div></div>`;
                 }
                 if (modulosSel.includes('mod-comentarios')) {
                     html += `
@@ -2068,7 +2068,7 @@
                                 let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
                                 if (pAnt && pAtu && pAtu !== pAnt) {
                                     if (pAtu < pAnt) mudancas.push(`🔥 <strong style="color:${paleta[0]}">${escapeHtml(nomeExib)}</strong> ganhou (<span class="tag-gain">${pAnt}º para ${pAtu}º</span>)`);
-                                    else mudancas.push(`💧 <strong style="color:${paleta[0]}">${escapeHtml(nomeExib)}</strong> perdeu (<span class="tag-loss">${pAnt}º para ${pAtu}º</span>)`);
+                                    else mudancas.push(`💧 <strong style="color:${paleta[0]}">${escapeHtml(nomeExib)}</strong> perdeu (<span class="tag-loss">${pAnt}º para ${pAtu}º</span>)`;
                                 }
                             });
                             if (mudancas.length > 0) logsHtml += `<div class="position-log-item">🔄 <strong>Volta ${v+1}:</strong> ${mudancas.join(' | ')}</div>`;
@@ -2125,30 +2125,78 @@
                             headLap.innerHTML += `<th>${escapeHtml(nomeExib)}</th>`;
                         });
 
+                        // Para cada volta i (de 0 até maxV - 1)
                         for (let i = 0; i < maxV; i++) {
-                            // Encontrar o menor tempo (líder da volta i) entre os pilotos da sessão que possuem esta volta
-                            let menorTempoVolta = 999999;
+                            // 1. Descobrir qual é o menor tempo acumulado ou quem é o líder em voltas completadas até a volta i
+                            // Vamos rastrear o número máximo de voltas completadas até o índice i entre todos os pilotos
+                            let maxVoltasCompletadasAteI = -1;
                             dadosSessao.forEach(d => {
-                                if (d.laps && d.laps[i] !== undefined) {
-                                    let t = typeof d.laps[i] === 'object' ? d.laps[i].tempo : d.laps[i];
-                                    if (t && t < menorTempoVolta) {
-                                        menorTempoVolta = t;
+                                if (d.laps) {
+                                    let voltasAteI = 0;
+                                    for (let k = 0; k <= i; k++) {
+                                        let t = typeof d.laps[k] === 'object' ? d.laps[k].tempo : d.laps[k];
+                                        if (t !== undefined && !isNaN(t)) voltasAteI++;
+                                    }
+                                    if (voltasAteI > maxVoltasCompletadasAteI) {
+                                        maxVoltasCompletadasAteI = voltasAteI;
+                                    }
+                                }
+                            });
+
+                            // Descobrir o menor tempo acumulado entre os pilotos que atingiram maxVoltasCompletadasAteI
+                            let menorTempoAcumuladoLider = 99999999;
+                            dadosSessao.forEach(d => {
+                                if (d.laps) {
+                                    let voltasAteI = 0;
+                                    let somaAteI = 0;
+                                    for (let k = 0; k <= i; k++) {
+                                        let t = typeof d.laps[k] === 'object' ? d.laps[k].tempo : d.laps[k];
+                                        if (t !== undefined && !isNaN(t)) {
+                                            voltasAteI++;
+                                            somaAteI += t;
+                                        }
+                                    }
+                                    if (voltasAteI === maxVoltasCompletadasAteI && somaAteI < menorTempoAcumuladoLider) {
+                                        menorTempoAcumuladoLider = somaAteI;
                                     }
                                 }
                             });
 
                             let linha = `<td><strong>Volta ${i+1}</strong></td>`;
                             dadosSessao.forEach(d => {
-                                if (d.laps && d.laps[i] !== undefined) {
+                                if (d.laps && d.laps[i] !== undefined && !isNaN(d.laps[i])) {
                                     let t = typeof d.laps[i] === 'object' ? d.laps[i].tempo : d.laps[i];
-                                    let isLiderVolta = (Math.abs(t - menorTempoVolta) < 0.0005);
-                                    let tagHtml = "";
-                                    if (isLiderVolta) {
-                                        tagHtml = `<span class="leader-badge">Líder</span>`;
-                                    } else {
-                                        let gap = t - menorTempoVolta;
-                                        tagHtml = `<span class="lap-gap">(+${gap.toFixed(3)}s)</span>`;
+                                    
+                                    // Calcular quantas voltas este piloto completou até a volta i
+                                    let voltasDesteAteI = 0;
+                                    let somaDesteAteI = 0;
+                                    for (let k = 0; k <= i; k++) {
+                                        let tk = typeof d.laps[k] === 'object' ? d.laps[k].tempo : d.laps[k];
+                                        if (tk !== undefined && !isNaN(tk)) {
+                                            voltasDesteAteI++;
+                                            somaDesteAteI += tk;
+                                        }
                                     }
+
+                                    let voltasAtras = maxVoltasCompletadasAteI - voltasDesteAteI;
+                                    let tagHtml = "";
+
+                                    if (voltasAtras > 0) {
+                                        // Piloto está voltas atrás do líder nesta altura da prova
+                                        let txtVoltas = voltasAtras === 1 ? "1 volta atrás" : `${voltasAtras} voltas atrás`;
+                                        tagHtml = `<span class="lap-gap">(+${txtVoltas})</span>`;
+                                    } else {
+                                        // Está na mesma volta do líder (ou é o líder)
+                                        // Vamos verificar se é o líder absoluto do acumulado ou está em tempo relativo
+                                        let isLiderAbsoluto = (Math.abs(somaDesteAteI - menorTempoAcumuladoLider) < 0.0005);
+                                        if (isLiderAbsoluto) {
+                                            tagHtml = `<span class="leader-badge">Líder</span>`;
+                                        } else {
+                                            let gap = somaDesteAteI - menorTempoAcumuladoLider;
+                                            tagHtml = `<span class="lap-gap">(+${gap.toFixed(3)}s)</span>`;
+                                        }
+                                    }
+
                                     linha += `<td><div class="lap-cell-inline"><span>${t.toFixed(3)}s</span>${tagHtml}</div></td>`;
                                 } else { 
                                     linha += `<td>-</td>`; 
