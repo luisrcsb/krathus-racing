@@ -471,7 +471,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.25.2 (Parsing Universal de Voltas PDF.js)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.25.4 (Correção de Ordenação e Estabilidade de Baterias)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -535,7 +535,7 @@
                 let ano = parseInt(matchData[3], 10) + 2000;
                 timestampData = new Date(ano, mes, dia).getTime();
             }
-            let matchSeq = sessaoStr.match(/\((\d+)\)/);
+            let matchSeq = sessaoStr.match(/\((\d+)\)/) || sessaoStr.match(/bateria\s*(\d+)/i) || sessaoStr.match(/(\d+)/);
             let sequencial = matchSeq ? parseInt(matchSeq[1], 10) : 0;
             return timestampData + sequencial;
         }
@@ -1181,53 +1181,40 @@
             let capturandoResumo = false;
             let capturandoVoltas = false;
 
-            // Extração Universal baseada em tokens flexíveis para relatórios ZRound/MyLaps
             linhas.forEach(linha => {
                 let linhaLimpa = linha.replace(/\|/g, ' ').trim();
                 let partes = linhaLimpa.split(/\s+/).filter(Boolean);
                 if (partes.length === 0) return;
 
-                // Detecta cabeçalho de resumo
                 if (linhaLimpa.includes("Piloto") && (linhaLimpa.includes("Voltas") || linhaLimpa.includes("Tempo"))) {
                     capturandoResumo = true;
                     capturandoVoltas = false;
                     return;
                 }
 
-                // Detecta cabeçalho de voltas detalhadas por piloto
                 if (linhaLimpa.startsWith("Voltas por piloto") || linhaLimpa.includes("Volta por piloto") || (partes[0] === "Num." && capturandoResumo)) {
                     capturandoResumo = false;
                     capturandoVoltas = true;
                     return;
                 }
 
-                // Etapa 1: Captura os pilotos no sumário / tabela principal
                 if (capturandoResumo && /^\d{1,2}$/.test(partes[0])) {
                     let posStr = partes[0] + 'º';
-                    // Tenta achar o nome do piloto (geralmente após a posição e número de identificação)
                     let startIndex = 1;
                     if (/^\d+$/.test(partes[1])) {
-                        startIndex = 2; // Pula o número do transponder/carro se houver
+                        startIndex = 2;
                     }
                     
-                    // Coleta até achar números de voltas ou tempo
                     let nomePartes = [];
                     for (let i = startIndex; i < partes.length; i++) {
                         let p = partes[i];
-                        if (/^\d+$/.test(p) && i > startIndex + 1) {
-                            // Provável número de voltas totais
-                            break;
-                        }
-                        if (/^\d+[:.,]\d+/.test(p)) {
-                            // Provável tempo total
-                            break;
-                        }
+                        if (/^\d+$/.test(p) && i > startIndex + 1) break;
+                        if (/^\d+[:.,]\d+/.test(p)) break;
                         nomePartes.push(p);
                     }
 
                     if (nomePartes.length > 0) {
                         let pilotoNome = nomePartes.join(' ');
-                        // Limpa sufixos numéricos soltos se capturados por engano
                         pilotoNome = pilotoNome.replace(/\s+\d+$/, '').trim();
 
                         if (pilotoNome && !pilotosMap[pilotoNome]) {
@@ -1252,14 +1239,12 @@
                     }
                 }
 
-                // Etapa 2: Captura os tempos de cada volta nas linhas numeradas (ex: "1 | 8.812 | 9.011 | ...")
                 if (capturandoVoltas && /^\d+$/.test(partes[0])) {
                     let numVolta = parseInt(partes[0], 10);
                     let temposLinha = [];
 
                     for (let i = 1; i < partes.length; i++) {
                         let token = partes[i].split('-')[0].trim();
-                        // Remove qualquer caractere que não seja número, vírgula, ponto ou dois-pontos
                         token = token.replace(/[^\d:,.]/g, '');
                         
                         if (token && (/\d+[,.]\d+/.test(token) || /\d+:\d+[,.]\d+/.test(token))) {
@@ -1278,7 +1263,6 @@
                         }
                     }
 
-                    // Associa cada tempo da linha ao piloto correspondente na mesma ordem das colunas
                     temposLinha.forEach((tempoVal, idx) => {
                         if (ordemPilotos[idx]) {
                             let pName = ordemPilotos[idx];
@@ -1288,12 +1272,6 @@
                     });
                 }
             });
-
-            // Fallback de segurança caso o formato do PDF não tenha gerado a lista 'ordemPilotos' perfeitamente via cabeçalho
-            if (ordemPilotos.length === 0 && Object.keys(pilotosMap).length === 0) {
-                // Tenta extração genérica de blocos de texto caso o layout seja totalmente atípico
-                console.warn("Aviso: Layout ZRound padrão não detectado na íntegra. Utilizando varredura ampla de contingência.");
-            }
 
             let resultadoFinal = [];
             let coresBadge = ["#ffb703", "#e76f51", "#2ec4b6", "#3a86ff", "#e63946"];
@@ -1425,6 +1403,7 @@
                             let meta = pilotosMetadadosCache[metaKey] || {};
                             consolidado.push({
                                 ...d,
+                                bateriaKey: arq.firebaseKey,
                                 pilotoExibicao: meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto,
                                 apelido: meta.apelido || '',
                                 categoria: meta.categoria || 'WL Toys 4x4'
@@ -1437,28 +1416,18 @@
         }
 
         function gerarFiltrosDinamicos() {
-            let dados = obterTodosDadosConsolidados();
-            const bateriasMap = {};
-            const pilotosSet = new Set();
-
-            listaJsonsCache.forEach(arq => {
-                if (arq.dados && arq.dados.length > 0) {
-                    let key = arq.dados[0].bateriaKey;
-                    let sessaoOriginal = arq.sessao || arq.dados[0].sessao || key;
-                    let sessaoFormatada = formatarNomeSessao(sessaoOriginal);
-                    if (key && !bateriasMap[key]) {
-                        bateriasMap[key] = sessaoFormatada;
-                    }
-                }
-            });
-
-            dados.forEach(item => { if (item.piloto) pilotosSet.add(item.piloto); });
-
             const batContainer = document.getElementById('filtro-baterias-container');
             const pilContainer = document.getElementById('filtro-pilotos-container');
             if (!batContainer || !pilContainer) return;
 
-            if (Object.keys(bateriasMap).length === 0) {
+            const pilotosSet = new Set();
+            listaJsonsCache.forEach(arq => {
+                if (arq.dados && Array.isArray(arq.dados)) {
+                    arq.dados.forEach(d => { if (d.piloto) pilotosSet.add(d.piloto); });
+                }
+            });
+
+            if (listaJsonsCache.length === 0) {
                 batContainer.innerHTML = `<span style="font-size:0.85rem; color: var(--text-muted);">Nenhum arquivo.</span>`;
                 pilContainer.innerHTML = `<span style="font-size:0.85rem; color: var(--text-muted);">Nenhum piloto.</span>`;
                 return;
@@ -1469,16 +1438,19 @@
             let primeiraVezBat = bateriasSelecionadasAntigas.length === 0;
             let primeiraVezPil = pilotosSelecionadosAntigos.length === 0;
 
-            batContainer.innerHTML = Object.keys(bateriasMap).map(key => {
+            batContainer.innerHTML = listaJsonsCache.map(arq => {
+                let key = arq.firebaseKey;
+                let sessaoOriginal = arq.sessao || (arq.dados && arq.dados[0] ? arq.dados[0].sessao : key);
+                let sessaoFormatada = formatarNomeSessao(sessaoOriginal);
                 let marcado = primeiraVezBat || bateriasSelecionadasAntigas.includes(key) ? 'checked' : '';
-                return `<label class="checkbox-item"><input type="checkbox" value="${key}" class="filter-bateria" ${marcado} onchange="atualizarDashboard()"> ${bateriasMap[key]}</label>`;
+                return `<label class="checkbox-item"><input type="checkbox" value="${key}" class="filter-bateria" ${marcado} onchange="atualizarDashboard()"> ${escapeHtml(sessaoFormatada)}</label>`;
             }).join('');
 
-            pilContainer.innerHTML = Array.from(pilotosSet).map(piloto => {
+            pilContainer.innerHTML = Array.from(pilotosSet).sort().map(piloto => {
                 let meta = pilotosMetadadosCache[piloto] || {};
                 let labelExib = meta.apelido ? `${piloto} (${meta.apelido})` : piloto;
                 let marcado = primeiraVezPil || pilotosSelecionadosAntigos.includes(piloto) ? 'checked' : '';
-                return `<label class="checkbox-item"><input type="checkbox" value="${piloto}" class="filter-piloto" ${marcado} onchange="atualizarDashboard()"> ${labelExib}</label>`;
+                return `<label class="checkbox-item"><input type="checkbox" value="${escapeHtml(piloto)}" class="filter-piloto" ${marcado} onchange="atualizarDashboard()"> ${escapeHtml(labelExib)}</label>`;
             }).join('');
         }
 
@@ -1505,7 +1477,7 @@
             }
 
             let totalCorridas = participacoes.length;
-            let vitorias = participacoes.filter(p => String(p.pos).includes('1')).length;
+            let vitorias = participacoes.filter(p => String(p.pos).replace('º','').trim() === "1").length;
             let melhorVoltaP = Math.min(...participacoes.map(p => p.melhorVoltaVal || 999));
             let tabelaHtml = participacoes.map(p => `<tr><td><span class="session-badge">${formatarNomeSessao(p.sessao)}</span></td><td><span class="pos-badge">${p.pos}</span></td><td class="text-green">${p.melhorVoltaTxt || '--'}</td></tr>`).join('');
 
@@ -1556,8 +1528,7 @@
         };
 
         window.salvarMetadadosPiloto = async function(nomeAtual, event) {
-            if (event) event.preventDefault(); // Impede o recarregamento da página
-            
+            if (event) event.preventDefault();
             let novoNome = document.getElementById('input-novo-nome').value.trim();
             let novoApelido = document.getElementById('input-apelido').value.trim();
             if (!novoNome) return;
@@ -1756,7 +1727,7 @@
                 let nomeVencedor = vencedorObj ? vencedorObj.piloto : 'N/A';
                 
                 let metaVenc = pilotosMetadadosCache[nomeVencedor] || {};
-                let nomeVencExib = metaVenc.apelido ? `${nomeVencedor} (${metaVencedor.apelido})` : nomeVencedor;
+                let nomeVencExib = metaVenc.apelido ? `${nomeVencedor} (${metaVenc.apelido})` : nomeVencedor;
                 let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
 
                 const sessionBlock = document.createElement('div');
