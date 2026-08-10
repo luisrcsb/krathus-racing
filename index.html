@@ -29,6 +29,7 @@
             --accent-silver: #c0c0c0;
             --accent-bronze: #cd7f32;
             --accent-blue: #3a86ff;
+            --accent-gap: #ff006e;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
@@ -165,6 +166,8 @@
         .analysis-subrow-box strong.title { color: var(--accent-blue); text-transform: uppercase; font-size: 0.78rem; display: block; margin-bottom: 6px; }
         
         .lap-cell-inline { display: inline-flex; align-items: baseline; gap: 6px; white-space: nowrap; }
+        .leader-badge { background: var(--accent-gold); color: #000; font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-left: 6px; display: inline-block; text-transform: uppercase; }
+        .lap-gap { color: var(--accent-gap); font-size: 0.8rem; font-weight: 600; margin-left: 4px; }
 
         .footer-container { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px 24px; display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 10px; }
         .footer-meta-info { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 16px; font-size: 0.82rem; color: var(--text-muted); background: var(--bg-input); padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border-card); }
@@ -474,7 +477,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.25.13 (Adicionado Módulo de Comentários Selecionável)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.25.14 (Tabela Geral com Gaps Volta a Volta e Tag de Líder)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -1953,7 +1956,7 @@
                     html += `<div class="card"><div class="card-header">🏆 Consistência (Ritmo e Laudo Técnico)</div><div class="table-container"><table><thead><tr><th>POS</th><th>PILOTO</th><th>CATEGORIA</th><th>SESSÃO</th><th>VOLTAS</th><th>MELHOR</th><th>MÉDIA</th><th>DESVIO</th></tr></thead><tbody id="tabela-unificada-${bateriaKey}"></tbody></table></div></div>`;
                 }
                 if (modulosSel.includes('mod-tabela-geral')) {
-                    html += `<div class="card"><div class="card-header">⏱️ Tabela Geral Volta a Volta</div><div class="table-container"><table><thead><tr id="head-lapbyLap-${bateriaKey}"><th>VOLTA</th></tr></thead><tbody id="body-lapbyLap-${bateriaKey}"></tbody></table></div></div>`;
+                    html += `<div class="card"><div class="card-header">⏱️ Tabela Geral Volta a Volta (com Gaps para o Líder)</div><div class="table-container"><table><thead><tr id="head-lapbyLap-${bateriaKey}"><th>VOLTA</th></tr></thead><tbody id="body-lapbyLap-${bateriaKey}"></tbody></table></div></div>`;
                 }
                 if (modulosSel.includes('mod-comentarios')) {
                     html += `
@@ -2123,12 +2126,33 @@
                         });
 
                         for (let i = 0; i < maxV; i++) {
+                            // Encontrar o menor tempo (líder da volta i) entre os pilotos da sessão que possuem esta volta
+                            let menorTempoVolta = 999999;
+                            dadosSessao.forEach(d => {
+                                if (d.laps && d.laps[i] !== undefined) {
+                                    let t = typeof d.laps[i] === 'object' ? d.laps[i].tempo : d.laps[i];
+                                    if (t && t < menorTempoVolta) {
+                                        menorTempoVolta = t;
+                                    }
+                                }
+                            });
+
                             let linha = `<td><strong>Volta ${i+1}</strong></td>`;
                             dadosSessao.forEach(d => {
                                 if (d.laps && d.laps[i] !== undefined) {
                                     let t = typeof d.laps[i] === 'object' ? d.laps[i].tempo : d.laps[i];
-                                    linha += `<td><div class="lap-cell-inline"><span>${t.toFixed(3)}s</span></div></td>`;
-                                } else { linha += `<td>-</td>`; }
+                                    let isLiderVolta = (Math.abs(t - menorTempoVolta) < 0.0005);
+                                    let tagHtml = "";
+                                    if (isLiderVolta) {
+                                        tagHtml = `<span class="leader-badge">Líder</span>`;
+                                    } else {
+                                        let gap = t - menorTempoVolta;
+                                        tagHtml = `<span class="lap-gap">(+${gap.toFixed(3)}s)</span>`;
+                                    }
+                                    linha += `<td><div class="lap-cell-inline"><span>${t.toFixed(3)}s</span>${tagHtml}</div></td>`;
+                                } else { 
+                                    linha += `<td>-</td>`; 
+                                }
                             });
                             bodyLap.innerHTML += `<tr>${linha}</tr>`;
                         }
