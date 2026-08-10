@@ -480,7 +480,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.29.0 (Laudo Detalhado Ordenado por Pódio sem Categoria)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.30.0 (Filtros Sincronizados com Mesclagens do Banco)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -1534,6 +1534,7 @@
                 return `<label class="checkbox-item"><input type="checkbox" value="${key}" class="filter-bateria" ${marcado} onchange="atualizarDashboard()"> ${escapeHtml(sessaoFormatada)}</label>`;
             }).join('');
 
+            // Utilizando rigorosamente a lista consolidada/mesclada do banco de dados para os checkboxes de pilotos
             pilContainer.innerHTML = Array.from(pilotosSet).sort().map(piloto => {
                 let meta = pilotosMetadadosCache[piloto] || {};
                 let labelExib = meta.apelido ? `${piloto} (${meta.apelido})` : piloto;
@@ -1956,7 +1957,6 @@
                 const dadosSessao = dadosBase.filter(d => d.bateriaKey === bateriaKey && d.laps && d.laps.length > 0 && (pilotosSel.length === 0 || pilotosSel.includes(d.piloto)));
                 if (dadosSessao.length === 0) return;
 
-                // Ordenar estritamente pelos critérios do pódio (menor para maior posição / voltas e tempo)
                 dadosSessao.sort((a, b) => {
                     let posA = parseInt(String(a.pos).replace('º', '').trim(), 10) || 99;
                     let posB = parseInt(String(b.pos).replace('º', '').trim(), 10) || 99;
@@ -2161,7 +2161,6 @@
                             let meta = pilotosMetadadosCache[d.piloto] || {};
                             let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
                             
-                            // Geração de textos detalhados e segregados conforme solicitado
                             let txtRitmo = desvio < 0.2 ? `O piloto demonstrou um ritmo extremamente linear, mantendo suas parciais de volta dentro de uma faixa de variação mínima, o que evidencia forte controle do equipamento e excelente leitura do traçado ao longo de toda a bateria.` : `O piloto apresentou oscilações consideráveis nas parciais ao longo da prova, sugerindo variações no desgaste de bateria, aderência dos pneus ou pequenas correções de trajetória nas curvas.`;
                             let txtConsistencia = desvio < 0.15 ? `Altíssimo nível de consistência. A proximidade entre a melhor volta (${melhor.toFixed(3)}s) e a média geral (${media.toFixed(3)}s) indica controle absoluto de pilotagem com desvio padrão reduzido de ±${desvio.toFixed(3)}s.` : `Consistência moderada. O desvio padrão de ±${desvio.toFixed(3)}s aponta margem para refinamento na constância de frenagem e aceleração nas saídas de curva.`;
                             let txtLaudo = `Análise Técnica Avançada para ${nomeExib}: O conjunto motriz e o setup operaram de maneira estável. O rendimento aerodinâmico e mecânico nas curvas de alta foi satisfatório, aproveitando o máximo da tração integral 4x4 no piso. Recomenda-se ajuste fino na distribuição de peso para otimizar ainda mais a entrada de curva em baterias futuras.`;
