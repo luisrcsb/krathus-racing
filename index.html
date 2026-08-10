@@ -456,7 +456,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.24.3 (Título do Modal Alterado para Championship Manager)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.24.4 (Correção de Exibição dos Blocos de Sessão)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -1543,13 +1543,15 @@
             const mainContainer = document.getElementById('sessions-container');
             mainContainer.innerHTML = '';
 
-            if (dadosBase.length === 0 || bateriasSel.length === 0 || pilotosSel.length === 0 || modulosSel.length === 0) {
-                mainContainer.innerHTML = `<div class="card" style="text-align:center; padding: 30px; color: var(--text-muted);">Nenhum dado ou módulo selecionado.</div>`;
+            // CORREÇÃO: Remividas as travas estritas (bateriasSel.length === 0 || pilotosSel.length === 0 || modulosSel.length === 0)
+            // Agora o painel renderiza os blocos para as baterias selecionadas mesmo se algum filtro for alterado individualmente.
+            if (dadosBase.length === 0 || bateriasSel.length === 0) {
+                mainContainer.innerHTML = `<div class="card" style="text-align:center; padding: 30px; color: var(--text-muted);">Nenhuma bateria selecionada.</div>`;
                 return;
             }
 
             bateriasSel.forEach(bateriaKey => {
-                const dadosSessao = dadosBase.filter(d => d.bateriaKey === bateriaKey && pilotosSel.includes(d.piloto));
+                const dadosSessao = dadosBase.filter(d => d.bateriaKey === bateriaKey && (pilotosSel.length === 0 || pilotosSel.includes(d.piloto)));
                 if (dadosSessao.length === 0) return;
 
                 let sessaoOriginal = dadosSessao[0].sessao || bateriaKey;
@@ -1699,57 +1701,63 @@
                         });
                         if (mudancas.length > 0) logsHtml += `<div class="position-log-item">🔄 <strong>Volta ${v+1}:</strong> ${mudancas.join(' | ')}</div>`;
                     }
-                    logContainer.innerHTML = logsHtml || `<div class="position-log-item">Prova estável sem trocas de posição.</div>`;
+                    if (logContainer) logContainer.innerHTML = logsHtml || `<div class="position-log-item">Prova estável sem trocas de posição.</div>`;
                 }
 
                 if (modulosSel.includes('mod-velocidade')) {
                     let tbodyVel = document.getElementById(`tabela-velocidade-${bateriaKey}`);
-                    dadosSessao.forEach(d => {
-                        let laps = (d.laps || []).map(l => typeof l === 'object' ? l.tempo : l).filter(Boolean);
-                        if (laps.length === 0) return;
-                        let melhor = Math.min(...laps);
-                        let media = laps.reduce((a,b)=>a+b,0) / laps.length;
-                        let velMelhorKmh = (26 / melhor) * 3.6 * 28;
-                        let meta = pilotosMetadadosCache[d.piloto] || {};
-                        let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
-                        tbodyVel.innerHTML += `<tr><td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(d.piloto)}')">${escapeHtml(nomeExib)}</a></strong></td><td><span class="category-badge">${meta.categoria || 'WL Toys 4x4'}</span></td><td class="text-green">${melhor.toFixed(3)}s</td><td>${((26/melhor)*3.6).toFixed(2)} km/h</td><td><strong style="color:var(--accent-gold);">${velMelhorKmh.toFixed(1)} km/h</strong></td><td>${media.toFixed(3)}s</td></tr>`;
-                    });
+                    if (tbodyVel) {
+                        dadosSessao.forEach(d => {
+                            let laps = (d.laps || []).map(l => typeof l === 'object' ? l.tempo : l).filter(Boolean);
+                            if (laps.length === 0) return;
+                            let melhor = Math.min(...laps);
+                            let media = laps.reduce((a,b)=>a+b,0) / laps.length;
+                            let velMelhorKmh = (26 / melhor) * 3.6 * 28;
+                            let meta = pilotosMetadadosCache[d.piloto] || {};
+                            let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
+                            tbodyVel.innerHTML += `<tr><td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(d.piloto)}')">${escapeHtml(nomeExib)}</a></strong></td><td><span class="category-badge">${meta.categoria || 'WL Toys 4x4'}</span></td><td class="text-green">${melhor.toFixed(3)}s</td><td>${((26/melhor)*3.6).toFixed(2)} km/h</td><td><strong style="color:var(--accent-gold);">${velMelhorKmh.toFixed(1)} km/h</strong></td><td>${media.toFixed(3)}s</td></tr>`;
+                        });
+                    }
                 }
 
                 if (modulosSel.includes('mod-classificacao-analise')) {
                     let tbodyCons = document.getElementById(`tabela-unificada-${bateriaKey}`);
-                    dadosSessao.forEach(d => {
-                        let laps = (d.laps || []).map(l => typeof l === 'object' ? l.tempo : l).filter(Boolean);
-                        if (laps.length === 0) return;
-                        let melhor = Math.min(...laps);
-                        let media = laps.reduce((a,b)=>a+b,0) / laps.length;
-                        let desvio = Math.sqrt(laps.reduce((sum, t) => sum + Math.pow(t - media, 2), 0) / laps.length);
-                        let meta = pilotosMetadadosCache[d.piloto] || {};
-                        let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
-                        tbodyCons.innerHTML += `
-                            <tr class="main-row"><td><span class="pos-badge">${d.pos}</span></td><td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(d.piloto)}')">${escapeHtml(nomeExib)}</a></strong></td><td><span class="category-badge">${meta.categoria || 'WL Toys 4x4'}</span></td><td><span class="session-badge">${escapeHtml(nomeSessaoFormatado)}</span></td><td>${laps.length} voltas</td><td class="text-green">${melhor.toFixed(3)}s</td><td>${media.toFixed(3)}s</td><td>±${desvio.toFixed(3)}s</td></tr>
-                            <tr class="sub-row"><td colspan="8"><div class="analysis-subrow-box"><strong class="title">Laudo Técnico - ${escapeHtml(nomeExib)}</strong>Desvio padrão de ±${desvio.toFixed(3)}s. Ritmo consistente.</div></td></tr>`;
-                    });
+                    if (tbodyCons) {
+                        dadosSessao.forEach(d => {
+                            let laps = (d.laps || []).map(l => typeof l === 'object' ? l.tempo : l).filter(Boolean);
+                            if (laps.length === 0) return;
+                            let melhor = Math.min(...laps);
+                            let media = laps.reduce((a,b)=>a+b,0) / laps.length;
+                            let desvio = Math.sqrt(laps.reduce((sum, t) => sum + Math.pow(t - media, 2), 0) / laps.length);
+                            let meta = pilotosMetadadosCache[d.piloto] || {};
+                            let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
+                            tbodyCons.innerHTML += `
+                                <tr class="main-row"><td><span class="pos-badge">${d.pos}</span></td><td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(d.piloto)}')">${escapeHtml(nomeExib)}</a></strong></td><td><span class="category-badge">${meta.categoria || 'WL Toys 4x4'}</span></td><td><span class="session-badge">${escapeHtml(nomeSessaoFormatado)}</span></td><td>${laps.length} voltas</td><td class="text-green">${melhor.toFixed(3)}s</td><td>${media.toFixed(3)}s</td><td>±${desvio.toFixed(3)}s</td></tr>
+                                <tr class="sub-row"><td colspan="8"><div class="analysis-subrow-box"><strong class="title">Laudo Técnico - ${escapeHtml(nomeExib)}</strong>Desvio padrão de ±${desvio.toFixed(3)}s. Ritmo consistente.</div></td></tr>`;
+                        });
+                    }
                 }
 
                 if (modulosSel.includes('mod-tabela-geral')) {
                     let headLap = document.getElementById(`head-lapbyLap-${bateriaKey}`);
                     let bodyLap = document.getElementById(`body-lapbyLap-${bateriaKey}`);
-                    dadosSessao.forEach(d => {
-                        let meta = pilotosMetadadosCache[d.piloto] || {};
-                        let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
-                        headLap.innerHTML += `<th>${escapeHtml(nomeExib)}</th>`;
-                    });
-
-                    for (let i = 0; i < maxV; i++) {
-                        let linha = `<td><strong>Volta ${i+1}</strong></td>`;
+                    if (headLap && bodyLap) {
                         dadosSessao.forEach(d => {
-                            if (d.laps && d.laps[i] !== undefined) {
-                                let t = typeof d.laps[i] === 'object' ? d.laps[i].tempo : d.laps[i];
-                                linha += `<td><div class="lap-cell-inline"><span>${t.toFixed(3)}s</span></div></td>`;
-                            } else { linha += `<td>-</td>`; }
+                            let meta = pilotosMetadadosCache[d.piloto] || {};
+                            let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
+                            headLap.innerHTML += `<th>${escapeHtml(nomeExib)}</th>`;
                         });
-                        bodyLap.innerHTML += `<tr>${linha}</tr>`;
+
+                        for (let i = 0; i < maxV; i++) {
+                            let linha = `<td><strong>Volta ${i+1}</strong></td>`;
+                            dadosSessao.forEach(d => {
+                                if (d.laps && d.laps[i] !== undefined) {
+                                    let t = typeof d.laps[i] === 'object' ? d.laps[i].tempo : d.laps[i];
+                                    linha += `<td><div class="lap-cell-inline"><span>${t.toFixed(3)}s</span></div></td>`;
+                                } else { linha += `<td>-</td>`; }
+                            });
+                            bodyLap.innerHTML += `<tr>${linha}</tr>`;
+                        }
                     }
                 }
             });
