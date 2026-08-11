@@ -1,4 +1,11 @@
-<!-- nova.html - Completa, Corrigida e Organizada com Proteção de Duplicidade e Metadados do Piloto -->
+<!-- nova.html - Versão 1.2.0 | Projeto: Krathus Racing - Central de Telemetria -->
+<!-- 
+    MODIFICAÇÕES FEITAS NESTA VERSÃO:
+    1. Reestruturação do cadastro de metadados do piloto para separar os campos de Apelido, Categoria e Carro em inputs individuais.
+    2. Ajuste na listagem de pilotos para coletar e mesclar dinamicamente os nomes dos pilotos extraídos diretamente dos relatórios de PDF armazenados no banco de dados do Uploads.
+    3. Posicionamento final mantido com o botão "Salvar Metadados" estritamente no rodapé do formulário.
+    4. Persistência completa utilizando o banco de dados dedicado `metadadosPiloto` no Firebase.
+-->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -63,7 +70,7 @@
         pre#upload-json-viewer { background: var(--bg-body); color: var(--accent-green); padding: 12px; border-radius: 6px; font-size: 0.75rem; max-height: 220px; overflow: auto; border: 1px solid var(--border-card); line-height: 1.4; }
 
         .card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px; }
-        .config-input { background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-card); padding: 8px 12px; border-radius: 6px; flex: 1; font-size: 0.85rem; }
+        .config-input { background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-card); padding: 8px 12px; border-radius: 6px; flex: 1; font-size: 0.85rem; width: 100%; }
         .btn-action-primary { background: var(--accent-blue); color: #fff; border: none; padding: 10px 18px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
         .checkbox-container-pilotos { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 8px; max-height: 160px; overflow-y: auto; }
         .checkbox-item-piloto { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: var(--text-main); cursor: pointer; }
@@ -71,7 +78,7 @@
 </head>
 <body>
 
-    <!-- 📤 Modal Central de Uploads (Com Filtro de Duplicidade) -->
+    <!-- 📤 Modal Central de Uploads (Com Filtro Rigoroso de Duplicidade) -->
     <div id="upload-modal" class="custom-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -102,7 +109,7 @@
         </div>
     </div>
 
-    <!-- 🏎️ Modal Cadastro e Gestão de Pilotos (Ordem Requerida com Botão de Salvar Metadados por Último) -->
+    <!-- 🏎️ Modal Cadastro e Gestão de Pilotos (Com Campos Separados e Botão "Salvar Metadados" por Último) -->
     <div id="pilotos-modal" class="custom-modal">
         <div class="modal-content" style="border-top-color: var(--accent-gold);">
             <div class="modal-header">
@@ -111,20 +118,35 @@
             </div>
             <div class="modal-body">
                 <div class="upload-box">
-                    <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase;">Detalhes para Cadastro de Novo Piloto</span>
+                    <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase;">Detalhes para Cadastro de Ficha do Piloto</span>
+                    
                     <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <input type="text" id="input-nome-piloto" class="config-input" placeholder="Nome Completo do Piloto">
-                        <input type="text" id="input-apelido-piloto" class="config-input" placeholder="Apelido / Categoria / Carro">
-                    </div>
-
-                    <div style="margin-top: 6px;">
-                        <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 6px;">Selecionar Pilotos Existentes no Banco de Dados (Opcional)</span>
-                        <div id="checkboxes-pilotos-existentes" class="checkbox-container-pilotos">
-                            <span>Carregando lista de pilotos...</span>
+                        <div>
+                            <label style="font-size: 0.75rem; color: var(--text-muted);">Nome do Piloto</label>
+                            <input type="text" id="input-nome-piloto" class="config-input" placeholder="Nome Completo">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.75rem; color: var(--text-muted);">Apelido</label>
+                            <input type="text" id="input-apelido-piloto" class="config-input" placeholder="Apelido na pista">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.75rem; color: var(--text-muted);">Categoria</label>
+                            <input type="text" id="input-categoria-piloto" class="config-input" placeholder="Ex: 1/28 4x4">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.75rem; color: var(--text-muted);">Carro</label>
+                            <input type="text" id="input-carro-piloto" class="config-input" placeholder="Modelo do Automóvel">
                         </div>
                     </div>
 
-                    <!-- BOTÃO SOLICITADO POR ÚLTIMO -->
+                    <div style="margin-top: 6px;">
+                        <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 6px;">Selecionar Pilotos Existentes (Adquiridos do Banco do Uploads)</span>
+                        <div id="checkboxes-pilotos-existentes" class="checkbox-container-pilotos">
+                            <span>Carregando lista de pilotos dos uploads...</span>
+                        </div>
+                    </div>
+
+                    <!-- BOTÃO POSICIONADO ESTRITAMENTE POR ÚLTIMO -->
                     <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
                         <button class="btn-action-primary" style="background: var(--accent-gold); color: #000; font-weight: 700;" onclick="salvarMetadadosPiloto()">Salvar Metadados</button>
                     </div>
@@ -156,7 +178,7 @@
             <h2 style="font-size: 1.1rem; color: var(--text-title); margin-bottom: 8px;">Painel de Controle Principal (nova.html)</h2>
             <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5;">
                 • O botão <strong>Uploads</strong> realiza envios em lote verificando e bloqueando automaticamente arquivos duplicados.<br>
-                • O botão <strong>Pilotos</strong> centraliza os detalhes de cadastro e permite selecionar pilotos já existentes por caixas de checagem, salvando diretamente no banco <code>metadadosPiloto</code> com a ação final posicionada no rodapé do painel.
+                • O botão <strong>Pilotos</strong> separa os campos de Apelido, Categoria e Carro, preenche as caixas de checagem com os pilotos extraídos do banco de uploads e salva em <code>metadadosPiloto</code> tendo o botão de ação estritamente por último.
             </p>
         </section>
     </div>
@@ -188,7 +210,7 @@
         // Sincronização em tempo real com o Firebase
         document.addEventListener("DOMContentLoaded", () => {
             if (db) {
-                // Monitora banco de baterias/uploads
+                // Monitora banco de baterias/uploads para extrair os pilotos automaticamente
                 db.ref('baterias').on('value', snapshot => {
                     listaJsonsCache = [];
                     snapshot.forEach(childSnapshot => {
@@ -198,13 +220,13 @@
                         });
                     });
                     atualizarListaUploadHistorico();
+                    renderizarCheckboxesPilotosExistentes();
                 });
 
-                // Monitora o novo banco 'metadadosPiloto'
+                // Monitora o banco 'metadadosPiloto'
                 db.ref('metadadosPiloto').on('value', snapshot => {
                     metadadosPilotoCache = snapshot.val() || {};
                     atualizarListaPilotosHistorico();
-                    renderizarCheckboxesPilotosExistentes();
                 });
             }
         });
@@ -221,12 +243,27 @@
             if (event.target === document.getElementById('pilotos-modal')) document.getElementById('pilotos-modal').style.display = 'none';
         };
 
-        // Gestão de Metadados de Pilotos com verificação e salvamento no banco metadadosPiloto
+        // Coleta todos os pilotos únicos presentes nos relatórios armazenados no banco de Uploads
+        function obterPilotosDoBancoUploads() {
+            let pilotosSet = new Set();
+            listaJsonsCache.forEach(arq => {
+                if (arq.dados && Array.isArray(arq.dados)) {
+                    arq.dados.forEach(d => {
+                        if (d.piloto) {
+                            pilotosSet.add(d.piloto.trim());
+                        }
+                    });
+                }
+            });
+            return Array.from(pilotosSet).sort();
+        }
+
+        // Gestão e salvamento no banco metadadosPiloto com campos separados
         window.salvarMetadadosPiloto = async function() {
             let nome = document.getElementById('input-nome-piloto').value.trim();
             let apelido = document.getElementById('input-apelido-piloto').value.trim();
-            
-            // Verifica também quais pilotos existentes nas checkboxes foram selecionados para alguma ação combinada se necessário
+            let categoria = document.getElementById('input-categoria-piloto').value.trim();
+            let carro = document.getElementById('input-carro-piloto').value.trim();
             let checkboxesSelecionados = Array.from(document.querySelectorAll('.cb-piloto-existente:checked')).map(cb => cb.value);
 
             if (!nome && checkboxesSelecionados.length === 0) {
@@ -244,14 +281,15 @@
                     await db.ref('metadadosPiloto/' + pilotoKey).set({
                         nome: nome,
                         apelido: apelido,
+                        categoria: categoria,
+                        carro: carro,
                         vinculados: checkboxesSelecionados,
                         atualizadoEm: Date.now()
                     });
                     document.getElementById('input-nome-piloto').value = "";
                     document.getElementById('input-apelido-piloto').value = "";
-                } else if (checkboxesSelecionados.length > 0) {
-                    // Caso tenha apenas marcado checkboxes existentes e queira atualizar vínculo geral
-                    alert(`Ação executada com ${checkboxesSelecionados.length} piloto(s) selecionado(s)!`);
+                    document.getElementById('input-categoria-piloto').value = "";
+                    document.getElementById('input-carro-piloto').value = "";
                 }
 
                 alert("Metadados do piloto salvos com sucesso no banco 'metadadosPiloto'!");
@@ -282,32 +320,36 @@
 
             chaves.forEach(key => {
                 let p = metadadosPilotoCache[key];
-                let apelidoStr = p.apelido ? ` (${p.apelido})` : '';
+                let infoExtra = [];
+                if (p.apelido) infoExtra.push(`Apelido: ${p.apelido}`);
+                if (p.categoria) infoExtra.push(`Cat: ${p.categoria}`);
+                if (p.carro) infoExtra.push(`Carro: ${p.carro}`);
+                let detalheStr = infoExtra.length > 0 ? ` (${infoExtra.join(' | ')})` : '';
+
                 const li = document.createElement('li');
                 li.innerHTML = `
-                    <span>🏎️ <strong>${escapeHtml(p.nome || key)}</strong><span style="color: var(--accent-gold);">${escapeHtml(apelidoStr)}</span></span>
+                    <span>🏎️ <strong>${escapeHtml(p.nome || key)}</strong><span style="color: var(--accent-gold); font-size: 0.8rem;">${escapeHtml(detalheStr)}</span></span>
                     <button class="btn-text-action" style="color: var(--accent-red);" onclick="excluirPilotoMetadados('${key}')">Apagar</button>`;
                 ul.appendChild(li);
             });
         }
 
+        // Renderiza as checkboxes utilizando os pilotos vindos diretamente do banco de Uploads
         function renderizarCheckboxesPilotosExistentes() {
             const container = document.getElementById('checkboxes-pilotos-existentes');
             if (!container) return;
-            let chaves = Object.keys(metadadosPilotoCache);
+            let pilotosUploads = obterPilotosDoBancoUploads();
 
-            if (chaves.length === 0) {
-                container.innerHTML = `<span style="font-size: 0.8rem; color: var(--text-muted);">Nenhum piloto pré-cadastrado no banco.</span>`;
+            if (pilotosUploads.length === 0) {
+                container.innerHTML = `<span style="font-size: 0.8rem; color: var(--text-muted);">Nenhum piloto encontrado no banco de uploads.</span>`;
                 return;
             }
 
-            container.innerHTML = chaves.map(key => {
-                let p = metadadosPilotoCache[key];
-                let nomeExib = p.nome || key;
+            container.innerHTML = pilotosUploads.map(pilotoNome => {
                 return `
                     <label class="checkbox-item-piloto">
-                        <input type="checkbox" value="${escapeHtml(key)}" class="cb-piloto-existente" style="accent-color: var(--accent-gold); width: 15px; height: 15px;">
-                        ${escapeHtml(nomeExib)}
+                        <input type="checkbox" value="${escapeHtml(pilotoNome)}" class="cb-piloto-existente" style="accent-color: var(--accent-gold); width: 15px; height: 15px;">
+                        ${escapeHtml(pilotoNome)}
                     </label>
                 `;
             }).join('');
@@ -445,7 +487,7 @@
             return resultadoFinal;
         }
 
-        // Processamento de Upload com Filtro/Bloqueio Rigoroso contra Duplicidade
+        // Processamento de Upload com Filtro Rigoroso contra Duplicidade
         window.processarUploadEEnviarNuvem = async function() {
             let inputEl = document.getElementById('input-pdf-upload');
             if (!inputEl || !inputEl.files || inputEl.files.length === 0) {
@@ -465,11 +507,10 @@
                 let sessaoNome = nomeArq.replace(/\.[^/.]+$/, "").trim();
                 let batKey = "bat_" + sessaoNome.toLowerCase().replace(/[^a-z0-9]/g, "_");
 
-                // Filtro de verificação de duplicidade diretamente no Firebase
                 let snapshot = await db.ref('baterias/' + batKey).once('value');
                 if (snapshot.exists()) {
                     arquivosDuplicados.push(nomeArq);
-                    continue; // Ignora e filtra a subida duplicada
+                    continue; // Ignora arquivo duplicado
                 }
 
                 try {
@@ -500,7 +541,6 @@
             alert(mensagemRetorno);
         };
 
-        // Atualização da interface de listagem dos arquivos salvos
         function atualizarListaUploadHistorico() {
             const ul = document.getElementById('upload-lista-historico');
             if (!ul) return;
