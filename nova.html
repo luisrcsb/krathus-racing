@@ -1,16 +1,18 @@
-<!-- nova.html - Versão 1.5.1 | Projeto: Krathus Racing - Central de Telemetria -->
+<!-- nova.html - Versão 1.6.0 | Projeto: Krathus Racing - Central de Telemetria -->
 <!-- 
     MODIFICAÇÕES FEITAS NESTA VERSÃO:
-    1. Exibição pública das informações da versão e do changelog diretamente na tela principal (dashboard), além do código-fonte.
-    2. Isolamento total do Banco de Dados no Firebase utilizando nós exclusivos (`baterias_nova` e `metadadosPiloto_nova`).
-    3. Manutenção das funcionalidades de proteção contra duplicidade em PDFs, campos separados para pilotos, edição, inspeção, exclusão e limpeza de checkboxes.
+    1. Novos Bancos de Dados Dedicados (v2): Implementação de nós totalmente novos no Firebase (`baterias_v2` e `metadadosPiloto_v2`), garantindo isolamento completo de dados sem interferência de testes anteriores.
+    2. Exibição Pública na Tela: Versão e changelog detalhados diretamente no painel principal da interface.
+    3. Gestão Avançada de Pilotos: Campos separados para Nome, Apelido, Categoria e Carro, com suporte à edição, inspeção, exclusão e preenchimento por checkbox dinâmico.
+    4. Proteção contra Duplicidade: Sistema inteligente que valida e bloqueia o envio em lote de arquivos PDF já existentes no banco exclusivo.
+    5. UX Otimizada: Limpeza automática das caixas de seleção após salvar e botão de ação posicionado estritamente no rodapé do formulário.
 -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Krathus Racing - Central de Uploads e Gestão de Pilotos</title>
+    <title>Krathus Racing - Central de Uploads e Gestão de Pilotos (v2)</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -84,20 +86,20 @@
     <div id="upload-modal" class="custom-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">📤 Central de Upload de Relatórios PDF (Firebase Exclusivo)</div>
+                <div class="modal-title">📤 Central de Upload de Relatórios PDF (Novo Banco v2)</div>
                 <button class="modal-close" onclick="fecharModalUpload()">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="upload-grid-manager">
                     <div class="upload-box">
-                        <p style="font-size: 0.85rem; color: var(--text-muted);">Selecione múltiplos relatórios em PDF. Arquivos duplicados serão filtrados e bloqueados automaticamente no banco exclusivo.</p>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Selecione múltiplos relatórios em PDF. O sistema verifica em tempo real os arquivos presentes no novo banco para evitar duplicidade exata.</p>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
                             <input type="file" id="input-pdf-upload" accept=".pdf" multiple style="background: var(--bg-card); padding: 8px; border-radius: 6px; border: 1px solid var(--border-card); color: var(--text-main); flex: 1; font-size: 0.85rem;">
                             <button class="btn btn-upload-modal-trigger" onclick="processarUploadEEnviarNuvem()">Converter e Enviar</button>
                         </div>
                     </div>
                     <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Arquivos Armazenados (Banco Exclusivo `baterias_nova`)</span>
+                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Arquivos Ativos (Banco `baterias_v2`)</span>
                         <ul id="upload-lista-historico">
                             <li>Carregando arquivos da nuvem...</li>
                         </ul>
@@ -115,7 +117,7 @@
     <div id="pilotos-modal" class="custom-modal">
         <div class="modal-content" style="border-top-color: var(--accent-gold);">
             <div class="modal-header">
-                <div class="modal-title">🏎️ Gestão e Banco de Metadados Exclusivo de Pilotos</div>
+                <div class="modal-title">🏎️ Gestão e Banco de Metadados Exclusivo de Pilotos (v2)</div>
                 <button class="modal-close" onclick="fecharModalPilotos()">&times;</button>
             </div>
             <div class="modal-body">
@@ -130,7 +132,7 @@
                     </div>
 
                     <div style="margin-top: 6px;">
-                        <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 6px;">Selecionar Pilotos Existentes (Extraídos do Banco Exclusivo de Uploads)</span>
+                        <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 6px;">Selecionar Pilotos Existentes (Extraídos do Novo Banco de Uploads)</span>
                         <div id="checkboxes-pilotos-existentes" class="checkbox-container-pilotos">
                             <span>Carregando lista...</span>
                         </div>
@@ -142,7 +144,7 @@
                 </div>
 
                 <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Pilotos Registrados no Banco Exclusivo `metadadosPiloto_nova`</span>
+                    <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Pilotos Registrados no Novo Banco `metadadosPiloto_v2`</span>
                     <ul id="pilotos-lista-historico">
                         <li>Carregando banco de metadados...</li>
                     </ul>
@@ -155,7 +157,7 @@
         <header class="header">
             <div class="brand-title">
                 <h1>🏁 KRATHUS RACING</h1>
-                <p>Central de Telemetria - Página Principal</p>
+                <p>Central de Telemetria - Nova Versão Independente</p>
             </div>
             <div class="header-actions">
                 <button class="btn btn-upload-modal-trigger" onclick="abrirModalUpload()">📤 Uploads</button>
@@ -163,24 +165,23 @@
             </div>
         </header>
 
-        <!-- Seção Visível da Versão e Modificações -->
+        <!-- Seção Pública com Versão e Changelog -->
         <section class="card">
             <div class="version-badge">
-                <h3>📌 Projeto: Krathus Racing | Versão Atual: 1.5.1</h3>
-                <p style="color: var(--text-muted); margin-top: 4px;">Últimas atualizações e melhorias implementadas nesta interface:</p>
+                <h3>📌 Projeto: Krathus Racing | Versão Atual: 1.6.0</h3>
+                <p style="color: var(--text-muted); margin-top: 4px;">Atualizações estruturais importantes aplicadas nesta página:</p>
             </div>
             <h2 style="font-size: 1.1rem; color: var(--text-title); margin-bottom: 8px;">Histórico de Modificações (Changelog)</h2>
             <ul style="list-style-type: disc; padding-left: 20px; color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; display: flex; flex-direction: column; gap: 6px;">
-                <li><strong>Exibição na Página Principal:</strong> Informações de versão e changelog movidas para o painel principal para fácil consulta visual.</li>
-                <li><strong>Banco de Dados Exclusivo:</strong> Utilização de nós dedicados no Firebase (<code>baterias_nova</code> e <code>metadadosPiloto_nova</code>), garantindo isolamento completo de dados.</li>
-                <li><strong>Gestão Avançada de Pilotos:</strong> Fichas de cadastro com campos separados (Apelido, Categoria e Carro), suporte à edição, inspeção, exclusão e preenchimento via checkboxes vindos direto dos uploads.</li>
-                <li><strong>Proteção contra Duplicidade:</strong> Sistema inteligente que valida e bloqueia o envio em lote de arquivos PDF já existentes no banco de dados.</li>
-                <li><strong>UX Otimizada:</strong> Limpeza automática das caixas de seleção após salvar e botão de ação posicionado estritamente no rodapé do formulário.</li>
+                <li><strong>Novos Bancos de Dados Dedicados (v2):</strong> Implementação de nós totalmente novos no Firebase (<code>baterias_v2</code> e <code>metadadosPiloto_v2</code>). Agora o sistema inicia sem herdar registros antigos de outras pastas ou testes, garantindo que o filtro de duplicidade atue estritamente com base nos arquivos enviados ativamente no momento.</li>
+                <li><strong>Exibição Pública na Tela:</strong> Versão e changelog detalhados diretamente no painel principal da interface.</li>
+                <li><strong>Gestão de Pilotos Aprimorada:</strong> Campos separados para Nome, Apelido, Categoria e Carro, com funções completas de edição, inspeção, exclusão e preenchimento por checkbox dinâmico.</li>
+                <li><strong>UX Otimizada:</strong> Limpeza automática das caixas de seleção após o salvamento e botão de ação posicionado estritamente no rodapé do formulário.</li>
             </ul>
         </section>
     </div>
 
-    <!-- Script de lógica do Firebase com nós exclusivos -->
+    <!-- Script de lógica do Firebase com os novos bancos exclusivos v2 -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyDCTkeIa6QsY2zYs8S__HlIwcY-zcuhZCA",
@@ -197,8 +198,9 @@
         let listaJsonsCache = [];
         let metadadosPilotoCache = {};
 
-        const DB_PATH_BATERIAS = 'baterias_nova';
-        const DB_PATH_PILOTOS = 'metadadosPiloto_nova';
+        // Novos caminhos de banco de dados exclusivos para esta versão
+        const DB_PATH_BATERIAS = 'baterias_v2';
+        const DB_PATH_PILOTOS = 'metadadosPiloto_v2';
 
         document.addEventListener("DOMContentLoaded", () => {
             db.ref(DB_PATH_BATERIAS).on('value', snap => {
@@ -262,7 +264,7 @@
 
             checkboxes.forEach(cb => cb.checked = false);
 
-            alert("Metadados salvos no banco exclusivo e checkboxes limpos com sucesso!");
+            alert("Metadados salvos no novo banco e checkboxes limpos com sucesso!");
         };
 
         function atualizarListaPilotosHistorico() {
@@ -271,7 +273,7 @@
             let chaves = Object.keys(metadadosPilotoCache);
 
             if (chaves.length === 0) {
-                ul.innerHTML = `<li style="color: var(--text-muted); text-align: center; padding: 6px;">Nenhum metadado registrado no banco exclusivo.</li>`;
+                ul.innerHTML = `<li style="color: var(--text-muted); text-align: center; padding: 6px;">Nenhum metadado registrado no novo banco.</li>`;
                 return;
             }
 
@@ -301,7 +303,7 @@
             let pilotosUploads = Array.from(pilotosSet).sort();
 
             if (pilotosUploads.length === 0) {
-                container.innerHTML = `<span style="font-size: 0.8rem; color: var(--text-muted);">Nenhum piloto encontrado no banco exclusivo de uploads.</span>`;
+                container.innerHTML = `<span style="font-size: 0.8rem; color: var(--text-muted);">Nenhum piloto encontrado no novo banco de uploads.</span>`;
                 return;
             }
 
@@ -364,7 +366,7 @@
             inputEl.value = "";
             let mensagemRetorno = `Processo concluído!\n• Arquivos enviados com sucesso: ${arquivosEnviados}`;
             if (arquivosDuplicados.length > 0) {
-                mensagemRetorno += `\n• Arquivos bloqueados por duplicidade (já existentes no banco exclusivo): ${arquivosDuplicados.join(', ')}`;
+                mensagemRetorno += `\n• Arquivos bloqueados por duplicidade (já existentes no novo banco): ${arquivosDuplicados.join(', ')}`;
             }
             alert(mensagemRetorno);
         };
@@ -374,7 +376,7 @@
             if (!ul) return;
             ul.innerHTML = "";
             if (!listaJsonsCache || listaJsonsCache.length === 0) {
-                ul.innerHTML = `<li style="color: var(--text-muted); text-align: center; padding: 6px;">Nenhum arquivo armazenado no banco exclusivo.</li>`;
+                ul.innerHTML = `<li style="color: var(--text-muted); text-align: center; padding: 6px;">Nenhum arquivo armazenado no novo banco.</li>`;
                 return;
             }
             listaJsonsCache.forEach((item, index) => {
@@ -399,7 +401,7 @@
 
         window.excluirArquivoNuvem = function(firebaseKey, nomeExibicao) {
             if (!db) return;
-            if (confirm(`Deseja apagar "${nomeExibicao}" do banco exclusivo?`)) {
+            if (confirm(`Deseja apagar "${nomeExibicao}" do novo banco?`)) {
                 db.ref(DB_PATH_BATERIAS + '/' + firebaseKey).remove()
                   .then(() => alert("Arquivo removido com sucesso!"))
                   .catch(err => alert("Erro ao remover: " + err.message));
