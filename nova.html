@@ -1,8 +1,9 @@
-<!-- nova.html - Versão 1.5.0 | Projeto: Krathus Racing - Central de Telemetria -->
+<!-- nova.html - Versão 1.5.1 | Projeto: Krathus Racing - Central de Telemetria -->
 <!-- 
     MODIFICAÇÕES FEITAS NESTA VERSÃO:
-    1. Isolamento total do Banco de Dados no Firebase para a página `nova.html`, utilizando nós exclusivos (`baterias_nova` e `metadadosPiloto_nova`) para evitar qualquer interferência ou compartilhamento com outras páginas ou testes antigos.
-    2. Mantidas todas as funcionalidades anteriores: proteção contra duplicidade em uploads de PDF, separação de campos na ficha do piloto (Apelido, Categoria, Carro), listagem dinâmica baseada nos uploads, opções de Editar, Inspecionar e Apagar, limpeza automática de checkboxes ao salvar, e botão de salvar metadados estritamente por último.
+    1. Exibição pública das informações da versão e do changelog diretamente na tela principal (dashboard), além do código-fonte.
+    2. Isolamento total do Banco de Dados no Firebase utilizando nós exclusivos (`baterias_nova` e `metadadosPiloto_nova`).
+    3. Manutenção das funcionalidades de proteção contra duplicidade em PDFs, campos separados para pilotos, edição, inspeção, exclusão e limpeza de checkboxes.
 -->
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -72,6 +73,9 @@
         .btn-action-primary { background: var(--accent-blue); color: #fff; border: none; padding: 10px 18px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
         .checkbox-container-pilotos { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 8px; max-height: 160px; overflow-y: auto; }
         .checkbox-item-piloto { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: var(--text-main); cursor: pointer; }
+        
+        .version-badge { background: var(--bg-input); border: 1px solid var(--border-card); padding: 12px 16px; border-radius: 8px; margin-bottom: 15px; font-size: 0.85rem; }
+        .version-badge h3 { color: var(--accent-gold); margin-bottom: 4px; font-size: 0.95rem; }
     </style>
 </head>
 <body>
@@ -151,7 +155,7 @@
         <header class="header">
             <div class="brand-title">
                 <h1>🏁 KRATHUS RACING</h1>
-                <p>Página Inicial - Central de Telemetria com Banco de Dados Exclusivo</p>
+                <p>Central de Telemetria - Página Principal</p>
             </div>
             <div class="header-actions">
                 <button class="btn btn-upload-modal-trigger" onclick="abrirModalUpload()">📤 Uploads</button>
@@ -159,13 +163,20 @@
             </div>
         </header>
 
+        <!-- Seção Visível da Versão e Modificações -->
         <section class="card">
-            <h2 style="font-size: 1.1rem; color: var(--text-title); margin-bottom: 8px;">Painel de Controle Principal (nova.html)</h2>
-            <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5;">
-                • Esta página utiliza nós exclusivos no Firebase (<code>baterias_nova</code> e <code>metadadosPiloto_nova</code>), garantindo total isolamento dos dados.<br>
-                • O botão <strong>Uploads</strong> processa e bloqueia duplicidades no banco exclusivo.<br>
-                • O botão <strong>Pilotos</strong> gerencia os metadados com campos separados, edição, inspeção e salvamento por último com limpeza automática das caixas de seleção.
-            </p>
+            <div class="version-badge">
+                <h3>📌 Projeto: Krathus Racing | Versão Atual: 1.5.1</h3>
+                <p style="color: var(--text-muted); margin-top: 4px;">Últimas atualizações e melhorias implementadas nesta interface:</p>
+            </div>
+            <h2 style="font-size: 1.1rem; color: var(--text-title); margin-bottom: 8px;">Histórico de Modificações (Changelog)</h2>
+            <ul style="list-style-type: disc; padding-left: 20px; color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; display: flex; flex-direction: column; gap: 6px;">
+                <li><strong>Exibição na Página Principal:</strong> Informações de versão e changelog movidas para o painel principal para fácil consulta visual.</li>
+                <li><strong>Banco de Dados Exclusivo:</strong> Utilização de nós dedicados no Firebase (<code>baterias_nova</code> e <code>metadadosPiloto_nova</code>), garantindo isolamento completo de dados.</li>
+                <li><strong>Gestão Avançada de Pilotos:</strong> Fichas de cadastro com campos separados (Apelido, Categoria e Carro), suporte à edição, inspeção, exclusão e preenchimento via checkboxes vindos direto dos uploads.</li>
+                <li><strong>Proteção contra Duplicidade:</strong> Sistema inteligente que valida e bloqueia o envio em lote de arquivos PDF já existentes no banco de dados.</li>
+                <li><strong>UX Otimizada:</strong> Limpeza automática das caixas de seleção após salvar e botão de ação posicionado estritamente no rodapé do formulário.</li>
+            </ul>
         </section>
     </div>
 
@@ -186,7 +197,6 @@
         let listaJsonsCache = [];
         let metadadosPilotoCache = {};
 
-        // Configuração de nós exclusivos para esta página (nova.html)
         const DB_PATH_BATERIAS = 'baterias_nova';
         const DB_PATH_PILOTOS = 'metadadosPiloto_nova';
 
@@ -209,7 +219,6 @@
         window.abrirModalPilotos = () => document.getElementById('pilotos-modal').style.display = 'flex';
         window.fecharModalPilotos = () => document.getElementById('pilotos-modal').style.display = 'none';
 
-        // Inspeção de Dados
         window.inspecionarPiloto = function(key) {
             const p = metadadosPilotoCache[key];
             if (p) {
@@ -217,7 +226,6 @@
             }
         };
 
-        // Função para carregar os dados do piloto nos inputs para edição
         window.editarPiloto = function(key) {
             const p = metadadosPilotoCache[key];
             if (p) {
@@ -309,7 +317,6 @@
 
         function escapeHtml(text) { return String(text).replace(/[&<>"']/g, m => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'}[m])); }
 
-        // Processamento de Upload com Filtro Rigoroso contra Duplicidade no banco exclusivo
         window.processarUploadEEnviarNuvem = async function() {
             let inputEl = document.getElementById('input-pdf-upload');
             if (!inputEl || !inputEl.files || inputEl.files.length === 0) {
