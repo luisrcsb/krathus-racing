@@ -1,8 +1,9 @@
-<!-- nova.html - Versão 1.3.1 | Projeto: Krathus Racing - Central de Telemetria -->
+<!-- nova.html - Versão 1.4.0 | Projeto: Krathus Racing - Central de Telemetria -->
 <!-- 
     MODIFICAÇÕES FEITAS NESTA VERSÃO:
-    1. Ajustada a função `salvarMetadadosPiloto` para que, após o sucesso do salvamento no Firebase, todos os checkboxes selecionados na lista de pilotos existentes sejam limpos (desmarcados).
-    2. Mantida a separação dos campos (Apelido, Categoria, Carro), o botão "Salvar Metadados" estritamente por último e as opções de inspeção.
+    1. Adicionado botão "Editar" ao lado de cada piloto na listagem de registros.
+    2. Implementada a função `editarPiloto(key)` que carrega os dados salvos de Apelido, Categoria e Carro de volta para os inputs do formulário, permitindo a atualização dos metadados existentes no banco `metadadosPiloto`.
+    3. Mantidas todas as funcionalidades anteriores: exclusão, inspeção, limpeza automática de checkboxes ao salvar e proteção contra duplicidade no upload de PDFs.
 -->
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -44,7 +45,7 @@
         .btn { padding: 10px 18px; border-radius: 8px; border: none; font-weight: 600; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 8px; }
         .btn-upload-modal-trigger { background: linear-gradient(135deg, #3a86ff 0%, #2ec4b6 100%); color: #ffffff; font-weight: 700; }
         .btn-pilotos-modal-trigger { background: linear-gradient(135deg, #ffb703 0%, #fb8500 100%); color: #000; font-weight: 700; }
-        .btn-text-action { background: transparent; border: none; color: var(--accent-blue); font-size: 0.78rem; font-weight: 600; cursor: pointer; padding: 0 5px; }
+        .btn-text-action { background: transparent; border: none; color: var(--accent-blue); font-size: 0.78rem; font-weight: 600; cursor: pointer; padding: 0 4px; }
         .btn-text-action:hover { text-decoration: underline; }
 
         .custom-modal {
@@ -107,7 +108,7 @@
         </div>
     </div>
 
-    <!-- 🏎️ Modal Cadastro e Gestão de Pilotos -->
+    <!-- 🏎️ Modal Cadastro, Edição e Gestão de Pilotos -->
     <div id="pilotos-modal" class="custom-modal">
         <div class="modal-content" style="border-top-color: var(--accent-gold);">
             <div class="modal-header">
@@ -116,7 +117,7 @@
             </div>
             <div class="modal-body">
                 <div class="upload-box">
-                    <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase;">Detalhes para Cadastro de Ficha do Piloto</span>
+                    <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase;">Detalhes para Cadastro / Edição de Ficha do Piloto</span>
                     
                     <div style="display: flex; flex-direction: column; gap: 10px;">
                         <input type="text" id="input-nome-piloto" class="config-input" placeholder="Nome Completo">
@@ -151,7 +152,7 @@
         <header class="header">
             <div class="brand-title">
                 <h1>🏁 KRATHUS RACING</h1>
-                <p>Página Inicial - Gestão de Arquivos PDF e Banco Metadados Piloto</p>
+                <p>Página Inicial - Gestão de arquivos PDF e Banco Metadados Piloto</p>
             </div>
             <div class="header-actions">
                 <button class="btn btn-upload-modal-trigger" onclick="abrirModalUpload()">📤 Uploads</button>
@@ -163,7 +164,7 @@
             <h2 style="font-size: 1.1rem; color: var(--text-title); margin-bottom: 8px;">Painel de Controle Principal (nova.html)</h2>
             <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5;">
                 • O botão <strong>Uploads</strong> realiza envios em lote verificando e bloqueando automaticamente arquivos duplicados.<br>
-                • O botão <strong>Pilotos</strong> separa os campos de Apelido, Categoria e Carro, preenche as caixas de checagem com os pilotos extraídos do banco de uploads e salva em <code>metadadosPiloto</code> tendo o botão de ação estritamente por último.
+                • O botão <strong>Pilotos</strong> separa os campos de Apelido, Categoria e Carro, preenche as caixas de checagem com os pilotos extraídos do banco de uploads, permite editar cadastros existentes e salva em <code>metadadosPiloto</code> com o botão de ação estritamente por último.
             </p>
         </section>
     </div>
@@ -212,6 +213,18 @@
             }
         };
 
+        // Função para carregar os dados do piloto nos inputs para edição
+        window.editarPiloto = function(key) {
+            const p = metadadosPilotoCache[key];
+            if (p) {
+                document.getElementById('input-nome-piloto').value = p.nome || '';
+                document.getElementById('input-apelido-piloto').value = p.apelido || '';
+                document.getElementById('input-categoria-piloto').value = p.categoria || '';
+                document.getElementById('input-carro-piloto').value = p.carro || '';
+                document.querySelector('#pilotos-modal .modal-body').scrollTop = 0;
+            }
+        };
+
         window.salvarMetadadosPiloto = async function() {
             let nome = document.getElementById('input-nome-piloto').value.trim();
             let apelido = document.getElementById('input-apelido-piloto').value.trim();
@@ -229,14 +242,12 @@
                 let key = nome.toLowerCase().replace(/[^a-z0-9]/g, "_");
                 await db.ref('metadadosPiloto/' + key).set({ nome, apelido, categoria, carro, vinculados: selec, atualizadoEm: Date.now() });
                 
-                // Limpa os campos de texto após salvar
                 document.getElementById('input-nome-piloto').value = "";
                 document.getElementById('input-apelido-piloto').value = "";
                 document.getElementById('input-categoria-piloto').value = "";
                 document.getElementById('input-carro-piloto').value = "";
             }
 
-            // Limpa todos os checkboxes marcados após o salvamento, conforme solicitado
             checkboxes.forEach(cb => cb.checked = false);
 
             alert("Metadados salvos e checkboxes limpos com sucesso!");
@@ -257,7 +268,8 @@
                 const li = document.createElement('li');
                 li.innerHTML = `
                     <span>🏎️ <strong>${escapeHtml(p.nome || key)}</strong></span>
-                    <div>
+                    <div style="display: flex; gap: 4px;">
+                        <button class="btn-text-action" onclick="editarPiloto('${key}')">Editar</button>
                         <button class="btn-text-action" onclick="inspecionarPiloto('${key}')">Inspecionar</button>
                         <button class="btn-text-action" style="color:var(--accent-red);" onclick="db.ref('metadadosPiloto/${key}').remove()">Apagar</button>
                     </div>`;
