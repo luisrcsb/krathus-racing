@@ -1,10 +1,8 @@
-<!-- nova.html - Versão 1.2.0 | Projeto: Krathus Racing - Central de Telemetria -->
+<!-- nova.html - Versão 1.3.1 | Projeto: Krathus Racing - Central de Telemetria -->
 <!-- 
     MODIFICAÇÕES FEITAS NESTA VERSÃO:
-    1. Reestruturação do cadastro de metadados do piloto para separar os campos de Apelido, Categoria e Carro em inputs individuais.
-    2. Ajuste na listagem de pilotos para coletar e mesclar dinamicamente os nomes dos pilotos extraídos diretamente dos relatórios de PDF armazenados no banco de dados do Uploads.
-    3. Posicionamento final mantido com o botão "Salvar Metadados" estritamente no rodapé do formulário.
-    4. Persistência completa utilizando o banco de dados dedicado `metadadosPiloto` no Firebase.
+    1. Ajustada a função `salvarMetadadosPiloto` para que, após o sucesso do salvamento no Firebase, todos os checkboxes selecionados na lista de pilotos existentes sejam limpos (desmarcados).
+    2. Mantida a separação dos campos (Apelido, Categoria, Carro), o botão "Salvar Metadados" estritamente por último e as opções de inspeção.
 -->
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -46,7 +44,7 @@
         .btn { padding: 10px 18px; border-radius: 8px; border: none; font-weight: 600; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 8px; }
         .btn-upload-modal-trigger { background: linear-gradient(135deg, #3a86ff 0%, #2ec4b6 100%); color: #ffffff; font-weight: 700; }
         .btn-pilotos-modal-trigger { background: linear-gradient(135deg, #ffb703 0%, #fb8500 100%); color: #000; font-weight: 700; }
-        .btn-text-action { background: transparent; border: none; color: var(--accent-blue); font-size: 0.78rem; font-weight: 600; cursor: pointer; padding: 0; }
+        .btn-text-action { background: transparent; border: none; color: var(--accent-blue); font-size: 0.78rem; font-weight: 600; cursor: pointer; padding: 0 5px; }
         .btn-text-action:hover { text-decoration: underline; }
 
         .custom-modal {
@@ -78,7 +76,7 @@
 </head>
 <body>
 
-    <!-- 📤 Modal Central de Uploads (Com Filtro Rigoroso de Duplicidade) -->
+    <!-- 📤 Modal Central de Uploads -->
     <div id="upload-modal" class="custom-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -88,7 +86,7 @@
             <div class="modal-body">
                 <div class="upload-grid-manager">
                     <div class="upload-box">
-                        <p style="font-size: 0.85rem; color: var(--text-muted);">Selecione múltiplos relatórios em PDF. Arquivos com o mesmo nome e já existentes na nuvem serão filtrados e bloqueados automaticamente para evitar duplicidade.</p>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Selecione múltiplos relatórios em PDF. Arquivos duplicados serão filtrados e bloqueados automaticamente.</p>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
                             <input type="file" id="input-pdf-upload" accept=".pdf" multiple style="background: var(--bg-card); padding: 8px; border-radius: 6px; border: 1px solid var(--border-card); color: var(--text-main); flex: 1; font-size: 0.85rem;">
                             <button class="btn btn-upload-modal-trigger" onclick="processarUploadEEnviarNuvem()">Converter e Enviar</button>
@@ -103,13 +101,13 @@
                 </div>
                 <div>
                     <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Inspetor de Estrutura JSON</span>
-                    <pre id="upload-json-viewer">Selecione "Inspecionar" em um arquivo ao lado para visualizar os dados salvos...</pre>
+                    <pre id="upload-json-viewer">Selecione "Inspecionar" em um arquivo ao lado...</pre>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 🏎️ Modal Cadastro e Gestão de Pilotos (Com Campos Separados e Botão "Salvar Metadados" por Último) -->
+    <!-- 🏎️ Modal Cadastro e Gestão de Pilotos -->
     <div id="pilotos-modal" class="custom-modal">
         <div class="modal-content" style="border-top-color: var(--accent-gold);">
             <div class="modal-header">
@@ -121,32 +119,19 @@
                     <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase;">Detalhes para Cadastro de Ficha do Piloto</span>
                     
                     <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <div>
-                            <label style="font-size: 0.75rem; color: var(--text-muted);">Nome do Piloto</label>
-                            <input type="text" id="input-nome-piloto" class="config-input" placeholder="Nome Completo">
-                        </div>
-                        <div>
-                            <label style="font-size: 0.75rem; color: var(--text-muted);">Apelido</label>
-                            <input type="text" id="input-apelido-piloto" class="config-input" placeholder="Apelido na pista">
-                        </div>
-                        <div>
-                            <label style="font-size: 0.75rem; color: var(--text-muted);">Categoria</label>
-                            <input type="text" id="input-categoria-piloto" class="config-input" placeholder="Ex: 1/28 4x4">
-                        </div>
-                        <div>
-                            <label style="font-size: 0.75rem; color: var(--text-muted);">Carro</label>
-                            <input type="text" id="input-carro-piloto" class="config-input" placeholder="Modelo do Automóvel">
-                        </div>
+                        <input type="text" id="input-nome-piloto" class="config-input" placeholder="Nome Completo">
+                        <input type="text" id="input-apelido-piloto" class="config-input" placeholder="Apelido na pista">
+                        <input type="text" id="input-categoria-piloto" class="config-input" placeholder="Categoria (Ex: 1/28 4x4)">
+                        <input type="text" id="input-carro-piloto" class="config-input" placeholder="Modelo do Automóvel">
                     </div>
 
                     <div style="margin-top: 6px;">
-                        <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 6px;">Selecionar Pilotos Existentes (Adquiridos do Banco do Uploads)</span>
+                        <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 6px;">Selecionar Pilotos Existentes (Extraídos dos Uploads)</span>
                         <div id="checkboxes-pilotos-existentes" class="checkbox-container-pilotos">
-                            <span>Carregando lista de pilotos dos uploads...</span>
+                            <span>Carregando lista...</span>
                         </div>
                     </div>
 
-                    <!-- BOTÃO POSICIONADO ESTRITAMENTE POR ÚLTIMO -->
                     <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
                         <button class="btn-action-primary" style="background: var(--accent-gold); color: #000; font-weight: 700;" onclick="salvarMetadadosPiloto()">Salvar Metadados</button>
                     </div>
@@ -183,8 +168,8 @@
         </section>
     </div>
 
+    <!-- Script de lógica do Firebase e funcionalidades -->
     <script>
-        // Credenciais e Inicialização do Firebase Realtime Database
         const firebaseConfig = {
             apiKey: "AIzaSyDCTkeIa6QsY2zYs8S__HlIwcY-zcuhZCA",
             authDomain: "krathus-telemetria.firebaseapp.com",
@@ -196,120 +181,69 @@
             databaseURL: "https://krathus-telemetria-default-rtdb.firebaseio.com"
         };
 
-        let db = null;
+        let db = firebase.initializeApp(firebaseConfig).database();
         let listaJsonsCache = [];
         let metadadosPilotoCache = {};
 
-        try {
-            firebase.initializeApp(firebaseConfig);
-            db = firebase.database();
-        } catch (e) {
-            console.warn("Erro ao inicializar Firebase:", e);
-        }
-
-        // Sincronização em tempo real com o Firebase
         document.addEventListener("DOMContentLoaded", () => {
-            if (db) {
-                // Monitora banco de baterias/uploads para extrair os pilotos automaticamente
-                db.ref('baterias').on('value', snapshot => {
-                    listaJsonsCache = [];
-                    snapshot.forEach(childSnapshot => {
-                        listaJsonsCache.push({
-                            firebaseKey: childSnapshot.key,
-                            ...childSnapshot.val()
-                        });
-                    });
-                    atualizarListaUploadHistorico();
-                    renderizarCheckboxesPilotosExistentes();
-                });
+            db.ref('baterias').on('value', snap => {
+                listaJsonsCache = [];
+                snap.forEach(cs => listaJsonsCache.push({ firebaseKey: cs.key, ...cs.val() }));
+                atualizarListaUploadHistorico();
+                renderizarCheckboxesPilotosExistentes();
+            });
 
-                // Monitora o banco 'metadadosPiloto'
-                db.ref('metadadosPiloto').on('value', snapshot => {
-                    metadadosPilotoCache = snapshot.val() || {};
-                    atualizarListaPilotosHistorico();
-                });
-            }
+            db.ref('metadadosPiloto').on('value', snap => {
+                metadadosPilotoCache = snap.val() || {};
+                atualizarListaPilotosHistorico();
+            });
         });
 
-        // Controles dos Modais
-        window.abrirModalUpload = function() { document.getElementById('upload-modal').style.display = 'flex'; };
-        window.fecharModalUpload = function() { document.getElementById('upload-modal').style.display = 'none'; };
+        window.abrirModalUpload = () => document.getElementById('upload-modal').style.display = 'flex';
+        window.fecharModalUpload = () => document.getElementById('upload-modal').style.display = 'none';
+        window.abrirModalPilotos = () => document.getElementById('pilotos-modal').style.display = 'flex';
+        window.fecharModalPilotos = () => document.getElementById('pilotos-modal').style.display = 'none';
 
-        window.abrirModalPilotos = function() { document.getElementById('pilotos-modal').style.display = 'flex'; };
-        window.fecharModalPilotos = function() { document.getElementById('pilotos-modal').style.display = 'none'; };
-
-        window.onclick = function(event) {
-            if (event.target === document.getElementById('upload-modal')) document.getElementById('upload-modal').style.display = 'none';
-            if (event.target === document.getElementById('pilotos-modal')) document.getElementById('pilotos-modal').style.display = 'none';
+        // Inspeção de Dados
+        window.inspecionarPiloto = function(key) {
+            const p = metadadosPilotoCache[key];
+            if (p) {
+                alert(`--- DETALHES DO PILOTO ---\nNome: ${p.nome}\nApelido: ${p.apelido}\nCategoria: ${p.categoria}\nCarro: ${p.carro}\nAtualizado: ${new Date(p.atualizadoEm).toLocaleString()}`);
+            }
         };
 
-        // Coleta todos os pilotos únicos presentes nos relatórios armazenados no banco de Uploads
-        function obterPilotosDoBancoUploads() {
-            let pilotosSet = new Set();
-            listaJsonsCache.forEach(arq => {
-                if (arq.dados && Array.isArray(arq.dados)) {
-                    arq.dados.forEach(d => {
-                        if (d.piloto) {
-                            pilotosSet.add(d.piloto.trim());
-                        }
-                    });
-                }
-            });
-            return Array.from(pilotosSet).sort();
-        }
-
-        // Gestão e salvamento no banco metadadosPiloto com campos separados
         window.salvarMetadadosPiloto = async function() {
             let nome = document.getElementById('input-nome-piloto').value.trim();
             let apelido = document.getElementById('input-apelido-piloto').value.trim();
             let categoria = document.getElementById('input-categoria-piloto').value.trim();
             let carro = document.getElementById('input-carro-piloto').value.trim();
-            let checkboxesSelecionados = Array.from(document.querySelectorAll('.cb-piloto-existente:checked')).map(cb => cb.value);
+            let checkboxes = document.querySelectorAll('.cb-piloto-existente:checked');
+            let selec = Array.from(checkboxes).map(cb => cb.value);
 
-            if (!nome && checkboxesSelecionados.length === 0) {
+            if (!nome && selec.length === 0) {
                 alert("Preencha o nome do piloto ou selecione ao menos um piloto existente na caixa de checagem.");
                 return;
             }
-            if (!db) {
-                alert("Erro: Firebase não conectado.");
-                return;
+
+            if (nome) {
+                let key = nome.toLowerCase().replace(/[^a-z0-9]/g, "_");
+                await db.ref('metadadosPiloto/' + key).set({ nome, apelido, categoria, carro, vinculados: selec, atualizadoEm: Date.now() });
+                
+                // Limpa os campos de texto após salvar
+                document.getElementById('input-nome-piloto').value = "";
+                document.getElementById('input-apelido-piloto').value = "";
+                document.getElementById('input-categoria-piloto').value = "";
+                document.getElementById('input-carro-piloto').value = "";
             }
 
-            try {
-                if (nome) {
-                    let pilotoKey = nome.toLowerCase().replace(/[^a-z0-9]/g, "_");
-                    await db.ref('metadadosPiloto/' + pilotoKey).set({
-                        nome: nome,
-                        apelido: apelido,
-                        categoria: categoria,
-                        carro: carro,
-                        vinculados: checkboxesSelecionados,
-                        atualizadoEm: Date.now()
-                    });
-                    document.getElementById('input-nome-piloto').value = "";
-                    document.getElementById('input-apelido-piloto').value = "";
-                    document.getElementById('input-categoria-piloto').value = "";
-                    document.getElementById('input-carro-piloto').value = "";
-                }
+            // Limpa todos os checkboxes marcados após o salvamento, conforme solicitado
+            checkboxes.forEach(cb => cb.checked = false);
 
-                alert("Metadados do piloto salvos com sucesso no banco 'metadadosPiloto'!");
-            } catch (err) {
-                alert("Erro ao salvar metadados: " + err.message);
-            }
-        };
-
-        window.excluirPilotoMetadados = async function(pilotoKey) {
-            if (!db) return;
-            if (confirm("Deseja apagar este registro do banco metadadosPiloto?")) {
-                db.ref('metadadosPiloto/' + pilotoKey).remove()
-                  .then(() => alert("Removido com sucesso!"))
-                  .catch(err => alert("Erro ao remover: " + err.message));
-            }
+            alert("Metadados salvos e checkboxes limpos com sucesso!");
         };
 
         function atualizarListaPilotosHistorico() {
             const ul = document.getElementById('pilotos-lista-historico');
-            if (!ul) return;
             ul.innerHTML = "";
             let chaves = Object.keys(metadadosPilotoCache);
 
@@ -319,26 +253,28 @@
             }
 
             chaves.forEach(key => {
-                let p = metadadosPilotoCache[key];
-                let infoExtra = [];
-                if (p.apelido) infoExtra.push(`Apelido: ${p.apelido}`);
-                if (p.categoria) infoExtra.push(`Cat: ${p.categoria}`);
-                if (p.carro) infoExtra.push(`Carro: ${p.carro}`);
-                let detalheStr = infoExtra.length > 0 ? ` (${infoExtra.join(' | ')})` : '';
-
+                const p = metadadosPilotoCache[key];
                 const li = document.createElement('li');
                 li.innerHTML = `
-                    <span>🏎️ <strong>${escapeHtml(p.nome || key)}</strong><span style="color: var(--accent-gold); font-size: 0.8rem;">${escapeHtml(detalheStr)}</span></span>
-                    <button class="btn-text-action" style="color: var(--accent-red);" onclick="excluirPilotoMetadados('${key}')">Apagar</button>`;
+                    <span>🏎️ <strong>${escapeHtml(p.nome || key)}</strong></span>
+                    <div>
+                        <button class="btn-text-action" onclick="inspecionarPiloto('${key}')">Inspecionar</button>
+                        <button class="btn-text-action" style="color:var(--accent-red);" onclick="db.ref('metadadosPiloto/${key}').remove()">Apagar</button>
+                    </div>`;
                 ul.appendChild(li);
             });
         }
 
-        // Renderiza as checkboxes utilizando os pilotos vindos diretamente do banco de Uploads
         function renderizarCheckboxesPilotosExistentes() {
             const container = document.getElementById('checkboxes-pilotos-existentes');
             if (!container) return;
-            let pilotosUploads = obterPilotosDoBancoUploads();
+            let pilotosSet = new Set();
+            listaJsonsCache.forEach(arq => {
+                if (arq.dados && Array.isArray(arq.dados)) {
+                    arq.dados.forEach(d => { if (d.piloto) pilotosSet.add(d.piloto.trim()); });
+                }
+            });
+            let pilotosUploads = Array.from(pilotosSet).sort();
 
             if (pilotosUploads.length === 0) {
                 container.innerHTML = `<span style="font-size: 0.8rem; color: var(--text-muted);">Nenhum piloto encontrado no banco de uploads.</span>`;
@@ -355,7 +291,98 @@
             }).join('');
         }
 
-        // Conversor de PDF para Texto utilizando a biblioteca PDF.js
+        function escapeHtml(text) { return String(text).replace(/[&<>"']/g, m => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'}[m])); }
+
+        // Processamento de Upload com Filtro Rigoroso contra Duplicidade
+        window.processarUploadEEnviarNuvem = async function() {
+            let inputEl = document.getElementById('input-pdf-upload');
+            if (!inputEl || !inputEl.files || inputEl.files.length === 0) {
+                alert("Selecione ao menos um arquivo PDF.");
+                return;
+            }
+            if (!db) {
+                alert("Erro: Firebase não conectado.");
+                return;
+            }
+
+            let arquivosDuplicados = [];
+            let arquivosEnviados = 0;
+
+            for (let file of inputEl.files) {
+                let nomeArq = file.name;
+                let sessaoNome = nomeArq.replace(/\.[^/.]+$/, "").trim();
+                let batKey = "bat_" + sessaoNome.toLowerCase().replace(/[^a-z0-9]/g, "_");
+
+                let snapshot = await db.ref('baterias/' + batKey).once('value');
+                if (snapshot.exists()) {
+                    arquivosDuplicados.push(nomeArq);
+                    continue; 
+                }
+
+                try {
+                    let textoExtraido = await converterPdfParaTexto(file);
+                    let dadosExtraidos = parsearTextoConvertido(textoExtraido, sessaoNome, batKey);
+
+                    let novoRegistro = {
+                        bateriaKey: batKey,
+                        sessao: sessaoNome,
+                        id: Date.now(),
+                        dados: dadosExtraidos
+                    };
+
+                    await db.ref('baterias/' + batKey).set(novoRegistro);
+                    arquivosEnviados++;
+                } catch (err) {
+                    console.error("Erro ao processar arquivo:", err);
+                    alert("Erro ao enviar arquivo " + nomeArq + ": " + err.message);
+                }
+            }
+
+            inputEl.value = "";
+            let mensagemRetorno = `Processo concluído!\n• Arquivos enviados com sucesso: ${arquivosEnviados}`;
+            if (arquivosDuplicados.length > 0) {
+                mensagemRetorno += `\n• Arquivos bloqueados por duplicidade (já existentes): ${arquivosDuplicados.join(', ')}`;
+            }
+            alert(mensagemRetorno);
+        };
+
+        function atualizarListaUploadHistorico() {
+            const ul = document.getElementById('upload-lista-historico');
+            if (!ul) return;
+            ul.innerHTML = "";
+            if (!listaJsonsCache || listaJsonsCache.length === 0) {
+                ul.innerHTML = `<li style="color: var(--text-muted); text-align: center; padding: 6px;">Nenhum arquivo armazenado na nuvem.</li>`;
+                return;
+            }
+            listaJsonsCache.forEach((item, index) => {
+                let nomeExibicao = item.sessao || `ID ${item.id}`;
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span>📄 <strong>${escapeHtml(nomeExibicao)}</strong></span>
+                    <div style="display: flex; gap: 6px;">
+                        <button class="btn-text-action" onclick="inspecionarJsonUpload(${index})">Inspecionar</button>
+                        <button class="btn-text-action" style="color: var(--accent-red);" onclick="excluirArquivoNuvem('${item.firebaseKey}', '${escapeHtml(nomeExibicao)}')">Apagar</button>
+                    </div>`;
+                ul.appendChild(li);
+            });
+        }
+
+        window.inspecionarJsonUpload = function(index) {
+            const item = listaJsonsCache[index];
+            if (item) {
+                document.getElementById('upload-json-viewer').textContent = JSON.stringify(item, null, 4);
+            }
+        };
+
+        window.excluirArquivoNuvem = function(firebaseKey, nomeExibicao) {
+            if (!db) return;
+            if (confirm(`Deseja apagar "${nomeExibicao}" do Firebase?`)) {
+                db.ref('baterias/' + firebaseKey).remove()
+                  .then(() => alert("Arquivo removido com sucesso!"))
+                  .catch(err => alert("Erro ao remover: " + err.message));
+            }
+        };
+
         async function converterPdfParaTexto(arquivo) {
             const arrayBuffer = await arquivo.arrayBuffer();
             const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
@@ -383,7 +410,6 @@
             return textoCompleto;
         }
 
-        // Parser estruturado do texto extraído do PDF
         function parsearTextoConvertido(texto, sessaoNome, batKey) {
             let pilotosMap = {};
             let linhas = texto.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
@@ -485,105 +511,6 @@
                 }
             });
             return resultadoFinal;
-        }
-
-        // Processamento de Upload com Filtro Rigoroso contra Duplicidade
-        window.processarUploadEEnviarNuvem = async function() {
-            let inputEl = document.getElementById('input-pdf-upload');
-            if (!inputEl || !inputEl.files || inputEl.files.length === 0) {
-                alert("Selecione ao menos um arquivo PDF.");
-                return;
-            }
-            if (!db) {
-                alert("Erro: Firebase não conectado.");
-                return;
-            }
-
-            let arquivosDuplicados = [];
-            let arquivosEnviados = 0;
-
-            for (let file of inputEl.files) {
-                let nomeArq = file.name;
-                let sessaoNome = nomeArq.replace(/\.[^/.]+$/, "").trim();
-                let batKey = "bat_" + sessaoNome.toLowerCase().replace(/[^a-z0-9]/g, "_");
-
-                let snapshot = await db.ref('baterias/' + batKey).once('value');
-                if (snapshot.exists()) {
-                    arquivosDuplicados.push(nomeArq);
-                    continue; // Ignora arquivo duplicado
-                }
-
-                try {
-                    let textoExtraido = await converterPdfParaTexto(file);
-                    let dadosExtraidos = parsearTextoConvertido(textoExtraido, sessaoNome, batKey);
-
-                    let novoRegistro = {
-                        bateriaKey: batKey,
-                        sessao: sessaoNome,
-                        id: Date.now(),
-                        dados: dadosExtraidos
-                    };
-
-                    await db.ref('baterias/' + batKey).set(novoRegistro);
-                    arquivosEnviados++;
-                } catch (err) {
-                    console.error("Erro ao processar arquivo:", err);
-                    alert("Erro ao enviar arquivo " + nomeArq + ": " + err.message);
-                }
-            }
-
-            inputEl.value = "";
-            
-            let mensagemRetorno = `Processo concluído!\n• Arquivos enviados com sucesso: ${arquivosEnviados}`;
-            if (arquivosDuplicados.length > 0) {
-                mensagemRetorno += `\n• Arquivos bloqueados por duplicidade (já existentes): ${arquivosDuplicados.join(', ')}`;
-            }
-            alert(mensagemRetorno);
-        };
-
-        function atualizarListaUploadHistorico() {
-            const ul = document.getElementById('upload-lista-historico');
-            if (!ul) return;
-            ul.innerHTML = "";
-            
-            if (!listaJsonsCache || listaJsonsCache.length === 0) {
-                ul.innerHTML = `<li style="color: var(--text-muted); text-align: center; padding: 6px;">Nenhum arquivo armazenado na nuvem.</li>`;
-                return;
-            }
-
-            listaJsonsCache.forEach((item, index) => {
-                let nomeExibicao = item.sessao || `ID ${item.id}`;
-                const li = document.createElement('li');
-                li.innerHTML = `
-                    <span>📄 <strong>${escapeHtml(nomeExibicao)}</strong></span>
-                    <div style="display: flex; gap: 6px;">
-                        <button class="btn-text-action" onclick="inspecionarJsonUpload(${index})">Inspecionar</button>
-                        <button class="btn-text-action" style="color: var(--accent-red);" onclick="excluirArquivoNuvem('${item.firebaseKey}', '${escapeHtml(nomeExibicao)}')">Apagar</button>
-                    </div>`;
-                ul.appendChild(li);
-            });
-        }
-
-        window.inspecionarJsonUpload = function(index) {
-            const item = listaJsonsCache[index];
-            if (item) {
-                document.getElementById('upload-json-viewer').textContent = JSON.stringify(item, null, 4);
-            }
-        };
-
-        window.excluirArquivoNuvem = function(firebaseKey, nomeExibicao) {
-            if (!db) return;
-            if (confirm(`Deseja apagar "${nomeExibicao}" do Firebase?`)) {
-                db.ref('baterias/' + firebaseKey).remove()
-                  .then(() => alert("Arquivo removido com sucesso!"))
-                  .catch(err => alert("Erro ao remover: " + err.message));
-            }
-        };
-
-        function escapeHtml(text) {
-            if (!text) return '';
-            let map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-            return String(text).replace(/[&<>"']/g, m => map[m]);
         }
     </script>
 </body>
