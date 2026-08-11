@@ -1,16 +1,16 @@
-<!-- nova.html - Versão 1.8.0 | Projeto: Krathus Racing - Central de Telemetria -->
+<!-- nova.html - Versão 1.8.1 | Projeto: Krathus Racing - Central de Telemetria -->
 <!-- 
     MODIFICAÇÕES FEITAS NESTA VERSÃO:
-    1. Listagem em sequência ordenada: Os arquivos enviados são exibidos em lista um abaixo do outro na tela principal, ordenados cronologicamente ou numericamente conforme as baterias são carregadas.
-    2. Banco de Dados V4 (`baterias_v4` e `metadadosPiloto_v4`) mantendo o modo de upload livre com `.push()` para garantir que todas as baterias sejam aceitas sem bloqueios por nome.
-    3. Ficha de piloto com campos separados (Apelido, Categoria, Carro), funções de edição, inspeção, exclusão e limpeza automática de checkboxes ao salvar.
+    1. Adicionados logs detalhados de depuração (Console) no loop de upload para rastrear individualmente o sucesso ou falha de cada um dos arquivos selecionados em lote.
+    2. Mantido o banco v4 isolado (`baterias_v4` e `metadadosPiloto_v4`) com upload livre via `.push()`.
+    3. Listagem sequencial na tela principal, ficha de pilotos com campos separados e limpeza automática de checkboxes.
 -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Krathus Racing - Central de Uploads e Gestão de Pilotos (v4)</title>
+    <title>Krathus Racing - Central de Uploads e Gestão de Pilotos (v4.1)</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -77,7 +77,6 @@
         .version-badge { background: var(--bg-input); border: 1px solid var(--border-card); padding: 12px 16px; border-radius: 8px; margin-bottom: 15px; font-size: 0.85rem; }
         .version-badge h3 { color: var(--accent-gold); margin-bottom: 4px; font-size: 0.95rem; }
 
-        /* Estilo da Lista Sequencial na Tela Principal */
         .baterias-sequencia-lista { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
         .bateria-sequencia-item { background: var(--bg-input); border: 1px solid var(--border-card); padding: 14px 18px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
     </style>
@@ -88,13 +87,13 @@
     <div id="upload-modal" class="custom-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">📤 Central de Upload de Relatórios PDF (Banco v4)</div>
+                <div class="modal-title">📤 Central de Upload de Relatórios PDF (Banco v4.1)</div>
                 <button class="modal-close" onclick="fecharModalUpload()">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="upload-grid-manager">
                     <div class="upload-box">
-                        <p style="font-size: 0.85rem; color: var(--text-muted);">Selecione múltiplos relatórios em PDF. Todos serão processados e salvos de forma independente.</p>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Selecione múltiplos relatórios em PDF. Abra o Console do Navegador (F12) para acompanhar o progresso detalhado de cada arquivo.</p>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
                             <input type="file" id="input-pdf-upload" accept=".pdf" multiple style="background: var(--bg-card); padding: 8px; border-radius: 6px; border: 1px solid var(--border-card); color: var(--text-main); flex: 1; font-size: 0.85rem;">
                             <button class="btn btn-upload-modal-trigger" onclick="processarUploadEEnviarNuvem()">Converter e Enviar</button>
@@ -119,7 +118,7 @@
     <div id="pilotos-modal" class="custom-modal">
         <div class="modal-content" style="border-top-color: var(--accent-gold);">
             <div class="modal-header">
-                <div class="modal-title">🏎️ Gestão e Banco de Metadados de Pilotos (v4)</div>
+                <div class="modal-title">🏎️ Gestão e Banco de Metadados de Pilotos (v4.1)</div>
                 <button class="modal-close" onclick="fecharModalPilotos()">&times;</button>
             </div>
             <div class="modal-body">
@@ -159,7 +158,7 @@
         <header class="header">
             <div class="brand-title">
                 <h1>🏁 KRATHUS RACING</h1>
-                <p>Central de Telemetria - Versão 1.8.0</p>
+                <p>Central de Telemetria - Versão 1.8.1</p>
             </div>
             <div class="header-actions">
                 <button class="btn btn-upload-modal-trigger" onclick="abrirModalUpload()">📤 Uploads</button>
@@ -167,21 +166,19 @@
             </div>
         </header>
 
-        <!-- Seção Pública com Versão e Changelog -->
         <section class="card">
             <div class="version-badge">
-                <h3>📌 Projeto: Krathus Racing | Versão Atual: 1.8.0</h3>
-                <p style="color: var(--text-muted); margin-top: 4px;">Novidades desta versão:</p>
+                <h3>📌 Projeto: Krathus Racing | Versão Atual: 1.8.1</h3>
+                <p style="color: var(--text-muted); margin-top: 4px;">Atualizações desta versão:</p>
             </div>
             <h2 style="font-size: 1.1rem; color: var(--text-title); margin-bottom: 8px;">Histórico de Modificações (Changelog)</h2>
             <ul style="list-style-type: disc; padding-left: 20px; color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; display: flex; flex-direction: column; gap: 6px;">
-                <li><strong>Listagem Sequencial na Tela Principal:</strong> As baterias enviadas agora são exibidas automaticamente em formato de lista ordenada (uma abaixo da outra) direto na página principal.</li>
-                <li><strong>Bancos de Dados V4 (`baterias_v4` e `metadadosPiloto_v4`):</strong> Ambiente isolado e utilizando chaves dinâmicas via `.push()`, permitindo o upload livre de múltiplos arquivos em lote sem bloqueios indesejados.</li>
-                <li><strong>Gestão de Pilotos Completa:</strong> Campos separados, edição, inspeção, exclusão e preenchimento por checkbox dinâmico.</li>
+                <li><strong>Diagnóstico de Upload em Lote:</strong> Inclusão de logs detalhados no console (F12) para rastrear o processamento de cada PDF enviado.</li>
+                <li><strong>Listagem Sequencial na Tela Principal:</strong> Exibição automática das baterias enviadas em formato de lista ordenada uma abaixo da outra.</li>
+                <li><strong>Bancos de Dados V4 (`baterias_v4` e `metadadosPiloto_v4`):</strong> Utilização de chaves dinâmicas via `.push()` para permitir o envio livre de múltiplos arquivos.</li>
             </ul>
         </section>
 
-        <!-- Nova Seção: Listagem em Ordem das Baterias Enviadas -->
         <section class="card">
             <h2 style="font-size: 1.1rem; color: var(--text-title); margin-bottom: 8px;">📊 Baterias Registradas na Sequência</h2>
             <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px;">Visualização em lista organizada das baterias subidas para o sistema:</p>
@@ -191,7 +188,7 @@
         </section>
     </div>
 
-    <!-- Script de lógica do Firebase com bancos v4 e renderização sequencial -->
+    <!-- Script de lógica com rastreio detalhado no console -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyDCTkeIa6QsY2zYs8S__HlIwcY-zcuhZCA",
@@ -216,7 +213,6 @@
                 listaJsonsCache = [];
                 snap.forEach(cs => listaJsonsCache.push({ firebaseKey: cs.key, ...cs.val() }));
                 
-                // Ordena por timestamp ou ID de criação para garantir a ordem cronológica
                 listaJsonsCache.sort((a, b) => (a.timestamp || a.id || 0) - (b.timestamp || b.id || 0));
 
                 atualizarListaUploadHistorico();
@@ -305,7 +301,6 @@
             });
         }
 
-        // Renderiza a lista sequencial um abaixo do outro na tela principal
         function renderizarListaSequencialPrincipal() {
             const container = document.getElementById('baterias-sequencia-container');
             if (!container) return;
@@ -361,7 +356,7 @@
 
         function escapeHtml(text) { return String(text).replace(/[&<>"']/g, m => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'}[m])); }
 
-        // Processamento de Upload com .push() para garantir subida livre de todos os arquivos
+        // Processamento de Upload com rastreio detalhado no console
         window.processarUploadEEnviarNuvem = async function() {
             let inputEl = document.getElementById('input-pdf-upload');
             if (!inputEl || !inputEl.files || inputEl.files.length === 0) {
@@ -374,14 +369,17 @@
             }
 
             let enviadosCount = 0;
+            console.log(`--- INÍCIO DO UPLOAD: ${inputEl.files.length} arquivos selecionados ---`);
 
             for (let file of inputEl.files) {
                 let nomeArq = file.name;
                 let sessaoNome = nomeArq.replace(/\.[^/.]+$/, "").trim();
+                console.log(`Processando arquivo: ${nomeArq}`);
 
                 try {
                     let textoExtraido = await converterPdfParaTexto(file);
                     let dadosExtraidos = parsearTextoConvertido(textoExtraido, sessaoNome);
+                    console.log(`-> Sucesso no parsing de ${nomeArq}: ${dadosExtraidos.length} pilotos encontrados.`);
 
                     let novoRegistro = {
                         sessao: sessaoNome,
@@ -390,16 +388,16 @@
                         dados: dadosExtraidos
                     };
 
-                    // .push() cria uma chave única automática garantindo que todos os arquivos subam
                     await db.ref(DB_PATH_BATERIAS).push(novoRegistro);
                     enviadosCount++;
                 } catch (err) {
-                    console.error("Erro ao processar arquivo:", err);
+                    console.error(`❌ ERRO CRÍTICO ao processar o arquivo ${nomeArq}:`, err);
                 }
             }
 
             inputEl.value = "";
-            alert(`Processo concluído! Total de arquivos processados e adicionados: ${enviadosCount}`);
+            console.log(`--- FIM DO UPLOAD: ${enviadosCount} arquivos enviados com sucesso ---`);
+            alert(`Processo concluído! Total de arquivos adicionados com sucesso: ${enviadosCount}`);
         };
 
         function atualizarListaUploadHistorico() {
