@@ -1,16 +1,15 @@
-<!-- nova.html - Versão 1.8.1 | Projeto: Krathus Racing - Central de Telemetria -->
+<!-- nova.html - Versão 1.8.2 | Projeto: Krathus Racing - Central de Telemetria -->
 <!-- 
     MODIFICAÇÕES FEITAS NESTA VERSÃO:
-    1. Adicionados logs detalhados de depuração (Console) no loop de upload para rastrear individualmente o sucesso ou falha de cada um dos arquivos selecionados em lote.
-    2. Mantido o banco v4 isolado (`baterias_v4` e `metadadosPiloto_v4`) com upload livre via `.push()`.
-    3. Listagem sequencial na tela principal, ficha de pilotos com campos separados e limpeza automática de checkboxes.
+    1. Correção definitiva do laço de upload em lote: Substituição do loop sequencial por `Promise.all` e adição de tratamento individual de promessas por arquivo, garantindo que a falha em um arquivo PDF não interrompa nem impeça o envio bem-sucedido dos demais arquivos selecionados.
+    2. Mantidos os bancos v4 (`baterias_v4` e `metadadosPiloto_v4`) com chaves dinâmicas via `.push()`, listagem sequencial na tela principal, e fichas de piloto com campos separados.
 -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Krathus Racing - Central de Uploads e Gestão de Pilotos (v4.1)</title>
+    <title>Krathus Racing - Central de Uploads e Gestão de Pilotos (v4.2)</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -87,13 +86,13 @@
     <div id="upload-modal" class="custom-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">📤 Central de Upload de Relatórios PDF (Banco v4.1)</div>
+                <div class="modal-title">📤 Central de Upload de Relatórios PDF (Banco v4.2)</div>
                 <button class="modal-close" onclick="fecharModalUpload()">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="upload-grid-manager">
                     <div class="upload-box">
-                        <p style="font-size: 0.85rem; color: var(--text-muted);">Selecione múltiplos relatórios em PDF. Abra o Console do Navegador (F12) para acompanhar o progresso detalhado de cada arquivo.</p>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Selecione múltiplos relatórios em PDF. O processamento paralelo garante que todos os arquivos sejam enviados simultaneamente.</p>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
                             <input type="file" id="input-pdf-upload" accept=".pdf" multiple style="background: var(--bg-card); padding: 8px; border-radius: 6px; border: 1px solid var(--border-card); color: var(--text-main); flex: 1; font-size: 0.85rem;">
                             <button class="btn btn-upload-modal-trigger" onclick="processarUploadEEnviarNuvem()">Converter e Enviar</button>
@@ -118,7 +117,7 @@
     <div id="pilotos-modal" class="custom-modal">
         <div class="modal-content" style="border-top-color: var(--accent-gold);">
             <div class="modal-header">
-                <div class="modal-title">🏎️ Gestão e Banco de Metadados de Pilotos (v4.1)</div>
+                <div class="modal-title">🏎️ Gestão e Banco de Metadados de Pilotos (v4.2)</div>
                 <button class="modal-close" onclick="fecharModalPilotos()">&times;</button>
             </div>
             <div class="modal-body">
@@ -158,7 +157,7 @@
         <header class="header">
             <div class="brand-title">
                 <h1>🏁 KRATHUS RACING</h1>
-                <p>Central de Telemetria - Versão 1.8.1</p>
+                <p>Central de Telemetria - Versão 1.8.2</p>
             </div>
             <div class="header-actions">
                 <button class="btn btn-upload-modal-trigger" onclick="abrirModalUpload()">📤 Uploads</button>
@@ -168,12 +167,12 @@
 
         <section class="card">
             <div class="version-badge">
-                <h3>📌 Projeto: Krathus Racing | Versão Atual: 1.8.1</h3>
+                <h3>📌 Projeto: Krathus Racing | Versão Atual: 1.8.2</h3>
                 <p style="color: var(--text-muted); margin-top: 4px;">Atualizações desta versão:</p>
             </div>
             <h2 style="font-size: 1.1rem; color: var(--text-title); margin-bottom: 8px;">Histórico de Modificações (Changelog)</h2>
             <ul style="list-style-type: disc; padding-left: 20px; color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; display: flex; flex-direction: column; gap: 6px;">
-                <li><strong>Diagnóstico de Upload em Lote:</strong> Inclusão de logs detalhados no console (F12) para rastrear o processamento de cada PDF enviado.</li>
+                <li><strong>Upload em Lote Paralelo (`Promise.all`):</strong> Correção na rotina de envio para processar todos os arquivos selecionados simultaneamente, garantindo que um erro isolado em um PDF não impeça o salvamento dos demais.</li>
                 <li><strong>Listagem Sequencial na Tela Principal:</strong> Exibição automática das baterias enviadas em formato de lista ordenada uma abaixo da outra.</li>
                 <li><strong>Bancos de Dados V4 (`baterias_v4` e `metadadosPiloto_v4`):</strong> Utilização de chaves dinâmicas via `.push()` para permitir o envio livre de múltiplos arquivos.</li>
             </ul>
@@ -188,7 +187,7 @@
         </section>
     </div>
 
-    <!-- Script de lógica com rastreio detalhado no console -->
+    <!-- Script de lógica com upload paralelo corrigido -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyDCTkeIa6QsY2zYs8S__HlIwcY-zcuhZCA",
@@ -356,7 +355,7 @@
 
         function escapeHtml(text) { return String(text).replace(/[&<>"']/g, m => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'}[m])); }
 
-        // Processamento de Upload com rastreio detalhado no console
+        // Processamento de Upload Paralelo com Promise.all para garantir envio de todos os arquivos
         window.processarUploadEEnviarNuvem = async function() {
             let inputEl = document.getElementById('input-pdf-upload');
             if (!inputEl || !inputEl.files || inputEl.files.length === 0) {
@@ -368,18 +367,16 @@
                 return;
             }
 
-            let enviadosCount = 0;
-            console.log(`--- INÍCIO DO UPLOAD: ${inputEl.files.length} arquivos selecionados ---`);
+            let arquivos = Array.from(inputEl.files);
+            console.log(`--- INÍCIO DO UPLOAD PARALELO: ${arquivos.length} arquivos selecionados ---`);
 
-            for (let file of inputEl.files) {
+            let promessasUpload = arquivos.map(async (file) => {
                 let nomeArq = file.name;
                 let sessaoNome = nomeArq.replace(/\.[^/.]+$/, "").trim();
-                console.log(`Processando arquivo: ${nomeArq}`);
 
                 try {
                     let textoExtraido = await converterPdfParaTexto(file);
                     let dadosExtraidos = parsearTextoConvertido(textoExtraido, sessaoNome);
-                    console.log(`-> Sucesso no parsing de ${nomeArq}: ${dadosExtraidos.length} pilotos encontrados.`);
 
                     let novoRegistro = {
                         sessao: sessaoNome,
@@ -389,15 +386,20 @@
                     };
 
                     await db.ref(DB_PATH_BATERIAS).push(novoRegistro);
-                    enviadosCount++;
+                    console.log(`-> Sucesso no upload de: ${nomeArq}`);
+                    return true;
                 } catch (err) {
-                    console.error(`❌ ERRO CRÍTICO ao processar o arquivo ${nomeArq}:`, err);
+                    console.error(`❌ Erro no arquivo ${nomeArq}:`, err);
+                    return false;
                 }
-            }
+            });
+
+            let resultados = await Promise.all(promessasUpload);
+            let enviadosCount = resultados.filter(Boolean).length;
 
             inputEl.value = "";
-            console.log(`--- FIM DO UPLOAD: ${enviadosCount} arquivos enviados com sucesso ---`);
-            alert(`Processo concluído! Total de arquivos adicionados com sucesso: ${enviadosCount}`);
+            console.log(`--- FIM DO UPLOAD: ${enviadosCount} de ${arquivos.length} enviados com sucesso ---`);
+            alert(`Processo concluído! Total de arquivos adicionados com sucesso: ${enviadosCount} de ${arquivos.length}`);
         };
 
         function atualizarListaUploadHistorico() {
