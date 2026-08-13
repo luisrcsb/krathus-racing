@@ -40,12 +40,12 @@
                     <!-- Dados do Perfil em Destaque -->
                     <div id="perfilResumo" class="text-sm text-gray-600 mt-1 flex gap-2">
                         <span class="font-semibold" id="nomeEngenheiro">Eng. Não configurado</span> | 
-                        <span id="ordemEngenheiro">Ordem: 000000</span>
+                        <span id="ordemEngenheiro">CREA-XX 000000</span>
                     </div>
                 </div>
                 
-                <button onclick="toggleModal('modalConfig')" class="flex items-center gap-2 text-gray-500 hover:text-blue-600 transition bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg">
-                    <span class="text-sm font-medium">Editar Perfil</span>
+                <button onclick="abrirConfiguracao()" class="flex items-center gap-2 text-gray-500 hover:text-blue-600 transition bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg">
+                    <span class="text-sm font-medium">Perfil & Configurações</span>
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
                     </svg>
@@ -75,39 +75,68 @@
 
         <!-- Footer com Versão e Implementações -->
         <footer class="max-w-6xl mx-auto p-6 border-t mt-12 text-sm text-gray-500">
-            <p class="font-bold">Versão 0.1.0</p>
+            <p class="font-bold">Versão 0.1.2</p>
             <ul class="list-disc ml-5 mt-2 space-y-1">
-                <li>Adicionado ícone de destaque na tela de acesso restrito</li>
-                <li>Painel do engenheiro fixado no topo da aplicação</li>
-                <li>Módulo de autenticação com senha e modal de configuração</li>
+                <li>Resumo e preenchimento automático dos dados atuais no modal de perfil</li>
+                <li>Opção de alteração de senha de acesso direto pelo perfil</li>
+                <li>Seleção de UF e padronização do registro CREA</li>
             </ul>
         </footer>
     </div>
 
     <!-- Modal Configuração de Perfil -->
     <div id="modalConfig" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl w-full max-w-md p-8 shadow-xl">
-            <h2 class="text-xl font-bold mb-6 text-gray-800">Configurar Perfil do Engenheiro</h2>
+        <div class="bg-white rounded-2xl w-full max-w-lg p-8 shadow-xl max-h-[90vh] overflow-y-auto">
+            <h2 class="text-xl font-bold mb-4 text-gray-800">Perfil e Configurações</h2>
+            
+            <!-- Resumo dos dados cadastrados atualmente -->
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6 text-xs text-gray-600 space-y-1">
+                <p class="font-semibold text-gray-700 mb-1">📋 Dados Atuais Registrados:</p>
+                <p><strong>Nome:</strong> <span id="resumoNome">Não cadastrado</span></p>
+                <p><strong>CREA:</strong> <span id="resumoCrea">Não cadastrado</span></p>
+                <p><strong>E-mail:</strong> <span id="resumoEmail">Não cadastrado</span></p>
+                <p><strong>Telefone:</strong> <span id="resumoTelefone">Não cadastrado</span></p>
+            </div>
+
             <form class="space-y-4" id="formPerfil">
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Nome Completo</label>
-                    <input type="text" placeholder="Ex: Eng. Luís Raphael" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+                    <input type="text" id="inputNome" placeholder="Ex: Eng. Luís Raphael" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Número da Ordem (CREA/CAU)</label>
-                    <input type="text" placeholder="Ex: 123456/D-AL" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Região (UF)</label>
+                        <select id="inputUf" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+                            <option value="">Selecione</option>
+                            <option value="AC">AC</option><option value="AL">AL</option><option value="AP">AP</option><option value="AM">AM</option><option value="BA">BA</option><option value="CE">CE</option><option value="DF">DF</option><option value="ES">ES</option><option value="GO">GO</option><option value="MA">MA</option><option value="MT">MT</option><option value="MS">MS</option><option value="MG">MG</option><option value="PA">PA</option><option value="PB">PB</option><option value="PR">PR</option><option value="PE">PE</option><option value="PI">PI</option><option value="RJ">RJ</option><option value="RN">RN</option><option value="RS">RS</option><option value="RO">RO</option><option value="RR">RR</option><option value="SC">SC</option><option value="SP">SP</option><option value="SE">SE</option><option value="TO">TO</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Número do CREA</label>
+                        <input type="text" id="inputNumeroCrea" placeholder="Ex: 123456" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
                 </div>
+
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1">E-mail Profissional</label>
-                    <input type="email" placeholder="seu@email.com" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <input type="email" id="inputEmail" placeholder="seu@email.com" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Telefone</label>
-                    <input type="tel" placeholder="(82) 99999-9999" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <input type="tel" id="inputTelefone" placeholder="(82) 99999-9999" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
                 </div>
+
+                <hr class="my-4">
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Nova Senha de Acesso (Deixe em branco para não alterar)</label>
+                    <input type="password" id="inputNovaSenha" placeholder="Digite uma nova senha" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+
                 <div class="flex gap-4 mt-6">
                     <button type="button" onclick="toggleModal('modalConfig')" class="w-full p-3 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 font-medium">Cancelar</button>
-                    <button type="submit" class="w-full p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">Salvar</button>
+                    <button type="submit" class="w-full p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">Salvar Alterações</button>
                 </div>
             </form>
         </div>
@@ -115,11 +144,14 @@
 
     <!-- Scripts de Lógica -->
     <script>
-        const MASTER_PASSWORD = "roca"; // Senha padrão inicial
+        // Carregar senha salva ou usar padrão "roca"
+        function getSenhaAtual() {
+            return localStorage.getItem('roca_senha') || "roca";
+        }
 
         function checkPassword() {
             const input = document.getElementById('passwordInput').value;
-            if (input === MASTER_PASSWORD) {
+            if (input === getSenhaAtual()) {
                 document.getElementById('loginOverlay').classList.add('hidden');
                 document.getElementById('mainContent').classList.remove('hidden');
             } else {
@@ -131,32 +163,81 @@
             document.getElementById(id).classList.toggle('hidden');
         }
 
-        // Salvar dados do Perfil
+        // Função para abrir o modal preenchendo o resumo e os inputs com dados salvos
+        function abrirConfiguracao() {
+            const nome = localStorage.getItem('roca_nomeEng') || '';
+            const uf = localStorage.getItem('roca_ufEng') || '';
+            const crea = localStorage.getItem('roca_creaEng') || '';
+            const email = localStorage.getItem('roca_emailEng') || '';
+            const telefone = localStorage.getItem('roca_telEng') || '';
+
+            // Atualiza o texto do resumo no topo do modal
+            document.getElementById('resumoNome').innerText = nome || 'Não cadastrado';
+            document.getElementById('resumoCrea').innerText = (uf && crea) ? `CREA-${uf} ${crea}` : 'Não cadastrado';
+            document.getElementById('resumoEmail').innerText = email || 'Não cadastrado';
+            document.getElementById('resumoTelefone').innerText = telefone || 'Não cadastrado';
+
+            // Preenche os campos do formulário para edição
+            document.getElementById('inputNome').value = nome;
+            document.getElementById('inputUf').value = uf;
+            document.getElementById('inputNumeroCrea').value = crea;
+            document.getElementById('inputEmail').value = email;
+            document.getElementById('inputTelefone').value = telefone;
+            document.getElementById('inputNovaSenha').value = ''; // Limpa o campo de senha por segurança
+
+            toggleModal('modalConfig');
+        }
+
+        // Salvar dados do Perfil e Nova Senha
         document.getElementById('formPerfil').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const nome = e.target[0].value;
-            const ordem = e.target[1].value;
+            const nome = document.getElementById('inputNome').value;
+            const uf = document.getElementById('inputUf').value;
+            const crea = document.getElementById('inputNumeroCrea').value;
+            const email = document.getElementById('inputEmail').value;
+            const telefone = document.getElementById('inputTelefone').value;
+            const novaSenha = document.getElementById('inputNovaSenha').value;
             
-            // Atualiza na interface imediatamente
-            document.getElementById('nomeEngenheiro').innerText = nome;
-            document.getElementById('ordemEngenheiro').innerText = "Ordem: " + ordem;
-            
-            // Salva no navegador
+            // Salva dados no navegador
             localStorage.setItem('roca_nomeEng', nome);
-            localStorage.setItem('roca_ordemEng', ordem);
+            localStorage.setItem('roca_ufEng', uf);
+            localStorage.setItem('roca_creaEng', crea);
+            localStorage.setItem('roca_emailEng', email);
+            localStorage.setItem('roca_telEng', telefone);
+
+            if (novaSenha.trim() !== '') {
+                localStorage.setItem('roca_senha', novaSenha);
+                alert("Senha alterada com sucesso!");
+            }
             
+            // Atualiza a interface principal imediatamente
+            atualizarInterfaceTopo();
             toggleModal('modalConfig');
         });
 
-        // Carregar dados salvos ao iniciar
+        // Atualizar visualização do topo com base no LocalStorage
+        function atualizarInterfaceTopo() {
+            const nome = localStorage.getItem('roca_nomeEng');
+            const uf = localStorage.getItem('roca_ufEng');
+            const crea = localStorage.getItem('roca_creaEng');
+
+            if(nome) {
+                document.getElementById('nomeEngenheiro').innerText = nome;
+            } else {
+                document.getElementById('nomeEngenheiro').innerText = "Eng. Não configurado";
+            }
+
+            if(uf && crea) {
+                document.getElementById('ordemEngenheiro').innerText = `CREA-${uf} ${crea}`;
+            } else {
+                document.getElementById('ordemEngenheiro').innerText = "CREA-XX 000000";
+            }
+        }
+
+        // Carregar dados salvos ao iniciar a página
         window.onload = function() {
-            if(localStorage.getItem('roca_nomeEng')) {
-                document.getElementById('nomeEngenheiro').innerText = localStorage.getItem('roca_nomeEng');
-            }
-            if(localStorage.getItem('roca_ordemEng')) {
-                document.getElementById('ordemEngenheiro').innerText = "Ordem: " + localStorage.getItem('roca_ordemEng');
-            }
+            atualizarInterfaceTopo();
         }
     </script>
 </body>
