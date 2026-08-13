@@ -89,13 +89,13 @@
         <p class="section-desc" style="color: #64748b; font-size: 0.85rem; margin-bottom: 12px;">Gerencie seus dados profissionais e credenciais de acesso.</p>
         <div style="display: flex; flex-direction: column; gap: 12px;">
             <label><strong>Nome Completo:</strong></label>
-            <input type="text" id="perfil-nome" value="Luís Raphael Cavalcanti Silva Belowodski">
+            <input type="text" id="perfil-nome">
             
             <label><strong>Registro Profissional (CREA):</strong></label>
-            <input type="text" id="perfil-crea" value="CREA-AL 18048-D">
+            <input type="text" id="perfil-crea">
             
-            <label><strong>Senha de Acesso do Sistema:</strong></label>
-            <input type="password" id="perfil-senha" value="">
+            <label><strong>Nova Senha de Acesso:</strong></label>
+            <input type="password" id="perfil-senha" placeholder="Deixe em branco para manter a atual">
             
             <button onclick="salvarPerfil()" class="btn-primary" style="margin-top: 10px;">Salvar Alterações</button>
         </div>
@@ -104,12 +104,10 @@
     <!-- TELA DE DASHBOARD -->
     <div id="tela-dashboard" class="card hidden">
         <h3>📊 Painel de Projetos</h3>
-        <p class="section-desc" style="color: #64748b; font-size: 0.85rem; margin-bottom: 12px;">Engenheiro Responsável: <strong id="lbl-engenheiro">Luís Raphael Cavalcanti Silva Belowodski</strong> (<span id="lbl-crea">CREA-AL 18048-D</span>)</p>
+        <p class="section-desc" style="color: #64748b; font-size: 0.85rem; margin-bottom: 12px;">Engenheiro Responsável: <strong id="lbl-engenheiro"></strong> (<span id="lbl-crea"></span>)</p>
         
         <h4 style="margin-top: 20px; font-size: 1rem;">Projetos Cadastrados:</h4>
-        <div id="lista-projetos" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
-            <!-- Preenchido via JavaScript -->
-        </div>
+        <div id="lista-projetos" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;"></div>
 
         <hr style="margin: 20px 0; border: 0; border-top: 1px solid #e2e8f0;">
 
@@ -123,7 +121,6 @@
 
     <!-- TELA DE DETALHES DO PROJETO & UPLOADS ORGANIZADOS -->
     <div id="tela-projeto" class="hidden">
-        <!-- Cabeçalho do Projeto -->
         <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 15px; border-radius: 6px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
             <div>
                 <a onclick="mudarTela('dashboard')" style="color: #0284c7; font-size: 0.85rem; font-weight: bold; cursor: pointer; text-decoration: none;">&larr; Voltar ao Dashboard</a>
@@ -136,9 +133,7 @@
             </div>
         </div>
 
-        <!-- Seções Organizadas em Grade Limpa -->
         <div class="grid-sections">
-            
             <!-- Bloco 1: Identidade Visual & Logomarca -->
             <div class="doc-section-card full-width">
                 <div class="doc-header">
@@ -192,7 +187,7 @@
                 </div>
             </div>
 
-            <!-- Bloco 3: Documentos de Colaboradores (Agora com suporte a Lotes / Múltiplos Arquivos) -->
+            <!-- Bloco 3: Colaboradores (Lote) -->
             <div class="doc-section-card">
                 <div class="doc-header">
                     <h4 class="doc-title">👥 Colaboradores (Lote)</h4>
@@ -212,30 +207,30 @@
                     </ul>
                 </div>
             </div>
-
         </div>
     </div>
 </div>
 
 <script>
-    let perfilState = {
+    // Gerenciamento e persistência de dados via localStorage do navegador
+    let perfilState = JSON.parse(localStorage.getItem('roca_perfil')) || {
         nome: "Luís Raphael Cavalcanti Silva Belowodski",
         crea: "CREA-AL 18048-D",
         senha: "manta2026"
     };
 
-    let projetosState = [
+    let projetosState = JSON.parse(localStorage.getItem('roca_projetos')) || [
         { id: 1, nome: "Manta Eco Retreat", desc: "Projeto residencial de alto padrão supervisionado com design Pininfarina." },
         { id: 2, nome: "Residencial Patacho", desc: "Complexo hoteleiro e estrutural no litoral." }
     ];
 
-    let arquivosState = {
+    let arquivosState = JSON.parse(localStorage.getItem('roca_arquivos')) || {
         1: { identidade: [], padrao: [], colaboradores: [] },
         2: { identidade: [], padrao: [], colaboradores: [] }
     };
 
-    let projetoAtualId = 1;
-    let autenticado = false;
+    let projetoAtualId = localStorage.getItem('roca_atual_id') ? parseInt(localStorage.getItem('roca_atual_id')) : 1;
+    let autenticado = localStorage.getItem('roca_autenticado') === 'true';
     let tentativasLogin = 0;
 
     const mensagensLogin = [
@@ -249,6 +244,23 @@
         "Pode mandar o palavrão. O ROCA aguenta. Agora manda a senha certa também.",
         "Entendido. Xingamento recebido e devidamente ignorado. Vamos tentar a senha novamente?"
     ];
+
+    function salvarTudo() {
+        localStorage.setItem('roca_perfil', JSON.stringify(perfilState));
+        localStorage.setItem('roca_projetos', JSON.stringify(projetosState));
+        localStorage.setItem('roca_arquivos', JSON.stringify(arquivosState));
+        localStorage.setItem('roca_autenticado', autenticado);
+        localStorage.setItem('roca_atual_id', projetoAtualId);
+    }
+
+    // Inicialização ao carregar a página
+    window.onload = function() {
+        if (autenticado) {
+            mudarTela('dashboard');
+        } else {
+            mudarTela('login');
+        }
+    };
 
     function obterMensagemLogin() {
         return mensagensLogin[Math.min(tentativasLogin - 1, mensagensLogin.length - 1)];
@@ -294,6 +306,9 @@
         document.getElementById('barra-navegacao').classList.remove('hidden');
 
         if (tela === 'perfil') {
+            document.getElementById('perfil-nome').value = perfilState.nome;
+            document.getElementById('perfil-crea').value = perfilState.crea;
+            document.getElementById('perfil-senha').value = '';
             document.getElementById('tela-perfil').classList.remove('hidden');
         } else if (tela === 'dashboard') {
             renderizarDashboard();
@@ -316,6 +331,7 @@
             mensagemErro.style.display = 'none';
             mensagemTentativas.style.display = 'none';
             campoSenha.value = '';
+            salvarTudo();
             mudarTela('dashboard');
             return;
         }
@@ -336,6 +352,7 @@
 
     function fazerLogout() {
         autenticado = false;
+        salvarTudo();
         document.getElementById('input-senha').value = '';
         mudarTela('login');
     }
@@ -347,8 +364,8 @@
         if (novaSenha) {
             perfilState.senha = novaSenha;
         }
-        document.getElementById('perfil-senha').value = '';
-        alert("Perfil atualizado com sucesso!");
+        salvarTudo();
+        alert("Perfil atualizado e salvo com sucesso!");
         mudarTela('dashboard');
     }
 
@@ -385,12 +402,14 @@
             arquivosState[novoId] = { identidade: [], padrao: [], colaboradores: [] };
             document.getElementById('novo-nome-projeto').value = '';
             document.getElementById('novo-desc-projeto').value = '';
+            salvarTudo();
             renderizarDashboard();
         }
     }
 
     function abrirProjeto(id) {
         projetoAtualId = id;
+        salvarTudo();
         mudarTela('projeto');
     }
 
@@ -402,8 +421,9 @@
             let novaDesc = prompt("Editar descrição do projeto:", p.desc);
             p.nome = novoNome.trim();
             p.desc = novaDesc !== null ? novaDesc.trim() : p.desc;
+            salvarTudo();
             renderizarProjeto();
-            alert("Projeto atualizado com sucesso!");
+            alert("Projeto atualizado e salvo com sucesso!");
         }
     }
 
@@ -413,6 +433,7 @@
         if (confirm(`Tem certeza absoluta que deseja excluir o projeto "${p.nome}" e todos os seus arquivos?`)) {
             projetosState = projetosState.filter(x => x.id !== projetoAtualId);
             delete arquivosState[projetoAtualId];
+            salvarTudo();
             alert("Projeto excluído com sucesso!");
             mudarTela('dashboard');
         }
@@ -437,30 +458,35 @@
         let fileInput = document.getElementById(inputId);
         
         if (fileInput.files.length > 0) {
-            let fileName = fileInput.files[0].name;
-            arquivosState[projetoAtualId][tipo === 'logomarca' ? 'identidade' : tipo].push(fileName);
+            let fileName = (tipo === 'logomarca' ? '[Logomarca] ' : '') + fileInput.files[0].name;
+            if(!arquivosState[projetoAtualId]) arquivosState[projetoAtualId] = { identidade: [], padrao: [], colaboradores: [] };
+            
+            arquivosState[projetoAtualId]['identidade'].push(fileName);
             fileInput.value = '';
-            atualizarListaArquivos(tipo === 'logomarca' ? 'identidade' : tipo);
-            alert("Arquivo enviado com sucesso!");
+            salvarTudo();
+            atualizarListaArquivos('identidade');
+            alert("Arquivo enviado e salvo com sucesso!");
         } else {
             alert("Selecione um arquivo primeiro.");
         }
     }
 
-    // Função específica para upload de vários arquivos em lote
     function fazerUploadLote(tipo) {
         let inputId = `file-${tipo}`;
         let fileInput = document.getElementById(inputId);
         
         if (fileInput.files.length > 0) {
             let quantidade = fileInput.files.length;
+            if(!arquivosState[projetoAtualId]) arquivosState[projetoAtualId] = { identidade: [], padrao: [], colaboradores: [] };
+
             for (let i = 0; i < quantidade; i++) {
                 let fileName = fileInput.files[i].name;
                 arquivosState[projetoAtualId][tipo].push(fileName);
             }
             fileInput.value = '';
+            salvarTudo();
             atualizarListaArquivos(tipo);
-            alert(`${quantidade} arquivo(s) enviado(s) com sucesso em lote!`);
+            alert(`${quantidade} arquivo(s) enviado(s) em lote e salvo(s) com sucesso!`);
         } else {
             alert("Selecione pelo menos um arquivo primeiro.");
         }
@@ -468,10 +494,11 @@
 
     function atualizarListaArquivos(tipo) {
         let listaEl = document.getElementById(`lista-${tipo}`);
+        if(!arquivosState[projetoAtualId]) arquivosState[projetoAtualId] = { identidade: [], padrao: [], colaboradores: [] };
         let arquivos = arquivosState[projetoAtualId][tipo];
         
         listaEl.innerHTML = '';
-        if (arquivos.length === 0) {
+        if (!arquivos || arquivos.length === 0) {
             listaEl.innerHTML = `<li class="no-files">Nenhum arquivo enviado nesta categoria.</li>`;
             return;
         }
@@ -492,6 +519,7 @@
     function excluirArquivo(tipo, index) {
         if (confirm("Tem certeza absoluta que deseja excluir este arquivo?")) {
             arquivosState[projetoAtualId][tipo].splice(index, 1);
+            salvarTudo();
             atualizarListaArquivos(tipo);
         }
     }
@@ -501,7 +529,7 @@
     }
 
     function analisarIA(categoria) {
-        alert("Iniciando varredura e Análise com IA para a categoria: " + categoria + " (Processamento concluído com sucesso!)");
+        alert(`🤖 [IA ROCA]: Análise de documentos concluída com sucesso para a categoria "${categoria}". Relatório executivo gerado!`);
     }
 </script>
 
