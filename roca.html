@@ -32,13 +32,6 @@
         .btn-delete { background-color: #dc2626; padding: 5px 10px; font-size: 0.8rem; }
         .btn-warning { background-color: #ca8a04; }
         
-        .btn-primary:hover { background-color: #0369a1; }
-        .btn-upload:hover { background-color: #1d4ed8; }
-        .btn-ai:hover { background-color: #15803d; }
-        .btn-inspect:hover { background-color: #b45309; }
-        .btn-delete:hover { background-color: #b91c1c; }
-        .btn-warning:hover { background-color: #a16207; }
-
         .file-list { list-style: none; padding: 0; margin: 8px 0 0 0; }
         .file-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; margin-bottom: 6px; }
         .file-name { word-break: break-all; font-size: 0.85rem; font-weight: 500; color: #334155; }
@@ -68,18 +61,25 @@
         </div>
     </div>
 
-    <!-- TELA DE LOGIN -->
-    <div id="tela-login" class="card" style="max-width: 400px; margin: 40px auto; text-align: center;">
-        <h3>Acesso Restrito</h3>
-        <p class="section-desc" style="color: #64748b; font-size: 0.85rem; margin-bottom: 12px;">Acesso restrito. Digite sua senha para entrar no sistema.</p>
+    <!-- TELA DE LOGIN COM LOGOTIPO E SUBTÍTULO -->
+    <div id="tela-login" class="card" style="max-width: 450px; margin: 40px auto; text-align: center; padding: 30px;">
+        <h1 style="font-size: 2.8rem; color: #0284c7; margin-bottom: 5px; letter-spacing: 2px;">ROCA 🏗️</h1>
+        <p style="color: #64748b; font-size: 0.9rem; font-weight: bold; margin-top: 0; margin-bottom: 25px;">
+            R.O.C.A. — Relatórios Otimizados e Controle Automatizado
+        </p>
+
+        <h3 style="font-size: 1.1rem; color: #1e293b; margin-bottom: 8px;">Acesso Restrito</h3>
+        <p class="section-desc" style="color: #64748b; font-size: 0.85rem; margin-bottom: 15px;">Digite sua senha para entrar no sistema.</p>
+        
         <p id="login-erro" style="color: #dc2626; font-size: 0.85rem; display: none; margin-bottom: 10px;"></p>
         <p id="login-tentativas" style="color: #64748b; font-size: 0.78rem; display: none; margin-bottom: 10px;"></p>
+        
         <div style="display: flex; flex-direction: column; gap: 12px;">
             <div style="display:flex; gap:8px; align-items:center;">
                 <input type="password" id="input-senha" placeholder="Senha de Acesso" autocomplete="current-password">
                 <button type="button" onclick="alternarSenha()" class="btn-primary" style="white-space:nowrap;">Mostrar</button>
             </div>
-            <button onclick="fazerLogin()" class="btn-primary">Entrar no Sistema</button>
+            <button onclick="fazerLogin()" class="btn-primary" style="padding: 10px; font-size: 0.95rem;">Entrar no Sistema</button>
         </div>
     </div>
 
@@ -212,7 +212,6 @@
 </div>
 
 <script>
-    // Gerenciamento e persistência de dados via localStorage do navegador
     let perfilState = JSON.parse(localStorage.getItem('roca_perfil')) || {
         nome: "Luís Raphael Cavalcanti Silva Belowodski",
         crea: "CREA-AL 18048-D",
@@ -253,7 +252,6 @@
         localStorage.setItem('roca_atual_id', projetoAtualId);
     }
 
-    // Inicialização ao carregar a página
     window.onload = function() {
         if (autenticado) {
             mudarTela('dashboard');
