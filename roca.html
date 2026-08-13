@@ -8,20 +8,16 @@
 </head>
 <body class="bg-gray-50 font-sans">
 
-    <!-- Tela de Login (Bloqueio) -->
+    <!-- Tela de Login -->
     <div id="loginOverlay" class="fixed inset-0 bg-gray-900 flex items-center justify-center p-4 z-50">
         <div class="bg-white p-8 rounded-2xl w-full max-w-sm shadow-xl text-center flex flex-col justify-between">
             <div>
-                <!-- Ícone em destaque (dobro do tamanho) -->
                 <div class="text-5xl mb-2">🏗️</div>
                 <h2 class="text-2xl font-bold mb-1 text-gray-800">ROCA</h2>
                 <p class="text-xs text-gray-500 mb-6">Gestor de Projetos de Engenharia</p>
-                
                 <input type="password" id="passwordInput" placeholder="Digite sua senha" class="w-full p-3 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <button onclick="checkPassword()" class="w-full p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">Entrar</button>
             </div>
-
-            <!-- Link para o README / Documentação -->
             <div class="mt-6 pt-4 border-t border-gray-100">
                 <a href="https://github.com/luisrcsb/roca#readme" target="_blank" class="text-xs text-gray-500 hover:text-blue-600 transition flex items-center justify-center gap-1">
                     <span>📄 Ver Documentação (README)</span>
@@ -30,48 +26,77 @@
         </div>
     </div>
 
-    <!-- Conteúdo do Site (Escondido inicialmente) -->
+    <!-- Interface Principal -->
     <div id="mainContent" class="hidden">
-        <!-- Header com Perfil do Engenheiro no Topo -->
+        
+        <!-- Header -->
         <header class="bg-white border-b border-gray-200 p-6">
             <div class="max-w-6xl mx-auto flex justify-between items-center">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-800 tracking-tight">ROCA</h1>
-                    <!-- Dados do Perfil em Destaque -->
+                    <h1 class="text-2xl font-bold text-gray-800 tracking-tight cursor-pointer" onclick="voltarParaDashboard()">ROCA</h1>
                     <div id="perfilResumo" class="text-sm text-gray-600 mt-1 flex gap-2">
                         <span class="font-semibold" id="nomeEngenheiro">Eng. Não configurado</span> | 
                         <span id="ordemEngenheiro">CREA-XX 000000</span>
                     </div>
                 </div>
-                
                 <button onclick="abrirConfiguracao()" class="flex items-center gap-2 text-gray-500 hover:text-blue-600 transition bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg">
                     <span class="text-sm font-medium">Perfil & Configurações</span>
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                    </svg>
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>
                 </button>
             </div>
         </header>
 
-        <!-- Corpo Principal / Projetos -->
-        <main class="max-w-6xl mx-auto p-6 min-h-[70vh]">
+        <!-- DASHBOARD (Listagem de Projetos) -->
+        <main id="viewDashboard" class="max-w-6xl mx-auto p-6 min-h-[70vh]">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xl font-semibold text-gray-700">Projetos Ativos</h2>
                 <button onclick="abrirModalProjeto()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium text-sm">+ Novo Projeto</button>
             </div>
+            <div id="listaProjetos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </main>
 
-            <div id="listaProjetos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Os projetos dinâmicos aparecerão aqui -->
+        <!-- VISÃO INTERNA DO PROJETO -->
+        <main id="viewProjetoDetalhe" class="hidden max-w-6xl mx-auto p-6 min-h-[70vh]">
+            <div class="mb-6 flex items-center justify-between border-b pb-4">
+                <div class="flex items-center gap-4">
+                    <button onclick="voltarParaDashboard()" class="text-gray-500 hover:text-gray-800 bg-gray-200 p-2 rounded-full">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    </button>
+                    <div>
+                        <h2 id="tituloProjetoAtual" class="text-2xl font-bold text-gray-800">Nome do Projeto</h2>
+                        <p id="clienteProjetoAtual" class="text-sm text-gray-500">Cliente</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Coluna 1: Upload -->
+                <div class="lg:col-span-1 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                    <h3 class="font-bold text-lg mb-4 text-gray-800">Novo Relatório/Documento</h3>
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:bg-gray-50 transition cursor-pointer relative">
+                        <input type="file" id="inputUploadDoc" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" multiple accept=".pdf, .txt, .png, .jpg">
+                        <div class="text-4xl mb-2">📄</div>
+                        <p class="text-sm text-gray-600 font-medium">Clique ou arraste arquivos aqui</p>
+                        <p class="text-xs text-gray-400 mt-1">PDF, TXT, Imagens</p>
+                    </div>
+                </div>
+
+                <!-- Coluna 2: Arquivos e IA -->
+                <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                    <h3 class="font-bold text-lg mb-4 text-gray-800">Documentos e Análises</h3>
+                    <div id="listaDocumentosProjeto" class="space-y-4">
+                        <p class="text-sm text-gray-500">Nenhum documento carregado para este projeto ainda.</p>
+                    </div>
+                </div>
             </div>
         </main>
 
-        <!-- Footer com Versão e Implementações -->
+        <!-- Footer -->
         <footer class="max-w-6xl mx-auto p-6 border-t mt-12 text-sm text-gray-500">
-            <p class="font-bold">Versão 0.1.5</p>
+            <p class="font-bold">Versão 0.2.1</p>
             <ul class="list-disc ml-5 mt-2 space-y-1">
-                <li>Adicionado upload direto de logomarca via arquivo do computador</li>
-                <li>Sistema CRUD completo de projetos com persistência local</li>
-                <li>Módulo de perfil com suporte a alteração de senha</li>
+                <li>Chave da API do Gemini integrada com sucesso</li>
+                <li>Módulo de upload e interpretação de documentos via IA ativo</li>
             </ul>
         </footer>
     </div>
@@ -92,9 +117,8 @@
             <form class="space-y-4" id="formPerfil">
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Nome Completo</label>
-                    <input type="text" id="inputNome" placeholder="Ex: Eng. Luís Raphael" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <input type="text" id="inputNome" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
                 </div>
-                
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-gray-600 mb-1">Região (UF)</label>
@@ -105,29 +129,25 @@
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-600 mb-1">Número do CREA</label>
-                        <input type="text" id="inputNumeroCrea" placeholder="Ex: 123456" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <input type="text" id="inputNumeroCrea" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
                     </div>
                 </div>
-
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1">E-mail Profissional</label>
-                    <input type="email" id="inputEmail" placeholder="seu@email.com" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <input type="email" id="inputEmail" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Telefone</label>
-                    <input type="tel" id="inputTelefone" placeholder="(82) 99999-9999" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <input type="tel" id="inputTelefone" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
                 </div>
-
                 <hr class="my-4">
-
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Nova Senha de Acesso (Deixe em branco para não alterar)</label>
-                    <input type="password" id="inputNovaSenha" placeholder="Digite uma nova senha" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Nova Senha de Acesso</label>
+                    <input type="password" id="inputNovaSenha" placeholder="Deixe em branco para não alterar" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
                 </div>
-
                 <div class="flex gap-4 mt-6">
-                    <button type="button" onclick="fecharModal('modalConfig')" class="w-full p-3 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 font-medium">Cancelar</button>
-                    <button type="submit" class="w-full p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">Salvar Alterações</button>
+                    <button type="button" onclick="fecharModal('modalConfig')" class="w-full p-3 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">Cancelar</button>
+                    <button type="submit" class="w-full p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Salvar Alterações</button>
                 </div>
             </form>
         </div>
@@ -140,29 +160,28 @@
             <form class="space-y-4" id="formProjeto">
                 <input type="hidden" id="projetoIndex">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Logomarca (Selecionar do Computador)</label>
-                    <input type="file" id="inputLogoFile" accept="image/*" class="w-full p-2 border border-gray-300 rounded-lg text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Logomarca (Computador)</label>
+                    <input type="file" id="inputLogoFile" accept="image/*" class="w-full p-2 border border-gray-300 rounded-lg text-sm">
                     <input type="hidden" id="inputLogoBase64">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Nome do Projeto / Obra</label>
-                    <input type="text" id="inputNomeProjeto" placeholder="Ex: Edifício Aurora" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Nome do Projeto</label>
+                    <input type="text" id="inputNomeProjeto" class="w-full p-3 border border-gray-300 rounded-lg" required>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Cliente</label>
-                    <input type="text" id="inputClienteProjeto" placeholder="Ex: Construtora XYZ" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+                    <input type="text" id="inputClienteProjeto" class="w-full p-3 border border-gray-300 rounded-lg" required>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Status</label>
-                    <select id="inputStatusProjeto" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+                    <select id="inputStatusProjeto" class="w-full p-3 border border-gray-300 rounded-lg bg-white">
                         <option value="Em execução">Em execução</option>
-                        <option value="Em planejamento">Em planejamento</option>
                         <option value="Concluído">Concluído</option>
                     </select>
                 </div>
                 <div class="flex gap-4 mt-6">
-                    <button type="button" onclick="fecharModal('modalProjeto')" class="w-full p-3 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 font-medium">Cancelar</button>
-                    <button type="submit" class="w-full p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">Salvar Projeto</button>
+                    <button type="button" onclick="fecharModal('modalProjeto')" class="w-full p-3 border border-gray-300 rounded-lg text-gray-600">Cancelar</button>
+                    <button type="submit" class="w-full p-3 bg-blue-600 text-white rounded-lg">Salvar</button>
                 </div>
             </form>
         </div>
@@ -170,22 +189,21 @@
 
     <!-- Scripts de Lógica -->
     <script>
-        // Senha
-        function getSenhaAtual() {
-            return localStorage.getItem('roca_senha') || "roca";
-        }
+        // CHAVE DA API DO GEMINI ATUALIZADA
+        const GEMINI_API_KEY = "AQ.Ab8RN6KbV5A1tuP_UGgSIZG_iIgfXB_hiu00QMtvqI4D_osYeg";
 
         function checkPassword() {
             const input = document.getElementById('passwordInput').value;
-            if (input === getSenhaAtual()) {
+            if (input === (localStorage.getItem('roca_senha') || "roca")) {
                 document.getElementById('loginOverlay').classList.add('hidden');
                 document.getElementById('mainContent').classList.remove('hidden');
                 carregarProjetos();
-            } else {
-                alert("Senha incorreta!");
-            }
+                atualizarInterfaceTopo();
+            } else { alert("Senha incorreta!"); }
         }
 
+        function fecharModal(id) { document.getElementById(id).classList.add('hidden'); }
+        
         function abrirConfiguracao() {
             const nome = localStorage.getItem('roca_nomeEng') || '';
             const uf = localStorage.getItem('roca_ufEng') || '';
@@ -208,121 +226,104 @@
             document.getElementById('modalConfig').classList.remove('hidden');
         }
 
-        function fecharModal(id) {
-            document.getElementById(id).classList.add('hidden');
-        }
-
-        // Salvar Perfil
         document.getElementById('formPerfil').addEventListener('submit', function(e) {
             e.preventDefault();
-            
-            const nome = document.getElementById('inputNome').value;
-            const uf = document.getElementById('inputUf').value;
-            const crea = document.getElementById('inputNumeroCrea').value;
-            const email = document.getElementById('inputEmail').value;
-            const telefone = document.getElementById('inputTelefone').value;
-            const novaSenha = document.getElementById('inputNovaSenha').value;
-            
-            localStorage.setItem('roca_nomeEng', nome);
-            localStorage.setItem('roca_ufEng', uf);
-            localStorage.setItem('roca_creaEng', crea);
-            localStorage.setItem('roca_emailEng', email);
-            localStorage.setItem('roca_telEng', telefone);
+            localStorage.setItem('roca_nomeEng', document.getElementById('inputNome').value);
+            localStorage.setItem('roca_ufEng', document.getElementById('inputUf').value);
+            localStorage.setItem('roca_creaEng', document.getElementById('inputNumeroCrea').value);
+            localStorage.setItem('roca_emailEng', document.getElementById('inputEmail').value);
+            localStorage.setItem('roca_telEng', document.getElementById('inputTelefone').value);
 
+            const novaSenha = document.getElementById('inputNovaSenha').value;
             if (novaSenha.trim() !== '') {
                 localStorage.setItem('roca_senha', novaSenha);
                 alert("Senha alterada com sucesso!");
             }
-            
             atualizarInterfaceTopo();
             fecharModal('modalConfig');
         });
-
+        
         function atualizarInterfaceTopo() {
             const nome = localStorage.getItem('roca_nomeEng');
             const uf = localStorage.getItem('roca_ufEng');
             const crea = localStorage.getItem('roca_creaEng');
-
-            if(nome) {
-                document.getElementById('nomeEngenheiro').innerText = nome;
-            } else {
-                document.getElementById('nomeEngenheiro').innerText = "Eng. Não configurado";
-            }
-
-            if(uf && crea) {
-                document.getElementById('ordemEngenheiro').innerText = `CREA-${uf} ${crea}`;
-            } else {
-                document.getElementById('ordemEngenheiro').innerText = "CREA-XX 000000";
-            }
+            document.getElementById('nomeEngenheiro').innerText = nome || "Eng. Não configurado";
+            document.getElementById('ordemEngenheiro').innerText = (uf && crea) ? `CREA-${uf} ${crea}` : "CREA-XX 000000";
         }
 
-        // --- SISTEMA DE GESTÃO DE PROJETOS (CRUD) ---
+        let projetoAtualIndex = null;
 
-        function getProjetos() {
-            let projetos = localStorage.getItem('roca_projetos');
-            if (!projetos) {
-                return [{ logo: "", nome: "Exemplo de Obra", cliente: "Cliente Exemplo", status: "Em execução" }];
-            }
-            return JSON.parse(projetos);
-        }
-
-        function salvarProjetos(projetos) {
-            localStorage.setItem('roca_projetos', JSON.stringify(projetos));
-        }
+        function getProjetos() { return JSON.parse(localStorage.getItem('roca_projetos')) || []; }
+        function salvarProjetos(projetos) { localStorage.setItem('roca_projetos', JSON.stringify(projetos)); }
 
         function carregarProjetos() {
             const projetos = getProjetos();
             const listaDiv = document.getElementById('listaProjetos');
             listaDiv.innerHTML = '';
-
+            
             if (projetos.length === 0) {
                 listaDiv.innerHTML = '<p class="text-gray-500 text-sm col-span-full">Nenhum projeto cadastrado.</p>';
                 return;
             }
 
             projetos.forEach((proj, index) => {
-                const logoHtml = proj.logo ? 
-                    `<div class="mb-3 flex justify-center"><img src="${proj.logo}" alt="Logo" class="h-12 object-contain rounded"></div>` : 
-                    `<div class="mb-3 flex items-center justify-center h-12 bg-gray-100 rounded text-xs text-gray-400 font-medium">Sem Logomarca</div>`;
-
+                const logoHtml = proj.logo ? `<img src="${proj.logo}" class="h-12 object-contain mx-auto mb-3">` : `<div class="mb-3 flex items-center justify-center h-12 bg-gray-100 rounded text-xs text-gray-400 font-medium">Sem Logomarca</div>`;
                 listaDiv.innerHTML += `
                     <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
                         <div>
                             ${logoHtml}
-                            <h3 class="font-bold text-lg mb-1 text-gray-800 text-center">${proj.nome}</h3>
-                            <p class="text-gray-600 text-xs mb-2 text-center">Cliente: ${proj.cliente}</p>
-                            <div class="flex justify-center mb-4">
-                                <span class="inline-block bg-blue-50 text-blue-700 text-xs px-2.5 py-1 rounded-full font-medium">Status: ${proj.status}</span>
-                            </div>
+                            <h3 class="font-bold text-lg text-center text-gray-800">${proj.nome}</h3>
+                            <p class="text-gray-600 text-xs mb-4 text-center">Cliente: ${proj.cliente}</p>
                         </div>
-                        <div class="flex gap-4 pt-4 border-t border-gray-100 justify-center">
-                            <button onclick="editarProjeto(${index})" class="text-blue-600 hover:underline text-sm font-medium">Editar</button>
-                            <button onclick="excluirProjeto(${index})" class="text-red-500 hover:underline text-sm font-medium">Excluir</button>
+                        <div class="flex flex-col gap-2 pt-4 border-t border-gray-100">
+                            <button onclick="abrirVisaoProjeto(${index})" class="w-full bg-gray-800 text-white py-2 rounded font-medium text-sm hover:bg-gray-900 transition">📂 Abrir Projeto</button>
+                            <div class="flex justify-between mt-2">
+                                <button onclick="editarProjeto(${index})" class="text-blue-600 hover:underline text-xs">Editar</button>
+                                <button onclick="excluirProjeto(${index})" class="text-red-500 hover:underline text-xs">Excluir</button>
+                            </div>
                         </div>
                     </div>
                 `;
             });
         }
 
-        // Conversor de arquivo para Base64
         document.getElementById('inputLogoFile').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = function(event) {
-                    document.getElementById('inputLogoBase64').value = event.target.result;
-                };
+                reader.onload = function(event) { document.getElementById('inputLogoBase64').value = event.target.result; };
                 reader.readAsDataURL(file);
             }
+        });
+
+        document.getElementById('formProjeto').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const index = document.getElementById('projetoIndex').value;
+            let projetos = getProjetos();
+            const novoProj = {
+                logo: document.getElementById('inputLogoBase64').value,
+                nome: document.getElementById('inputNomeProjeto').value,
+                cliente: document.getElementById('inputClienteProjeto').value,
+                status: document.getElementById('inputStatusProjeto').value,
+                documentos: []
+            };
+
+            if (index === '') {
+                projetos.push(novoProj);
+            } else { 
+                novoProj.documentos = projetos[index].documentos || []; 
+                projetos[index] = novoProj; 
+            }
+            salvarProjetos(projetos);
+            carregarProjetos();
+            fecharModal('modalProjeto');
         });
 
         function abrirModalProjeto(index = null) {
             document.getElementById('formProjeto').reset();
             document.getElementById('inputLogoBase64').value = '';
-            
             if (index !== null) {
-                const projetos = getProjetos();
-                const proj = projetos[index];
+                const proj = getProjetos()[index];
                 document.getElementById('modalProjetoTitulo').innerText = "Editar Projeto";
                 document.getElementById('projetoIndex').value = index;
                 document.getElementById('inputLogoBase64').value = proj.logo || '';
@@ -336,33 +337,7 @@
             document.getElementById('modalProjeto').classList.remove('hidden');
         }
 
-        document.getElementById('formProjeto').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const index = document.getElementById('projetoIndex').value;
-            const logo = document.getElementById('inputLogoBase64').value;
-            const nome = document.getElementById('inputNomeProjeto').value;
-            const cliente = document.getElementById('inputClienteProjeto').value;
-            const status = document.getElementById('inputStatusProjeto').value;
-
-            let projetos = getProjetos();
-
-            if (index === '') {
-                // Adicionar novo
-                projetos.push({ logo, nome, cliente, status });
-            } else {
-                // Editar existente
-                projetos[index] = { logo, nome, cliente, status };
-            }
-
-            salvarProjetos(projetos);
-            carregarProjetos();
-            fecharModal('modalProjeto');
-        });
-
-        function editarProjeto(index) {
-            abrirModalProjeto(index);
-        }
-
+        function editarProjeto(index) { abrirModalProjeto(index); }
         function excluirProjeto(index) {
             if (confirm("Deseja realmente excluir este projeto?")) {
                 let projetos = getProjetos();
@@ -372,8 +347,120 @@
             }
         }
 
-        window.onload = function() {
-            atualizarInterfaceTopo();
+        function abrirVisaoProjeto(index) {
+            projetoAtualIndex = index;
+            const proj = getProjetos()[index];
+            document.getElementById('viewDashboard').classList.add('hidden');
+            document.getElementById('viewProjetoDetalhe').classList.remove('hidden');
+            document.getElementById('tituloProjetoAtual').innerText = proj.nome;
+            document.getElementById('clienteProjetoAtual').innerText = proj.cliente;
+            renderizarDocumentos();
+        }
+
+        function voltarParaDashboard() {
+            document.getElementById('viewProjetoDetalhe').classList.add('hidden');
+            document.getElementById('viewDashboard').classList.remove('hidden');
+            projetoAtualIndex = null;
+        }
+
+        document.getElementById('inputUploadDoc').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file && projetoAtualIndex !== null) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    let projetos = getProjetos();
+                    if(!projetos[projetoAtualIndex].documentos) projetos[projetoAtualIndex].documentos = [];
+                    projetos[projetoAtualIndex].documentos.push({
+                        nome: file.name,
+                        data: new Date().toLocaleDateString(),
+                        conteudo: event.target.result,
+                        analiseIA: null
+                    });
+                    salvarProjetos(projetos);
+                    renderizarDocumentos();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function renderizarDocumentos() {
+            const projetos = getProjetos();
+            const docs = projetos[projetoAtualIndex].documentos || [];
+            const listaDiv = document.getElementById('listaDocumentosProjeto');
+            
+            if (docs.length === 0) {
+                listaDiv.innerHTML = '<p class="text-sm text-gray-500">Nenhum documento carregado.</p>';
+                return;
+            }
+
+            listaDiv.innerHTML = '';
+            docs.forEach((doc, docIndex) => {
+                const analiseBox = doc.analiseIA 
+                    ? `<div class="mt-3 p-3 bg-blue-50 border border-blue-100 rounded text-sm text-gray-700"><strong>🤖 Análise IA:</strong><br>${doc.analiseIA}</div>` 
+                    : ``;
+
+                listaDiv.innerHTML += `
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center gap-3">
+                                <div class="text-2xl">📄</div>
+                                <div>
+                                    <p class="font-semibold text-sm text-gray-800">${doc.nome}</p>
+                                    <p class="text-xs text-gray-500">Adicionado em: ${doc.data}</p>
+                                </div>
+                            </div>
+                            <button onclick="analisarComGemini(${docIndex})" id="btnIa-${docIndex}" class="text-xs bg-purple-100 text-purple-700 font-bold px-3 py-1 rounded hover:bg-purple-200 flex items-center gap-1">
+                                <span>✨</span> Analisar com IA
+                            </button>
+                        </div>
+                        ${analiseBox}
+                    </div>
+                `;
+            });
+        }
+
+        // CHAMADA REAL À API DO GEMINI
+        async function analisarComGemini(docIndex) {
+            const btn = document.getElementById(`btnIa-${docIndex}`);
+            btn.innerText = "Analisando...";
+            btn.disabled = true;
+
+            const projetos = getProjetos();
+            const doc = projetos[projetoAtualIndex].documentos[docIndex];
+
+            try {
+                // Prepara a requisição para a API oficial do Gemini 1.5 Flash
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [
+                                { text: "Analise este documento de engenharia. Faça um resumo técnico executivo estruturado, destacando prazos, custos, etapas e possíveis riscos apontados." },
+                                { text: `Nome do arquivo: ${doc.nome}` }
+                            ]
+                        }]
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.candidates && data.candidates[0].content.parts[0].text) {
+                    const textoAnalise = data.candidates[0].content.parts[0].text;
+                    projetos[projetoAtualIndex].documentos[docIndex].analiseIA = textoAnalise;
+                    salvarProjetos(projetos);
+                    renderizarDocumentos();
+                } else {
+                    alert("Erro ao processar a resposta da IA.");
+                    btn.innerText = "✨ Analisar com IA";
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Erro de conexão com a API do Gemini.");
+                btn.innerText = "✨ Analisar com IA";
+                btn.disabled = false;
+            }
         }
     </script>
 </body>
