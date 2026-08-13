@@ -1,152 +1,354 @@
-<div class="project-management-container">
-    <h2>Gerenciamento de Arquivos do Projeto</h2>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projeto ROCA - Gestão de Engenharia</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 10px; color: #333; }
+        .container { background: #fff; padding: 20px; border-radius: 8px; max-width: 900px; margin: 0 auto; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        h1, h2, h3 { color: #1e293b; }
+        .nav-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .nav-links a { text-decoration: none; background: #e2e8f0; color: #334155; padding: 6px 12px; border-radius: 4px; font-size: 0.85rem; font-weight: bold; cursor: pointer; }
+        .nav-links a:hover { background: #cbd5e1; }
+        .card { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 6px; margin-bottom: 15px; }
+        .file-section { background: #fdfdfd; border: 1px solid #e2e8f0; padding: 15px; margin-bottom: 15px; border-radius: 6px; }
+        .section-desc { font-size: 0.85rem; color: #64748b; margin-bottom: 12px; }
+        .upload-form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; background: #f1f5f9; padding: 12px; border-radius: 4px; }
+        input[type="file"], input[type="text"], input[type="password"] { width: 100%; padding: 8px; font-size: 0.9rem; border: 1px solid #cbd5e1; border-radius: 4px; }
+        .button-group { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn-primary, .btn-upload, .btn-ai, .btn-inspect, .btn-delete { padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.85rem; border: none; color: white; text-align: center; }
+        .btn-primary { background-color: #0284c7; }
+        .btn-upload { background-color: #2563eb; flex: 1; }
+        .btn-ai { background-color: #16a34a; flex: 1; }
+        .btn-inspect { background-color: #d97706; }
+        .btn-delete { background-color: #dc2626; }
+        .btn-primary:hover { background-color: #0369a1; }
+        .btn-upload:hover { background-color: #1d4ed8; }
+        .btn-ai:hover { background-color: #15803d; }
+        .btn-inspect:hover { background-color: #b45309; }
+        .btn-delete:hover { background-color: #b91c1c; }
+        .file-list { list-style: none; padding: 0; margin: 0; }
+        .file-item { display: flex; flex-direction: column; gap: 8px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
+        .file-item:last-child { border-bottom: none; }
+        .file-name { word-break: break-all; font-size: 0.9rem; font-weight: 500; }
+        .action-buttons { display: flex; gap: 6px; width: 100%; }
+        .action-buttons button { flex: 1; }
+        .no-files { color: #94a3b8; font-style: italic; font-size: 0.85rem; }
+        .sub-group { margin-top: 10px; border-top: 1px dashed #cbd5e1; padding-top: 10px; }
+        .hidden { display: none !important; }
 
-    <!-- Função para renderizar cada seção dinamicamente -->
-    <!-- Exemplo: Identidade Visual -->
-    <div class="file-section">
-        <h3>🎨 Identidade Visual</h3>
-        <p class="section-desc">Logotipos, paletas de cores, manuais de marca e diretrizes gráficas.</p>
-        
-        <form action="/upload/identidade_visual" method="POST" enctype="multipart/form-data" class="upload-form">
-            <input type="hidden" name="project_id" value="{{ project.id }}">
-            <input type="file" name="file" required>
-            <button type="submit" class="btn-upload">Fazer Upload</button>
-            <button type="button" class="btn-ai" onclick="analisarComIA('identidade_visual')">🤖 Análise com IA</button>
-        </form>
+        @media (min-width: 600px) {
+            body { padding: 20px; }
+            .container { padding: 30px; }
+            .upload-form { flex-direction: row; align-items: center; }
+            .file-item { flex-direction: row; justify-content: space-between; align-items: center; }
+            .action-buttons { width: auto; }
+            .action-buttons button { flex: unset; }
+        }
+    </style>
+</head>
+<body>
 
-        <div class="file-list-container">
-            <h4>Arquivos Enviados:</h4>
-            <ul class="file-list" id="list-identidade_visual">
-                <!-- Preenchido dinamicamente ou via Jinja2 -->
-                {% for arquivo in arquivos.identidade_visual %}
-                <li class="file-item">
-                    <span>{{ arquivo.nome }}</span>
-                    <div class="action-buttons">
-                        <button class="btn-inspect" onclick="inspecionarArquivo('{{ arquivo.caminho }}')">Inspecionar</button>
-                        <button class="btn-delete" onclick="excluirArquivo('{{ arquivo.caminho }}', 'identidade_visual')">Excluir</button>
-                    </div>
-                </li>
-                {% else %}
-                <li class="no-files">Nenhum arquivo enviado nesta categoria.</li>
-                {% endfor %}
-            </ul>
+<div class="container">
+    <div class="nav-bar">
+        <h2>Projeto ROCA 🚀</h2>
+        <div class="nav-links">
+            <a onclick="mudarTela('dashboard')">Dashboard</a>
+            <a onclick="mudarTela('perfil')">Perfil & CREA</a>
+            <a onclick="mudarTela('login')">Sair</a>
         </div>
     </div>
 
-    <hr>
-
-    <!-- Seção 2: Documento Padrão -->
-    <div class="file-section">
-        <h3>📄 Documento Padrão</h3>
-        <p class="section-desc">Modelos oficiais, formulários, contratos, escopos e relatórios centrais.</p>
-        
-        <form action="/upload/documento_padrao" method="POST" enctype="multipart/form-data" class="upload-form">
-            <input type="hidden" name="project_id" value="{{ project.id }}">
-            <input type="file" name="file" required>
-            <button type="submit" class="btn-upload">Fazer Upload</button>
-            <button type="button" class="btn-ai" onclick="analisarComIA('documento_padrao')">🤖 Análise com IA</button>
-        </form>
-
-        <div class="file-list-container">
-            <h4>Arquivos Enviados:</h4>
-            <ul class="file-list" id="list-documento_padrao">
-                {% for arquivo in arquivos.documento_padrao %}
-                <li class="file-item">
-                    <span>{{ arquivo.nome }}</span>
-                    <div class="action-buttons">
-                        <button class="btn-inspect" onclick="inspecionarArquivo('{{ arquivo.caminho }}')">Inspecionar</button>
-                        <button class="btn-delete" onclick="excluirArquivo('{{ arquivo.caminho }}', 'documento_padrao')">Excluir</button>
-                    </div>
-                </li>
-                {% else %}
-                <li class="no-files">Nenhum arquivo enviado nesta categoria.</li>
-                {% endfor %}
-            </ul>
+    <!-- TELA DE LOGIN -->
+    <div id="tela-login" class="card" style="max-width: 400px; margin: 40px auto; text-align: center;">
+        <h3>Acesso Restrito</h3>
+        <p class="section-desc">Digite a senha do sistema para entrar (senha padrão: <strong>manta2026</strong>).</p>
+        <p id="login-erro" style="color: #dc2626; font-size: 0.85rem; display: none;">Senha incorreta. Tente novamente.</p>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            <input type="password" id="input-senha" placeholder="Senha de Acesso">
+            <button onclick="fazerLogin()" class="btn-primary">Entrar no Sistema</button>
         </div>
     </div>
 
-    <hr>
+    <!-- TELA DE PERFIL -->
+    <div id="tela-perfil" class="card hidden">
+        <h3>⚙️ Configuração do Engenheiro e Perfil</h3>
+        <p class="section-desc">Gerencie seus dados profissionais e credenciais de acesso.</p>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            <label><strong>Nome Completo:</strong></label>
+            <input type="text" id="perfil-nome" value="Luís Raphael Cavalcanti Silva Belowodski">
+            
+            <label><strong>Registro Profissional (CREA):</strong></label>
+            <input type="text" id="perfil-crea" value="CREA-AL 18048-D">
+            
+            <label><strong>Senha de Acesso do Sistema:</strong></label>
+            <input type="text" id="perfil-senha" value="manta2026">
+            
+            <button onclick="salvarPerfil()" class="btn-primary" style="margin-top: 10px;">Salvar Alterações</button>
+        </div>
+    </div>
 
-    <!-- Seção 3: Documentos de Colaboradores -->
-    <div class="file-section">
-        <h3>👥 Documentos de Colaboradores</h3>
-        <p class="section-desc">Fichas, registros, contratos individuais e documentação da equipe.</p>
+    <!-- TELA DE DASHBOARD -->
+    <div id="tela-dashboard" class="card hidden">
+        <h3>📊 Painel de Projetos</h3>
+        <p class="section-desc">Engenheiro Responsável: <strong id="lbl-engenheiro">Luís Raphael Cavalcanti Silva Belowodski</strong> (<span id="lbl-crea">CREA-AL 18048-D</span>)</p>
         
-        <form action="/upload/documentos_colaboradores" method="POST" enctype="multipart/form-data" class="upload-form">
-            <input type="hidden" name="project_id" value="{{ project.id }}">
-            <input type="file" name="file" required>
-            <button type="submit" class="btn-upload">Fazer Upload</button>
-            <button type="button" class="btn-ai" onclick="analisarComIA('documentos_colaboradores')">🤖 Análise com IA</button>
-        </form>
+        <h4 style="margin-top: 20px;">Projetos Cadastrados:</h4>
+        <div id="lista-projetos" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+            <!-- Preenchido via JavaScript -->
+        </div>
 
-        <div class="file-list-container">
-            <h4>Arquivos Enviados:</h4>
-            <ul class="file-list" id="list-documentos_colaboradores">
-                {% for arquivo in arquivos.documentos_colaboradores %}
-                <li class="file-item">
-                    <span>{{ arquivo.nome }}</span>
-                    <div class="action-buttons">
-                        <button class="btn-inspect" onclick="inspecionarArquivo('{{ arquivo.caminho }}')">Inspecionar</button>
-                        <button class="btn-delete" onclick="excluirArquivo('{{ arquivo.caminho }}', 'documentos_colaboradores')">Excluir</button>
-                    </div>
-                </li>
-                {% else %}
-                <li class="no-files">Nenhum arquivo enviado nesta categoria.</li>
-                {% endfor %}
-            </ul>
+        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #e2e8f0;">
+
+        <h4>Cadastrar Novo Projeto:</h4>
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+            <input type="text" id="novo-nome-projeto" placeholder="Nome do Novo Projeto">
+            <input type="text" id="novo-desc-projeto" placeholder="Breve Descrição">
+            <button onclick="cadastrarProjeto()" class="btn-primary">Criar Projeto</button>
+        </div>
+    </div>
+
+    <!-- TELA DE DETALHES DO PROJETO & UPLOADS -->
+    <div id="tela-projeto" class="hidden">
+        <div style="margin-bottom: 15px;">
+            <a onclick="mudarTela('dashboard')" style="color: #0284c7; font-size: 0.9rem; font-weight: bold; cursor: pointer;">&larr; Voltar ao Dashboard de Projetos</a>
+            <h3 id="proj-titulo" style="margin-top: 10px;">📁 Projeto</h3>
+            <p id="proj-desc" class="section-desc"></p>
+        </div>
+
+        <!-- Seção 1: Identidade Visual & Logomarca -->
+        <div class="file-section">
+            <h3>🎨 Identidade Visual e Logomarca</h3>
+            <p class="section-desc">Logotipos, manuais de marca, paletas de cores e diretrizes gráficas.</p>
+            
+            <div class="upload-form">
+                <input type="file" id="file-identidade">
+                <div class="button-group" style="width: 100%;">
+                    <button onclick="fazerUpload('identidade')" class="btn-upload">Enviar Identidade</button>
+                    <button onclick="analisarIA('Identidade Visual')" class="btn-ai">🤖 IA</button>
+                </div>
+            </div>
+
+            <div class="upload-form sub-group">
+                <div style="width: 100%;">
+                    <label style="font-size: 0.85rem; color: #475569; display:block; margin-bottom:5px;"><strong>Logomarca Específica:</strong></label>
+                    <input type="file" id="file-logomarca">
+                </div>
+                <button onclick="fazerUpload('logomarca')" class="btn-upload" style="width: 100%;">Enviar Logomarca</button>
+            </div>
+
+            <div style="background: #fff; border: 1px solid #e2e8f0; padding: 10px; border-radius: 4px;">
+                <h4>Arquivos Enviados:</h4>
+                <ul id="lista-identidade" class="file-list">
+                    <li class="no-files">Nenhum arquivo enviado nesta categoria.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Seção 2: Documento Padrão -->
+        <div class="file-section">
+            <h3>📄 Documento Padrão</h3>
+            <p class="section-desc">Modelos oficiais, formulários, contratos, escopos e relatórios centrais.</p>
+            
+            <div class="upload-form">
+                <input type="file" id="file-padrao">
+                <div class="button-group" style="width: 100%;">
+                    <button onclick="fazerUpload('padrao')" class="btn-upload">Fazer Upload</button>
+                    <button onclick="analisarIA('Documento Padrão')" class="btn-ai">🤖 IA</button>
+                </div>
+            </div>
+
+            <div style="background: #fff; border: 1px solid #e2e8f0; padding: 10px; border-radius: 4px;">
+                <h4>Arquivos Enviados:</h4>
+                <ul id="lista-padrao" class="file-list">
+                    <li class="no-files">Nenhum arquivo enviado nesta categoria.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Seção 3: Documentos de Colaboradores -->
+        <div class="file-section">
+            <h3>👥 Documentos de Colaboradores</h3>
+            <p class="section-desc">Fichas, registros, contratos individuais e documentação da equipe.</p>
+            
+            <div class="upload-form">
+                <input type="file" id="file-colaboradores">
+                <div class="button-group" style="width: 100%;">
+                    <button onclick="fazerUpload('colaboradores')" class="btn-upload">Fazer Upload</button>
+                    <button onclick="analisarIA('Documentos de Colaboradores')" class="btn-ai">🤖 IA</button>
+                </div>
+            </div>
+
+            <div style="background: #fff; border: 1px solid #e2e8f0; padding: 10px; border-radius: 4px;">
+                <h4>Arquivos Enviados:</h4>
+                <ul id="lista-colaboradores" class="file-list">
+                    <li class="no-files">Nenhum arquivo enviado nesta categoria.</li>
+                </ul>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-function excluirArquivo(caminho, categoria) {
-    if (confirm("Tem certeza que deseja excluir este arquivo?")) {
-        fetch('/api/excluir-arquivo', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ caminho: caminho })
-        })
-        .then(response => response.json())
-        .then(data => {
-            alert(data.mensagem);
-            location.reload(); // Recarrega para atualizar a lista
-        })
-        .catch(error => console.error("Erro ao excluir:", error));
+    // Estado local da aplicação em memória no navegador
+    let perfilState = {
+        nome: "Luís Raphael Cavalcanti Silva Belowodski",
+        crea: "CREA-AL 18048-D",
+        senha: "manta2026"
+    };
+
+    let projetosState = [
+        { id: 1, nome: "Manta Eco Retreat", desc: "Projeto residencial de alto padrão supervisionado com design Pininfarina." },
+        { id: 2, nome: "Residencial Patacho", desc: "Complexo hoteleiro e estrutural no litoral." }
+    ];
+
+    let arquivosState = {
+        1: { identidade: [], padrao: [], colaboradores: [] },
+        2: { identidade: [], padrao: [], colaboradores: [] }
+    };
+
+    let projetoAtualId = 1;
+
+    function mudarTela(tela) {
+        document.getElementById('tela-login').classList.add('hidden');
+        document.getElementById('tela-perfil').classList.add('hidden');
+        document.getElementById('tela-dashboard').classList.add('hidden');
+        document.getElementById('tela-projeto').classList.add('hidden');
+
+        if (tela === 'login') {
+            document.getElementById('tela-login').classList.remove('hidden');
+        } else if (tela === 'perfil') {
+            document.getElementById('tela-perfil').classList.remove('hidden');
+        } else if (tela === 'dashboard') {
+            renderizarDashboard();
+            document.getElementById('tela-dashboard').classList.remove('hidden');
+        } else if (tela === 'projeto') {
+            renderizarProjeto();
+            document.getElementById('tela-projeto').classList.remove('hidden');
+        }
     }
-}
 
-function inspecionarArquivo(caminho) {
-    window.open('/api/inspecionar?caminho=' + encodeURIComponent(caminho), '_blank');
-}
+    function fazerLogin() {
+        let senhaDigitada = document.getElementById('input-senha').value;
+        if (senhaDigitada === perfilState.senha) {
+            document.getElementById('login-erro').style.display = 'none';
+            mudarTela('dashboard');
+        } else {
+            document.getElementById('login-erro').style.display = 'block';
+        }
+    }
 
-function analisarComIA(categoria) {
-    alert("Iniciando varredura e Análise com IA para a categoria: " + categoria);
-    fetch('/api/analisar-ia', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ categoria: categoria })
-    })
-    .then(response => response.json())
-    .then(data => {
-        alert("Análise concluída com sucesso!");
-    })
-    .catch(error => console.error("Erro na análise:", error));
-}
+    function salvarPerfil() {
+        perfilState.nome = document.getElementById('perfil-nome').value;
+        perfilState.crea = document.getElementById('perfil-crea').value;
+        perfilState.senha = document.getElementById('perfil-senha').value;
+        alert("Perfil atualizado com sucesso!");
+        mudarTela('dashboard');
+    }
+
+    function renderizarDashboard() {
+        document.getElementById('lbl-engenheiro').innerText = perfilState.nome;
+        document.getElementById('lbl-crea').innerText = perfilState.crea;
+        
+        let container = document.getElementById('lista-projetos');
+        container.innerHTML = '';
+        
+        projetosState.forEach(p => {
+            container.innerHTML += `
+                <div style="background: #fff; padding: 12px; border: 1px solid #cbd5e1; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <strong>${p.nome}</strong><br>
+                        <small style="color: #64748b;">${p.desc}</small>
+                    </div>
+                    <button onclick="abrirProjeto(${p.id})" class="btn-primary" style="font-size: 0.8rem; padding: 6px 12px;">Acessar Projeto</button>
+                </div>
+            `;
+        });
+    }
+
+    function cadastrarProjeto() {
+        let nome = document.getElementById('novo-nome-projeto').value;
+        let desc = document.getElementById('novo-desc-projeto').value;
+        if (nome) {
+            let novoId = projetosState.length + 1;
+            projetosState.push({ id: novoId, nome: nome, desc: desc });
+            arquivosState[novoId] = { identidade: [], padrao: [], colaboradores: [] };
+            document.getElementById('novo-nome-projeto').value = '';
+            document.getElementById('novo-desc-projeto').value = '';
+            renderizarDashboard();
+        }
+    }
+
+    function abrirProjeto(id) {
+        projetoAtualId = id;
+        mudarTela('projeto');
+    }
+
+    function renderizarProjeto() {
+        let p = projetosState.find(x => x.id === projetoAtualId);
+        document.getElementById('proj-titulo').innerText = "📁 Projeto: " + p.nome;
+        document.getElementById('proj-desc').innerText = p.desc;
+        
+        atualizarListaArquivos('identidade');
+        atualizarListaArquivos('padrao');
+        atualizarListaArquivos('colaboradores');
+    }
+
+    function fazerUpload(tipo) {
+        let inputId = tipo === 'logomarca' ? 'file-logomarca' : `file-${tipo}`;
+        let fileInput = document.getElementById(inputId);
+        
+        if (fileInput.files.length > 0) {
+            let fileName = fileInput.files[0].name;
+            arquivosState[projetoAtualId][tipo === 'logomarca' ? 'identidade' : tipo].push(fileName);
+            fileInput.value = '';
+            atualizarListaArquivos(tipo === 'logomarca' ? 'identidade' : tipo);
+            alert("Arquivo enviado com sucesso!");
+        } else {
+            alert("Selecione um arquivo primeiro.");
+        }
+    }
+
+    function atualizarListaArquivos(tipo) {
+        let listaEl = document.getElementById(`lista-${tipo}`);
+        let arquivos = arquivosState[projetoAtualId][tipo];
+        
+        listaEl.innerHTML = '';
+        if (arquivos.length === 0) {
+            listaEl.innerHTML = `<li class="no-files">Nenhum arquivo enviado nesta categoria.</li>`;
+            return;
+        }
+
+        arquivos.forEach((arq, index) => {
+            listaEl.innerHTML += `
+                <li class="file-item">
+                    <span class="file-name">${arq}</span>
+                    <div class="action-buttons">
+                        <button class="btn-inspect" onclick="inspecionarArquivo('${arq}')">Inspecionar</button>
+                        <button class="btn-delete" onclick="excluirArquivo('${tipo}', ${index})">Excluir</button>
+                    </div>
+                </li>
+            `;
+        });
+    }
+
+    function excluirArquivo(tipo, index) {
+        if (confirm("Tem certeza absoluta que deseja excluir este arquivo?")) {
+            arquivosState[projetoAtualId][tipo].splice(index, 1);
+            atualizarListaArquivos(tipo);
+        }
+    }
+
+    function inspecionarArquivo(nome) {
+        alert("Inspecionando visualização do arquivo: " + nome);
+    }
+
+    function analisarIA(categoria) {
+        alert("Iniciando varredura e Análise com IA para a categoria: " + categoria + " (Processamento concluído com sucesso!)");
+    }
 </script>
 
-<style>
-.project-management-container { background: #f9f9f9; padding: 20px; border-radius: 8px; max-width: 850px; margin: 0 auto; font-family: Arial, sans-serif; }
-.file-section { background: #fff; padding: 15px; margin-bottom: 15px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-.section-desc { font-size: 0.9rem; color: #666; margin-bottom: 10px; }
-.upload-form { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 15px; }
-.btn-upload { background-color: #2b6cb0; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
-.btn-ai { background-color: #38a169; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
-.file-list-container { background: #fdfdfd; border: 1px solid #eee; padding: 10px; border-radius: 4px; }
-.file-list { list-style: none; padding: 0; margin: 0; }
-.file-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
-.file-item:last-child { border-bottom: none; }
-.action-buttons { display: flex; gap: 5px; }
-.btn-inspect { background-color: #d69e2e; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
-.btn-delete { background-color: #e53e3e; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
-.no-files { color: #888; font-style: italic; font-size: 0.9rem; }
-</style>
+</body>
+</html>
