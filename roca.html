@@ -64,10 +64,14 @@
     <!-- TELA DE LOGIN -->
     <div id="tela-login" class="card" style="max-width: 400px; margin: 40px auto; text-align: center;">
         <h3>Acesso Restrito</h3>
-        <p class="section-desc">Digite a senha do sistema para entrar (senha padrão: <strong>manta2026</strong>).</p>
-        <p id="login-erro" style="color: #dc2626; font-size: 0.85rem; display: none;">Senha incorreta. Tente novamente.</p>
+        <p class="section-desc">Acesso restrito. Digite sua senha para entrar no sistema.</p>
+        <p id="login-erro" style="color: #dc2626; font-size: 0.85rem; display: none;"></p>
+        <p id="login-tentativas" style="color: #64748b; font-size: 0.78rem; display: none;"></p>
         <div style="display: flex; flex-direction: column; gap: 12px;">
-            <input type="password" id="input-senha" placeholder="Senha de Acesso">
+            <div style="display:flex; gap:8px; align-items:center;">
+                <input type="password" id="input-senha" placeholder="Senha de Acesso" autocomplete="current-password">
+                <button type="button" onclick="alternarSenha()" class="btn-primary" style="white-space:nowrap;">Mostrar</button>
+            </div>
             <button onclick="fazerLogin()" class="btn-primary">Entrar no Sistema</button>
         </div>
     </div>
@@ -84,7 +88,7 @@
             <input type="text" id="perfil-crea" value="CREA-AL 18048-D">
             
             <label><strong>Senha de Acesso do Sistema:</strong></label>
-            <input type="text" id="perfil-senha" value="manta2026">
+            <input type="password" id="perfil-senha" value="">
             
             <button onclick="salvarPerfil()" class="btn-primary" style="margin-top: 10px;">Salvar Alterações</button>
         </div>
@@ -196,7 +200,7 @@
     let perfilState = {
         nome: "Luís Raphael Cavalcanti Silva Belowodski",
         crea: "CREA-AL 18048-D",
-        senha: "manta2026"
+        senha: "manta2026" // Senha apenas para protótipo local; em produção deve ficar no backend.
     };
 
     let projetosState = [
@@ -210,6 +214,60 @@
     };
 
     let projetoAtualId = 1;
+
+    // Contador de tentativas de acesso.
+    // A ideia é permitir que o ROCA tenha uma personalidade progressiva
+    // sem transformar a mensagem de erro em um bloqueio ou ofensa.
+    let tentativasLogin = 0;
+
+    // Mensagens progressivas para erros de senha.
+    const mensagensLogin = [
+        "Senha incorreta. Calma, isso acontece com todo mundo.",
+        "Ainda não foi dessa vez. Respira e tenta novamente.",
+        "Você está tentando digitar a senha ou só está espancando o teclado?",
+        "Relatório técnico: a senha continua desaparecida.",
+        "Diagnóstico preliminar: o teclado está funcionando. A senha é que não apareceu.",
+        "O ROCA permanece íntegro. A senha, aparentemente, decidiu tirar férias.",
+        "Se você estiver xingando o ROCA, ele informa que não leva para o lado pessoal. Mas a senha continua errada.",
+        "Pode mandar o palavrão. O ROCA aguenta. Agora manda a senha certa também.",
+        "Entendido. Xingamento recebido e devidamente ignorado. Vamos tentar a senha novamente?"
+    ];
+
+    function obterMensagemLogin() {
+        // Depois das mensagens iniciais, mantemos a última mensagem
+        // para não deixar o sistema excessivamente repetitivo.
+        return mensagensLogin[Math.min(tentativasLogin - 1, mensagensLogin.length - 1)];
+    }
+
+    function alternarSenha() {
+        const campo = document.getElementById("input-senha");
+        const botao = event.currentTarget;
+
+        if (campo.type === "password") {
+            campo.type = "text";
+            botao.innerText = "Ocultar";
+        } else {
+            campo.type = "password";
+            botao.innerText = "Mostrar";
+        }
+    }
+
+    // Responde com humor leve a mensagens digitadas no campo de senha.
+    // Isso é apenas uma camada de personalidade da interface; não substitui
+    // autenticação real no servidor.
+    function detectarXingamento(texto) {
+        const termos = [
+            "porra", "merda", "caralho", "puta", "foda", "fodase",
+            "foda-se", "cacete", "vai tomar", "desgraça"
+        ];
+
+        const normalizado = texto
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\\u0300-\\u036f]/g, "");
+
+        return termos.some(termo => normalizado.includes(termo));
+    }
 
     function mudarTela(tela) {
         document.getElementById('tela-login').classList.add('hidden');
@@ -231,19 +289,53 @@
     }
 
     function fazerLogin() {
-        let senhaDigitada = document.getElementById('input-senha').value;
+        // Validação do acesso no protótipo.
+        // Na versão definitiva, esta comparação deverá acontecer no backend.
+        const campoSenha = document.getElementById('input-senha');
+        const mensagemErro = document.getElementById('login-erro');
+        const mensagemTentativas = document.getElementById('login-tentativas');
+        const senhaDigitada = campoSenha.value;
+
         if (senhaDigitada === perfilState.senha) {
-            document.getElementById('login-erro').style.display = 'none';
+            tentativasLogin = 0;
+            mensagemErro.style.display = 'none';
+            mensagemTentativas.style.display = 'none';
+            campoSenha.value = '';
             mudarTela('dashboard');
-        } else {
-            document.getElementById('login-erro').style.display = 'block';
+            return;
         }
+
+        tentativasLogin++;
+
+        let mensagem = obterMensagemLogin();
+
+        if (detectarXingamento(senhaDigitada)) {
+            mensagem = "Xingamento identificado. O ROCA não se ofendeu. Agora vamos acertar essa senha?";
+        }
+
+        mensagemErro.innerText = mensagem;
+        mensagemErro.style.display = 'block';
+
+        mensagemTentativas.innerText =
+            `Tentativa ${tentativasLogin}. O sistema continua aguardando a senha correta.`;
+        mensagemTentativas.style.display = 'block';
+
+        // Limpa o campo depois do erro para não deixar a senha digitada exposta.
+        campoSenha.value = '';
+        campoSenha.focus();
     }
 
     function salvarPerfil() {
         perfilState.nome = document.getElementById('perfil-nome').value;
         perfilState.crea = document.getElementById('perfil-crea').value;
-        perfilState.senha = document.getElementById('perfil-senha').value;
+
+        // Só substitui a senha se o usuário realmente informou uma nova.
+        const novaSenha = document.getElementById('perfil-senha').value.trim();
+        if (novaSenha) {
+            perfilState.senha = novaSenha;
+        }
+
+        document.getElementById('perfil-senha').value = '';
         alert("Perfil atualizado com sucesso!");
         mudarTela('dashboard');
     }
