@@ -53,7 +53,7 @@
 
 <div class="container">
     <div id="barra-navegacao" class="nav-bar hidden">
-        <h2>Projeto ROCA 🚀</h2>
+        <h2>Projeto ROCA 🏗️</h2>
         <div class="nav-links">
             <a onclick="mudarTela('dashboard')">Dashboard</a>
             <a onclick="mudarTela('perfil')">Perfil & CREA</a>
@@ -196,11 +196,10 @@
 </div>
 
 <script>
-    // Estado local da aplicação em memória no navegador
     let perfilState = {
         nome: "Luís Raphael Cavalcanti Silva Belowodski",
         crea: "CREA-AL 18048-D",
-        senha: "manta2026" // Senha apenas para protótipo local; em produção deve ficar no backend.
+        senha: "manta2026"
     };
 
     let projetosState = [
@@ -214,17 +213,9 @@
     };
 
     let projetoAtualId = 1;
-
-    // Estado de autenticação da sessão.
-    // O sistema começa bloqueado e só libera as telas internas após login válido.
     let autenticado = false;
-
-    // Contador de tentativas de acesso.
-    // A ideia é permitir que o ROCA tenha uma personalidade progressiva
-    // sem transformar a mensagem de erro em um bloqueio ou ofensa.
     let tentativasLogin = 0;
 
-    // Mensagens progressivas para erros de senha.
     const mensagensLogin = [
         "Senha incorreta. Calma, isso acontece com todo mundo.",
         "Ainda não foi dessa vez. Respira e tenta novamente.",
@@ -238,8 +229,6 @@
     ];
 
     function obterMensagemLogin() {
-        // Depois das mensagens iniciais, mantemos a última mensagem
-        // para não deixar o sistema excessivamente repetitivo.
         return mensagensLogin[Math.min(tentativasLogin - 1, mensagensLogin.length - 1)];
     }
 
@@ -256,9 +245,6 @@
         }
     }
 
-    // Responde com humor leve a mensagens digitadas no campo de senha.
-    // Isso é apenas uma camada de personalidade da interface; não substitui
-    // autenticação real no servidor.
     function detectarXingamento(texto) {
         const termos = [
             "porra", "merda", "caralho", "puta", "foda", "fodase",
@@ -268,13 +254,12 @@
         const normalizado = texto
             .toLowerCase()
             .normalize("NFD")
-            .replace(/[\\u0300-\\u036f]/g, "");
+            .replace(/[\u0300-\u036f]/g, "");
 
         return termos.some(termo => normalizado.includes(termo));
     }
 
     function mudarTela(tela) {
-        // A tela de login é sempre acessível.
         if (tela === 'login') {
             document.getElementById('tela-login').classList.remove('hidden');
             document.getElementById('tela-perfil').classList.add('hidden');
@@ -284,7 +269,6 @@
             return;
         }
 
-        // Nenhuma tela interna pode ser aberta antes da autenticação.
         if (!autenticado) {
             mudarTela('login');
             return;
@@ -294,8 +278,6 @@
         document.getElementById('tela-perfil').classList.add('hidden');
         document.getElementById('tela-dashboard').classList.add('hidden');
         document.getElementById('tela-projeto').classList.add('hidden');
-
-        // Só depois do login a barra de navegação fica visível.
         document.getElementById('barra-navegacao').classList.remove('hidden');
 
         if (tela === 'perfil') {
@@ -310,15 +292,12 @@
     }
 
     function fazerLogin() {
-        // Validação do acesso no protótipo.
-        // Na versão definitiva, esta comparação deverá acontecer no backend.
         const campoSenha = document.getElementById('input-senha');
         const mensagemErro = document.getElementById('login-erro');
         const mensagemTentativas = document.getElementById('login-tentativas');
         const senhaDigitada = campoSenha.value;
 
         if (senhaDigitada === perfilState.senha) {
-            // Login válido: libera o sistema e a navegação.
             autenticado = true;
             tentativasLogin = 0;
             mensagemErro.style.display = 'none';
@@ -329,7 +308,6 @@
         }
 
         tentativasLogin++;
-
         let mensagem = obterMensagemLogin();
 
         if (detectarXingamento(senhaDigitada)) {
@@ -339,16 +317,13 @@
         mensagemErro.innerText = mensagem;
         mensagemErro.style.display = 'block';
 
-        mensagemTentativas.innerText =
-            `Tentativa ${tentativasLogin}. O sistema continua aguardando a senha correta.`;
+        mensagemTentativas.innerText = `Tentativa ${tentativasLogin}. O sistema continua aguardando a senha correta.`;
         mensagemTentativas.style.display = 'block';
 
-        // Limpa o campo depois do erro para não deixar a senha digitada exposta.
         campoSenha.value = '';
         campoSenha.focus();
     }
 
-    // Encerra a sessão e devolve o usuário à tela de acesso.
     function fazerLogout() {
         autenticado = false;
         document.getElementById('input-senha').value = '';
@@ -359,7 +334,6 @@
         perfilState.nome = document.getElementById('perfil-nome').value;
         perfilState.crea = document.getElementById('perfil-crea').value;
 
-        // Só substitui a senha se o usuário realmente informou uma nova.
         const novaSenha = document.getElementById('perfil-senha').value.trim();
         if (novaSenha) {
             perfilState.senha = novaSenha;
