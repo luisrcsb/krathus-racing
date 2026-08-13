@@ -18,17 +18,19 @@
         .upload-form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; background: #f1f5f9; padding: 12px; border-radius: 4px; }
         input[type="file"], input[type="text"], input[type="password"] { width: 100%; padding: 8px; font-size: 0.9rem; border: 1px solid #cbd5e1; border-radius: 4px; }
         .button-group { display: flex; gap: 8px; flex-wrap: wrap; }
-        .btn-primary, .btn-upload, .btn-ai, .btn-inspect, .btn-delete { padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.85rem; border: none; color: white; text-align: center; }
+        .btn-primary, .btn-upload, .btn-ai, .btn-inspect, .btn-delete, .btn-warning { padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.85rem; border: none; color: white; text-align: center; }
         .btn-primary { background-color: #0284c7; }
         .btn-upload { background-color: #2563eb; flex: 1; }
         .btn-ai { background-color: #16a34a; flex: 1; }
         .btn-inspect { background-color: #d97706; }
         .btn-delete { background-color: #dc2626; }
+        .btn-warning { background-color: #ca8a04; }
         .btn-primary:hover { background-color: #0369a1; }
         .btn-upload:hover { background-color: #1d4ed8; }
         .btn-ai:hover { background-color: #15803d; }
         .btn-inspect:hover { background-color: #b45309; }
         .btn-delete:hover { background-color: #b91c1c; }
+        .btn-warning:hover { background-color: #a16207; }
         .file-list { list-style: none; padding: 0; margin: 0; }
         .file-item { display: flex; flex-direction: column; gap: 8px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
         .file-item:last-child { border-bottom: none; }
@@ -116,10 +118,16 @@
 
     <!-- TELA DE DETALHES DO PROJETO & UPLOADS -->
     <div id="tela-projeto" class="hidden">
-        <div style="margin-bottom: 15px;">
-            <a onclick="mudarTela('dashboard')" style="color: #0284c7; font-size: 0.9rem; font-weight: bold; cursor: pointer;">&larr; Voltar ao Dashboard de Projetos</a>
-            <h3 id="proj-titulo" style="margin-top: 10px;">📁 Projeto</h3>
-            <p id="proj-desc" class="section-desc"></p>
+        <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div>
+                <a onclick="mudarTela('dashboard')" style="color: #0284c7; font-size: 0.9rem; font-weight: bold; cursor: pointer;">&larr; Voltar ao Dashboard</a>
+                <h3 id="proj-titulo" style="margin: 5px 0 0 0;">📁 Projeto</h3>
+                <p id="proj-desc" class="section-desc" style="margin: 0;"></p>
+            </div>
+            <div style="display: flex; gap: 6px;">
+                <button onclick="editarProjetoAtual()" class="btn-warning" style="font-size: 0.8rem;">✏️ Editar Projeto</button>
+                <button onclick="excluirProjetoAtual()" class="btn-delete" style="font-size: 0.8rem;">🗑️ Excluir Projeto</button>
+            </div>
         </div>
 
         <!-- Seção 1: Identidade Visual & Logomarca -->
@@ -351,6 +359,11 @@
         let container = document.getElementById('lista-projetos');
         container.innerHTML = '';
         
+        if (projetosState.length === 0) {
+            container.innerHTML = `<p class="no-files">Nenhum projeto cadastrado no momento.</p>`;
+            return;
+        }
+
         projetosState.forEach(p => {
             container.innerHTML += `
                 <div style="background: #fff; padding: 12px; border: 1px solid #cbd5e1; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
@@ -365,10 +378,10 @@
     }
 
     function cadastrarProjeto() {
-        let nome = document.getElementById('novo-nome-projeto').value;
-        let desc = document.getElementById('novo-desc-projeto').value;
+        let nome = document.getElementById('novo-nome-projeto').value.trim();
+        let desc = document.getElementById('novo-desc-projeto').value.trim();
         if (nome) {
-            let novoId = projetosState.length + 1;
+            let novoId = projetosState.length > 0 ? Math.max(...projetosState.map(p => p.id)) + 1 : 1;
             projetosState.push({ id: novoId, nome: nome, desc: desc });
             arquivosState[novoId] = { identidade: [], padrao: [], colaboradores: [] };
             document.getElementById('novo-nome-projeto').value = '';
@@ -382,8 +395,38 @@
         mudarTela('projeto');
     }
 
+    function editarProjetoAtual() {
+        let p = projetosState.find(x => x.id === projetoAtualId);
+        if (!p) return;
+
+        let novoNome = prompt("Editar nome do projeto:", p.nome);
+        if (novoNome !== null && novoNome.trim() !== "") {
+            let novaDesc = prompt("Editar descrição do projeto:", p.desc);
+            p.nome = novoNome.trim();
+            p.desc = novaDesc !== null ? novaDesc.trim() : p.desc;
+            renderizarProjeto();
+            alert("Projeto atualizado com sucesso!");
+        }
+    }
+
+    function excluirProjetoAtual() {
+        let p = projetosState.find(x => x.id === projetoAtualId);
+        if (!p) return;
+
+        if (confirm(`Tem certeza absoluta que deseja excluir o projeto "${p.nome}" e todos os seus arquivos?`)) {
+            projetosState = projetosState.filter(x => x.id !== projetoAtualId);
+            delete arquivosState[projetoAtualId];
+            alert("Projeto excluído com sucesso!");
+            mudarTela('dashboard');
+        }
+    }
+
     function renderizarProjeto() {
         let p = projetosState.find(x => x.id === projetoAtualId);
+        if (!p) {
+            mudarTela('dashboard');
+            return;
+        }
         document.getElementById('proj-titulo').innerText = "📁 Projeto: " + p.nome;
         document.getElementById('proj-desc').innerText = p.desc;
         
