@@ -57,29 +57,21 @@
         <main class="max-w-6xl mx-auto p-6 min-h-[70vh]">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xl font-semibold text-gray-700">Projetos Ativos</h2>
-                <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium text-sm">+ Novo Projeto</button>
+                <button onclick="abrirModalProjeto()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium text-sm">+ Novo Projeto</button>
             </div>
 
             <div id="listaProjetos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Exemplo de Card de Projeto -->
-                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                    <h3 class="font-bold text-lg mb-2 text-gray-800">Exemplo de Obra</h3>
-                    <p class="text-gray-500 text-sm mb-4">Status: Em execução</p>
-                    <div class="flex gap-4">
-                        <button class="text-blue-600 hover:underline text-sm font-medium">Editar</button>
-                        <button class="text-red-500 hover:underline text-sm font-medium">Excluir</button>
-                    </div>
-                </div>
+                <!-- Os projetos dinâmicos aparecerão aqui -->
             </div>
         </main>
 
         <!-- Footer com Versão e Implementações -->
         <footer class="max-w-6xl mx-auto p-6 border-t mt-12 text-sm text-gray-500">
-            <p class="font-bold">Versão 0.1.2</p>
+            <p class="font-bold">Versão 0.1.3</p>
             <ul class="list-disc ml-5 mt-2 space-y-1">
-                <li>Resumo e preenchimento automático dos dados atuais no modal de perfil</li>
-                <li>Opção de alteração de senha de acesso direto pelo perfil</li>
-                <li>Seleção de UF e padronização do registro CREA</li>
+                <li>Implementado sistema completo de gerenciamento de projetos (CRUD local)</li>
+                <li>Modal de cadastro e edição de projetos dinâmico</li>
+                <li>Resumo e preenchimento automático no perfil com alteração de senha</li>
             </ul>
         </footer>
     </div>
@@ -89,7 +81,6 @@
         <div class="bg-white rounded-2xl w-full max-w-lg p-8 shadow-xl max-h-[90vh] overflow-y-auto">
             <h2 class="text-xl font-bold mb-4 text-gray-800">Perfil e Configurações</h2>
             
-            <!-- Resumo dos dados cadastrados atualmente -->
             <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6 text-xs text-gray-600 space-y-1">
                 <p class="font-semibold text-gray-700 mb-1">📋 Dados Atuais Registrados:</p>
                 <p><strong>Nome:</strong> <span id="resumoNome">Não cadastrado</span></p>
@@ -135,8 +126,38 @@
                 </div>
 
                 <div class="flex gap-4 mt-6">
-                    <button type="button" onclick="toggleModal('modalConfig')" class="w-full p-3 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 font-medium">Cancelar</button>
+                    <button type="button" onclick="fecharModal('modalConfig')" class="w-full p-3 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 font-medium">Cancelar</button>
                     <button type="submit" class="w-full p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Adicionar / Editar Projeto -->
+    <div id="modalProjeto" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl w-full max-w-md p-8 shadow-xl">
+            <h2 id="modalProjetoTitulo" class="text-xl font-bold mb-4 text-gray-800">Novo Projeto</h2>
+            <form class="space-y-4" id="formProjeto">
+                <input type="hidden" id="projetoIndex">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Nome do Projeto / Obra</label>
+                    <input type="text" id="inputNomeProjeto" placeholder="Ex: Edifício Aurora" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Cliente</label>
+                    <input type="text" id="inputClienteProjeto" placeholder="Ex: Construtora XYZ" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Status</label>
+                    <select id="inputStatusProjeto" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+                        <option value="Em execução">Em execução</option>
+                        <option value="Em planejamento">Em planejamento</option>
+                        <option value="Concluído">Concluído</option>
+                    </select>
+                </div>
+                <div class="flex gap-4 mt-6">
+                    <button type="button" onclick="fecharModal('modalProjeto')" class="w-full p-3 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 font-medium">Cancelar</button>
+                    <button type="submit" class="w-full p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">Salvar Projeto</button>
                 </div>
             </form>
         </div>
@@ -144,7 +165,7 @@
 
     <!-- Scripts de Lógica -->
     <script>
-        // Carregar senha salva ou usar padrão "roca"
+        // Senha
         function getSenhaAtual() {
             return localStorage.getItem('roca_senha') || "roca";
         }
@@ -154,16 +175,12 @@
             if (input === getSenhaAtual()) {
                 document.getElementById('loginOverlay').classList.add('hidden');
                 document.getElementById('mainContent').classList.remove('hidden');
+                carregarProjetos();
             } else {
                 alert("Senha incorreta!");
             }
         }
 
-        function toggleModal(id) {
-            document.getElementById(id).classList.toggle('hidden');
-        }
-
-        // Função para abrir o modal preenchendo o resumo e os inputs com dados salvos
         function abrirConfiguracao() {
             const nome = localStorage.getItem('roca_nomeEng') || '';
             const uf = localStorage.getItem('roca_ufEng') || '';
@@ -171,24 +188,26 @@
             const email = localStorage.getItem('roca_emailEng') || '';
             const telefone = localStorage.getItem('roca_telEng') || '';
 
-            // Atualiza o texto do resumo no topo do modal
             document.getElementById('resumoNome').innerText = nome || 'Não cadastrado';
             document.getElementById('resumoCrea').innerText = (uf && crea) ? `CREA-${uf} ${crea}` : 'Não cadastrado';
             document.getElementById('resumoEmail').innerText = email || 'Não cadastrado';
             document.getElementById('resumoTelefone').innerText = telefone || 'Não cadastrado';
 
-            // Preenche os campos do formulário para edição
             document.getElementById('inputNome').value = nome;
             document.getElementById('inputUf').value = uf;
             document.getElementById('inputNumeroCrea').value = crea;
             document.getElementById('inputEmail').value = email;
             document.getElementById('inputTelefone').value = telefone;
-            document.getElementById('inputNovaSenha').value = ''; // Limpa o campo de senha por segurança
+            document.getElementById('inputNovaSenha').value = '';
 
-            toggleModal('modalConfig');
+            document.getElementById('modalConfig').classList.remove('hidden');
         }
 
-        // Salvar dados do Perfil e Nova Senha
+        function fecharModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        // Salvar Perfil
         document.getElementById('formPerfil').addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -199,7 +218,6 @@
             const telefone = document.getElementById('inputTelefone').value;
             const novaSenha = document.getElementById('inputNovaSenha').value;
             
-            // Salva dados no navegador
             localStorage.setItem('roca_nomeEng', nome);
             localStorage.setItem('roca_ufEng', uf);
             localStorage.setItem('roca_creaEng', crea);
@@ -211,12 +229,10 @@
                 alert("Senha alterada com sucesso!");
             }
             
-            // Atualiza a interface principal imediatamente
             atualizarInterfaceTopo();
-            toggleModal('modalConfig');
+            fecharModal('modalConfig');
         });
 
-        // Atualizar visualização do topo com base no LocalStorage
         function atualizarInterfaceTopo() {
             const nome = localStorage.getItem('roca_nomeEng');
             const uf = localStorage.getItem('roca_ufEng');
@@ -235,7 +251,100 @@
             }
         }
 
-        // Carregar dados salvos ao iniciar a página
+        // --- SISTEMA DE GESTÃO DE PROJETOS (CRUD) ---
+
+        function getProjetos() {
+            let projetos = localStorage.getItem('roca_projetos');
+            if (!projetos) {
+                // Projeto inicial padrão caso esteja vazio
+                return [{ nome: "Exemplo de Obra", cliente: "Cliente Exemplo", status: "Em execução" }];
+            }
+            return JSON.parse(projetos);
+        }
+
+        function salvarProjetos(projetos) {
+            localStorage.setItem('roca_projetos', JSON.stringify(projetos));
+        }
+
+        function carregarProjetos() {
+            const projetos = getProjetos();
+            const listaDiv = document.getElementById('listaProjetos');
+            listaDiv.innerHTML = '';
+
+            if (projetos.length === 0) {
+                listaDiv.innerHTML = '<p class="text-gray-500 text-sm col-span-full">Nenhum projeto cadastrado.</p>';
+                return;
+            }
+
+            projetos.forEach((proj, index) => {
+                listaDiv.innerHTML += `
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-bold text-lg mb-1 text-gray-800">${proj.nome}</h3>
+                            <p class="text-gray-600 text-xs mb-2">Cliente: ${proj.cliente}</p>
+                            <span class="inline-block bg-blue-50 text-blue-700 text-xs px-2.5 py-1 rounded-full font-medium mb-4">Status: ${proj.status}</span>
+                        </div>
+                        <div class="flex gap-4 pt-4 border-t border-gray-100">
+                            <button onclick="editarProjeto(${index})" class="text-blue-600 hover:underline text-sm font-medium">Editar</button>
+                            <button onclick="excluirProjeto(${index})" class="text-red-500 hover:underline text-sm font-medium">Excluir</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function abrirModalProjeto(index = null) {
+            document.getElementById('formProjeto').reset();
+            if (index !== null) {
+                const projetos = getProjetos();
+                const proj = projetos[index];
+                document.getElementById('modalProjetoTitulo').innerText = "Editar Projeto";
+                document.getElementById('projetoIndex').value = index;
+                document.getElementById('inputNomeProjeto').value = proj.nome;
+                document.getElementById('inputClienteProjeto').value = proj.cliente;
+                document.getElementById('inputStatusProjeto').value = proj.status;
+            } else {
+                document.getElementById('modalProjetoTitulo').innerText = "Novo Projeto";
+                document.getElementById('projetoIndex').value = '';
+            }
+            document.getElementById('modalProjeto').classList.remove('hidden');
+        }
+
+        document.getElementById('formProjeto').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const index = document.getElementById('projetoIndex').value;
+            const nome = document.getElementById('inputNomeProjeto').value;
+            const cliente = document.getElementById('inputClienteProjeto').value;
+            const status = document.getElementById('inputStatusProjeto').value;
+
+            let projetos = getProjetos();
+
+            if (index === '') {
+                // Adicionar novo
+                projetos.push({ nome, cliente, status });
+            } else {
+                // Editar existente
+                projetos[index] = { nome, cliente, status };
+            }
+
+            salvarProjetos(projetos);
+            carregarProjetos();
+            fecharModal('modalProjeto');
+        });
+
+        function editarProjeto(index) {
+            abrirModalProjeto(index);
+        }
+
+        function excluirProjeto(index) {
+            if (confirm("Deseja realmente excluir este projeto?")) {
+                let projetos = getProjetos();
+                projetos.splice(index, 1);
+                salvarProjetos(projetos);
+                carregarProjetos();
+            }
+        }
+
         window.onload = function() {
             atualizarInterfaceTopo();
         }
