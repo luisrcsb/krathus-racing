@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROCA | Gestor de Engenharia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 font-sans">
+
+    <!-- Tela de Login (Bloqueio) -->
+    <div id="loginOverlay" class="fixed inset-0 bg-gray-900 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-8 rounded-2xl w-full max-w-sm shadow-xl text-center flex flex-col justify-between">
+            <div>
+                <h2 class="text-2xl font-bold mb-2 text-gray-800">ROCA</h2>
+                <p class="text-xs text-gray-500 mb-6">Gestor de Projetos de Engenharia</p>
+                
+                <input type="password" id="passwordInput" placeholder="Digite sua senha" class="w-full p-3 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button onclick="checkPassword()" class="w-full p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">Entrar</button>
+            </div>
+
+            <!-- Link para o README / Documentação -->
+            <div class="mt-6 pt-4 border-t border-gray-100">
+                <a href="https://github.com/SEU-USUARIO/roca#readme" target="_blank" class="text-xs text-gray-500 hover:text-blue-600 transition flex items-center justify-center gap-1">
+                    <span>📄 Ver Documentação (README)</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conteúdo do Site (Escondido inicialmente) -->
+    <div id="mainContent" class="hidden">
+        <header class="flex justify-between items-center p-6 bg-white border-b border-gray-200">
+            <h1 class="text-2xl font-bold text-gray-800 tracking-tight">ROCA</h1>
+            <button onclick="toggleModal('modalConfig')" class="text-gray-500 hover:text-blue-600 transition-colors">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>
+            </button>
+        </header>
+
+        <main class="max-w-6xl mx-auto p-6 min-h-[70vh]">
+            <h2 class="text-xl font-semibold text-gray-700 mb-8">Projetos Ativos</h2>
+            <!-- Conteúdo dos Projetos -->
+        </main>
+
+        <!-- Footer com Versão e Implementações -->
+        <footer class="max-w-6xl mx-auto p-6 border-t mt-12 text-sm text-gray-500">
+            <p class="font-bold">Versão 0.1.0</p>
+            <ul class="list-disc ml-5 mt-2">
+                <li>Integração com Supabase (Backend/Dados)</li>
+                <li>Módulo de autenticação com senha configurável no perfil</li>
+                <li>Interface responsiva com Tailwind CSS</li>
+            </ul>
+        </footer>
+    </div>
+
+    <!-- Modal Configuração -->
+    <div id="modalConfig" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-md p-8">
+            <h2 class="text-xl font-bold mb-6">Configurar Perfil</h2>
+            <form class="space-y-4">
+                <input type="text" placeholder="Nome Completo" class="w-full p-3 border rounded-lg">
+                <input type="text" placeholder="Número da Ordem (CREA/CAU)" class="w-full p-3 border rounded-lg">
+                <input type="email" placeholder="E-mail" class="w-full p-3 border rounded-lg">
+                <input type="tel" placeholder="Telefone" class="w-full p-3 border rounded-lg">
+                <div class="flex gap-4 mt-6">
+                    <button type="button" onclick="toggleModal('modalConfig')" class="w-full p-3 border rounded-lg text-gray-600">Cancelar</button>
+                    <button type="submit" class="w-full p-3 bg-blue-600 text-white rounded-lg">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        const MASTER_PASSWORD = "roca"; // Futuramente virá do Supabase
+
+        function checkPassword() {
+            const input = document.getElementById('passwordInput').value;
+            if (input === MASTER_PASSWORD) {
+                document.getElementById('loginOverlay').classList.add('hidden');
+                document.getElementById('mainContent').classList.remove('hidden');
+            } else {
+                alert("Senha incorreta!");
+            }
+        }
+
+        function toggleModal(id) {
+            document.getElementById(id).classList.toggle('hidden');
+        }
+    </script>
+</body>
+</html>
