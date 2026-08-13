@@ -52,12 +52,12 @@
 <body>
 
 <div class="container">
-    <div class="nav-bar">
+    <div id="barra-navegacao" class="nav-bar hidden">
         <h2>Projeto ROCA 🚀</h2>
         <div class="nav-links">
             <a onclick="mudarTela('dashboard')">Dashboard</a>
             <a onclick="mudarTela('perfil')">Perfil & CREA</a>
-            <a onclick="mudarTela('login')">Sair</a>
+            <a onclick="fazerLogout()">Sair</a>
         </div>
     </div>
 
@@ -215,6 +215,10 @@
 
     let projetoAtualId = 1;
 
+    // Estado de autenticação da sessão.
+    // O sistema começa bloqueado e só libera as telas internas após login válido.
+    let autenticado = false;
+
     // Contador de tentativas de acesso.
     // A ideia é permitir que o ROCA tenha uma personalidade progressiva
     // sem transformar a mensagem de erro em um bloqueio ou ofensa.
@@ -270,14 +274,31 @@
     }
 
     function mudarTela(tela) {
+        // A tela de login é sempre acessível.
+        if (tela === 'login') {
+            document.getElementById('tela-login').classList.remove('hidden');
+            document.getElementById('tela-perfil').classList.add('hidden');
+            document.getElementById('tela-dashboard').classList.add('hidden');
+            document.getElementById('tela-projeto').classList.add('hidden');
+            document.getElementById('barra-navegacao').classList.add('hidden');
+            return;
+        }
+
+        // Nenhuma tela interna pode ser aberta antes da autenticação.
+        if (!autenticado) {
+            mudarTela('login');
+            return;
+        }
+
         document.getElementById('tela-login').classList.add('hidden');
         document.getElementById('tela-perfil').classList.add('hidden');
         document.getElementById('tela-dashboard').classList.add('hidden');
         document.getElementById('tela-projeto').classList.add('hidden');
 
-        if (tela === 'login') {
-            document.getElementById('tela-login').classList.remove('hidden');
-        } else if (tela === 'perfil') {
+        // Só depois do login a barra de navegação fica visível.
+        document.getElementById('barra-navegacao').classList.remove('hidden');
+
+        if (tela === 'perfil') {
             document.getElementById('tela-perfil').classList.remove('hidden');
         } else if (tela === 'dashboard') {
             renderizarDashboard();
@@ -297,6 +318,8 @@
         const senhaDigitada = campoSenha.value;
 
         if (senhaDigitada === perfilState.senha) {
+            // Login válido: libera o sistema e a navegação.
+            autenticado = true;
             tentativasLogin = 0;
             mensagemErro.style.display = 'none';
             mensagemTentativas.style.display = 'none';
@@ -323,6 +346,13 @@
         // Limpa o campo depois do erro para não deixar a senha digitada exposta.
         campoSenha.value = '';
         campoSenha.focus();
+    }
+
+    // Encerra a sessão e devolve o usuário à tela de acesso.
+    function fazerLogout() {
+        autenticado = false;
+        document.getElementById('input-senha').value = '';
+        mudarTela('login');
     }
 
     function salvarPerfil() {
