@@ -1,4 +1,4 @@
-<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Completa com Correção no Parser de Baterias) -->
+<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Completa com Atalho para o PDF Original) -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -50,6 +50,8 @@
         
         .btn-share { background: rgba(58, 134, 255, 0.15); color: var(--accent-blue); border: 1px solid var(--accent-blue); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; }
         .btn-like { background: rgba(230, 57, 70, 0.15); color: var(--accent-red); border: 1px solid var(--accent-red); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; }
+        .btn-pdf-atalho { background: rgba(255, 183, 3, 0.15); color: var(--accent-gold); border: 1px solid var(--accent-gold); padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; }
+        .btn-pdf-atalho:hover { background: rgba(255, 183, 3, 0.25); }
 
         .piloto-link { color: var(--accent-blue); text-decoration: none; font-weight: 700; cursor: pointer; }
         .piloto-link:hover { color: var(--accent-gold); text-decoration: underline; }
@@ -121,7 +123,7 @@
         .kpi-subtext { font-size: 0.8rem; color: var(--text-muted); }
 
         .session-block-header { background: linear-gradient(135deg, var(--bg-card-header) 0%, var(--bg-card) 100%); border: 1px solid var(--border-card); border-left: 5px solid var(--accent-red); border-radius: 10px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; flex-wrap: wrap; gap: 10px; }
-        .session-block-title { font-size: 1.15rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 10px; }
+        .session-block-title { font-size: 1.15rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
         .session-block-meta { font-size: 0.85rem; color: var(--text-muted); display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
         .session-winner-tag { background: rgba(255, 183, 3, 0.15); color: var(--accent-gold); border: 1px solid var(--accent-gold); padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; }
 
@@ -483,7 +485,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.35.0 (Correção no Motor de Leitura de Baterias)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.36.0 (Atalho para PDF Original nas Sessões)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -919,6 +921,8 @@
 
                 rankingGridTreino.sort((a, b) => a.melhorTempo - b.melhorTempo);
 
+                let pdfBase64 = await arquivoParaBase64(file);
+
                 await db.ref(`campeonatos/${campeonatoAtivoKey}/gridTreinoDados`).set(rankingGridTreino);
                 document.getElementById('status-treino-grid-info').innerText = `✅ Treino processado! Grid inicial formado com ${rankingGridTreino.length} pilotos.`;
                 inputEl.value = "";
@@ -935,7 +939,7 @@
                 return;
             }
             let inputEl = document.getElementById('zround-input-file-prova');
-            if (!inputEl || !inputEl.files || inputEl.files.length === 0) {
+            if (!inputEl || !inputEl.files || !inputEl.files.length) {
                 alert("Selecione ao menos um arquivo PDF ou HTML.");
                 return;
             }
@@ -963,11 +967,15 @@
                         throw new Error("Nenhum dado válido extraído deste arquivo.");
                     }
 
+                    let pdfBase64 = await arquivoParaBase64(file);
+
                     let novoRegistro = {
                         bateriaKey: batKey,
                         sessao: sessaoNome,
                         id: Date.now(),
-                        dados: dadosExtraidos
+                        dados: dadosExtraidos,
+                        pdfBase64: pdfBase64,
+                        nomeArquivoOriginal: nomeArq
                     };
 
                     await db.ref(`campeonatos/${campeonatoAtivoKey}/bateriasBancoSeparado/${batKey}`).set(novoRegistro);
@@ -1005,7 +1013,9 @@
                 bateriaKey: batKey,
                 sessao: provaObj.sessao || "Prova Importada",
                 id: Date.now(),
-                dados: provaObj.dados || []
+                dados: provaObj.dados || [],
+                pdfBase64: provaObj.pdfBase64 || "",
+                nomeArquivoOriginal: provaObj.nomeArquivoOriginal || "relatorio.pdf"
             };
 
             try {
@@ -1188,6 +1198,15 @@
             }
             ranking.sort((a, b) => b.pontos - a.pontos);
             return ranking;
+        }
+
+        async function arquivoParaBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
         }
 
         async function converterPdfParaTexto(arquivo) {
@@ -1422,6 +1441,7 @@
                         throw new Error("Nenhum dado válido extraído do arquivo " + nomeArq);
                     }
 
+                    let pdfBase64 = await arquivoParaBase64(file);
                     let historicoOriginal = {};
                     dadosExtraidos.forEach(d => { historicoOriginal[d.piloto] = d.piloto; });
 
@@ -1430,6 +1450,8 @@
                         sessao: sessaoNome,
                         id: Date.now(),
                         dados: dadosExtraidos,
+                        pdfBase64: pdfBase64,
+                        nomeArquivoOriginal: nomeArq,
                         historicoNomesOriginais: historicoOriginal
                     };
 
@@ -1996,7 +2018,11 @@
                     return somaA - somaB;
                 });
 
-                let sessaoOriginal = dadosSessao[0].sessao || bateriaKey;
+                let sessaoObj = listaJsonsCache.find(item => item.firebaseKey === bateriaKey);
+                let sessaoOriginal = sessaoObj ? (sessaoObj.sessao || bateriaKey) : bateriaKey;
+                let pdfBase64 = sessaoObj ? sessaoObj.pdfBase64 : null;
+                let nomeOriginalArquivo = sessaoObj && sessaoObj.nomeArquivoOriginal ? sessaoObj.nomeArquivoOriginal : "relatorio.pdf";
+
                 const nomeSessaoFormatado = formatarNomeSessao(sessaoOriginal);
                 let todosBat = dadosBase.filter(d => d.bateriaKey === bateriaKey && d.laps && d.laps.length > 0);
                 
@@ -2004,15 +2030,23 @@
                 let nomeVencedor = vencedorObj ? vencedorObj.piloto : 'N/A';
                 
                 let metaVenc = pilotosMetadadosCache[nomeVencedor] || {};
-                let nomeVencExib = metaVenc.apelido ? `${nomeVencedor} (${metaVencedor.apelido})` : nomeVencedor;
+                let nomeVencExib = metaVenc.apelido ? `${nomeVencedor} (${metaVenc.apelido})` : nomeVencedor;
                 let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
+
+                let botaoPdfHtml = "";
+                if (pdfBase64) {
+                    botaoPdfHtml = `<a href="${pdfBase64}" download="${escapeHtml(nomeOriginalArquivo)}" class="btn-pdf-atalho" title="Abrir ou Baixar PDF Original">📄 Abrir PDF</a>`;
+                }
 
                 const sessionBlock = document.createElement('div');
                 sessionBlock.className = 'session-block';
                 
                 let html = `
                     <div class="session-block-header">
-                        <div class="session-block-title">🏁 ${escapeHtml(nomeSessaoFormatado)}</div>
+                        <div class="session-block-title">
+                            <span>🏁 ${escapeHtml(nomeSessaoFormatado)}</span>
+                            ${botaoPdfHtml}
+                        </div>
                         <div class="session-block-meta">
                             <span class="session-winner-tag">🏆 Vencedor: <strong><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(nomeVencedor)}')">${escapeHtml(nomeVencExib)}</a></strong></span>
                             <button class="btn-like" onclick="curtirSessao('${bateriaKey}')">❤️ Curtir (<span id="like-count-${safeKey}">0</span>)</button>
