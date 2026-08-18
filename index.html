@@ -1,4 +1,4 @@
-<!-- Index.html para o site Krathus Racing - Versão Corrigida para Seleção de Baterias -->
+<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Completa com Pódio no Cabeçalho da Sessão) -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -50,6 +50,8 @@
         
         .btn-share { background: rgba(58, 134, 255, 0.15); color: var(--accent-blue); border: 1px solid var(--accent-blue); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; }
         .btn-like { background: rgba(230, 57, 70, 0.15); color: var(--accent-red); border: 1px solid var(--accent-red); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; }
+        .btn-pdf-atalho { background: rgba(255, 183, 3, 0.15); color: var(--accent-gold); border: 1px solid var(--accent-gold); padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; }
+        .btn-pdf-atalho:hover { background: rgba(255, 183, 3, 0.25); }
 
         .piloto-link { color: var(--accent-blue); text-decoration: none; font-weight: 700; cursor: pointer; }
         .piloto-link:hover { color: var(--accent-gold); text-decoration: underline; }
@@ -121,9 +123,13 @@
         .kpi-subtext { font-size: 0.8rem; color: var(--text-muted); }
 
         .session-block-header { background: linear-gradient(135deg, var(--bg-card-header) 0%, var(--bg-card) 100%); border: 1px solid var(--border-card); border-left: 5px solid var(--accent-red); border-radius: 10px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; flex-wrap: wrap; gap: 10px; }
-        .session-block-title { font-size: 1.15rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 10px; }
-        .session-block-meta { font-size: 0.85rem; color: var(--text-muted); display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-        .session-winner-tag { background: rgba(255, 183, 3, 0.15); color: var(--accent-gold); border: 1px solid var(--accent-gold); padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; }
+        .session-block-title { font-size: 1.15rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .session-block-meta { font-size: 0.85rem; color: var(--text-muted); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        
+        .session-podium-tag { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.80rem; border: 1px solid; }
+        .podium-gold { background: rgba(255, 183, 3, 0.15); color: var(--accent-gold); border-color: var(--accent-gold); }
+        .podium-silver { background: rgba(192, 192, 192, 0.15); color: var(--accent-silver); border-color: var(--accent-silver); }
+        .podium-bronze { background: rgba(205, 127, 50, 0.15); color: var(--accent-bronze); border-color: var(--accent-bronze); }
 
         .session-blocks-container { display: flex; flex-direction: column; gap: 30px; }
         .session-block { display: flex; flex-direction: column; gap: 20px; background: rgba(21, 28, 40, 0.4); border: 1px solid var(--border-card); border-radius: 14px; padding: 20px; }
@@ -221,6 +227,10 @@
                         <ul id="upload-lista-historico">
                             <li>Carregando arquivos...</li>
                         </ul>
+                        <!-- Botão de Exclusão em Lote -->
+                        <div style="display: flex; justify-content: flex-end; margin-top: 4px;">
+                            <button class="btn-action-danger" style="padding: 6px 12px; font-size: 0.8rem;" onclick="excluirArquivosSelecionadosPrincipal()">🗑️ Excluir Selecionados</button>
+                        </div>
                     </div>
                 </div>
                 <div>
@@ -479,7 +489,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.31.1 (Correção de Seleção Padrão de Baterias)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.37.0 (Pódio Completo no Cabeçalho da Sessão)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -549,10 +559,10 @@
             return timestampData + sequencial;
         }
 
-        function determinarVencedorBateria(participantesValidos) {
-            if (!participantesValidos || participantesValidos.length === 0) return null;
+        function ordenarParticipantesBateria(participantesValidos) {
+            if (!participantesValidos || participantesValidos.length === 0) return [];
             
-            let ordenados = [...participantesValidos].sort((a, b) => {
+            return [...participantesValidos].sort((a, b) => {
                 let voltasA = a.laps ? a.laps.length : 0;
                 let voltasB = b.laps ? b.laps.length : 0;
                 
@@ -564,8 +574,6 @@
                 let tempoB = (b.laps || []).reduce((acc, l) => acc + (typeof l === 'object' ? l.tempo : l), 0);
                 return tempoA - tempoB;
             });
-            
-            return ordenados[0];
         }
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -595,13 +603,15 @@
                     listaJsonsCache = [];
                     snapshot.forEach(childSnapshot => {
                         let val = childSnapshot.val();
-                        if (!val.historicoNomesOriginais) {
-                            val.historicoNomesOriginais = {};
+                        if (val && val.dados && val.dados.length > 0) {
+                            if (!val.historicoNomesOriginais) {
+                                val.historicoNomesOriginais = {};
+                            }
+                            listaJsonsCache.push({
+                                firebaseKey: childSnapshot.key,
+                                ...val
+                            });
                         }
-                        listaJsonsCache.push({
-                            firebaseKey: childSnapshot.key,
-                            ...val
-                        });
                     });
                     
                     listaJsonsCache.sort((a, b) => {
@@ -913,6 +923,8 @@
 
                 rankingGridTreino.sort((a, b) => a.melhorTempo - b.melhorTempo);
 
+                let pdfBase64 = await arquivoParaBase64(file);
+
                 await db.ref(`campeonatos/${campeonatoAtivoKey}/gridTreinoDados`).set(rankingGridTreino);
                 document.getElementById('status-treino-grid-info').innerText = `✅ Treino processado! Grid inicial formado com ${rankingGridTreino.length} pilotos.`;
                 inputEl.value = "";
@@ -929,7 +941,7 @@
                 return;
             }
             let inputEl = document.getElementById('zround-input-file-prova');
-            if (!inputEl || !inputEl.files || inputEl.files.length === 0) {
+            if (!inputEl || !inputEl.files || !inputEl.files.length) {
                 alert("Selecione ao menos um arquivo PDF ou HTML.");
                 return;
             }
@@ -953,12 +965,19 @@
                     }
 
                     const dadosExtraidos = parsearTextoConvertido(textoExtraido, sessaoNome, batKey);
+                    if (!dadosExtraidos || dadosExtraidos.length === 0) {
+                        throw new Error("Nenhum dado válido extraído deste arquivo.");
+                    }
+
+                    let pdfBase64 = await arquivoParaBase64(file);
 
                     let novoRegistro = {
                         bateriaKey: batKey,
                         sessao: sessaoNome,
                         id: Date.now(),
-                        dados: dadosExtraidos
+                        dados: dadosExtraidos,
+                        pdfBase64: pdfBase64,
+                        nomeArquivoOriginal: nomeArq
                     };
 
                     await db.ref(`campeonatos/${campeonatoAtivoKey}/bateriasBancoSeparado/${batKey}`).set(novoRegistro);
@@ -996,7 +1015,9 @@
                 bateriaKey: batKey,
                 sessao: provaObj.sessao || "Prova Importada",
                 id: Date.now(),
-                dados: provaObj.dados || []
+                dados: provaObj.dados || [],
+                pdfBase64: provaObj.pdfBase64 || "",
+                nomeArquivoOriginal: provaObj.nomeArquivoOriginal || "relatorio.pdf"
             };
 
             try {
@@ -1130,8 +1151,8 @@
                         <div class="card-header" style="margin-bottom: 10px;">🏁 Grid de Largada - Prova ${g + 1}</div>
                         <div class="table-container">
                             <table>
-                               <thead><tr><th>Pos</th><th>Piloto</th><th>Critério</th></tr></thead>
-                               <tbody>${linhasGridHtml}</tbody>
+                                <thead><tr><th>Pos</th><th>Piloto</th><th>Critério</th></tr></thead>
+                                <tbody>${linhasGridHtml}</tbody>
                             </table>
                         </div>
                     </div>
@@ -1181,6 +1202,15 @@
             return ranking;
         }
 
+        async function arquivoParaBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
         async function converterPdfParaTexto(arquivo) {
             const arrayBuffer = await arquivo.arrayBuffer();
             const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
@@ -1228,13 +1258,13 @@
                     return;
                 }
 
-                if (linhaLimpa.includes("Piloto") && (linhaLimpa.includes("Voltas") || linhaLimpa.includes("Tempo"))) {
+                if ((linhaLimpa.includes("Piloto") || linhaLimpa.includes("Pos")) && (linhaLimpa.includes("Voltas") || linhaLimpa.includes("Tempo") || linhaLimpa.includes("Melhor"))) {
                     capturandoResumo = true;
                     capturandoVoltas = false;
                     return;
                 }
 
-                if (linhaLimpa.startsWith("Voltas por piloto") || linhaLimpa.includes("Volta por piloto") || (partes[0] === "Num." && capturandoResumo)) {
+                if (linhaLower.includes("volta por piloto") || linhaLower.includes("voltas por piloto") || linhaLower.includes("lap by lap") || (partes[0] === "Num." && capturandoResumo)) {
                     capturandoResumo = false;
                     capturandoVoltas = true;
                     return;
@@ -1244,14 +1274,14 @@
                     let posDetectada = null;
                     let startIndex = 0;
 
-                    if (/^\d{1,2}$/.test(partes[0])) {
-                        posDetectada = partes[0] + 'º';
+                    if (/^\d{1,2}º?$/.test(partes[0])) {
+                        posDetectada = partes[0].includes('º') ? partes[0] : partes[0] + 'º';
                         startIndex = 1;
                         if (/^\d+$/.test(partes[1])) {
                             startIndex = 2;
                         }
-                    } else if (partes.length >= 2 && /^\d+$/.test(partes[0]) && /^\d{1,2}$/.test(partes[1])) {
-                        posDetectada = partes[1] + 'º';
+                    } else if (partes.length >= 2 && /^\d+$/.test(partes[0]) && /^\d{1,2}º?$/.test(partes[1])) {
+                        posDetectada = partes[1].includes('º') ? partes[1] : partes[1] + 'º';
                         startIndex = 2;
                     } else if (partes.length >= 1 && /^\d{1,2}$/.test(partes[0].replace('º', ''))) {
                         posDetectada = partes[0].includes('º') ? partes[0] : partes[0] + 'º';
@@ -1261,13 +1291,19 @@
                         }
                     }
 
-                    if (posDetectada) {
+                    if (!posDetectada && partes.length >= 1 && !/\d+:\d+/.test(partes[0]) && isNaN(partes[0])) {
+                        startIndex = 0;
+                        posDetectada = (ordemPilotos.length + 1) + 'º';
+                    }
+
+                    if (posDetectada || startIndex >= 0) {
                         let nomePartes = [];
                         for (let i = startIndex; i < partes.length; i++) {
                             let p = partes[i];
                             if (/^\d+$/.test(p) && i > startIndex + 1) break;
                             if (/^\d+[:.,]\d+/.test(p)) break;
                             if (p.includes('s') && /^\d+[,.]\d+s?$/.test(p)) break;
+                            if (p === 'º' || p === '°') continue;
                             nomePartes.push(p);
                         }
 
@@ -1275,35 +1311,32 @@
                             let pilotoNome = nomePartes.join(' ');
                             pilotoNome = pilotoNome.replace(/\s+\d+$/, '').trim();
 
-                            if (pilotoNome) {
-                                if (!pilotosMap[pilotoNome]) {
-                                    pilotosMap[pilotoNome] = {
-                                        pos: posDetectada,
-                                        piloto: pilotoNome,
-                                        bateriaKey: batKey,
-                                        sessao: sessaoNome,
-                                        voltasTotais: 0,
-                                        tempoTotal: "00:00,000",
-                                        melhorVoltaVal: 0,
-                                        melhorVoltaTxt: "00,000s",
-                                        mediaVal: 0,
-                                        mediaTxt: "00,000s",
-                                        desvioVal: 0,
-                                        desvio: "±0,000s",
-                                        badgeColor: "#ffb703",
-                                        laps: []
-                                    };
-                                    ordemPilotos.push(pilotoNome);
-                                } else {
-                                    pilotosMap[pilotoNome].pos = posDetectada;
-                                }
+                            if (pilotoNome && !pilotosMap[pilotoNome]) {
+                                pilotosMap[pilotoNome] = {
+                                    pos: posDetectada || ((ordemPilotos.length + 1) + 'º'),
+                                    piloto: pilotoNome,
+                                    bateriaKey: batKey,
+                                    sessao: sessaoNome,
+                                    voltasTotais: 0,
+                                    tempoTotal: "00:00,000",
+                                    melhorVoltaVal: 0,
+                                    melhorVoltaTxt: "00,000s",
+                                    mediaVal: 0,
+                                    mediaTxt: "00,000s",
+                                    desvioVal: 0,
+                                    desvio: "±0,000s",
+                                    badgeColor: "#ffb703",
+                                    laps: []
+                                };
+                                ordemPilotos.push(pilotoNome);
                             }
                         }
                     }
                 }
 
-                if (capturandoVoltas && /^\d+$/.test(partes[0])) {
-                    let numVolta = parseInt(partes[0], 10);
+                if (capturandoVoltas && (/^\d+$/.test(partes[0]) || /^\d+[º°]?$/.test(partes[0]))) {
+                    let numVolta = parseInt(partes[0].replace(/[º°]/g, ''), 10);
+                    if (isNaN(numVolta)) return;
                     let temposLinha = [];
 
                     for (let i = 1; i < partes.length; i++) {
@@ -1406,6 +1439,11 @@
                     }
 
                     const dadosExtraidos = parsearTextoConvertido(textoExtraido, sessaoNome, batKey);
+                    if (!dadosExtraidos || dadosExtraidos.length === 0) {
+                        throw new Error("Nenhum dado válido extraído do arquivo " + nomeArq);
+                    }
+
+                    let pdfBase64 = await arquivoParaBase64(file);
                     let historicoOriginal = {};
                     dadosExtraidos.forEach(d => { historicoOriginal[d.piloto] = d.piloto; });
 
@@ -1414,16 +1452,18 @@
                         sessao: sessaoNome,
                         id: Date.now(),
                         dados: dadosExtraidos,
+                        pdfBase64: pdfBase64,
+                        nomeArquivoOriginal: nomeArq,
                         historicoNomesOriginais: historicoOriginal
                     };
 
                     await db.ref('baterias/' + batKey).set(novoRegistro);
                 } catch (err) {
-                    alert("Erro ao enviar arquivo principal: " + err.message);
+                    alert("Erro ao enviar arquivo principal (" + nomeArq + "): " + err.message);
                 }
             }
             inputEl.value = "";
-            alert("Arquivos enviados com sucesso para o banco principal!");
+            alert("Arquivos processados e enviados com sucesso para o banco principal!");
             fecharModalUpload();
         };
 
@@ -1439,25 +1479,38 @@
                 let nomeExibicao = item.sessao || `ID ${item.id}`;
                 const li = document.createElement('li');
                 li.innerHTML = `
-                    <span>📄 <strong>${escapeHtml(nomeExibicao)}</strong></span>
-                    <div style="display: flex; gap: 6px;">
-                        <button class="btn-text-action" onclick="inspecionarJsonUploadPrincipal(${index})">Inspecionar</button>
-                        <button class="btn-text-action" style="color: var(--accent-red);" onclick="excluirArquivoNuvemPrincipal('${item.firebaseKey}', '${escapeHtml(nomeExibicao)}')">Excluir</button>
-                    </div>`;
+                    <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
+                        <input type="checkbox" class="checkbox-excluir-lote-principal" value="${item.firebaseKey}" style="accent-color: var(--accent-red); width: 16px; height: 16px; cursor: pointer;">
+                        <span>📄 <strong>${escapeHtml(nomeExibicao)}</strong></span>
+                    </div>
+                    <button class="btn-text-action" onclick="inspecionarJsonUploadPrincipal(${index})">Inspecionar</button>
+                `;
                 ul.appendChild(li);
             });
         }
 
+        window.excluirArquivosSelecionadosPrincipal = async function() {
+            let checkboxes = document.querySelectorAll('.checkbox-excluir-lote-principal:checked');
+            if (checkboxes.length === 0) {
+                alert("Selecione pelo menos um arquivo na lista para excluir.");
+                return;
+            }
+            if (!db) return;
+
+            if (confirm(`Deseja realmente excluir os ${checkboxes.length} arquivo(s) selecionado(s) do banco principal?`)) {
+                try {
+                    let promessas = Array.from(checkboxes).map(cb => db.ref('baterias/' + cb.value).remove());
+                    await Promise.all(promessas);
+                    alert("Arquivos selecionados excluídos com sucesso!");
+                } catch (err) {
+                    alert("Erro ao excluir arquivos: " + err.message);
+                }
+            }
+        };
+
         window.inspecionarJsonUploadPrincipal = function(index) {
             const item = listaJsonsCache[index];
             if (item) document.getElementById('upload-json-viewer').textContent = JSON.stringify(item, null, 4);
-        };
-
-        window.excluirArquivoNuvemPrincipal = function(firebaseKey, nomeExibicao) {
-            if (!db) return;
-            if (confirm(`Deseja excluir "${nomeExibicao}" do banco principal?`)) {
-                db.ref('baterias/' + firebaseKey).remove().then(() => alert("Excluído com sucesso!"));
-            }
         };
 
         function obterTodosDadosConsolidados() {
@@ -1529,7 +1582,6 @@
                 let key = arq.firebaseKey;
                 let sessaoOriginal = arq.sessao || (arq.dados && arq.dados[0] ? arq.dados[0].sessao : key);
                 let sessaoFormatada = formatarNomeSessao(sessaoOriginal);
-                // CORREÇÃO: Garante que TODAS as baterias fiquem marcadas por padrão se for a primeira vez ou se não havia seleção prévia restrita
                 let marcado = (primeiraVezBat || bateriasSelecionadasAntigas.includes(key)) ? 'checked' : '';
                 return `<label class="checkbox-item"><input type="checkbox" value="${key}" class="filter-bateria" ${marcado} onchange="atualizarDashboard()"> ${escapeHtml(sessaoFormatada)}</label>`;
             }).join('');
@@ -1575,8 +1627,8 @@
                     return { ...d, piloto: pReal };
                 }).filter(d => d.laps && d.laps.length > 0);
 
-                let vencedorBat = determinarVencedorBateria(todosBat);
-                if (vencedorBat && vencedorBat.piloto === nomePiloto) {
+                let ordenados = ordenarParticipantesBateria(todosBat);
+                if (ordenados.length > 0 && ordenados[0].piloto === nomePiloto) {
                     vitorias++;
                 }
             });
@@ -1841,9 +1893,9 @@
             return String(text).replace(/[&<>"']/g, m => map[m]);
         }
 
-        window.compartilharCorrida = function(bateriaKey, nomeSessao, vencedor) {
-            let txt = `🏁 *KRATHUS RACING* 🏁\nSessão: *${nomeSessao}*\nVencedor: *${vencedor}*\n`;
-            navigator.clipboard.writeText(txt).then(() => alert("Resumo copiado!"));
+        window.compartilharCorrida = function(bateriaKey, nomeSessao, podiumTexto) {
+            let txt = `🏁 *KRATHUS RACING* 🏁\nSessão: *${nomeSessao}*\nPódio: *${podiumTexto}*\n`;
+            navigator.clipboard.writeText(txt).then(() => alert("Resumo do pódio copiado!"));
         };
 
         function atualizarDashboard() {
@@ -1866,10 +1918,10 @@
                     });
 
                     let participantesValidos = itensDaBateria.filter(d => d.laps && d.laps.length > 0);
-                    let vencedorObj = determinarVencedorBateria(participantesValidos);
+                    let ordenados = ordenarParticipantesBateria(participantesValidos);
                     
-                    if (vencedorObj) {
-                        let pilotoReal = vencedorObj.piloto;
+                    if (ordenados.length > 0) {
+                        let pilotoReal = ordenados[0].piloto;
                         vencedorContadorGlobal[pilotoReal] = (vencedorContadorGlobal[pilotoReal] || 0) + 1;
                     }
                 });
@@ -1968,27 +2020,64 @@
                     return somaA - somaB;
                 });
 
-                let sessaoOriginal = dadosSessao[0].sessao || bateriaKey;
+                let sessaoObj = listaJsonsCache.find(item => item.firebaseKey === bateriaKey);
+                let sessaoOriginal = sessaoObj ? (sessaoObj.sessao || bateriaKey) : bateriaKey;
+                let pdfBase64 = sessaoObj ? sessaoObj.pdfBase64 : null;
+                let nomeOriginalArquivo = sessaoObj && sessaoObj.nomeArquivoOriginal ? sessaoObj.nomeArquivoOriginal : "relatorio.pdf";
+
                 const nomeSessaoFormatado = formatarNomeSessao(sessaoOriginal);
                 let todosBat = dadosBase.filter(d => d.bateriaKey === bateriaKey && d.laps && d.laps.length > 0);
                 
-                let vencedorObj = determinarVencedorBateria(todosBat);
-                let nomeVencedor = vencedorObj ? vencedorObj.piloto : 'N/A';
+                let participantesOrdenados = ordenarParticipantesBateria(todosBat);
                 
-                let metaVenc = pilotosMetadadosCache[nomeVencedor] || {};
-                let nomeVencExib = metaVenc.apelido ? `${nomeVencedor} (${metaVencedor.apelido})` : nomeVencedor;
+                let podioHtml = "";
+                let podiumNomesCompartilhar = [];
+
+                if (participantesOrdenados.length > 0) {
+                    let p1 = participantesOrdenados[0];
+                    let meta1 = pilotosMetadadosCache[p1.piloto] || {};
+                    let nome1Exib = meta1.apelido ? `${p1.piloto} (${meta1.apelido})` : p1.piloto;
+                    podiumNomesCompartilhar.push(`1º ${p1.piloto}`);
+                    podioHtml += `<span class="session-podium-tag podium-gold">🏆 <a class="piloto-link" style="color: var(--accent-gold);" onclick="abrirDossiePiloto('${escapeHtml(p1.piloto)}')">${escapeHtml(nome1Exib)}</a></span>`;
+                }
+
+                if (participantesOrdenados.length > 1) {
+                    let p2 = participantesOrdenados[1];
+                    let meta2 = pilotosMetadadosCache[p2.piloto] || {};
+                    let nome2Exib = meta2.apelido ? `${p2.piloto} (${meta2.apelido})` : p2.piloto;
+                    podiumNomesCompartilhar.push(`2º ${p2.piloto}`);
+                    podioHtml += `<span class="session-podium-tag podium-silver">🥈 <a class="piloto-link" style="color: var(--accent-silver);" onclick="abrirDossiePiloto('${escapeHtml(p2.piloto)}')">${escapeHtml(nome2Exib)}</a></span>`;
+                }
+
+                if (participantesOrdenados.length > 2) {
+                    let p3 = participantesOrdenados[2];
+                    let meta3 = pilotosMetadadosCache[p3.piloto] || {};
+                    let nome3Exib = meta3.apelido ? `${p3.piloto} (${meta3.apelido})` : p3.piloto;
+                    podiumNomesCompartilhar.push(`3º ${p3.piloto}`);
+                    podioHtml += `<span class="session-podium-tag podium-bronze">🥉 <a class="piloto-link" style="color: var(--accent-bronze);" onclick="abrirDossiePiloto('${escapeHtml(p3.piloto)}')">${escapeHtml(nome3Exib)}</a></span>`;
+                }
+
+                let textoCompartilharPodio = podiumNomesCompartilhar.join(" | ");
                 let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
+
+                let botaoPdfHtml = "";
+                if (pdfBase64) {
+                    botaoPdfHtml = `<a href="${pdfBase64}" download="${escapeHtml(nomeOriginalArquivo)}" class="btn-pdf-atalho" title="Abrir ou Baixar PDF Original">📄 Abrir PDF</a>`;
+                }
 
                 const sessionBlock = document.createElement('div');
                 sessionBlock.className = 'session-block';
                 
                 let html = `
                     <div class="session-block-header">
-                        <div class="session-block-title">🏁 ${escapeHtml(nomeSessaoFormatado)}</div>
+                        <div class="session-block-title">
+                            <span>🏁 ${escapeHtml(nomeSessaoFormatado)}</span>
+                            ${botaoPdfHtml}
+                        </div>
                         <div class="session-block-meta">
-                            <span class="session-winner-tag">🏆 Vencedor: <strong><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(nomeVencedor)}')">${escapeHtml(nomeVencExib)}</a></strong></span>
+                            <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">${podioHtml}</div>
                             <button class="btn-like" onclick="curtirSessao('${bateriaKey}')">❤️ Curtir (<span id="like-count-${safeKey}">0</span>)</button>
-                            <button class="btn-share" onclick="compartilharCorrida('${bateriaKey}', '${escapeHtml(nomeSessaoFormatado)}', '${escapeHtml(nomeVencExib)}')">🔗 Compartilhar</button>
+                            <button class="btn-share" onclick="compartilharCorrida('${bateriaKey}', '${escapeHtml(nomeSessaoFormatado)}', '${escapeHtml(textoCompartilharPodio)}')">🔗 Compartilhar</button>
                         </div>
                     </div>
                 `;
@@ -2080,24 +2169,47 @@
                     let canvasPosEl = document.getElementById(`chart-pos-${bateriaKey}`);
                     if (canvasPosEl) {
                         let labelsPos = Array.from({length: maxVPos}, (_, i) => `Volta ${i+1}`);
+                        
                         let datasetsPos = dadosSessao.map((d, idx) => {
                             let meta = pilotosMetadadosCache[d.piloto] || {};
                             let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
+                            
+                            let dadosPiloto = matrizPos[d.piloto] || [];
+                            let voltasPiloto = d.laps ? d.laps.length : maxVPos;
+                            
+                            let pontosGrafico = labelsPos.map((_, i) => (i < voltasPiloto ? dadosPiloto[i] : null));
+                            let corPiloto = paleta[idx % paleta.length];
+
                             return {
                                 label: nomeExib,
-                                data: matrizPos[d.piloto] || [],
-                                borderColor: paleta[idx % paleta.length],
-                                backgroundColor: paleta[idx % paleta.length],
-                                borderWidth: 3, tension: 0.1, spanGaps: true
+                                data: pontosGrafico,
+                                borderColor: corPiloto,
+                                backgroundColor: corPiloto,
+                                borderWidth: 3, 
+                                tension: 0.1, 
+                                spanGaps: false,
+                                pointRadius: (ctx) => (ctx.dataIndex === voltasPiloto - 1 && voltasPiloto < maxVPos) ? 8 : 3,
+                                pointStyle: (ctx) => (ctx.dataIndex === voltasPiloto - 1 && voltasPiloto < maxVPos) ? 'crossRot' : 'circle',
+                                pointBackgroundColor: (ctx) => (ctx.dataIndex === voltasPiloto - 1 && voltasPiloto < maxVPos) ? '#ff0000' : corPiloto
                             };
                         });
+
                         chartInstances.push(new Chart(canvasPosEl.getContext('2d'), {
                             type: 'line', data: { labels: labelsPos, datasets: datasetsPos },
                             options: {
                                 responsive: true, maintainAspectRatio: false,
                                 scales: {
-                                    y: { reverse: true, min: 1, max: todosBat.length + 0.5, ticks: { stepSize: 1, color: '#8492a6' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-                                    x: { ticks: { color: '#8492a6' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                                    y: { 
+                                        reverse: true, 
+                                        min: 1, 
+                                        max: todosBat.length + 0.5, 
+                                        ticks: { stepSize: 1, color: '#8492a6' }, 
+                                        grid: { color: 'rgba(255,255,255,0.05)' } 
+                                    },
+                                    x: { 
+                                        ticks: { color: '#8492a6' }, 
+                                        grid: { color: 'rgba(255,255,255,0.05)' } 
+                                    }
                                 },
                                 plugins: { legend: { labels: { color: '#8492a6' } } }
                             }
@@ -2142,7 +2254,7 @@
                             let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
                             
                             let txtRitmo = desvio < 0.2 ? `O piloto demonstrou um ritmo extremamente linear, mantendo suas parciais de volta dentro de uma faixa de variação mínima, o que evidencia forte controle do equipamento e excelente leitura do traçado ao longo de toda a bateria.` : `O piloto apresentou oscilações consideráveis nas parciais ao longo da prova, sugerindo variações no desgaste de bateria, aderência dos pneus ou pequenas correções de trajetória nas curvas.`;
-                            let txtConsistencia = desvio < 0.15 ? `Altíssimo nível de consistência. A proximidade entre a melhor volta (${melhor.toFixed(3)}s) e a média geral (${media.toFixed(3)}s) indica controle absoluto de pilotagem com desvio padrão reduzido de ±${desvio.toFixed(3)}s.` : `Consistência moderada. O desvio padrão de ±${desvio.toFixed(3)}s aponta margem para refinamento na constância de frenagem e aceleração nas saídas de curva.`;
+                            let txtConsistencia = desvio < 0.15 ? `Altíssimo nível de constância. A proximidade entre a melhor volta (${melhor.toFixed(3)}s) e a média geral (${media.toFixed(3)}s) indica controle absoluto de pilotagem com desvio padrão reduzido de ±${desvio.toFixed(3)}s.` : `Consistência moderada. O desvio padrão de ±${desvio.toFixed(3)}s aponta margem para refinamento na constância de frenagem e aceleração nas saídas de curva.`;
                             let txtLaudo = `Análise Técnica Avançada para ${nomeExib}: O conjunto motriz e o setup operaram de maneira estável. O rendimento aerodinâmico e mecânico nas curvas de alta foi satisfatório, aproveitando o máximo da tração integral 4x4 no piso. Recomenda-se ajuste fino na distribuição de peso para otimizar ainda mais a entrada de curva em baterias futuras.`;
 
                             tbodyCons.innerHTML += `
@@ -2223,6 +2335,8 @@
 
                             let linha = `<td><strong>Volta ${i+1}</strong></td>`;
                             dadosSessao.forEach(d => {
+                                let totalVoltasPiloto = d.laps ? d.laps.length : 0;
+
                                 if (d.laps && d.laps[i] !== undefined && !isNaN(d.laps[i])) {
                                     let t = typeof d.laps[i] === 'object' ? d.laps[i].tempo : d.laps[i];
                                     
@@ -2254,7 +2368,7 @@
 
                                     linha += `<td><div class="lap-cell-inline"><span>${t.toFixed(3)}s</span>${tagHtml}</div></td>`;
                                 } else { 
-                                    linha += `<td>-</td>`; 
+                                    linha += `<td>-</td>`;
                                 }
                             });
                             bodyLap.innerHTML += `<tr>${linha}</tr>`;
