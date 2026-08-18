@@ -1,4 +1,4 @@
-<!-- Index.html para o site Krathus Racing - Versão Corrigida para Seleção de Baterias e Telemetria Completa -->
+<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Completa Consolidada) -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -479,7 +479,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.31.2 (Correção de Seleção Padrão de Baterias e Marcação DNF)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.32.0 (Correção de DNF Integrado na Linha do Piloto)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -2079,37 +2079,47 @@
                     let canvasPosEl = document.getElementById(`chart-pos-${bateriaKey}`);
                     if (canvasPosEl) {
                         let labelsPos = Array.from({length: maxVPos}, (_, i) => `Volta ${i+1}`);
+                        
                         let datasetsPos = dadosSessao.map((d, idx) => {
                             let meta = pilotosMetadadosCache[d.piloto] || {};
                             let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
+                            
+                            let dadosPiloto = matrizPos[d.piloto] || [];
+                            let voltasPiloto = d.laps ? d.laps.length : maxVPos;
+                            
+                            let pontosGrafico = labelsPos.map((_, i) => (i < voltasPiloto ? dadosPiloto[i] : null));
+                            let corPiloto = paleta[idx % paleta.length];
+
                             return {
                                 label: nomeExib,
-                                data: matrizPos[d.piloto] || [],
-                                borderColor: paleta[idx % paleta.length],
-                                backgroundColor: paleta[idx % paleta.length],
-                                borderWidth: 3, tension: 0.1, spanGaps: true
+                                data: pontosGrafico,
+                                borderColor: corPiloto,
+                                backgroundColor: corPiloto,
+                                borderWidth: 3, 
+                                tension: 0.1, 
+                                spanGaps: false,
+                                pointRadius: (ctx) => (ctx.dataIndex === voltasPiloto - 1 && voltasPiloto < maxVPos) ? 8 : 3,
+                                pointStyle: (ctx) => (ctx.dataIndex === voltasPiloto - 1 && voltasPiloto < maxVPos) ? 'crossRot' : 'circle',
+                                pointBackgroundColor: (ctx) => (ctx.dataIndex === voltasPiloto - 1 && voltasPiloto < maxVPos) ? '#ff0000' : corPiloto
                             };
                         });
 
-                        // Lógica de DNF (Última volta dos atrasados marcada com X)
-                        const pontosFinais = {
-                            label: 'Última Volta (DNF)',
-                            data: dadosSessao
-                                .filter(p => p.laps.length < maxVPos)
-                                .map(p => ({ x: p.laps.length - 1, y: matrizPos[p.piloto][p.laps.length - 1] })),
-                            pointRadius: 8,
-                            pointStyle: 'crossRot',
-                            backgroundColor: 'red',
-                            showLine: false
-                        };
-
                         chartInstances.push(new Chart(canvasPosEl.getContext('2d'), {
-                            type: 'line', data: { labels: labelsPos, datasets: [...datasetsPos, pontosFinais] },
+                            type: 'line', data: { labels: labelsPos, datasets: datasetsPos },
                             options: {
                                 responsive: true, maintainAspectRatio: false,
                                 scales: {
-                                    y: { reverse: true, min: 1, max: todosBat.length + 0.5, ticks: { stepSize: 1, color: '#8492a6' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-                                    x: { ticks: { color: '#8492a6' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                                    y: { 
+                                        reverse: true, 
+                                        min: 1, 
+                                        max: todosBat.length + 0.5, 
+                                        ticks: { stepSize: 1, color: '#8492a6' }, 
+                                        grid: { color: 'rgba(255,255,255,0.05)' } 
+                                    },
+                                    x: { 
+                                        ticks: { color: '#8492a6' }, 
+                                        grid: { color: 'rgba(255,255,255,0.05)' } 
+                                    }
                                 },
                                 plugins: { legend: { labels: { color: '#8492a6' } } }
                             }
