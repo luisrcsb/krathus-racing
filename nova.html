@@ -1,4 +1,4 @@
-<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Completa com Exclusão em Lote por Checkbox) -->
+<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Completa com Remoção de Marcação de Fim na Tabela Geral) -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -173,7 +173,6 @@
         .lap-cell-inline { display: inline-flex; align-items: baseline; gap: 6px; white-space: nowrap; }
         .leader-badge { background: var(--accent-gold); color: #000; font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-left: 6px; display: inline-block; text-transform: uppercase; }
         .lap-gap { color: var(--accent-gap); font-size: 0.8rem; font-weight: 600; margin-left: 4px; }
-        .dnf-tag { background: rgba(230, 57, 70, 0.15); color: var(--accent-red); border: 1px solid var(--accent-red); font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-left: 6px; display: inline-block; }
 
         .footer-container { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px 24px; display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 10px; }
         .footer-meta-info { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 16px; font-size: 0.82rem; color: var(--text-muted); background: var(--bg-input); padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border-card); }
@@ -484,7 +483,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.33.0 (Exclusão em Lote por Checkbox no Banco Principal)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.34.0 (Remoção da marcação de fim na tabela geral)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -2182,7 +2181,7 @@
                             let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
                             
                             let txtRitmo = desvio < 0.2 ? `O piloto demonstrou um ritmo extremamente linear, mantendo suas parciais de volta dentro de uma faixa de variação mínima, o que evidencia forte controle do equipamento e excelente leitura do traçado ao longo de toda a bateria.` : `O piloto apresentou oscilações consideráveis nas parciais ao longo da prova, sugerindo variações no desgaste de bateria, aderência dos pneus ou pequenas correções de trajetória nas curvas.`;
-                            let txtConsistencia = desvio < 0.15 ? `Altíssimo nível de consistência. A proximidade entre a melhor volta (${melhor.toFixed(3)}s) e a média geral (${media.toFixed(3)}s) indica controle absoluto de pilotagem com desvio padrão reduzido de ±${desvio.toFixed(3)}s.` : `Consistência moderada. O desvio padrão de ±${desvio.toFixed(3)}s aponta margem para refinamento na constância de frenagem e aceleração nas saídas de curva.`;
+                            let txtConsistencia = desvio < 0.15 ? `Altíssimo nível de constância. A proximidade entre a melhor volta (${melhor.toFixed(3)}s) e a média geral (${media.toFixed(3)}s) indica controle absoluto de pilotagem com desvio padrão reduzido de ±${desvio.toFixed(3)}s.` : `Consistência moderada. O desvio padrão de ±${desvio.toFixed(3)}s aponta margem para refinamento na constância de frenagem e aceleração nas saídas de curva.`;
                             let txtLaudo = `Análise Técnica Avançada para ${nomeExib}: O conjunto motriz e o setup operaram de maneira estável. O rendimento aerodinâmico e mecânico nas curvas de alta foi satisfatório, aproveitando o máximo da tração integral 4x4 no piso. Recomenda-se ajuste fino na distribuição de peso para otimizar ainda mais a entrada de curva em baterias futuras.`;
 
                             tbodyCons.innerHTML += `
@@ -2294,22 +2293,9 @@
                                         }
                                     }
 
-                                    let indicadorFimExtra = "";
-                                    if (i + 1 === totalVoltasPiloto && totalVoltasPiloto < maxV) {
-                                        indicadorFimExtra = ` <span class="dnf-tag">[FIM / P${d.pos}]</span>`;
-                                    }
-
-                                    linha += `<td><div class="lap-cell-inline"><span>${t.toFixed(3)}s</span>${tagHtml}${indicadorFimExtra}</div></td>`;
+                                    linha += `<td><div class="lap-cell-inline"><span>${t.toFixed(3)}s</span>${tagHtml}</div></td>`;
                                 } else { 
-                                    if (i >= totalVoltasPiloto) {
-                                        if (i === totalVoltasPiloto) {
-                                            linha += `<td><span class="dnf-tag">[FIM / P${d.pos}]</span></td>`;
-                                        } else {
-                                            linha += `<td>-</td>`;
-                                        }
-                                    } else {
-                                        linha += `<td>-</td>`;
-                                    }
+                                    linha += `<td>-</td>`;
                                 }
                             });
                             bodyLap.innerHTML += `<tr>${linha}</tr>`;
