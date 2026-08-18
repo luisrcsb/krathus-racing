@@ -1,4 +1,4 @@
-<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Completa Consolidada) -->
+<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Completa com Exclusão em Lote por Checkbox) -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -173,6 +173,7 @@
         .lap-cell-inline { display: inline-flex; align-items: baseline; gap: 6px; white-space: nowrap; }
         .leader-badge { background: var(--accent-gold); color: #000; font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-left: 6px; display: inline-block; text-transform: uppercase; }
         .lap-gap { color: var(--accent-gap); font-size: 0.8rem; font-weight: 600; margin-left: 4px; }
+        .dnf-tag { background: rgba(230, 57, 70, 0.15); color: var(--accent-red); border: 1px solid var(--accent-red); font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-left: 6px; display: inline-block; }
 
         .footer-container { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px 24px; display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 10px; }
         .footer-meta-info { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 16px; font-size: 0.82rem; color: var(--text-muted); background: var(--bg-input); padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border-card); }
@@ -221,6 +222,10 @@
                         <ul id="upload-lista-historico">
                             <li>Carregando arquivos...</li>
                         </ul>
+                        <!-- Botão de Exclusão em Lote -->
+                        <div style="display: flex; justify-content: flex-end; margin-top: 4px;">
+                            <button class="btn-action-danger" style="padding: 6px 12px; font-size: 0.8rem;" onclick="excluirArquivosSelecionadosPrincipal()">🗑️ Excluir Selecionados</button>
+                        </div>
                     </div>
                 </div>
                 <div>
@@ -479,7 +484,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.32.0 (Correção de DNF Integrado na Linha do Piloto)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.33.0 (Exclusão em Lote por Checkbox no Banco Principal)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -1439,25 +1444,38 @@
                 let nomeExibicao = item.sessao || `ID ${item.id}`;
                 const li = document.createElement('li');
                 li.innerHTML = `
-                    <span>📄 <strong>${escapeHtml(nomeExibicao)}</strong></span>
-                    <div style="display: flex; gap: 6px;">
-                        <button class="btn-text-action" onclick="inspecionarJsonUploadPrincipal(${index})">Inspecionar</button>
-                        <button class="btn-text-action" style="color: var(--accent-red);" onclick="excluirArquivoNuvemPrincipal('${item.firebaseKey}', '${escapeHtml(nomeExibicao)}')">Excluir</button>
-                    </div>`;
+                    <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
+                        <input type="checkbox" class="checkbox-excluir-lote-principal" value="${item.firebaseKey}" style="accent-color: var(--accent-red); width: 16px; height: 16px; cursor: pointer;">
+                        <span>📄 <strong>${escapeHtml(nomeExibicao)}</strong></span>
+                    </div>
+                    <button class="btn-text-action" onclick="inspecionarJsonUploadPrincipal(${index})">Inspecionar</button>
+                `;
                 ul.appendChild(li);
             });
         }
 
+        window.excluirArquivosSelecionadosPrincipal = async function() {
+            let checkboxes = document.querySelectorAll('.checkbox-excluir-lote-principal:checked');
+            if (checkboxes.length === 0) {
+                alert("Selecione pelo menos um arquivo na lista para excluir.");
+                return;
+            }
+            if (!db) return;
+
+            if (confirm(`Deseja realmente excluir os ${checkboxes.length} arquivo(s) selecionado(s) do banco principal?`)) {
+                try {
+                    let promessas = Array.from(checkboxes).map(cb => db.ref('baterias/' + cb.value).remove());
+                    await Promise.all(promessas);
+                    alert("Arquivos selecionados excluídos com sucesso!");
+                } catch (err) {
+                    alert("Erro ao excluir arquivos: " + err.message);
+                }
+            }
+        };
+
         window.inspecionarJsonUploadPrincipal = function(index) {
             const item = listaJsonsCache[index];
             if (item) document.getElementById('upload-json-viewer').textContent = JSON.stringify(item, null, 4);
-        };
-
-        window.excluirArquivoNuvemPrincipal = function(firebaseKey, nomeExibicao) {
-            if (!db) return;
-            if (confirm(`Deseja excluir "${nomeExibicao}" do banco principal?`)) {
-                db.ref('baterias/' + firebaseKey).remove().then(() => alert("Excluído com sucesso!"));
-            }
         };
 
         function obterTodosDadosConsolidados() {
@@ -2245,6 +2263,8 @@
 
                             let linha = `<td><strong>Volta ${i+1}</strong></td>`;
                             dadosSessao.forEach(d => {
+                                let totalVoltasPiloto = d.laps ? d.laps.length : 0;
+
                                 if (d.laps && d.laps[i] !== undefined && !isNaN(d.laps[i])) {
                                     let t = typeof d.laps[i] === 'object' ? d.laps[i].tempo : d.laps[i];
                                     
@@ -2274,9 +2294,22 @@
                                         }
                                     }
 
-                                    linha += `<td><div class="lap-cell-inline"><span>${t.toFixed(3)}s</span>${tagHtml}</div></td>`;
+                                    let indicadorFimExtra = "";
+                                    if (i + 1 === totalVoltasPiloto && totalVoltasPiloto < maxV) {
+                                        indicadorFimExtra = ` <span class="dnf-tag">[FIM / P${d.pos}]</span>`;
+                                    }
+
+                                    linha += `<td><div class="lap-cell-inline"><span>${t.toFixed(3)}s</span>${tagHtml}${indicadorFimExtra}</div></td>`;
                                 } else { 
-                                    linha += `<td>-</td>`; 
+                                    if (i >= totalVoltasPiloto) {
+                                        if (i === totalVoltasPiloto) {
+                                            linha += `<td><span class="dnf-tag">[FIM / P${d.pos}]</span></td>`;
+                                        } else {
+                                            linha += `<td>-</td>`;
+                                        }
+                                    } else {
+                                        linha += `<td>-</td>`;
+                                    }
                                 }
                             });
                             bodyLap.innerHTML += `<tr>${linha}</tr>`;
