@@ -1,4 +1,4 @@
-<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Completa com Atalho para o PDF Original) -->
+<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Completa com Pódio no Cabeçalho da Sessão) -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -124,8 +124,12 @@
 
         .session-block-header { background: linear-gradient(135deg, var(--bg-card-header) 0%, var(--bg-card) 100%); border: 1px solid var(--border-card); border-left: 5px solid var(--accent-red); border-radius: 10px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; flex-wrap: wrap; gap: 10px; }
         .session-block-title { font-size: 1.15rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-        .session-block-meta { font-size: 0.85rem; color: var(--text-muted); display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-        .session-winner-tag { background: rgba(255, 183, 3, 0.15); color: var(--accent-gold); border: 1px solid var(--accent-gold); padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; }
+        .session-block-meta { font-size: 0.85rem; color: var(--text-muted); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        
+        .session-podium-tag { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.80rem; border: 1px solid; }
+        .podium-gold { background: rgba(255, 183, 3, 0.15); color: var(--accent-gold); border-color: var(--accent-gold); }
+        .podium-silver { background: rgba(192, 192, 192, 0.15); color: var(--accent-silver); border-color: var(--accent-silver); }
+        .podium-bronze { background: rgba(205, 127, 50, 0.15); color: var(--accent-bronze); border-color: var(--accent-bronze); }
 
         .session-blocks-container { display: flex; flex-direction: column; gap: 30px; }
         .session-block { display: flex; flex-direction: column; gap: 20px; background: rgba(21, 28, 40, 0.4); border: 1px solid var(--border-card); border-radius: 14px; padding: 20px; }
@@ -485,7 +489,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.36.0 (Atalho para PDF Original nas Sessões)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.37.0 (Pódio Completo no Cabeçalho da Sessão)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -555,10 +559,10 @@
             return timestampData + sequencial;
         }
 
-        function determinarVencedorBateria(participantesValidos) {
-            if (!participantesValidos || participantesValidos.length === 0) return null;
+        function ordenarParticipantesBateria(participantesValidos) {
+            if (!participantesValidos || participantesValidos.length === 0) return [];
             
-            let ordenados = [...participantesValidos].sort((a, b) => {
+            return [...participantesValidos].sort((a, b) => {
                 let voltasA = a.laps ? a.laps.length : 0;
                 let voltasB = b.laps ? b.laps.length : 0;
                 
@@ -570,8 +574,6 @@
                 let tempoB = (b.laps || []).reduce((acc, l) => acc + (typeof l === 'object' ? l.tempo : l), 0);
                 return tempoA - tempoB;
             });
-            
-            return ordenados[0];
         }
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -1625,8 +1627,8 @@
                     return { ...d, piloto: pReal };
                 }).filter(d => d.laps && d.laps.length > 0);
 
-                let vencedorBat = determinarVencedorBateria(todosBat);
-                if (vencedorBat && vencedorBat.piloto === nomePiloto) {
+                let ordenados = ordenarParticipantesBateria(todosBat);
+                if (ordenados.length > 0 && ordenados[0].piloto === nomePiloto) {
                     vitorias++;
                 }
             });
@@ -1891,9 +1893,9 @@
             return String(text).replace(/[&<>"']/g, m => map[m]);
         }
 
-        window.compartilharCorrida = function(bateriaKey, nomeSessao, vencedor) {
-            let txt = `🏁 *KRATHUS RACING* 🏁\nSessão: *${nomeSessao}*\nVencedor: *${vencedor}*\n`;
-            navigator.clipboard.writeText(txt).then(() => alert("Resumo copiado!"));
+        window.compartilharCorrida = function(bateriaKey, nomeSessao, podiumTexto) {
+            let txt = `🏁 *KRATHUS RACING* 🏁\nSessão: *${nomeSessao}*\nPódio: *${podiumTexto}*\n`;
+            navigator.clipboard.writeText(txt).then(() => alert("Resumo do pódio copiado!"));
         };
 
         function atualizarDashboard() {
@@ -1916,10 +1918,10 @@
                     });
 
                     let participantesValidos = itensDaBateria.filter(d => d.laps && d.laps.length > 0);
-                    let vencedorObj = determinarVencedorBateria(participantesValidos);
+                    let ordenados = ordenarParticipantesBateria(participantesValidos);
                     
-                    if (vencedorObj) {
-                        let pilotoReal = vencedorObj.piloto;
+                    if (ordenados.length > 0) {
+                        let pilotoReal = ordenados[0].piloto;
                         vencedorContadorGlobal[pilotoReal] = (vencedorContadorGlobal[pilotoReal] || 0) + 1;
                     }
                 });
@@ -2026,11 +2028,36 @@
                 const nomeSessaoFormatado = formatarNomeSessao(sessaoOriginal);
                 let todosBat = dadosBase.filter(d => d.bateriaKey === bateriaKey && d.laps && d.laps.length > 0);
                 
-                let vencedorObj = determinarVencedorBateria(todosBat);
-                let nomeVencedor = vencedorObj ? vencedorObj.piloto : 'N/A';
+                let participantesOrdenados = ordenarParticipantesBateria(todosBat);
                 
-                let metaVenc = pilotosMetadadosCache[nomeVencedor] || {};
-                let nomeVencExib = metaVenc.apelido ? `${nomeVencedor} (${metaVenc.apelido})` : nomeVencedor;
+                let podioHtml = "";
+                let podiumNomesCompartilhar = [];
+
+                if (participantesOrdenados.length > 0) {
+                    let p1 = participantesOrdenados[0];
+                    let meta1 = pilotosMetadadosCache[p1.piloto] || {};
+                    let nome1Exib = meta1.apelido ? `${p1.piloto} (${meta1.apelido})` : p1.piloto;
+                    podiumNomesCompartilhar.push(`1º ${p1.piloto}`);
+                    podioHtml += `<span class="session-podium-tag podium-gold">🏆 <a class="piloto-link" style="color: var(--accent-gold);" onclick="abrirDossiePiloto('${escapeHtml(p1.piloto)}')">${escapeHtml(nome1Exib)}</a></span>`;
+                }
+
+                if (participantesOrdenados.length > 1) {
+                    let p2 = participantesOrdenados[1];
+                    let meta2 = pilotosMetadadosCache[p2.piloto] || {};
+                    let nome2Exib = meta2.apelido ? `${p2.piloto} (${meta2.apelido})` : p2.piloto;
+                    podiumNomesCompartilhar.push(`2º ${p2.piloto}`);
+                    podioHtml += `<span class="session-podium-tag podium-silver">🥈 <a class="piloto-link" style="color: var(--accent-silver);" onclick="abrirDossiePiloto('${escapeHtml(p2.piloto)}')">${escapeHtml(nome2Exib)}</a></span>`;
+                }
+
+                if (participantesOrdenados.length > 2) {
+                    let p3 = participantesOrdenados[2];
+                    let meta3 = pilotosMetadadosCache[p3.piloto] || {};
+                    let nome3Exib = meta3.apelido ? `${p3.piloto} (${meta3.apelido})` : p3.piloto;
+                    podiumNomesCompartilhar.push(`3º ${p3.piloto}`);
+                    podioHtml += `<span class="session-podium-tag podium-bronze">🥉 <a class="piloto-link" style="color: var(--accent-bronze);" onclick="abrirDossiePiloto('${escapeHtml(p3.piloto)}')">${escapeHtml(nome3Exib)}</a></span>`;
+                }
+
+                let textoCompartilharPodio = podiumNomesCompartilhar.join(" | ");
                 let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
 
                 let botaoPdfHtml = "";
@@ -2048,9 +2075,9 @@
                             ${botaoPdfHtml}
                         </div>
                         <div class="session-block-meta">
-                            <span class="session-winner-tag">🏆 Vencedor: <strong><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(nomeVencedor)}')">${escapeHtml(nomeVencExib)}</a></strong></span>
+                            <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">${podioHtml}</div>
                             <button class="btn-like" onclick="curtirSessao('${bateriaKey}')">❤️ Curtir (<span id="like-count-${safeKey}">0</span>)</button>
-                            <button class="btn-share" onclick="compartilharCorrida('${bateriaKey}', '${escapeHtml(nomeSessaoFormatado)}', '${escapeHtml(nomeVencExib)}')">🔗 Compartilhar</button>
+                            <button class="btn-share" onclick="compartilharCorrida('${bateriaKey}', '${escapeHtml(nomeSessaoFormatado)}', '${escapeHtml(textoCompartilharPodio)}')">🔗 Compartilhar</button>
                         </div>
                     </div>
                 `;
