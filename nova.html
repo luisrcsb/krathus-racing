@@ -1,6 +1,6 @@
 <!-- 
 ========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.47.0 - RITMO & DISPUTAS INDIVIDUALIZADAS)
+ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.48.0 - CONSISTÊNCIA HISTÓRICA E EVOLUÇÃO MULTI-BATERIAS)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
 PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads e Championship Manager)
@@ -9,7 +9,7 @@ PARTE 4: Inicialização do Firebase, Configuração de Cache, Regras de Alias (
 PARTE 5: Módulo de Gerenciamento de Campeonatos (ZRound, Bancos Separados, Grids de Largada e Pontuação)
 PARTE 6: Processamento e Conversão de Arquivos (PDF para Texto, Parser de Voltas, Base64 e Banco de Dados)
 PARTE 7: Renderização Dinâmica de Gráficos (Evolução de Ritmo e Posição Volta a Volta) e Relatórios
-PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado por Voltas, Cruzamento com Disputas/Ultrapassagens, Consistência e Laudo do Chefe de Equipe)
+PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado, Consistência Histórica Multi-Baterias com Métricas de Evolução/Piora em % e Laudo do Chefe de Equipe)
 PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentários, Reações e Curtidas
 ========================================================================================================================
 -->
@@ -469,7 +469,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                             <label class="checkbox-item"><input type="checkbox" value="mod-grafico" class="filter-modulo" checked onchange="atualizarDashboard()"> 📈 Evolução de Ritmo</label>
                             <label class="checkbox-item"><input type="checkbox" value="mod-grafico-posicao" class="filter-modulo" checked onchange="atualizarDashboard()"> 📊 Posição Volta a Volta</label>
                             <label class="checkbox-item"><input type="checkbox" value="mod-log-posicao" class="filter-modulo" checked onchange="atualizarDashboard()"> 📝 Relatório de Ultrapassagens</label>
-                            <label class="checkbox-item"><input type="checkbox" value="mod-classificacao-analise" class="filter-modulo" checked onchange="atualizarDashboard()"> 🏆 Velocidade, Consistência, Ritmo e Laudo Técnico</label>
+                            <label class="checkbox-item"><input type="checkbox" value="mod-classificacao-analise" class="filter-modulo" checked onchange="atualizarDashboard()"> 🏆 Velocidade, Consistência Histórica & Laudo Técnico</label>
                             <label class="checkbox-item"><input type="checkbox" value="mod-tabela-geral" class="filter-modulo" checked onchange="atualizarDashboard()"> ⏱️ Tabela Geral com Gaps</label>
                             <label class="checkbox-item"><input type="checkbox" value="mod-comentarios" class="filter-modulo" checked onchange="atualizarDashboard()"> 💬 Comentários e Reações</label>
                         </div>
@@ -507,7 +507,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.47.0 (Ritmo Detalhado & Cruzamento de Disputas Individuais)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.48.0 (Consistência Histórica Multi-Baterias & Evolução %)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -2088,7 +2088,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                     if (posA !== posB) return posA - posB;
                     let voltasA = a.laps ? a.laps.length : 0;
                     let voltasB = b.laps ? b.laps.length : 0;
-                    if (voltasA !== voltasB) return voltasB - voltasB; // Correção sutil mantida
+                    if (voltasA !== voltasB) return voltasB - voltasA;
                     let somaA = (a.laps || []).reduce((acc, l) => acc + (typeof l === 'object' ? l.tempo : l), 0);
                     let somaB = (b.laps || []).reduce((acc, l) => acc + (typeof l === 'object' ? l.tempo : l), 0);
                     return somaA - somaB;
@@ -2161,7 +2161,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                     html += `<div class="card"><div class="card-header">📝 Relatório Detalhado de Ultrapassagens</div><div class="position-analysis-container" style="margin-top:0;"><div class="position-analysis-title">Histórico Volta a Volta</div><div class="position-log-list" id="pos-logs-${bateriaKey}"></div></div></div>`;
                 }
                 if (modulosSel.includes('mod-classificacao-analise')) {
-                    html += `<div class="card"><div class="card-header">🏆 Velocidade, Consistência, Ritmo e Laudo Técnico do Chefe de Equipe</div><div class="table-container"><table><thead><tr><th>POS</th><th>PILOTO</th><th>SESSÃO</th><th>VOLTAS</th><th>MELHOR</th><th>VEL. ESCALA (1/28)</th><th>MÉDIA</th><th>DESVIO</th></tr></thead><tbody id="tabela-unificada-${bateriaKey}"></tbody></table></div></div>`;
+                    html += `<div class="card"><div class="card-header">🏆 Velocidade, Consistência Histórica & Laudo Técnico do Chefe de Equipe</div><div class="table-container"><table><thead><tr><th>POS</th><th>PILOTO</th><th>SESSÃO</th><th>VOLTAS</th><th>MELHOR</th><th>VEL. ESCALA (1/28)</th><th>MÉDIA</th><th>DESVIO</th></tr></thead><tbody id="tabela-unificada-${bateriaKey}"></tbody></table></div></div>`;
                 }
                 if (modulosSel.includes('mod-tabela-geral')) {
                     html += `<div class="card"><div class="card-header">⏱️ Tabela Geral Volta a Volta (com Gaps e Voltas Atrás)</div><div class="table-container"><table><thead><tr id="head-lapbyLap-${bateriaKey}"><th>VOLTA</th></tr></thead><tbody id="body-lapbyLap-${bateriaKey}"></tbody></table></div></div>`;
@@ -2309,16 +2309,14 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                     }
                 }
 
-                // [PARTE 8] Análises Avançadas por Piloto: Ritmo de Prova Detalhado por Voltas, Cruzamento com Disputas/Ultrapassagens, Consistência e Laudo do Chefe de Equipe
+                // [PARTE 8] Análises Avançadas por Piloto: Ritmo de Prova Detalhado, Consistência Histórica Multi-Baterias com Métricas de Evolução/Piora em % e Laudo do Chefe de Equipe
                 if (modulosSel.includes('mod-classificacao-analise')) {
                     let tbodyCons = document.getElementById(`tabela-unificada-${bateriaKey}`);
                     if (tbodyCons) {
                         tbodyCons.innerHTML = "";
                         
-                        // Cálculo da melhor volta geral da bateria para referência de recorde
                         let melhorVoltaBateria = Math.min(...dadosSessao.map(d => Math.min(...(d.laps || [999]))));
 
-                        // Mapeamento antecipado de confrontos e trocas de posições volta a volta para todos os pilotos da bateria
                         let historicoConfrontosPiloto = {};
                         dadosSessao.forEach(d => { historicoConfrontosPiloto[d.piloto] = []; });
 
@@ -2331,12 +2329,10 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                                 if (arr[v]) posNaVoltaAtual[arr[v]] = d.piloto;
                             });
 
-                            // Verificar ultrapassagens diretas (trocas de posição entre vizinhos ou geral)
                             todosBat.forEach(d => {
                                 let arr = matrizPos[d.piloto] || [];
                                 let pAnt = arr[v-1], pAtu = arr[v];
                                 if (pAnt && pAtu && pAnt !== pAtu) {
-                                    // Quem estava na posição que este assumiu?
                                     let oponente = posNaVoltaAnt[pAtu];
                                     if (oponente && oponente !== d.piloto) {
                                         historicoConfrontosPiloto[d.piloto].push({ volta: v + 1, tipo: 'ganho', oponente, de: pAnt, para: pAtu });
@@ -2358,59 +2354,79 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                             let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
                             
                             // ==========================================
-                            // 1. ANÁLISE EXCLUSIVA E PRECISA DE RITMO DE PROVA (Volta a Volta)
+                            // 1. ANÁLISE DE RITMO DE PROVA (Volta a Volta)
                             // ==========================================
-                            let relatoVoltas = [];
                             let voltasComQuedasDrasticas = [];
-                            
                             for (let i = 0; i < laps.length; i++) {
                                 let vNum = i + 1;
                                 let tempoAtual = laps[i];
-                                
-                                // Identificação de marcos de ritmo por patamares e variações bruscas
-                                if (i === 0) {
-                                    relatoVoltas.loc = `Iniciou a bateria na volta 1 registrando ${tempoAtual.toFixed(3)}s.`;
-                                } else {
-                                    let diffAnterior = tempoAtual - laps[i-1];
-                                    if (diffAnterior > 0.8) {
-                                        voltasComQuedasDrasticas.push(vNum);
-                                    }
+                                if (i > 0 && tempoAtual - laps[i-1] > 0.8) {
+                                    voltasComQuedasDrasticas.push(vNum);
                                 }
                             }
 
-                            // Construção do histórico de disputas deste piloto específico
-                            let disputasPiloto = historicoConfrontosPiloto[d.piloto] || {};
+                            let disputasPiloto = historicoConfrontosPiloto[d.piloto] || [];
                             let resumoDisputasTxt = "";
                             if (disputasPiloto.length > 0) {
-                                let trocasStr = disputasPiloto.map(ev => `na volta ${ev.volta} (${ev.tipo === 'ganho' ? 'superou' : 'tecnicamente combatido por'} ${ev.oponente})`).join(', ');
-                                resumoDisputasTxt = ` Houve cruzamento direto com adversários ${trocasStr}, o que gerou oscilações pontuais no fluxo de traçado.`;
+                                let trocasStr = disputasPiloto.map(ev => `na volta ${ev.volta} (${ev.tipo === 'ganho' ? 'superou' : 'combatido por'} ${ev.oponente})`).join(', ');
+                                resumoDisputasTxt = ` Houve cruzamento direto com adversários ${trocasStr}, gerando oscilações pontuais de traçado.`;
                             } else {
-                                resumoDisputasTxt = ` Correu com pista relativamente limpa, sem registros de confrontos diretos corpo a corpo nas posições.`;
+                                resumoDisputasTxt = ` Correu com pista livre, sem registros de confrontos diretos corpo a corpo.`;
                             }
 
-                            // Montagem do texto detalhado de ritmo de prova com base na telemetria individual
                             let primeiraVolta = laps[0];
-                            let ultimaVolta = laps[laps.length - 1];
                             let picoMaximo = Math.max(...laps);
                             let voltaPicoMax = laps.indexOf(picoMaximo) + 1;
 
-                            let txtRitmo = `Análise de Ritmo Volta a Volta: O piloto partiu para a marca inicial na casa de ${primeiraVolta.toFixed(3)}s, estabilizando o andamento nos giros intermediários. O maior pico de perda de tempo ocorreu na volta ${voltaPicoMax}, cronometrada em ${picoMaximo.toFixed(3)}s.${resumoDisputasTxt} ${voltasComQuedasDrasticas.length > 0 ? `Quedas expressivas de rendimento foram notadas nas voltas: ${voltasComQuedasDrasticas.join(', ')}.` : `O ritmo manteve-se fluido sem travadas críticas de eixo.`}`;
+                            let txtRitmo = `Análise de Ritmo: Partida na casa de ${primeiraVolta.toFixed(3)}s. Pico máximo de perda na volta ${voltaPicoMax} (${picoMaximo.toFixed(3)}s).${resumoDisputasTxt} ${voltasComQuedasDrasticas.length > 0 ? `Quedas expressivas nas voltas: ${voltasComQuedasDrasticas.join(', ')}.` : `Ritmo fluido sem travadas severas.`}`;
 
                             // ==========================================
-                            // 2. ANÁLISE EXCLUSIVA DE CONSISTÊNCIA (Limites Flexíveis)
+                            // 2. ANÁLISE DE CONSISTÊNCIA HISTÓRICA & MULTI-BATERIAS (%)
                             // ==========================================
-                            let avaliacaoConsistencia = "";
+                            // Buscar todas as participações do piloto em todas as baterias carregadas no cache
+                            let todasParticipacoesPiloto = dadosBase.filter(item => item.piloto === d.piloto && item.laps && item.laps.length > 0);
+                            
+                            let historicoDesvios = [];
+                            todasParticipacoesPiloto.forEach(part => {
+                                let lps = (part.laps || []).map(l => typeof l === 'object' ? l.tempo : l).filter(Boolean);
+                                if (lps.length > 0) {
+                                    let med = lps.reduce((a,b)=>a+b,0) / lps.length;
+                                    let vr = lps.reduce((sum, t) => sum + Math.pow(t - med, 2), 0) / lps.length;
+                                    let desvPart = Math.sqrt(vr);
+                                    historicoDesvios.push({ bateriaKey: part.bateriaKey, sessao: part.sessao, desvio: desvPart });
+                                }
+                            });
+
+                            let avaliacaoBateriaAtual = "";
                             if (desvio <= 0.12) {
-                                avaliacaoConsistencia = `Padrão cirúrgico! Com um desvio padrão incrivelmente baixo de ±${desvio.toFixed(3)}s, o piloto operou dentro de uma margem de variação exemplar, provando controle absoluto sob pressão.`;
+                                avaliacaoBateriaAtual = `Nesta sessão, apresentou consistência cirúrgica (±${desvio.toFixed(3)}s).`;
                             } else if (desvio <= 0.25) {
-                                avaliacaoConsistencia = `Padrão estável e dentro da normalidade esperada para o grid (desvio de ±${desvio.toFixed(3)}s). Houve pequenas flutuações normais de contorno de curva, mas sem fugir do padrão competitivo.`;
+                                avaliacaoBateriaAtual = `Nesta sessão, manteve estabilidade padrão de grid (±${desvio.toFixed(3)}s).`;
                             } else if (desvio <= 0.45) {
-                                avaliacaoConsistencia = `Oscilação moderada detectada (desvio de ±${desvio.toFixed(3)}s). O piloto apresentou alguns picos fora do padrão habitual nas tangências, indicando margem clara para polir a constância.`;
+                                avaliacaoBateriaAtual = `Nesta sessão, registrou oscilação moderada (±${desvio.toFixed(3)}s).`;
                             } else {
-                                avaliacaoConsistencia = `Padrão altamente irregular (desvio de ±${desvio.toFixed(3)}s). O comportamento do carro e os tempos oscilaram fortemente entre giros consecutivos, exigindo intervenção no setup de suspensão.`;
+                                avaliacaoBateriaAtual = `Nesta sessão, apresentou alta irregularidade de tempos (±${desvio.toFixed(3)}s).`;
                             }
 
-                            let txtConsistencia = avaliacaoConsistencia;
+                            let historicoTxt = "";
+                            if (historicoDesvios.length > 1) {
+                                let primeiroDesvio = historicoDesvios[0].desvio;
+                                let ultimoDesvio = historicoDesvios[historicoDesvios.length - 1].desvio;
+                                let diffDesvio = ultimoDesvio - primeiroDesvio;
+                                let percentualMudanca = Math.abs((diffDesvio / primeiroDesvio) * 100);
+
+                                if (diffDesvio < 0) {
+                                    historicoTxt = ` Histórico Multi-Baterias: O piloto demonstra evolução consistente ao longo do tempo. Comparando a primeira e a última bateria registradas, seu índice de desvio padrão melhorou em ${percentualMudanca.toFixed(1)}% (tornando-se mais regular e estável).`;
+                                } else if (diffDesvio > 0) {
+                                    historicoTxt = ` Histórico Multi-Baterias: Notou-se uma queda na consistência global em relação às suas primeiras participações. Houve um aumento de ${percentualMudanca.toFixed(1)}% no desvio padrão comparando o histórico, indicando maior variação nos tempos de volta.`;
+                                } else {
+                                    historicoTxt = ` Histórico Multi-Baterias: O piloto mantém estabilidade rigorosa e idêntica de constância se comparado ao seu histórico geral de provas.`;
+                                }
+                            } else {
+                                historicoTxt = ` Histórico Multi-Baterias: Esta é a primeira bateria registrada no banco de dados para este piloto, servindo de linha de base para futuras comparações de evolução de constância.`;
+                            }
+
+                            let txtConsistencia = `${avaliacaoBateriaAtual}${historicoTxt}`;
 
                             // ==========================================
                             // 3. LAUDO TÉCNICO AVANÇADO - CHEFE DE EQUIPE
@@ -2452,7 +2468,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                                             <div class="analysis-section-content">${txtRitmo}</div>
                                         </div>
                                         <div class="analysis-section-block">
-                                            <div class="analysis-section-title">📊 Análise de Consistência</div>
+                                            <div class="analysis-section-title">📊 Análise de Consistência Histórica & Multi-Baterias</div>
                                             <div class="analysis-section-content">${txtConsistencia}</div>
                                         </div>
                                         <div class="analysis-section-block">
