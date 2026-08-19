@@ -1,4 +1,4 @@
-<!-- Index.html - Krathus Racing - Central de Telemetria (Versão com Listagem Exclusiva de Pilotos Oficiais) -->
+<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Corrigida: Mesclagem Consolidando Dados na Página) -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -552,7 +552,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.42.0 (Filtro Restrito a Pilotos Oficiais)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.43.0 (Mesclagem Unificada de Dados)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -1748,19 +1748,18 @@
                     if (arq.dados && Array.isArray(arq.dados)) {
                         arq.dados.forEach(d => {
                             if (!d.laps || d.laps.length === 0) return;
-                            let pilotoReal = d.piloto;
-                            let safeNomeKey = pilotoReal.replace(/[.#$\/\[\]]/g, "_");
-                            if (mesclagensCache[safeNomeKey]) {
-                                pilotoReal = mesclagensCache[safeNomeKey];
-                            }
+                            
+                            let pilotoOriginal = d.piloto;
+                            let safeNomeKey = pilotoOriginal ? pilotoOriginal.replace(/[.#$\/\[\]]/g, "_") : "";
+                            let pilotoReal = mesclagensCache[safeNomeKey] || pilotoOriginal;
 
-                            // Filtro restritivo: Considera apenas se o piloto existe em pilotosMetadadosCache (Pilotos Oficiais)
+                            // Se o piloto possui perfil oficial ou foi mesclado para um oficial existente, exibe unificado
                             if (pilotosMetadadosCache[pilotoReal]) {
                                 let meta = pilotosMetadadosCache[pilotoReal] || {};
                                 consolidado.push({
                                     ...d,
                                     piloto: pilotoReal,
-                                    pilotoOriginal: d.piloto,
+                                    pilotoOriginal: pilotoOriginal,
                                     bateriaKey: arq.firebaseKey,
                                     pilotoExibicao: meta.apelido ? `${pilotoReal} (${meta.apelido})` : pilotoReal,
                                     apelido: meta.apelido || ''
@@ -1839,7 +1838,7 @@
             listaJsonsCache.forEach(arq => {
                 let todosBat = (arq.dados || []).map(d => {
                     let pReal = d.piloto;
-                    let safeKey = pReal.replace(/[.#$\/\[\]]/g, "_");
+                    let safeKey = pReal ? pReal.replace(/[.#$\/\[\]]/g, "_") : "";
                     if (mesclagensCache[safeKey]) pReal = mesclagensCache[safeKey];
                     return { ...d, piloto: pReal };
                 }).filter(d => pilotosMetadadosCache[d.piloto] && d.laps && d.laps.length > 0);
@@ -2161,7 +2160,7 @@
                 listaJsonsCache.forEach(arq => {
                     let itensDaBateria = (arq.dados || []).map(d => {
                         let pReal = d.piloto;
-                        let safeKey = pReal.replace(/[.#$\/\[\]]/g, "_");
+                        let safeKey = pReal ? pReal.replace(/[.#$\/\[\]]/g, "_") : "";
                         if (mesclagensCache[safeKey]) pReal = mesclagensCache[safeKey];
                         return { ...d, piloto: pReal };
                     }).filter(d => pilotosMetadadosCache[d.piloto]);
