@@ -1,4 +1,4 @@
-<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Corrigida: Mesclagem Consolidando Dados na Página) -->
+<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Corrigida: Leitura Completa e Unificada de Pilotos e Voltas) -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -552,7 +552,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.43.0 (Mesclagem Unificada de Dados)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.44.0 (Correção Leitura e Mesclagem de Pilotos)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -751,7 +751,7 @@
             });
             selectDestino.innerHTML = selectHtml;
 
-            // Renderiza Checkboxes de Origem (Apenas nomes existentes nos relatórios)
+            // Renderiza Checkboxes de Origem (Nomes existentes nos relatórios)
             let checkHtml = "";
             let candidatosOrigem = new Set();
             todosRelatoriosPilotosSet.forEach(p => candidatosOrigem.add(p));
@@ -1753,18 +1753,15 @@
                             let safeNomeKey = pilotoOriginal ? pilotoOriginal.replace(/[.#$\/\[\]]/g, "_") : "";
                             let pilotoReal = mesclagensCache[safeNomeKey] || pilotoOriginal;
 
-                            // Se o piloto possui perfil oficial ou foi mesclado para um oficial existente, exibe unificado
-                            if (pilotosMetadadosCache[pilotoReal]) {
-                                let meta = pilotosMetadadosCache[pilotoReal] || {};
-                                consolidado.push({
-                                    ...d,
-                                    piloto: pilotoReal,
-                                    pilotoOriginal: pilotoOriginal,
-                                    bateriaKey: arq.firebaseKey,
-                                    pilotoExibicao: meta.apelido ? `${pilotoReal} (${meta.apelido})` : pilotoReal,
-                                    apelido: meta.apelido || ''
-                                });
-                            }
+                            let meta = pilotosMetadadosCache[pilotoReal] || {};
+                            consolidado.push({
+                                ...d,
+                                piloto: pilotoReal,
+                                pilotoOriginal: pilotoOriginal,
+                                bateriaKey: arq.firebaseKey,
+                                pilotoExibicao: meta.apelido ? `${pilotoReal} (${meta.apelido})` : pilotoReal,
+                                apelido: meta.apelido || ''
+                            });
                         });
                     }
                 });
@@ -1777,8 +1774,19 @@
             const pilContainer = document.getElementById('filtro-pilotos-container');
             if (!batContainer || !pilContainer) return;
 
-            // Lista apenas os pilotos oficiais cadastrados
-            const pilotosOficiaisSet = new Set(Object.keys(pilotosMetadadosCache));
+            // Combina pilotos cadastrados com todos os nomes unificados encontrados nos relatórios
+            const pilotosDisponiveisSet = new Set(Object.keys(pilotosMetadadosCache));
+            listaJsonsCache.forEach(arq => {
+                if (arq.dados) {
+                    arq.dados.forEach(d => {
+                        if (d.piloto) {
+                            let safeKey = d.piloto.replace(/[.#$\/\[\]]/g, "_");
+                            let pilotoReal = mesclagensCache[safeKey] || d.piloto;
+                            pilotosDisponiveisSet.add(pilotoReal);
+                        }
+                    });
+                }
+            });
 
             if (listaJsonsCache.length === 0) {
                 batContainer.innerHTML = `<span style="font-size:0.85rem; color: var(--text-muted);">Nenhum arquivo.</span>`;
@@ -1798,10 +1806,10 @@
             let pilotosSelecionadosAntigos = Array.from(document.querySelectorAll('.filter-piloto:checked')).map(cb => cb.value);
             let primeiraVezPil = pilotosSelecionadosAntigos.length === 0;
 
-            if (pilotosOficiaisSet.size === 0) {
-                pilContainer.innerHTML = `<span style="font-size:0.85rem; color: var(--text-muted);">Nenhum piloto oficial cadastrado.</span>`;
+            if (pilotosDisponiveisSet.size === 0) {
+                pilContainer.innerHTML = `<span style="font-size:0.85rem; color: var(--text-muted);">Nenhum piloto encontrado.</span>`;
             } else {
-                pilContainer.innerHTML = Array.from(pilotosOficiaisSet).sort().map(piloto => {
+                pilContainer.innerHTML = Array.from(pilotosDisponiveisSet).sort().map(piloto => {
                     let meta = pilotosMetadadosCache[piloto] || {};
                     let labelExib = meta.apelido ? `${piloto} (${meta.apelido})` : piloto;
                     let marcado = primeiraVezPil || pilotosSelecionadosAntigos.includes(piloto) ? 'checked' : '';
@@ -1827,7 +1835,7 @@
             let bodyEl = document.getElementById('modal-piloto-corpo');
 
             if (participacoes.length === 0) {
-                bodyEl.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted);">Sem dados para este piloto oficial.</div>`;
+                bodyEl.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted);">Sem dados para este piloto.</div>`;
                 modal.style.display = 'flex';
                 return;
             }
@@ -1841,7 +1849,7 @@
                     let safeKey = pReal ? pReal.replace(/[.#$\/\[\]]/g, "_") : "";
                     if (mesclagensCache[safeKey]) pReal = mesclagensCache[safeKey];
                     return { ...d, piloto: pReal };
-                }).filter(d => pilotosMetadadosCache[d.piloto] && d.laps && d.laps.length > 0);
+                }).filter(d => d.laps && d.laps.length > 0);
 
                 let ordenados = ordenarParticipantesBateria(todosBat);
                 if (ordenados.length > 0 && ordenados[0].piloto === nomePiloto) {
@@ -2163,9 +2171,9 @@
                         let safeKey = pReal ? pReal.replace(/[.#$\/\[\]]/g, "_") : "";
                         if (mesclagensCache[safeKey]) pReal = mesclagensCache[safeKey];
                         return { ...d, piloto: pReal };
-                    }).filter(d => pilotosMetadadosCache[d.piloto]);
+                    }).filter(d => d.laps && d.laps.length > 0);
 
-                    let participantesValidos = itensDaBateria.filter(d => d.laps && d.laps.length > 0);
+                    let participantesValidos = itensDaBateria;
                     let ordenados = ordenarParticipantesBateria(participantesValidos);
                     
                     if (ordenados.length > 0) {
