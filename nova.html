@@ -1,4 +1,4 @@
-<!-- Index.html - Krathus Racing - Central de Telemetria (Versão v5.46.0 - Consolidação Robusta com Normalização de Variantes) -->
+<!-- Index.html - Krathus Racing - Central de Telemetria (Versão v5.47.0 - Vínculo Inteligente e Prompt Automático de Mesclagem) -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -552,7 +552,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.46.0 (Consolidação Robusta com Normalização de Variantes)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.47.0 (Vínculo Inteligente e Prompt Automático)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -1639,6 +1639,52 @@
             return resultadoFinal;
         }
 
+        // Verificação e prompt automático inteligente para pilotos órfãos ao enviar relatório
+        async function verificarETratarPilotosOrfaos(dadosExtraidos) {
+            if (!db) return;
+            let mesclagensNormalizadas = {};
+            if (mesclagensCache) {
+                Object.keys(mesclagensCache).forEach(origKey => {
+                    let chaveLimpa = origKey.trim().toLowerCase().replace(/[.#$\/\[\]]/g, "_");
+                    mesclagensNormalizadas[chaveLimpa] = mesclagensCache[origKey];
+                });
+            }
+
+            let pilotosOficiaisSet = new Set(Object.keys(pilotosMetadadosCache));
+
+            for (let d of dadosExtraidos) {
+                let pilotoPdf = d.piloto ? d.piloto.trim() : "";
+                if (!pilotoPdf) continue;
+                let chaveBusca = pilotoPdf.toLowerCase().replace(/[.#$\/\[\]]/g, "_");
+
+                let jaMapeado = mesclagensNormalizadas[chaveBusca] || pilotosOficiaisSet.has(pilotoPdf);
+
+                if (!jaMapeado) {
+                    let acao = prompt(`⚠️ O piloto "${pilotoPdf}" encontrado no relatório não está vinculado a nenhum Perfil Oficial.\n\nDigite:\n1 - Para criar um novo Perfil Oficial com este nome\n2 - Para mesclar este nome a um Piloto Oficial existente\n\n(Ou cancele para ignorar)`);
+                    
+                    if (acao === "1") {
+                        await db.ref(`pilotosMetadados/${pilotoPdf}`).set({ apelido: "" });
+                        alert(`Perfil oficial "${pilotoPdf}" criado com sucesso!`);
+                    } else if (acao === "2") {
+                        let oficiaisArr = Array.from(pilotosOficiaisSet);
+                        if (oficiaisArr.length === 0) {
+                            alert("Não há perfis oficiais cadastrados. Criando novo perfil automaticamente.");
+                            await db.ref(`pilotosMetadados/${pilotoPdf}`).set({ apelido: "" });
+                        } else {
+                            let listaStr = oficiaisArr.map((p, idx) => `${idx + 1} - ${p}`).join('\n');
+                            let escolha = prompt(`Escolha o número do Piloto Oficial de destino:\n\n${listaStr}`);
+                            let idxEscolhido = parseInt(escolha, 10) - 1;
+                            if (!isNaN(idxEscolhido) && oficiaisArr[idxEscolhido]) {
+                                let destinoOficial = oficiaisArr[idxEscolhido];
+                                await db.ref(`mesclagensPilotos/${chaveBusca}`).set(destinoOficial);
+                                alert(`Variantes de "${pilotoPdf}" vinculadas com sucesso a "${destinoOficial}"!`);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         window.processarUploadEEnviarNuvemPrincipal = async function() {
             let inputEl = document.getElementById('input-pdf-upload');
             if (!inputEl || !inputEl.files || inputEl.files.length === 0) {
@@ -1668,6 +1714,9 @@
                     if (!dadosExtraidos || dadosExtraidos.length === 0) {
                         throw new Error("Nenhum dado válido extraído do arquivo " + nomeArq);
                     }
+
+                    // Verifica se há pilotos novos sem vínculo e propõe o cadastro/mesclagem automático
+                    await verificarETratarPilotosOrfaos(dadosExtraidos);
 
                     let pdfBase64 = await arquivoParaBase64(file);
                     let historicoOriginal = {};
@@ -1742,7 +1791,6 @@
         function obterTodosDadosConsolidados() {
             let mapaSessaoPiloto = {};
             
-            // Normaliza o dicionário de mesclagens para ignorar maiúsculas/minúsculas e espaços extras
             let mesclagensNormalizadas = {};
             if (mesclagensCache) {
                 Object.keys(mesclagensCache).forEach(origKey => {
@@ -1760,7 +1808,6 @@
                             let pilotoOriginal = d.piloto ? d.piloto.trim() : "";
                             let chaveBusca = pilotoOriginal.toLowerCase().replace(/[.#$\/\[\]]/g, "_");
                             
-                            // Busca a mesclagem normalizada ou mantém o nome original
                             let pilotoReal = mesclagensNormalizadas[chaveBusca] || pilotoOriginal;
 
                             let chaveUnica = `${arq.firebaseKey}_${pilotoReal}`;
@@ -1773,7 +1820,6 @@
                                     laps: [...d.laps]
                                 };
                             } else {
-                                // Consolida as voltas caso haja múltiplas variantes do mesmo piloto na mesma bateria
                                 let lapsAtuais = mapaSessaoPiloto[chaveUnica].laps;
                                 d.laps.forEach((l, idx) => {
                                     let tempoVal = typeof l === 'object' ? l.tempo : l;
@@ -1833,7 +1879,6 @@
 
             const pilotosDisponiveisSet = new Set(Object.keys(pilotosMetadadosCache));
             
-            // Mapeamento normalizado para os filtros também considerarem as variantes já mescladas
             let mesclagensNormalizadas = {};
             if (mesclagensCache) {
                 Object.keys(mesclagensCache).forEach(origKey => {
