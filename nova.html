@@ -1,4 +1,4 @@
-<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Completa Corrigida) -->
+<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Completa com Regras de Alias) -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -489,7 +489,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.43.0 (Filtros Limpos e Otimizados)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.44.0 (Regra de Alias Edgar/DJ Integrada)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -527,6 +527,21 @@
         } catch (e) {
             console.warn("Erro Firebase:", e);
         }
+
+        // ==========================================
+        // [OCULTO-MARKER: ALIAS_RULE_EDGARD_DJ]
+        // Esta regra garante o mapeamento de alias/normalização 
+        // para unificar variações de Edgard/DJ sob "Edgard Camilo (DJ)"
+        // ==========================================
+        const ALIAS_EDGARD_DJ_DEFAULTS = {
+            "edgard": "Edgard Camilo (DJ)",
+            "Edgard": "Edgard Camilo (DJ)",
+            "edgar": "Edgard Camilo (DJ)",
+            "Edgar": "Edgard Camilo (DJ)",
+            "Dj_Edgar": "Edgard Camilo (DJ)",
+            "Dj_Edgard": "Edgard Camilo (DJ)",
+            "DJ": "Edgard Camilo (DJ)"
+        };
 
         function formatarNomeSessao(sessaoStr) {
             if (!sessaoStr) return "Bateria";
@@ -586,7 +601,9 @@
                 });
 
                 db.ref('mesclagensPilotos').on('value', snapshot => {
-                    mesclagensCache = snapshot.val() || {};
+                    let servidorMesclagens = snapshot.val() || {};
+                    // Mescla as regras locais embutidas de alias com as do banco
+                    mesclagensCache = Object.assign({}, ALIAS_EDGARD_DJ_DEFAULTS, servidorMesclagens);
                     gerarFiltrosDinamicos();
                     atualizarDashboard();
                 });
