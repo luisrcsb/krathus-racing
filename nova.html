@@ -1,4 +1,4 @@
-<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Completa com Compartilhamento Formatado) -->
+<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Completa com Compartilhamento Aprimorado) -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -489,7 +489,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.39.0 (Compartilhamento Formatado WhatsApp)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.40.0 (Compartilhamento com Destaques de Desempenho)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -1905,9 +1905,27 @@
 
             let vencedorNome = ordenados.length > 0 ? ordenados[0].piloto : "Nenhum";
             let classifLinhas = ordenados.slice(0, 3).map((p, idx) => `${idx + 1}º - ${p.piloto}`).join('\n');
+
+            let melhorVoltaValGeral = 999999;
+            let melhorVoltaPiloto = "";
+            dadosBateria.forEach(item => {
+                if (item.laps) {
+                    item.laps.forEach(l => {
+                        let t = typeof l === 'object' ? l.tempo : l;
+                        if (t && t < melhorVoltaValGeral) {
+                            melhorVoltaValGeral = t;
+                            melhorVoltaPiloto = item.piloto;
+                        }
+                    });
+                }
+            });
+
+            let melhorVoltaStr = melhorVoltaValGeral < 999999 ? `${melhorVoltaValGeral.toFixed(3)}s por ${melhorVoltaPiloto}` : "--";
+            let velEscalaStr = melhorVoltaValGeral < 999999 ? `${((26 / melhorVoltaValGeral) * 3.6 * 28).toFixed(1)} km/h` : "--";
+
             let linkPainel = window.location.href.split('#')[0];
 
-            let txt = `🏁 *KRATHUS RACING - TELEMETRIA* 🏁\n🗓️ Sessão: *${nomeSessao}*\n🏆 Vencedor: *${vencedorNome}*\n\n📊 *Classificação:*\n${classifLinhas}\n\nConfira todos os gráficos e detalhes no painel Krathus Racing! ${linkPainel}`;
+            let txt = `🏁 *KRATHUS RACING - TELEMETRIA* 🏁\n🗓️ Sessão: *${nomeSessao}*\n🏆 Vencedor: *${vencedorNome}*\n⚡ *Volta Mais Rápida:* *${melhorVoltaStr}* (${velEscalaStr})\n\n📊 *Classificação:*\n${classifLinhas}\n\nConfira todos os gráficos e detalhes no painel Krathus Racing! ${linkPainel}`;
 
             navigator.clipboard.writeText(txt).then(() => {
                 alert("📋 Resumo formatado copiado para a área de transferência! Cole no WhatsApp.");
