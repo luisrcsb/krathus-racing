@@ -1,4 +1,4 @@
-<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Completa com Nomes de Pilotos 100% Clicáveis) -->
+<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Completa com Apenas Nomes Principais na Lista) -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -489,7 +489,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.40.0 (Pilotos 100% Clicáveis)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.41.0 (Apenas Nomes Principais na Lista)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -1583,7 +1583,14 @@
                 return `<label class="checkbox-item"><input type="checkbox" value="${key}" class="filter-bateria" ${marcado} onchange="atualizarDashboard()"> ${escapeHtml(sessaoFormatada)}</label>`;
             }).join('');
 
-            pilContainer.innerHTML = Array.from(pilotosSet).sort().map(piloto => {
+            // Filtrando apenas os nomes principais (excluindo os nomes de origem que foram mesclados)
+            let pilotosFiltradosUnicos = Array.from(pilotosSet).filter(p => {
+                let safeKey = p.replace(/[.#$\/\[\]]/g, "_");
+                // Se este nome é destino de alguma mesclagem, ele fica. Se ele é chave em mesclagensCache (significa que foi absorvido), ele é ocultado da lista principal.
+                return !mesclagensCache[safeKey];
+            });
+
+            pilContainer.innerHTML = pilotosFiltradosUnicos.sort().map(piloto => {
                 let meta = pilotosMetadadosCache[piloto] || {};
                 let labelExib = meta.apelido ? `${piloto} (${meta.apelido})` : piloto;
                 let marcado = primeiraVezPil || pilotosSelecionadosAntigos.includes(piloto) ? 'checked' : '';
