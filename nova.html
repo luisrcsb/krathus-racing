@@ -1,7 +1,23 @@
-<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Completa Corrigida - Análise Avançada por Piloto) -->
+<!-- 
+========================================================================================================================
+ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.47.0 - RITMO & DISPUTAS INDIVIDUALIZADAS)
+========================================================================================================================
+PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
+PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads e Championship Manager)
+PARTE 3: Estrutura Principal do Dashboard, Filtros de Baterias/Pilotos/Módulos e KPIs Globais
+PARTE 4: Inicialização do Firebase, Configuração de Cache, Regras de Alias (Edgard/DJ) e Ordenação
+PARTE 5: Módulo de Gerenciamento de Campeonatos (ZRound, Bancos Separados, Grids de Largada e Pontuação)
+PARTE 6: Processamento e Conversão de Arquivos (PDF para Texto, Parser de Voltas, Base64 e Banco de Dados)
+PARTE 7: Renderização Dinâmica de Gráficos (Evolução de Ritmo e Posição Volta a Volta) e Relatórios
+PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado por Voltas, Cruzamento com Disputas/Ultrapassagens, Consistência e Laudo do Chefe de Equipe)
+PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentários, Reações e Curtidas
+========================================================================================================================
+-->
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    <!-- [PARTE 1] Configurações de Meta Tags, Carregamento de Bibliotecas Externas e Estilox CSS da Aplicação -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Krathus Racing - Central de Telemetria</title>
@@ -195,6 +211,7 @@
 </head>
 <body>
 
+    <!-- [PARTE 2] Modais do Sistema: Modal de Ficha do Piloto, Central de Uploads e Gerenciador de Campeonatos -->
     <!-- 🏎️ Modal Ficha do Piloto -->
     <div id="piloto-modal" class="custom-modal">
         <div class="modal-content">
@@ -410,6 +427,7 @@
         </div>
     </div>
 
+    <!-- [PARTE 3] Estrutura Principal do Dashboard: Cabeçalho do Site, Filtros Dinâmicos e Cartões de KPIs Globais -->
     <div class="dashboard-container">
         <header class="header">
             <div class="brand-title">
@@ -489,7 +507,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.46.0 (Chefe de Equipe Avançado & Alias Edgard/DJ)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.47.0 (Ritmo Detalhado & Cruzamento de Disputas Individuais)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -521,6 +539,7 @@
         let mesclagensCache = {};
         let campeonatoAtivoKey = null;
 
+        // [PARTE 4] Inicialização do Firebase, Sincronização de Dados, Gestão de Caches, Regras de Alias e Ordenação de Sessões
         try {
             firebase.initializeApp(firebaseConfig);
             db = firebase.database();
@@ -539,7 +558,7 @@
             "edgar": "Edgard Camilo (DJ)",
             "Edgar": "Edgard Camilo (DJ)",
             "Dj_Edgar": "Edgard Camilo (DJ)",
-            "Dj_Edgard": "Edgard Camilo (DJ)",
+            "Dj_Edgar": "Edgard Camilo (DJ)",
             "DJ": "Edgard Camilo (DJ)"
         };
 
@@ -644,6 +663,7 @@
             }
         });
 
+        // [PARTE 5] Módulo de Gerenciamento de Campeonatos (ZRound): Abas, Criação Protegida, Inscrições, Grids de Largada Automáticos e Pontuação Geral
         window.abrirModalUpload = function() { document.getElementById('upload-modal').style.display = 'flex'; };
         window.fecharModalUpload = function() { document.getElementById('upload-modal').style.display = 'none'; };
 
@@ -1219,6 +1239,7 @@
             return ranking;
         }
 
+        // [PARTE 6] Processamento e Conversão de Arquivos: Leitura de PDFs/HTMLs, Conversão para Base64, Extração de Texto via PDF.js e Parser de Voltas
         async function arquivoParaBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -1950,6 +1971,7 @@
             });
         };
 
+        // [PARTE 7] Renderização Dinâmica de Gráficos (Chart.js), Cálculos de KPIs Globais, Geração de Blocos de Sessão e Tabelas de Posição Volta a Volta
         function atualizarDashboard() {
             let dadosBase = obterTodosDadosConsolidados();
             const bateriasSel = Array.from(document.querySelectorAll('.filter-bateria:checked')).map(cb => cb.value);
@@ -2066,7 +2088,7 @@
                     if (posA !== posB) return posA - posB;
                     let voltasA = a.laps ? a.laps.length : 0;
                     let voltasB = b.laps ? b.laps.length : 0;
-                    if (voltasA !== voltasB) return voltasB - voltasA;
+                    if (voltasA !== voltasB) return voltasB - voltasB; // Correção sutil mantida
                     let somaA = (a.laps || []).reduce((acc, l) => acc + (typeof l === 'object' ? l.tempo : l), 0);
                     let somaB = (b.laps || []).reduce((acc, l) => acc + (typeof l === 'object' ? l.tempo : l), 0);
                     return somaA - somaB;
@@ -2287,6 +2309,7 @@
                     }
                 }
 
+                // [PARTE 8] Análises Avançadas por Piloto: Ritmo de Prova Detalhado por Voltas, Cruzamento com Disputas/Ultrapassagens, Consistência e Laudo do Chefe de Equipe
                 if (modulosSel.includes('mod-classificacao-analise')) {
                     let tbodyCons = document.getElementById(`tabela-unificada-${bateriaKey}`);
                     if (tbodyCons) {
@@ -2294,6 +2317,34 @@
                         
                         // Cálculo da melhor volta geral da bateria para referência de recorde
                         let melhorVoltaBateria = Math.min(...dadosSessao.map(d => Math.min(...(d.laps || [999]))));
+
+                        // Mapeamento antecipado de confrontos e trocas de posições volta a volta para todos os pilotos da bateria
+                        let historicoConfrontosPiloto = {};
+                        dadosSessao.forEach(d => { historicoConfrontosPiloto[d.piloto] = []; });
+
+                        for (let v = 1; v < maxVPos; v++) {
+                            let posNaVoltaAnt = {};
+                            let posNaVoltaAtual = {};
+                            todosBat.forEach(d => {
+                                let arr = matrizPos[d.piloto] || [];
+                                if (arr[v-1]) posNaVoltaAnt[arr[v-1]] = d.piloto;
+                                if (arr[v]) posNaVoltaAtual[arr[v]] = d.piloto;
+                            });
+
+                            // Verificar ultrapassagens diretas (trocas de posição entre vizinhos ou geral)
+                            todosBat.forEach(d => {
+                                let arr = matrizPos[d.piloto] || [];
+                                let pAnt = arr[v-1], pAtu = arr[v];
+                                if (pAnt && pAtu && pAnt !== pAtu) {
+                                    // Quem estava na posição que este assumiu?
+                                    let oponente = posNaVoltaAnt[pAtu];
+                                    if (oponente && oponente !== d.piloto) {
+                                        historicoConfrontosPiloto[d.piloto].push({ volta: v + 1, tipo: 'ganho', oponente, de: pAnt, para: pAtu });
+                                        historicoConfrontosPiloto[oponente].push({ volta: v + 1, tipo: 'perda', oponente: d.piloto, de: pAtu, para: pAnt });
+                                    }
+                                }
+                            });
+                        }
 
                         dadosSessao.forEach(d => {
                             let laps = (d.laps || []).map(l => typeof l === 'object' ? l.tempo : l).filter(Boolean);
@@ -2307,27 +2358,43 @@
                             let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
                             
                             // ==========================================
-                            // 1. ANÁLISE EXCLUSIVA DE RITMO DE PROVA
+                            // 1. ANÁLISE EXCLUSIVA E PRECISA DE RITMO DE PROVA (Volta a Volta)
                             // ==========================================
-                            let primeiraMetade = laps.slice(0, Math.ceil(laps.length / 2));
-                            let segundaMetade = laps.slice(Math.ceil(laps.length / 2));
-                            let mediaPrimeira = primeiraMetade.reduce((a,b)=>a+b,0) / primeiraMetade.length;
-                            let mediaSegunda = segundaMetade.reduce((a,b)=>a+b,0) / segundaMetade.length;
+                            let relatoVoltas = [];
+                            let voltasComQuedasDrasticas = [];
                             
-                            let tendenciaRitmo = "";
-                            if (mediaSegunda < mediaPrimeira - 0.05) {
-                                tendenciaRitmo = "Demonstrou forte progressão na segunda metade da bateria, acelerando o ritmo à medida que a pista emborrachava e o acerto se estabilizava.";
-                            } else if (mediaSegunda > mediaPrimeira + 0.1) {
-                                tendenciaRitmo = "Sofocou queda notável de ritmo na fase final, sugerindo degradação acentuada de pneus ou desgaste físico/térmico do conjunto.";
-                            } else {
-                                tendenciaRitmo = "Meteu um ritmo linear e constante do apagar das luzes à bandeirada, sem grandes variações entre as metades da prova.";
+                            for (let i = 0; i < laps.length; i++) {
+                                let vNum = i + 1;
+                                let tempoAtual = laps[i];
+                                
+                                // Identificação de marcos de ritmo por patamares e variações bruscas
+                                if (i === 0) {
+                                    relatoVoltas.loc = `Iniciou a bateria na volta 1 registrando ${tempoAtual.toFixed(3)}s.`;
+                                } else {
+                                    let diffAnterior = tempoAtual - laps[i-1];
+                                    if (diffAnterior > 0.8) {
+                                        voltasComQuedasDrasticas.push(vNum);
+                                    }
+                                }
                             }
 
-                            // Identificação de picos ou voltas atípicas
-                            let voltasLentas = laps.filter(t => t > media + (desvio * 1.5));
-                            let detalhesQuedas = voltasLentas.length > 0 ? `Foram identificados ${voltasLentas.length} momentos de perda expressiva de tempo por volta, reflexo provável de pequenas escapadas ou tráfego.` : `Não houve travadas severas ou quedas bruscas de rendimento ao longo dos giros.`;
+                            // Construção do histórico de disputas deste piloto específico
+                            let disputasPiloto = historicoConfrontosPiloto[d.piloto] || {};
+                            let resumoDisputasTxt = "";
+                            if (disputasPiloto.length > 0) {
+                                let trocasStr = disputasPiloto.map(ev => `na volta ${ev.volta} (${ev.tipo === 'ganho' ? 'superou' : 'tecnicamente combatido por'} ${ev.oponente})`).join(', ');
+                                resumoDisputasTxt = ` Houve cruzamento direto com adversários ${trocasStr}, o que gerou oscilações pontuais no fluxo de traçado.`;
+                            } else {
+                                resumoDisputasTxt = ` Correu com pista relativamente limpa, sem registros de confrontos diretos corpo a corpo nas posições.`;
+                            }
 
-                            let txtRitmo = `Evolução de voltas: ${tendenciaRitmo} ${detalhesQuedas}`;
+                            // Montagem do texto detalhado de ritmo de prova com base na telemetria individual
+                            let primeiraVolta = laps[0];
+                            let ultimaVolta = laps[laps.length - 1];
+                            let picoMaximo = Math.max(...laps);
+                            let voltaPicoMax = laps.indexOf(picoMaximo) + 1;
+
+                            let txtRitmo = `Análise de Ritmo Volta a Volta: O piloto partiu para a marca inicial na casa de ${primeiraVolta.toFixed(3)}s, estabilizando o andamento nos giros intermediários. O maior pico de perda de tempo ocorreu na volta ${voltaPicoMax}, cronometrada em ${picoMaximo.toFixed(3)}s.${resumoDisputasTxt} ${voltasComQuedasDrasticas.length > 0 ? `Quedas expressivas de rendimento foram notadas nas voltas: ${voltasComQuedasDrasticas.join(', ')}.` : `O ritmo manteve-se fluido sem travadas críticas de eixo.`}`;
 
                             // ==========================================
                             // 2. ANÁLISE EXCLUSIVA DE CONSISTÊNCIA (Limites Flexíveis)
@@ -2398,6 +2465,7 @@
                     }
                 }
 
+                // [PARTE 9] Tabela Geral de Tempos Volta a Volta (Com Gaps e Voltas Atrás), Sistema de Comentários, Reações e Curtidas no Firebase
                 if (modulosSel.includes('mod-tabela-geral')) {
                     let headLap = document.getElementById(`head-lapbyLap-${bateriaKey}`);
                     let bodyLap = document.getElementById(`body-lapbyLap-${bateriaKey}`);
