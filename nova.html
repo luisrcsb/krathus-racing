@@ -1,6 +1,6 @@
 <!-- 
 ========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.48.1 - CONSISTÊNCIA HISTÓRICA COM INDICADORES VISUAIS E ÍCONES)
+ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.48.2 - CONSISTÊNCIA BASEada NA MÉDIA DO HISTÓRICO ANTERIOR)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
 PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads e Championship Manager)
@@ -9,7 +9,7 @@ PARTE 4: Inicialização do Firebase, Configuração de Cache, Regras de Alias (
 PARTE 5: Módulo de Gerenciamento de Campeonatos (ZRound, Bancos Separados, Grids de Largada e Pontuação)
 PARTE 6: Processamento e Conversão de Arquivos (PDF para Texto, Parser de Voltas, Base64 e Banco de Dados)
 PARTE 7: Renderização Dinâmica de Gráficos (Evolução de Ritmo e Posição Volta a Volta) e Relatórios
-PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado, Consistência Histórica Multi-Baterias com Ícones Visuais de Evolução/Piora e Laudo do Chefe de Equipe)
+PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado, Consistência Histórica com Média de Todas as Baterias Anteriores vs. Atual e Laudo)
 PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentários, Reações e Curtidas
 ========================================================================================================================
 -->
@@ -507,7 +507,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.48.1 (Consistência com Ícones Visuais e Alertas de Piora)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.48.2 (Consistência com Média Histórica Anterior)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -2309,7 +2309,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                     }
                 }
 
-                // [PARTE 8] Análises Avançadas por Piloto: Ritmo de Prova Detalhado, Consistência Histórica Multi-Baterias com Ícones Visuais e Laudo do Chefe de Equipe
+                // [PARTE 8] Análises Avançadas por Piloto: Ritmo de Prova Detalhado, Consistência Histórica Comparada com a Média das Baterias Anteriores e Laudo
                 if (modulosSel.includes('mod-classificacao-analise')) {
                     let tbodyCons = document.getElementById(`tabela-unificada-${bateriaKey}`);
                     if (tbodyCons) {
@@ -2381,20 +2381,13 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                             let txtRitmo = `Análise de Ritmo: Partida na casa de ${primeiraVolta.toFixed(3)}s. Pico máximo de perda na volta ${voltaPicoMax} (${picoMaximo.toFixed(3)}s).${resumoDisputasTxt} ${voltasComQuedasDrasticas.length > 0 ? `Quedas expressivas nas voltas: ${voltasComQuedasDrasticas.join(', ')}.` : `Ritmo fluido sem travadas severas.`}`;
 
                             // ==========================================
-                            // 2. ANÁLISE DE CONSISTÊNCIA HISTÓRICA & MULTI-BATERIAS (COM ÍCONES E REGRAS DE 100%+)
+                            // 2. ANÁLISE DE CONSISTÊNCIA HISTÓRICA (COMPARAÇÃO COM A MÉDIA DE TODAS AS BATERIAS ANTERIORES)
                             // ==========================================
                             let todasParticipacoesPiloto = dadosBase.filter(item => item.piloto === d.piloto && item.laps && item.laps.length > 0);
-                            
-                            let historicoDesvios = [];
-                            todasParticipacoesPiloto.forEach(part => {
-                                let lps = (part.laps || []).map(l => typeof l === 'object' ? l.tempo : l).filter(Boolean);
-                                if (lps.length > 0) {
-                                    let med = lps.reduce((a,b)=>a+b,0) / lps.length;
-                                    let vr = lps.reduce((sum, t) => sum + Math.pow(t - med, 2), 0) / lps.length;
-                                    let desvPart = Math.sqrt(vr);
-                                    historicoDesvios.push({ bateriaKey: part.bateriaKey, sessao: part.sessao, desvio: desvPart });
-                                });
-                            });
+                            // Ordenar cronologicamente por extrairPesoOrdenacao da sessão
+                            todasParticipacoesPiloto.sort((a, b) => extrairPesoOrdenacao(a.sessao) - extrairPesoOrdenacao(b.sessao));
+
+                            let indiceAtual = todasParticipacoesPiloto.findIndex(p => p.bateriaKey === bateriaKey);
 
                             let avaliacaoBateriaAtual = "";
                             if (desvio <= 0.12) {
@@ -2408,29 +2401,45 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                             }
 
                             let historicoTxt = "";
-                            if (historicoDesvios.length > 1) {
-                                let primeiroDesvio = historicoDesvios[0].desvio;
-                                let ultimoDesvio = historicoDesvios[historicoDesvios.length - 1].desvio;
-                                let diffDesvio = ultimoDesvio - primeiroDesvio;
-                                let percentualMudanca = Math.abs((diffDesvio / primeiroDesvio) * 100);
+                            if (indiceAtual > 0) {
+                                // Pegar todas as baterias anteriores à atual
+                                let bateriasAnteriores = todasParticipacoesPiloto.slice(0, indiceAtual);
+                                let somaDesviosAnteriores = 0;
+                                let countAnteriores = 0;
 
-                                if (diffDesvio < 0) {
-                                    // Melhora (Seta para cima verde)
-                                    historicoTxt = ` <span style="color: var(--accent-green); font-weight: 700;">⬆️ Melhora de ${percentualMudanca.toFixed(1)}%</span>: Histórico Multi-Baterias aponta evolução consistente e ganho de regularidade ao longo do tempo.`;
-                                } else if (diffDesvio > 0) {
-                                    if (percentualMudanca >= 100) {
-                                        // Piora extrema acima de 100% (Seta para baixo vermelha com termo elegante de piora severa)
-                                        historicoTxt = ` <span style="color: var(--accent-red); font-weight: 700;">⬇️ Piora severa (desvio aumentou em mais de 100%)</span>: Histórico Multi-Baterias aponta uma oscilação acentuada e patamar de consistência muito defasado em relação ao início.`;
-                                    } else {
-                                        // Piora moderada (Seta para baixo vermelha)
-                                        historicoTxt = ` <span style="color: var(--accent-red); font-weight: 700;">⬇️ Piora de ${percentualMudanca.toFixed(1)}%</span>: Histórico Multi-Baterias indica aumento na variação de tempos e perda de constância global.`;
+                                bateriasAnteriores.forEach(part => {
+                                    let lps = (part.laps || []).map(l => typeof l === 'object' ? l.tempo : l).filter(Boolean);
+                                    if (lps.length > 0) {
+                                        let med = lps.reduce((a,b)=>a+b,0) / lps.length;
+                                        let vr = lps.reduce((sum, t) => sum + Math.pow(t - med, 2), 0) / lps.length;
+                                        somaDesviosAnteriores += Math.sqrt(vr);
+                                        countAnteriores++;
                                     }
-                                } else {
-                                    // Neutro (Símbolo amarelo)
-                                    historicoTxt = ` <span style="color: var(--accent-gold); font-weight: 700;">⏺️ Estabilidade Neutra (0%)</span>: Histórico Multi-Baterias mostra rigorosa manutenção do mesmo padrão de constância.`;
+                                });
+
+                                if (countAnteriores > 0) {
+                                    let mediaDesvioAnterior = somaDesviosAnteriores / countAnteriores;
+                                    let diffDesvio = desvio - mediaDesvioAnterior;
+                                    let percentualMudanca = Math.abs((diffDesvio / mediaDesvioAnterior) * 100);
+
+                                    if (diffDesvio < 0) {
+                                        // Melhora (Seta para cima verde)
+                                        historicoTxt = ` <span style="color: var(--accent-green); font-weight: 700;">⬆️ Melhora de ${percentualMudanca.toFixed(1)}%</span>: Comparado à média das ${countAnteriores} bateria(s) anterior(es), o piloto evoluiu em regularidade e reduziu a oscilação de tempos.`;
+                                    } else if (diffDesvio > 0) {
+                                        if (percentualMudanca >= 100) {
+                                            // Piora extrema acima de 100% (Seta para baixo vermelha com termo elegante)
+                                            historicoTxt = ` <span style="color: var(--accent-red); font-weight: 700;">⬇️ Piora severa (desvio aumentou em mais de 100%)</span>: Comparado à média das baterias anteriores, o piloto apresentou uma perda acentuada de constância e estabilidade.`;
+                                        } else {
+                                            // Piora moderada (Seta para baixo vermelha)
+                                            historicoTxt = ` <span style="color: var(--accent-red); font-weight: 700;">⬇️ Piora de ${percentualMudanca.toFixed(1)}%</span>: Comparado à média das baterias anteriores, houve aumento na variação de tempos por volta.`;
+                                        }
+                                    } else {
+                                        // Neutro (Símbolo amarelo)
+                                        historicoTxt = ` <span style="color: var(--accent-gold); font-weight: 700;">⏺️ Estabilidade Neutra (0%)</span>: O nível de constância manteve-se exatamente idêntico à média histórica anterior.`;
+                                    }
                                 }
                             } else {
-                                historicoTxt = ` <span style="color: var(--accent-gold); font-weight: 700;">⏺️ Linha de Base (Neutro)</span>: Histórico Multi-Baterias possui apenas esta bateria registrada como referência inicial.`;
+                                historicoTxt = ` <span style="color: var(--accent-gold); font-weight: 700;">⏺️ Linha de Base (Neutro)</span>: Esta é a primeira bateria registrada para este piloto no histórico, servindo de referência inicial.`;
                             }
 
                             let txtConsistencia = `${avaliacaoBateriaAtual}${historicoTxt}`;
