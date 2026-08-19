@@ -1,4 +1,4 @@
-<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Completa com Compartilhamento Aprimorado) -->
+<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Atualizada com Cadastro Prévio e Mesclagem) -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -47,6 +47,7 @@
         .btn-pdf-global { background: linear-gradient(135deg, #ff5722 0%, #e63946 100%); color: #ffffff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; }
         .btn-upload-modal-trigger { background: linear-gradient(135deg, #3a86ff 0%, #2ec4b6 100%); color: #ffffff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
         .btn-campeonatos-trigger { background: linear-gradient(135deg, #ffb703 0%, #fb8500 100%); color: #000; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-pilotos-gerenciar { background: linear-gradient(135deg, #7209b7 0%, #3a86ff 100%); color: #ffffff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
         
         .btn-share { background: rgba(58, 134, 255, 0.15); color: var(--accent-blue); border: 1px solid var(--accent-blue); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; }
         .btn-like { background: rgba(230, 57, 70, 0.15); color: var(--accent-red); border: 1px solid var(--accent-red); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; }
@@ -203,6 +204,67 @@
                 <button class="modal-close" onclick="fecharDossiePiloto()">&times;</button>
             </div>
             <div class="modal-body" id="modal-piloto-corpo"></div>
+        </div>
+    </div>
+
+    <!-- 👥 Modal Gerenciamento de Pilotos (Cadastro e Mesclagem Master) -->
+    <div id="gerenciar-pilotos-modal" class="custom-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">👥 Gerenciamento e Cadastro de Pilotos</div>
+                <button class="modal-close" onclick="fecharModalGerenciarPilotos()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <!-- Cadastro de Novo Piloto -->
+                    <div class="upload-box">
+                        <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase;">✨ Cadastrar Novo Piloto Oficial</span>
+                        <p style="font-size: 0.82rem; color: var(--text-muted);">Crie o perfil oficial informando o nome correto e o apelido opcional.</p>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 6px;">
+                            <input type="text" id="input-novo-cad-nome" class="config-input" placeholder="Nome Completo do Piloto">
+                            <input type="text" id="input-novo-cad-apelido" class="config-input" placeholder="Apelido (Opcional)">
+                            <button class="btn-action-primary" onclick="cadastrarNovoPilotoOficial()">Cadastrar Piloto</button>
+                        </div>
+                    </div>
+
+                    <!-- Mesclagem de Pilotos Existentes com Novo/Oficial -->
+                    <div class="upload-box" style="border-color: var(--accent-green); background: rgba(46, 196, 182, 0.03);">
+                        <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-green); text-transform: uppercase;">🔀 Central de Mesclagem de Pilotos</span>
+                        <p style="font-size: 0.82rem; color: var(--text-muted);">Selecione o piloto de destino oficial e escolha quais variantes ou nomes antigos importados dos relatórios devem ser mesclados nele.</p>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 6px;">
+                            <div>
+                                <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">Piloto Oficial (Destino)</label>
+                                <select id="select-piloto-destino-master" class="config-select" style="width: 100%; margin-top: 4px;">
+                                    <option value="">Selecione o piloto oficial...</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">Pilotos Existentes / Variações para Mesclar</label>
+                                <div class="checkbox-container-merge" id="container-checkboxes-origem-master" style="max-height: 160px;">
+                                    <!-- Preenchido dinamicamente -->
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: flex-end; margin-top: 8px;">
+                            <button class="btn-action-primary" style="background: var(--accent-green); color: #000; font-weight: 700;" onclick="executarMesclagemMaster()">Executar Mesclagem</button>
+                        </div>
+                    </div>
+
+                    <!-- Lista de Pilotos Cadastrados -->
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Perfis Oficiais Cadastrados</span>
+                        <div class="table-container">
+                            <table>
+                                <thead><tr><th>Piloto Oficial</th><th>Apelido</th><th>Variantes Mescladas</th><th style="text-align: right;">Ações</th></tr></thead>
+                                <tbody id="tabela-perfis-oficiais-cadastrados">
+                                    <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Carregando perfis...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -417,6 +479,7 @@
                 <p>Central de Telemetria e Análise de Desempenho</p>
             </div>
             <div class="header-actions">
+                <button class="btn btn-pilotos-gerenciar" onclick="abrirModalGerenciarPilotos()">👥 Pilotos</button>
                 <button class="btn btn-upload-modal-trigger" onclick="abrirModalUpload()">📤 Uploads</button>
                 <button class="btn btn-campeonatos-trigger" onclick="abrirModalCampeonatos()">🏆 Championship Manager</button>
                 <button class="btn btn-pdf-global" onclick="gerarRelatórioPDF()">📄 Gerar relatório</button>
@@ -489,7 +552,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.40.0 (Compartilhamento com Destaques de Desempenho)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.41.0 (Gestão Master de Pilotos e Mesclagem)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -583,12 +646,14 @@
                     gerarFiltrosDinamicos();
                     atualizarDashboard();
                     preencherSelectPilotosGerais();
+                    renderizarTabelaGerenciamentoPilotos();
                 });
 
                 db.ref('mesclagensPilotos').on('value', snapshot => {
                     mesclagensCache = snapshot.val() || {};
                     gerarFiltrosDinamicos();
                     atualizarDashboard();
+                    renderizarTabelaGerenciamentoPilotos();
                 });
 
                 db.ref('campeonatos').on('value', snapshot => {
@@ -624,9 +689,185 @@
                     atualizarListaUploadHistoricoPrincipal();
                     preencherSelectProvasBancoPrincipal();
                     atualizarDashboard();
+                    renderizarTabelaGerenciamentoPilotos();
                 });
             }
         });
+
+        // MODAL DE GESTÃO MASTER DE PILOTOS
+        window.abrirModalGerenciarPilotos = function() {
+            document.getElementById('gerenciar-pilotos-modal').style.display = 'flex';
+            renderizarTabelaGerenciamentoPilotos();
+        };
+        window.fecharModalGerenciarPilotos = function() { document.getElementById('gerenciar-pilotos-modal').style.display = 'none'; };
+
+        window.cadastrarNovoPilotoOficial = async function() {
+            let nomeP = document.getElementById('input-novo-cad-nome').value.trim();
+            let apelidoP = document.getElementById('input-novo-cad-apelido').value.trim();
+            if (!nomeP) {
+                alert("Digite o nome completo do piloto.");
+                return;
+            }
+            if (!db) {
+                alert("Erro: Firebase não conectado.");
+                return;
+            }
+
+            try {
+                await db.ref(`pilotosMetadados/${nomeP}`).set({ apelido: apelidoP });
+                document.getElementById('input-novo-cad-nome').value = "";
+                document.getElementById('input-novo-cad-apelido').value = "";
+                alert(`Piloto oficial "${nomeP}" cadastrado com sucesso!`);
+                renderizarTabelaGerenciamentoPilotos();
+                preencherSelectPilotosGerais();
+            } catch (err) {
+                alert("Erro ao cadastrar piloto: " + err.message);
+            }
+        };
+
+        function renderizarTabelaGerenciamentoPilotos() {
+            const tbody = document.getElementById('tabela-perfis-oficiais-cadastrados');
+            const selectDestino = document.getElementById('select-piloto-destino-master');
+            const divCheckOrigem = document.getElementById('container-checkboxes-origem-master');
+            if (!tbody || !selectDestino || !divCheckOrigem) return;
+
+            let pilotosOficiaisSet = new Set(Object.keys(pilotosMetadadosCache));
+            
+            // Coleta também todos os nomes que aparecem nos relatórios
+            let todosRelatoriosPilotosSet = new Set();
+            listaJsonsCache.forEach(arq => {
+                if (arq.dados) {
+                    arq.dados.forEach(d => {
+                        if (d.piloto) todosRelatoriosPilotosSet.add(d.piloto);
+                    });
+                }
+            });
+
+            // Se não houver nenhum perfil oficial criado ainda, adiciona os dos relatórios para facilitar
+            if (pilotosOficiaisSet.size === 0) {
+                todosRelatoriosPilotosSet.forEach(p => pilotosOficiaisSet.add(p));
+            }
+
+            // Renderiza Select de Destino Master
+            let selectHtml = `<option value="">Selecione o piloto oficial...</option>`;
+            Array.from(pilotosOficiaisSet).sort().forEach(p => {
+                let meta = pilotosMetadadosCache[p] || {};
+                let label = meta.apelido ? `${p} (${meta.apelido})` : p;
+                selectHtml += `<option value="${escapeHtml(p)}">${escapeHtml(label)}</option>`;
+            });
+            selectDestino.innerHTML = selectHtml;
+
+            // Renderiza Checkboxes de Origem (Nomes existentes que ainda não são o destino ou que podem ser mesclados)
+            let checkHtml = "";
+            let candidatosOrigem = new Set();
+            todosRelatoriosPilotosSet.forEach(p => candidatosOrigem.add(p));
+            Object.keys(pilotosMetadadosCache).forEach(p => candidatosOrigem.add(p));
+
+            if (candidatosOrigem.size === 0) {
+                checkHtml = `<div style="font-size: 0.85rem; color: var(--text-muted); text-align: center;">Nenhum piloto encontrado para mesclar.</div>`;
+            } else {
+                Array.from(candidatosOrigem).sort().forEach(p => {
+                    // Verifica se já está mesclado
+                    let safeKey = p.replace(/[.#$\/\[\]]/g, "_");
+                    let jaMescladoDestino = mesclagensCache[safeKey];
+                    let infoExtra = jaMescladoDestino ? ` (já mesclado para ${jaMescladoDestino})` : '';
+                    checkHtml += `
+                        <label class="checkbox-item-merge">
+                            <input type="checkbox" class="piloto-origem-master-checkbox" value="${escapeHtml(p)}"> 
+                            ${escapeHtml(p)} <span style="font-size: 0.75rem; color: var(--text-muted);">${infoExtra}</span>
+                        </label>`;
+                });
+            }
+            divCheckOrigem.innerHTML = checkHtml;
+
+            // Renderiza Tabela de Perfis Oficiais
+            if (pilotosOficiaisSet.size === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Nenhum perfil oficial cadastrado.</td></tr>`;
+                return;
+            }
+
+            let tabelaHtml = "";
+            Array.from(pilotosOficiaisSet).sort().forEach(p => {
+                let meta = pilotosMetadadosCache[p] || {};
+                let apelido = meta.apelido || '-';
+                
+                // Descobre quais variantes estão mescladas neste piloto
+                let variantes = [];
+                Object.keys(mesclagensCache).forEach(origKey => {
+                    if (mesclagensCache[origKey] === p) {
+                        variantes.push(origKey);
+                    }
+                });
+                let variantesStr = variantes.length > 0 ? variantes.join(', ') : '<span style="color: var(--text-muted);">Nenhuma variante</span>';
+
+                tabelaHtml += `
+                    <tr>
+                        <td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(p)}')">${escapeHtml(p)}</a></strong></td>
+                        <td>${escapeHtml(apelido)}</td>
+                        <td style="font-size: 0.82rem; color: var(--accent-green);">${escapeHtml(variantesStr)}</td>
+                        <td style="text-align: right;">
+                            <button class="btn-text-action" style="color: var(--accent-red);" onclick="excluirPerfilOficialMaster('${escapeHtml(p)}')">Excluir Perfil</button>
+                        </td>
+                    </tr>`;
+            });
+            tbody.innerHTML = tabelaHtml;
+        }
+
+        window.executarMesclagemMaster = async function() {
+            let destino = document.getElementById('select-piloto-destino-master').value;
+            let checkboxes = document.querySelectorAll('.piloto-origem-master-checkbox:checked');
+
+            if (!destino) {
+                alert("Selecione o piloto oficial de destino.");
+                return;
+            }
+            if (checkboxes.length === 0) {
+                alert("Selecione pelo menos um piloto de origem para mesclar.");
+                return;
+            }
+            if (!db) {
+                alert("Erro: Firebase desconectado.");
+                return;
+            }
+
+            try {
+                let updates = {};
+                checkboxes.forEach(cb => {
+                    let origem = cb.value;
+                    if (origem !== destino) {
+                        let safeOrigKey = origem.replace(/[.#$\/\[\]]/g, "_");
+                        updates[`mesclagensPilotos/${safeOrigKey}`] = destino;
+                    }
+                });
+
+                await db.ref().update(updates);
+                alert("Mesclagem realizada com sucesso!");
+                renderizarTabelaGerenciamentoPilotos();
+                gerarFiltrosDinamicos();
+                atualizarDashboard();
+            } catch (err) {
+                alert("Erro ao executar mesclagem: " + err.message);
+            }
+        };
+
+        window.excluirPerfilOficialMaster = async function(nomePiloto) {
+            let senha = prompt("🔒 Digite a senha unificada de segurança para excluir este perfil oficial:");
+            if (senha === null) return;
+            if (senha !== SENHA_UNIFICADA) {
+                alert("❌ Senha incorreta!");
+                return;
+            }
+            if (!db) return;
+
+            try {
+                await db.ref(`pilotosMetadados/${nomePiloto}`).remove();
+                // Remove também mesclagens apontadas para ele se necessário
+                alert(`Perfil oficial "${nomePiloto}" removido com sucesso!`);
+                renderizarTabelaGerenciamentoPilotos();
+            } catch (err) {
+                alert("Erro ao excluir perfil: " + err.message);
+            }
+        };
 
         window.abrirModalUpload = function() { document.getElementById('upload-modal').style.display = 'flex'; };
         window.fecharModalUpload = function() { document.getElementById('upload-modal').style.display = 'none'; };
@@ -1831,6 +2072,7 @@
             if (event.target === document.getElementById('piloto-modal')) document.getElementById('piloto-modal').style.display = 'none';
             if (event.target === document.getElementById('upload-modal')) document.getElementById('upload-modal').style.display = 'none';
             if (event.target === document.getElementById('campeonatos-modal')) document.getElementById('campeonatos-modal').style.display = 'none';
+            if (event.target === document.getElementById('gerenciar-pilotos-modal')) document.getElementById('gerenciar-pilotos-modal').style.display = 'none';
         };
 
         window.curtirSessao = function(bateriaKey) {
@@ -2390,7 +2632,7 @@
                                         if (isLiderAbsoluto) {
                                             tagHtml = `<span class="leader-badge">Líder</span>`;
                                         } else {
-                                            let gap = somaDesteAteI - menorTempoAcumuladoLider;
+                                            let gap = somaDess-menorTempoAcumuladoLider;
                                             tagHtml = `<span class="lap-gap">(+${gap.toFixed(3)}s)</span>`;
                                         }
                                     }
