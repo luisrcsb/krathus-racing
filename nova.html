@@ -1,6 +1,6 @@
 <!-- 
 ========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.48.0 - CONSISTÊNCIA HISTÓRICA E EVOLUÇÃO MULTI-BATERIAS)
+ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.48.1 - CONSISTÊNCIA HISTÓRICA COM INDICADORES VISUAIS E ÍCONES)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
 PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads e Championship Manager)
@@ -9,7 +9,7 @@ PARTE 4: Inicialização do Firebase, Configuração de Cache, Regras de Alias (
 PARTE 5: Módulo de Gerenciamento de Campeonatos (ZRound, Bancos Separados, Grids de Largada e Pontuação)
 PARTE 6: Processamento e Conversão de Arquivos (PDF para Texto, Parser de Voltas, Base64 e Banco de Dados)
 PARTE 7: Renderização Dinâmica de Gráficos (Evolução de Ritmo e Posição Volta a Volta) e Relatórios
-PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado, Consistência Histórica Multi-Baterias com Métricas de Evolução/Piora em % e Laudo do Chefe de Equipe)
+PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado, Consistência Histórica Multi-Baterias com Ícones Visuais de Evolução/Piora e Laudo do Chefe de Equipe)
 PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentários, Reações e Curtidas
 ========================================================================================================================
 -->
@@ -507,7 +507,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.48.0 (Consistência Histórica Multi-Baterias & Evolução %)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.48.1 (Consistência com Ícones Visuais e Alertas de Piora)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -2309,7 +2309,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                     }
                 }
 
-                // [PARTE 8] Análises Avançadas por Piloto: Ritmo de Prova Detalhado, Consistência Histórica Multi-Baterias com Métricas de Evolução/Piora em % e Laudo do Chefe de Equipe
+                // [PARTE 8] Análises Avançadas por Piloto: Ritmo de Prova Detalhado, Consistência Histórica Multi-Baterias com Ícones Visuais e Laudo do Chefe de Equipe
                 if (modulosSel.includes('mod-classificacao-analise')) {
                     let tbodyCons = document.getElementById(`tabela-unificada-${bateriaKey}`);
                     if (tbodyCons) {
@@ -2381,9 +2381,8 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                             let txtRitmo = `Análise de Ritmo: Partida na casa de ${primeiraVolta.toFixed(3)}s. Pico máximo de perda na volta ${voltaPicoMax} (${picoMaximo.toFixed(3)}s).${resumoDisputasTxt} ${voltasComQuedasDrasticas.length > 0 ? `Quedas expressivas nas voltas: ${voltasComQuedasDrasticas.join(', ')}.` : `Ritmo fluido sem travadas severas.`}`;
 
                             // ==========================================
-                            // 2. ANÁLISE DE CONSISTÊNCIA HISTÓRICA & MULTI-BATERIAS (%)
+                            // 2. ANÁLISE DE CONSISTÊNCIA HISTÓRICA & MULTI-BATERIAS (COM ÍCONES E REGRAS DE 100%+)
                             // ==========================================
-                            // Buscar todas as participações do piloto em todas as baterias carregadas no cache
                             let todasParticipacoesPiloto = dadosBase.filter(item => item.piloto === d.piloto && item.laps && item.laps.length > 0);
                             
                             let historicoDesvios = [];
@@ -2394,7 +2393,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                                     let vr = lps.reduce((sum, t) => sum + Math.pow(t - med, 2), 0) / lps.length;
                                     let desvPart = Math.sqrt(vr);
                                     historicoDesvios.push({ bateriaKey: part.bateriaKey, sessao: part.sessao, desvio: desvPart });
-                                }
+                                });
                             });
 
                             let avaliacaoBateriaAtual = "";
@@ -2416,14 +2415,22 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                                 let percentualMudanca = Math.abs((diffDesvio / primeiroDesvio) * 100);
 
                                 if (diffDesvio < 0) {
-                                    historicoTxt = ` Histórico Multi-Baterias: O piloto demonstra evolução consistente ao longo do tempo. Comparando a primeira e a última bateria registradas, seu índice de desvio padrão melhorou em ${percentualMudanca.toFixed(1)}% (tornando-se mais regular e estável).`;
+                                    // Melhora (Seta para cima verde)
+                                    historicoTxt = ` <span style="color: var(--accent-green); font-weight: 700;">⬆️ Melhora de ${percentualMudanca.toFixed(1)}%</span>: Histórico Multi-Baterias aponta evolução consistente e ganho de regularidade ao longo do tempo.`;
                                 } else if (diffDesvio > 0) {
-                                    historicoTxt = ` Histórico Multi-Baterias: Notou-se uma queda na consistência global em relação às suas primeiras participações. Houve um aumento de ${percentualMudanca.toFixed(1)}% no desvio padrão comparando o histórico, indicando maior variação nos tempos de volta.`;
+                                    if (percentualMudanca >= 100) {
+                                        // Piora extrema acima de 100% (Seta para baixo vermelha com termo elegante de piora severa)
+                                        historicoTxt = ` <span style="color: var(--accent-red); font-weight: 700;">⬇️ Piora severa (desvio aumentou em mais de 100%)</span>: Histórico Multi-Baterias aponta uma oscilação acentuada e patamar de consistência muito defasado em relação ao início.`;
+                                    } else {
+                                        // Piora moderada (Seta para baixo vermelha)
+                                        historicoTxt = ` <span style="color: var(--accent-red); font-weight: 700;">⬇️ Piora de ${percentualMudanca.toFixed(1)}%</span>: Histórico Multi-Baterias indica aumento na variação de tempos e perda de constância global.`;
+                                    }
                                 } else {
-                                    historicoTxt = ` Histórico Multi-Baterias: O piloto mantém estabilidade rigorosa e idêntica de constância se comparado ao seu histórico geral de provas.`;
+                                    // Neutro (Símbolo amarelo)
+                                    historicoTxt = ` <span style="color: var(--accent-gold); font-weight: 700;">⏺️ Estabilidade Neutra (0%)</span>: Histórico Multi-Baterias mostra rigorosa manutenção do mesmo padrão de constância.`;
                                 }
                             } else {
-                                historicoTxt = ` Histórico Multi-Baterias: Esta é a primeira bateria registrada no banco de dados para este piloto, servindo de linha de base para futuras comparações de evolução de constância.`;
+                                historicoTxt = ` <span style="color: var(--accent-gold); font-weight: 700;">⏺️ Linha de Base (Neutro)</span>: Histórico Multi-Baterias possui apenas esta bateria registrada como referência inicial.`;
                             }
 
                             let txtConsistencia = `${avaliacaoBateriaAtual}${historicoTxt}`;
