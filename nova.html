@@ -1,4 +1,4 @@
-<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Completa com Compartilhamento Formatado) -->
+<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Completa com Nomes de Pilotos 100% Clicáveis) -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -489,7 +489,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.39.0 (Compartilhamento Formatado WhatsApp)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.40.0 (Pilotos 100% Clicáveis)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -727,7 +727,7 @@
                             <div style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; background: var(--bg-card); padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-card);">
                                 <span>${medals[idx].icon}</span>
                                 <strong style="color: ${medals[idx].color};">${medals[idx].label}</strong>
-                                <span>${escapeHtml(r.piloto)}</span>
+                                <a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(r.piloto)}')">${escapeHtml(r.piloto)}</a>
                                 <span style="color: var(--accent-gold); font-size: 0.78rem;">(${r.pontos} pts)</span>
                             </div>
                         `).join('');
@@ -922,9 +922,6 @@
                 });
 
                 rankingGridTreino.sort((a, b) => a.melhorTempo - b.melhorTempo);
-
-                let pdfBase64 = await arquivoParaBase64(file);
-
                 await db.ref(`campeonatos/${campeonatoAtivoKey}/gridTreinoDados`).set(rankingGridTreino);
                 document.getElementById('status-treino-grid-info').innerText = `✅ Treino processado! Grid inicial formado com ${rankingGridTreino.length} pilotos.`;
                 inputEl.value = "";
@@ -1060,7 +1057,7 @@
             } else {
                 tbodyPilotos.innerHTML = pKeys.map(pk => `
                     <tr>
-                        <td><strong>${escapeHtml(pilotosInscritos[pk].nome)}</strong></td>
+                        <td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(pilotosInscritos[pk].nome)}')">${escapeHtml(pilotosInscritos[pk].nome)}</a></strong></td>
                         <td style="text-align: right;"><button class="btn-text-action" style="color: var(--accent-red);" onclick="removerPilotoCampeonatoZRound('${pk}')">Remover</button></td>
                     </tr>`).join('');
             }
@@ -1140,7 +1137,7 @@
                     linhasGridHtml = pilotoGridAtual.map((pilotoNome, idx) => `
                         <tr>
                             <td><span class="pos-badge">${idx + 1}º</span></td>
-                            <td><strong>${escapeHtml(pilotoNome)}</strong></td>
+                            <td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(pilotoNome)}')">${escapeHtml(pilotoNome)}</a></strong></td>
                             <td><span class="category-badge">${escapeHtml(criterioTexto)}</span></td>
                         </tr>
                     `).join('');
@@ -1168,7 +1165,7 @@
                 tbodyClass.innerHTML = ranking.map((r, idx) => `
                     <tr>
                         <td><span class="pos-badge">${idx + 1}º</span></td>
-                        <td><strong>${escapeHtml(r.piloto)}</strong></td>
+                        <td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(r.piloto)}')">${escapeHtml(r.piloto)}</a></strong></td>
                         <td style="text-align: right; color: var(--accent-gold); font-weight: 700;">${r.pontos} pts</td>
                     </tr>`).join('');
             }
@@ -1604,7 +1601,7 @@
             let meta = pilotosMetadadosCache[nomePiloto] || {};
             let tituloNome = meta.apelido ? `${nomePiloto} (${meta.apelido})` : nomePiloto;
 
-            document.getElementById('modal-piloto-nome').innerHTML = `🏎️ Ficha do Piloto: <span style="color: var(--accent-gold);">${escapeHtml(tituloNome)}</span>`;
+            document.getElementById('modal-piloto-nome').innerHTML = `🏎️ Ficha do Piloto: <span style="color: var(--accent-gold);"><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(nomePiloto)}')">${escapeHtml(tituloNome)}</a></span>`;
             
             let dadosBase = obterTodosDadosConsolidados();
             let participacoes = dadosBase.filter(d => d.piloto === nomePiloto && d.laps && d.laps.length > 0);
@@ -1647,7 +1644,7 @@
             if (subNomesMesclados.length > 0) {
                 let itensDesfazer = subNomesMesclados.map(subKey => `
                     <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-card); margin-top: 4px; font-size: 0.85rem;">
-                        <span>🔗 Mesclado de: <strong>${escapeHtml(subKey)}</strong></span>
+                        <span>🔗 Mesclado de: <strong style="color:var(--accent-blue);"><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(subKey)}')">${escapeHtml(subKey)}</a></strong></span>
                         <button class="btn-text-action" style="color: var(--accent-red);" onclick="desfazerMesclagemPiloto('${escapeHtml(subKey)}')">Desfazer Mesclagem</button>
                     </div>
                 `).join('');
@@ -1707,14 +1704,14 @@
 
             let checkboxHtml = Array.from(todosPilotosSet).sort().map(p => `
                 <label class="checkbox-item-merge">
-                    <input type="checkbox" class="piloto-mesclar-checkbox" value="${escapeHtml(p)}"> ${escapeHtml(p)}
+                    <input type="checkbox" class="piloto-mesclar-checkbox" value="${escapeHtml(p)}"> <a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(p)}')">${escapeHtml(p)}</a>
                 </label>
             `).join('');
 
             let container = document.getElementById('container-mesclagem-protegido');
             container.innerHTML = `
                 <div class="config-panel" style="border-color: var(--accent-green);">
-                    <div class="config-panel-title" style="color: var(--accent-green);">🔀 Selecione os pilotos para mesclar em "${escapeHtml(nomePilotoDestino)}"</div>
+                    <div class="config-panel-title" style="color: var(--accent-green);">🔀 Selecione os pilotos para mesclar em "<a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(nomePilotoDestino)}')">${escapeHtml(nomePilotoDestino)}</a>"</div>
                     <div class="checkbox-container-merge">${checkboxHtml}</div>
                     <div style="margin-top: 15px; display: flex; justify-content: flex-end;">
                         <button class="btn-action-primary" style="background: var(--accent-green); color: #000; font-weight: 700;" onclick="executarMesclagemMultipla('${escapeHtml(nomePilotoDestino)}')">Mesclar Selecionados</button>
@@ -2240,8 +2237,9 @@
                                 let meta = pilotosMetadadosCache[d.piloto] || {};
                                 let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
                                 if (pAnt && pAtu && pAtu !== pAnt) {
-                                    if (pAtu < pAnt) mudancas.push(`🔥 <strong style="color:${paleta[0]}">${escapeHtml(nomeExib)}</strong> ganhou (<span class="tag-gain">${pAnt}º para ${pAtu}º</span>)`);
-                                    else mudancas.push(`💧 <strong style="color:${paleta[0]}">${escapeHtml(nomeExib)}</strong> perdeu (<span class="tag-loss">${pAnt}º para ${pAtu}º</span>)`);
+                                    let linkPilotoStr = `<a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(d.piloto)}')">${escapeHtml(nomeExib)}</a>`;
+                                    if (pAtu < pAnt) mudancas.push(`🔥 <strong style="color:${paleta[0]}">${linkPilotoStr}</strong> ganhou (<span class="tag-gain">${pAnt}º para ${pAtu}º</span>)`);
+                                    else mudancas.push(`💧 <strong style="color:${paleta[0]}">${linkPilotoStr}</strong> perdeu (<span class="tag-loss">${pAnt}º para ${pAtu}º</span>)`);
                                 }
                             });
                             if (mudancas.length > 0) logsHtml += `<div class="position-log-item">🔄 <strong>Volta ${v+1}:</strong> ${mudancas.join(' | ')}</div>`;
@@ -2308,7 +2306,7 @@
                         dadosSessao.forEach(d => {
                             let meta = pilotosMetadadosCache[d.piloto] || {};
                             let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
-                            headLap.innerHTML += `<th>${escapeHtml(nomeExib)}</th>`;
+                            headLap.innerHTML += `<th><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(d.piloto)}')">${escapeHtml(nomeExib)}</a></th>`;
                         });
 
                         for (let i = 0; i < maxV; i++) {
