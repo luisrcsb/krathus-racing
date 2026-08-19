@@ -1,4 +1,4 @@
-<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Completa com Regras de Alias) -->
+<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Completa Corrigida - Chefe de Equipe & Alias) -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -489,7 +489,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.44.0 (Regra de Alias Edgar/DJ Integrada)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.45.0 (Chefe de Equipe Individual & Alias Edgard/DJ)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -529,8 +529,8 @@
         }
 
         // ==========================================
-        // [OCULTO-MARKER: ALIAS_RULE_EDGARD_DJ]
-        // Esta regra garante o mapeamento de alias/normalização 
+        // [OCULTO-MARKER: ALIAS_RULE_EDGARD_CAMILO_DJ]
+        // Regra interna oculta: Mapeamento de alias e normalização 
         // para unificar variações de Edgard/DJ sob "Edgard Camilo (DJ)"
         // ==========================================
         const ALIAS_EDGARD_DJ_DEFAULTS = {
@@ -602,7 +602,6 @@
 
                 db.ref('mesclagensPilotos').on('value', snapshot => {
                     let servidorMesclagens = snapshot.val() || {};
-                    // Mescla as regras locais embutidas de alias com as do banco
                     mesclagensCache = Object.assign({}, ALIAS_EDGARD_DJ_DEFAULTS, servidorMesclagens);
                     gerarFiltrosDinamicos();
                     atualizarDashboard();
@@ -1607,7 +1606,6 @@
                 return `<label class="checkbox-item"><input type="checkbox" value="${key}" class="filter-bateria" ${marcado} onchange="atualizarDashboard()"> ${escapeHtml(sessaoFormatada)}</label>`;
             }).join('');
 
-            // Filtro rigoroso: garante que apenas os nomes principais completos apareçam, ocultando chaves de origem mescladas e nomes curtos redundantes
             let listaNomesUnicos = Array.from(pilotosSet).filter(p => {
                 let sKey = p.replace(/[.#$\/\[\]]/g, "_");
                 if (mesclagensCache[sKey]) return false;
@@ -2141,7 +2139,7 @@
                     html += `<div class="card"><div class="card-header">📝 Relatório Detalhado de Ultrapassagens</div><div class="position-analysis-container" style="margin-top:0;"><div class="position-analysis-title">Histórico Volta a Volta</div><div class="position-log-list" id="pos-logs-${bateriaKey}"></div></div></div>`;
                 }
                 if (modulosSel.includes('mod-classificacao-analise')) {
-                    html += `<div class="card"><div class="card-header">🏆 Velocidade, Consistência, Ritmo e Laudo Técnico Detalhado</div><div class="table-container"><table><thead><tr><th>POS</th><th>PILOTO</th><th>SESSÃO</th><th>VOLTAS</th><th>MELHOR</th><th>VEL. ESCALA (1/28)</th><th>MÉDIA</th><th>DESVIO</th></tr></thead><tbody id="tabela-unificada-${bateriaKey}"></tbody></table></div></div>`;
+                    html += `<div class="card"><div class="card-header">🏆 Velocidade, Consistência, Ritmo e Laudo Técnico do Chefe de Equipe</div><div class="table-container"><table><thead><tr><th>POS</th><th>PILOTO</th><th>SESSÃO</th><th>VOLTAS</th><th>MELHOR</th><th>VEL. ESCALA (1/28)</th><th>MÉDIA</th><th>DESVIO</th></tr></thead><tbody id="tabela-unificada-${bateriaKey}"></tbody></table></div></div>`;
                 }
                 if (modulosSel.includes('mod-tabela-geral')) {
                     html += `<div class="card"><div class="card-header">⏱️ Tabela Geral Volta a Volta (com Gaps e Voltas Atrás)</div><div class="table-container"><table><thead><tr id="head-lapbyLap-${bateriaKey}"><th>VOLTA</th></tr></thead><tbody id="body-lapbyLap-${bateriaKey}"></tbody></table></div></div>`;
@@ -2303,9 +2301,28 @@
                             let meta = pilotosMetadadosCache[d.piloto] || {};
                             let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
                             
-                            let txtRitmo = desvio < 0.2 ? `O piloto demonstrou um ritmo extremamente linear, mantendo suas parciais de volta dentro de uma faixa de variação mínima, o que evidencia forte controle do equipamento e excelente leitura do traçado ao longo de toda a bateria.` : `O piloto apresentou oscilações consideráveis nas parciais ao longo da prova, sugerindo variações no desgaste de bateria, aderência dos pneus ou pequenas correções de trajetória nas curvas.`;
-                            let txtConsistencia = desvio < 0.15 ? `Altíssimo nível de constância. A proximidade entre a melhor volta (${melhor.toFixed(3)}s) e a média geral (${media.toFixed(3)}s) indica controle absoluto de pilotagem com desvio padrão reduzido de ±${desvio.toFixed(3)}s.` : `Consistência moderada. O desvio padrão de ±${desvio.toFixed(3)}s aponta margem para refinamento na constância de frenagem e aceleração nas saídas de curva.`;
-                            let txtLaudo = `Análise Técnica Avançada para ${nomeExib}: O conjunto motriz e o setup operaram de maneira estável. O rendimento aerodinâmico e mecânico nas curvas de alta foi satisfatório, aproveitando o máximo da tração integral 4x4 no piso. Recomenda-se ajuste fino na distribuição de peso para otimizar ainda mais a entrada de curva em baterias futuras.`;
+                            // ANÁLISE INDIVIDUALIZADA - OLHAR DE CHEFE DE EQUIPE
+                            let statusRitmo = (melhor < media * 0.95) ? "agressivo e focado em ataque" : "cauteloso e voltado para preservação";
+                            let nivelConsistencia = (desvio < 0.15) ? "cirúrgico e de altíssima precisão" : (desvio < 0.3 ? "oscilante, exigindo foco nas tangências" : "bastante instável e irregular");
+
+                            let txtRitmo = `O piloto manteve um ritmo ${statusRitmo}. `;
+                            txtRitmo += (desvio < 0.1) ? `As voltas foram extremamente lineares (desvio de apenas ±${desvio.toFixed(3)}s), demonstrando cadência de relógio e excelente leitura do traçado.` : 
+                                        (desvio < 0.25) ? `Constatamos variações pontuais nas parciais, indicando que o desgaste de pneus ou pequenas correções de trajetória custaram décimos valiosos.` : 
+                                        `O ritmo apresentou picos de instabilidade acentuados; o tempo de volta oscilou muito entre o início e o fim dos giros, demonstrando dificuldades no controle de tração.`;
+
+                            let txtConsistencia = `O índice de constância foi ${nivelConsistencia}. `;
+                            txtConsistencia += (desvio < 0.15) ? `Com uma média de ${media.toFixed(3)}s próxima à sua melhor marca de ${melhor.toFixed(3)}s, o piloto executou uma pilotagem limpa, previsível e sem desperdício de energia.` : 
+                                               `O desvio padrão de ±${desvio.toFixed(3)}s evidencia que a frenagem e as saídas de curva carecem de maior refinamento técnico para evitar perda de aderência.`;
+
+                            let posNum = parseInt(String(d.pos).replace('º', '').trim(), 10) || 99;
+                            let txtLaudo = `Análise do Chefe de Equipe para ${nomeExib}: `;
+                            if (posNum === 1) {
+                                txtLaudo += `Desempenho impecável de vitória! O setup atual respondeu perfeitamente e o piloto soube administrar a vantagem com maestria sobre o grid.`;
+                            } else if (posNum <= 3) {
+                                txtLaudo += `Excelente pódio garantido. O ritmo geral foi forte, mas a telemetria mostra margem de ganho nas curvas de alta velocidade para tentar a liderança na próxima.`;
+                            } else {
+                                txtLaudo += `Corrida de recuperação necessária. O rendimento geral ficou abaixo do potencial do equipamento. Precisamos revisar a distribuição de peso e ajustar o set de molas para melhorar a estabilidade dianteira.`;
+                            }
 
                             tbodyCons.innerHTML += `
                                 <tr class="main-row">
@@ -2321,15 +2338,15 @@
                                 <tr class="sub-row"><td colspan="8">
                                     <div class="analysis-subrow-box">
                                         <div class="analysis-section-block">
-                                            <div class="analysis-section-title">⚡ Ritmo</div>
+                                            <div class="analysis-section-title">⚡ Ritmo de Prova</div>
                                             <div class="analysis-section-content">${txtRitmo}</div>
                                         </div>
                                         <div class="analysis-section-block">
-                                            <div class="analysis-section-title">📊 Consistência</div>
+                                            <div class="analysis-section-title">📊 Análise de Consistência</div>
                                             <div class="analysis-section-content">${txtConsistencia}</div>
                                         </div>
                                         <div class="analysis-section-block">
-                                            <div class="analysis-section-title">🛠️ Laudo Técnico</div>
+                                            <div class="analysis-section-title">🛠️ Feedback do Chefe de Equipe (Laudo Técnico)</div>
                                             <div class="analysis-section-content">${txtLaudo}</div>
                                         </div>
                                     </div>
