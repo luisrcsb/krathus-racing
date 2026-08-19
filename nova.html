@@ -1,4 +1,4 @@
-<!-- Index.html - Krathus Racing - Central de Telemetria (Versão v5.45.0 - Consolidação Completa de Voltas e Variantes de Pilotos) -->
+<!-- Index.html - Krathus Racing - Central de Telemetria (Versão v5.46.0 - Consolidação Robusta com Normalização de Variantes) -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -552,7 +552,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.45.0 (Consolidação Completa de Voltas e Variantes)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.46.0 (Consolidação Robusta com Normalização de Variantes)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -760,7 +760,7 @@
                 checkHtml = `<div style="font-size: 0.85rem; color: var(--text-muted); text-align: center;">Nenhum piloto encontrado para mesclar.</div>`;
             } else {
                 Array.from(candidatosOrigem).sort().forEach(p => {
-                    let safeKey = p.replace(/[.#$\/\[\]]/g, "_");
+                    let safeKey = p.trim().toLowerCase().replace(/[.#$\/\[\]]/g, "_");
                     let jaMescladoDestino = mesclagensCache[safeKey];
                     let infoExtra = jaMescladoDestino ? ` (já mesclado para ${jaMescladoDestino})` : '';
                     checkHtml += `
@@ -826,7 +826,7 @@
                 checkboxes.forEach(cb => {
                     let origem = cb.value;
                     if (origem !== destino) {
-                        let safeOrigKey = origem.replace(/[.#$\/\[\]]/g, "_");
+                        let safeOrigKey = origem.trim().toLowerCase().replace(/[.#$\/\[\]]/g, "_");
                         updates[`mesclagensPilotos/${safeOrigKey}`] = destino;
                     }
                 });
@@ -1741,15 +1741,27 @@
 
         function obterTodosDadosConsolidados() {
             let mapaSessaoPiloto = {};
+            
+            // Normaliza o dicionário de mesclagens para ignorar maiúsculas/minúsculas e espaços extras
+            let mesclagensNormalizadas = {};
+            if (mesclagensCache) {
+                Object.keys(mesclagensCache).forEach(origKey => {
+                    let chaveLimpa = origKey.trim().toLowerCase().replace(/[.#$\/\[\]]/g, "_");
+                    mesclagensNormalizadas[chaveLimpa] = mesclagensCache[origKey];
+                });
+            }
+
             if (listaJsonsCache && Array.isArray(listaJsonsCache)) {
                 listaJsonsCache.forEach(arq => {
                     if (arq.dados && Array.isArray(arq.dados)) {
                         arq.dados.forEach(d => {
                             if (!d.laps || d.laps.length === 0) return;
                             
-                            let pilotoOriginal = d.piloto;
-                            let safeNomeKey = pilotoOriginal ? pilotoOriginal.replace(/[.#$\/\[\]]/g, "_") : "";
-                            let pilotoReal = mesclagensCache[safeNomeKey] || pilotoOriginal;
+                            let pilotoOriginal = d.piloto ? d.piloto.trim() : "";
+                            let chaveBusca = pilotoOriginal.toLowerCase().replace(/[.#$\/\[\]]/g, "_");
+                            
+                            // Busca a mesclagem normalizada ou mantém o nome original
+                            let pilotoReal = mesclagensNormalizadas[chaveBusca] || pilotoOriginal;
 
                             let chaveUnica = `${arq.firebaseKey}_${pilotoReal}`;
                             if (!mapaSessaoPiloto[chaveUnica]) {
@@ -1761,7 +1773,7 @@
                                     laps: [...d.laps]
                                 };
                             } else {
-                                // Consolida/funde voltas caso haja múltiplas variantes do mesmo piloto na mesma bateria
+                                // Consolida as voltas caso haja múltiplas variantes do mesmo piloto na mesma bateria
                                 let lapsAtuais = mapaSessaoPiloto[chaveUnica].laps;
                                 d.laps.forEach((l, idx) => {
                                     let tempoVal = typeof l === 'object' ? l.tempo : l;
@@ -1820,12 +1832,23 @@
             if (!batContainer || !pilContainer) return;
 
             const pilotosDisponiveisSet = new Set(Object.keys(pilotosMetadadosCache));
+            
+            // Mapeamento normalizado para os filtros também considerarem as variantes já mescladas
+            let mesclagensNormalizadas = {};
+            if (mesclagensCache) {
+                Object.keys(mesclagensCache).forEach(origKey => {
+                    let chaveLimpa = origKey.trim().toLowerCase().replace(/[.#$\/\[\]]/g, "_");
+                    mesclagensNormalizadas[chaveLimpa] = mesclagensCache[origKey];
+                });
+            }
+
             listaJsonsCache.forEach(arq => {
                 if (arq.dados) {
                     arq.dados.forEach(d => {
                         if (d.piloto) {
-                            let safeKey = d.piloto.replace(/[.#$\/\[\]]/g, "_");
-                            let pilotoReal = mesclagensCache[safeKey] || d.piloto;
+                            let pilotoOriginal = d.piloto.trim();
+                            let chaveBusca = pilotoOriginal.toLowerCase().replace(/[.#$\/\[\]]/g, "_");
+                            let pilotoReal = mesclagensNormalizadas[chaveBusca] || pilotoOriginal;
                             pilotosDisponiveisSet.add(pilotoReal);
                         }
                     });
@@ -1888,10 +1911,18 @@
             let vitorias = 0;
             
             listaJsonsCache.forEach(arq => {
+                let mesclagensNormalizadas = {};
+                if (mesclagensCache) {
+                    Object.keys(mesclagensCache).forEach(origKey => {
+                        let chaveLimpa = origKey.trim().toLowerCase().replace(/[.#$\/\[\]]/g, "_");
+                        mesclagensNormalizadas[chaveLimpa] = mesclagensCache[origKey];
+                    });
+                }
+
                 let todosBat = (arq.dados || []).map(d => {
-                    let pReal = d.piloto;
-                    let safeKey = pReal ? pReal.replace(/[.#$\/\[\]]/g, "_") : "";
-                    if (mesclagensCache[safeKey]) pReal = mesclagensCache[safeKey];
+                    let pReal = d.piloto ? d.piloto.trim() : "";
+                    let chaveBusca = pReal.toLowerCase().replace(/[.#$\/\[\]]/g, "_");
+                    if (mesclagensNormalizadas[chaveBusca]) pReal = mesclagensNormalizadas[chaveBusca];
                     return { ...d, piloto: pReal };
                 }).filter(d => d.laps && d.laps.length > 0);
 
@@ -2003,7 +2034,7 @@
                 let updates = {};
                 checkboxes.forEach(cb => {
                     let origem = cb.value;
-                    let safeOrigKey = origem.replace(/[.#$\/\[\]]/g, "_");
+                    let safeOrigKey = origem.trim().toLowerCase().replace(/[.#$\/\[\]]/g, "_");
                     updates[`mesclagensPilotos/${safeOrigKey}`] = nomeDestino;
                 });
 
@@ -2079,7 +2110,7 @@
                 
                 if (novoNome !== nomeAtual) {
                     await db.ref(`pilotosMetadados/${nomeAtual}`).remove();
-                    let safeOldKey = nomeAtual.replace(/[.#$\/\[\]]/g, "_");
+                    let safeOldKey = nomeAtual.trim().toLowerCase().replace(/[.#$\/\[\]]/g, "_");
                     await db.ref(`mesclagensPilotos/${safeOldKey}`).set(novoNome);
                 }
                 
@@ -2209,11 +2240,19 @@
             if (listaJsonsCache.length > 0) {
                 let vencedorContadorGlobal = {};
                 
+                let mesclagensNormalizadas = {};
+                if (mesclagensCache) {
+                    Object.keys(mesclagensCache).forEach(origKey => {
+                        let chaveLimpa = origKey.trim().toLowerCase().replace(/[.#$\/\[\]]/g, "_");
+                        mesclagensNormalizadas[chaveLimpa] = mesclagensCache[origKey];
+                    });
+                }
+
                 listaJsonsCache.forEach(arq => {
                     let itensDaBateria = (arq.dados || []).map(d => {
-                        let pReal = d.piloto;
-                        let safeKey = pReal ? pReal.replace(/[.#$\/\[\]]/g, "_") : "";
-                        if (mesclagensCache[safeKey]) pReal = mesclagensCache[safeKey];
+                        let pReal = d.piloto ? d.piloto.trim() : "";
+                        let chaveBusca = pReal.toLowerCase().replace(/[.#$\/\[\]]/g, "_");
+                        if (mesclagensNormalizadas[chaveBusca]) pReal = mesclagensNormalizadas[chaveBusca];
                         return { ...d, piloto: pReal };
                     }).filter(d => d.laps && d.laps.length > 0);
 
