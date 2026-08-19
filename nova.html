@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Krathus Racing - Central de Telemetria</title>
-    <!-- Bibliotecas e Estilos mantidos conforme sua versão 5.48.2 -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
@@ -29,31 +28,24 @@
         <header class="header">
             <div>
                 <h1>🏁 KRATHUS RACING</h1>
-                <p>Central de Telemetria</p>
+                <p>Central de Telemetria v5.48.2</p>
             </div>
             <div id="header-actions">
-                <!-- Visível para todos -->
                 <button class="btn" onclick="gerarRelatórioPDF()">📄 Relatório</button>
-                
-                <!-- Visível apenas para Admin -->
                 <button class="btn btn-admin admin-only" onclick="abrirModalUpload()">📤 Uploads</button>
-                <button class="btn btn-admin admin-only" onclick="abrirModalCampeonatos()">🏆 Championship Manager</button>
-                
-                <!-- Gatilho invisível -->
+                <button class="btn btn-admin admin-only" onclick="abrirModalCampeonatos()">🏆 Campeonato</button>
                 <button class="btn" style="background: transparent; color: #555; font-size: 0.7rem;" onclick="ativarModoAdmin()">Admin</button>
                 <button class="btn btn-sair admin-only" onclick="sairModoAdmin()">Sair</button>
             </div>
         </header>
         
-        <div id="content">Conteúdo principal do site...</div>
+        <div id="sessions-container">Carregando painel de telemetria...</div>
     </div>
-
-    <!-- Modais (Upload e Campeonato omitidos por brevidade, manter os seus originais) -->
 
     <script>
         const SENHA_UNIFICADA = "1234";
 
-        // Lógica de Segurança
+        // Funções de Segurança
         function checarAdmin() {
             return sessionStorage.getItem('krathus_admin') === 'true';
         }
@@ -79,8 +71,11 @@
             }
         });
 
-        // Mantenha aqui todo o seu código original de Firebase, Upload, ZRound e Charts...
-        // ...
+        // RE-INICIALIZAÇÃO DO SEU SISTEMA ORIGINAL
+        // (Aqui entrará o resto da lógica do Firebase e renderização que você já tinha)
+        // Se você não tiver o código original aí, me avise que eu reconstruo os blocos faltantes.
+        
+        function gerarRelatórioPDF() { window.print(); }
     </script>
 </body>
 </html>
