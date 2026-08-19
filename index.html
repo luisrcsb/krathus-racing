@@ -1,4 +1,4 @@
-<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Completa com Compartilhamento Formatado) -->
+<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Completa com Regras de Alias) -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -489,7 +489,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.39.0 (Compartilhamento Formatado WhatsApp)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.44.0 (Regra de Alias Edgar/DJ Integrada)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -527,6 +527,21 @@
         } catch (e) {
             console.warn("Erro Firebase:", e);
         }
+
+        // ==========================================
+        // [OCULTO-MARKER: ALIAS_RULE_EDGARD_DJ]
+        // Esta regra garante o mapeamento de alias/normalização 
+        // para unificar variações de Edgard/DJ sob "Edgard Camilo (DJ)"
+        // ==========================================
+        const ALIAS_EDGARD_DJ_DEFAULTS = {
+            "edgard": "Edgard Camilo (DJ)",
+            "Edgard": "Edgard Camilo (DJ)",
+            "edgar": "Edgard Camilo (DJ)",
+            "Edgar": "Edgard Camilo (DJ)",
+            "Dj_Edgar": "Edgard Camilo (DJ)",
+            "Dj_Edgard": "Edgard Camilo (DJ)",
+            "DJ": "Edgard Camilo (DJ)"
+        };
 
         function formatarNomeSessao(sessaoStr) {
             if (!sessaoStr) return "Bateria";
@@ -586,7 +601,9 @@
                 });
 
                 db.ref('mesclagensPilotos').on('value', snapshot => {
-                    mesclagensCache = snapshot.val() || {};
+                    let servidorMesclagens = snapshot.val() || {};
+                    // Mescla as regras locais embutidas de alias com as do banco
+                    mesclagensCache = Object.assign({}, ALIAS_EDGARD_DJ_DEFAULTS, servidorMesclagens);
                     gerarFiltrosDinamicos();
                     atualizarDashboard();
                 });
@@ -727,7 +744,7 @@
                             <div style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; background: var(--bg-card); padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-card);">
                                 <span>${medals[idx].icon}</span>
                                 <strong style="color: ${medals[idx].color};">${medals[idx].label}</strong>
-                                <span>${escapeHtml(r.piloto)}</span>
+                                <a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(r.piloto)}')">${escapeHtml(r.piloto)}</a>
                                 <span style="color: var(--accent-gold); font-size: 0.78rem;">(${r.pontos} pts)</span>
                             </div>
                         `).join('');
@@ -922,9 +939,6 @@
                 });
 
                 rankingGridTreino.sort((a, b) => a.melhorTempo - b.melhorTempo);
-
-                let pdfBase64 = await arquivoParaBase64(file);
-
                 await db.ref(`campeonatos/${campeonatoAtivoKey}/gridTreinoDados`).set(rankingGridTreino);
                 document.getElementById('status-treino-grid-info').innerText = `✅ Treino processado! Grid inicial formado com ${rankingGridTreino.length} pilotos.`;
                 inputEl.value = "";
@@ -1060,7 +1074,7 @@
             } else {
                 tbodyPilotos.innerHTML = pKeys.map(pk => `
                     <tr>
-                        <td><strong>${escapeHtml(pilotosInscritos[pk].nome)}</strong></td>
+                        <td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(pilotosInscritos[pk].nome)}')">${escapeHtml(pilotosInscritos[pk].nome)}</a></strong></td>
                         <td style="text-align: right;"><button class="btn-text-action" style="color: var(--accent-red);" onclick="removerPilotoCampeonatoZRound('${pk}')">Remover</button></td>
                     </tr>`).join('');
             }
@@ -1140,7 +1154,7 @@
                     linhasGridHtml = pilotoGridAtual.map((pilotoNome, idx) => `
                         <tr>
                             <td><span class="pos-badge">${idx + 1}º</span></td>
-                            <td><strong>${escapeHtml(pilotoNome)}</strong></td>
+                            <td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(pilotoNome)}')">${escapeHtml(pilotoNome)}</a></strong></td>
                             <td><span class="category-badge">${escapeHtml(criterioTexto)}</span></td>
                         </tr>
                     `).join('');
@@ -1168,7 +1182,7 @@
                 tbodyClass.innerHTML = ranking.map((r, idx) => `
                     <tr>
                         <td><span class="pos-badge">${idx + 1}º</span></td>
-                        <td><strong>${escapeHtml(r.piloto)}</strong></td>
+                        <td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(r.piloto)}')">${escapeHtml(r.piloto)}</a></strong></td>
                         <td style="text-align: right; color: var(--accent-gold); font-weight: 700;">${r.pontos} pts</td>
                     </tr>`).join('');
             }
@@ -1187,8 +1201,12 @@
                         let posNum = parseInt(String(d.pos).replace('º', '').trim(), 10);
                         let pts = (posNum > 0 && posNum <= tabelaPontosArr.length) ? tabelaPontosArr[posNum - 1] : 0;
                         if (pts > 0) {
-                            if (!pilotoPontos[d.piloto]) pilotoPontos[d.piloto] = 0;
-                            pilotoPontos[d.piloto] += pts;
+                            let pNome = d.piloto;
+                            let sKey = pNome.replace(/[.#$\/\[\]]/g, "_");
+                            if (mesclagensCache[sKey]) pNome = mesclagensCache[sKey];
+
+                            if (!pilotoPontos[pNome]) pilotoPontos[pNome] = 0;
+                            pilotoPontos[pNome] += pts;
                         }
                     });
                 }
@@ -1555,12 +1573,15 @@
                         if (d.piloto && d.laps && d.laps.length > 0) {
                             let pReal = d.piloto;
                             let safeKey = pReal.replace(/[.#$\/\[\]]/g, "_");
-                            if (mesclagensCache[safeKey]) pReal = mesclagensCache[safeKey];
+                            if (mesclagensCache[safeKey]) {
+                                pReal = mesclagensCache[safeKey];
+                            }
                             pilotosSet.add(pReal); 
                         } 
                     });
                 }
             });
+
             Object.keys(pilotosMetadadosCache).forEach(p => {
                 let safeKey = p.replace(/[.#$\/\[\]]/g, "_");
                 let pReal = mesclagensCache[safeKey] || p;
@@ -1586,7 +1607,19 @@
                 return `<label class="checkbox-item"><input type="checkbox" value="${key}" class="filter-bateria" ${marcado} onchange="atualizarDashboard()"> ${escapeHtml(sessaoFormatada)}</label>`;
             }).join('');
 
-            pilContainer.innerHTML = Array.from(pilotosSet).sort().map(piloto => {
+            // Filtro rigoroso: garante que apenas os nomes principais completos apareçam, ocultando chaves de origem mescladas e nomes curtos redundantes
+            let listaNomesUnicos = Array.from(pilotosSet).filter(p => {
+                let sKey = p.replace(/[.#$\/\[\]]/g, "_");
+                if (mesclagensCache[sKey]) return false;
+                
+                let isNomeCurtoIsolado = Array.from(pilotosSet).some(outroP => outroP !== p && outroP.includes(p) && outroP.length > p.length);
+                if (isNomeCurtoIsolado && (p.length <= 8 && !pilotosMetadadosCache[p]?.apelido)) {
+                    return false;
+                }
+                return true;
+            });
+
+            pilContainer.innerHTML = listaNomesUnicos.sort().map(piloto => {
                 let meta = pilotosMetadadosCache[piloto] || {};
                 let labelExib = meta.apelido ? `${piloto} (${meta.apelido})` : piloto;
                 let marcado = primeiraVezPil || pilotosSelecionadosAntigos.includes(piloto) ? 'checked' : '';
@@ -1647,7 +1680,7 @@
             if (subNomesMesclados.length > 0) {
                 let itensDesfazer = subNomesMesclados.map(subKey => `
                     <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-card); margin-top: 4px; font-size: 0.85rem;">
-                        <span>🔗 Mesclado de: <strong>${escapeHtml(subKey)}</strong></span>
+                        <span>🔗 Mesclado de: <strong style="color:var(--accent-blue);">${escapeHtml(subKey)}</strong></span>
                         <button class="btn-text-action" style="color: var(--accent-red);" onclick="desfazerMesclagemPiloto('${escapeHtml(subKey)}')">Desfazer Mesclagem</button>
                     </div>
                 `).join('');
@@ -1696,18 +1729,23 @@
                 if (arq.dados) {
                     arq.dados.forEach(d => {
                         if (d.piloto && d.piloto !== nomePilotoDestino) {
-                            todosPilotosSet.add(d.piloto);
+                            let pName = d.piloto;
+                            let sKey = pName.replace(/[.#$\/\[\]]/g, "_");
+                            if (mesclagensCache[sKey]) pName = mesclagensCache[sKey];
+                            if (pName !== nomePilotoDestino) todosPilotosSet.add(pName);
                         }
                     });
                 }
             });
             Object.keys(pilotosMetadadosCache).forEach(p => {
-                if (p !== nomePilotoDestino) todosPilotosSet.add(p);
+                let sKey = p.replace(/[.#$\/\[\]]/g, "_");
+                let pFinal = mesclagensCache[sKey] || p;
+                if (pFinal !== nomePilotoDestino) todosPilotosSet.add(pFinal);
             });
 
             let checkboxHtml = Array.from(todosPilotosSet).sort().map(p => `
                 <label class="checkbox-item-merge">
-                    <input type="checkbox" class="piloto-mesclar-checkbox" value="${escapeHtml(p)}"> ${escapeHtml(p)}
+                    <input type="checkbox" class="piloto-mesclar-checkbox" value="${escapeHtml(p)}"> <span>${escapeHtml(p)}</span>
                 </label>
             `).join('');
 
@@ -2240,8 +2278,9 @@
                                 let meta = pilotosMetadadosCache[d.piloto] || {};
                                 let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
                                 if (pAnt && pAtu && pAtu !== pAnt) {
-                                    if (pAtu < pAnt) mudancas.push(`🔥 <strong style="color:${paleta[0]}">${escapeHtml(nomeExib)}</strong> ganhou (<span class="tag-gain">${pAnt}º para ${pAtu}º</span>)`);
-                                    else mudancas.push(`💧 <strong style="color:${paleta[0]}">${escapeHtml(nomeExib)}</strong> perdeu (<span class="tag-loss">${pAnt}º para ${pAtu}º</span>)`);
+                                    let linkPilotoStr = `<a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(d.piloto)}')">${escapeHtml(nomeExib)}</a>`;
+                                    if (pAtu < pAnt) mudancas.push(`🔥 <strong style="color:${paleta[0]}">${linkPilotoStr}</strong> ganhou (<span class="tag-gain">${pAnt}º para ${pAtu}º</span>)`);
+                                    else mudancas.push(`💧 <strong style="color:${paleta[0]}">${linkPilotoStr}</strong> perdeu (<span class="tag-loss">${pAnt}º para ${pAtu}º</span>)`);
                                 }
                             });
                             if (mudancas.length > 0) logsHtml += `<div class="position-log-item">🔄 <strong>Volta ${v+1}:</strong> ${mudancas.join(' | ')}</div>`;
@@ -2308,7 +2347,7 @@
                         dadosSessao.forEach(d => {
                             let meta = pilotosMetadadosCache[d.piloto] || {};
                             let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
-                            headLap.innerHTML += `<th>${escapeHtml(nomeExib)}</th>`;
+                            headLap.innerHTML += `<th><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(d.piloto)}')">${escapeHtml(nomeExib)}</a></th>`;
                         });
 
                         for (let i = 0; i < maxV; i++) {
