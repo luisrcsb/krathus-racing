@@ -1,4 +1,4 @@
-<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Completa com Apenas Nomes Principais na Lista) -->
+<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Completa com Lista de Pilotos Principais Corrigida) -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -489,7 +489,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.41.0 (Apenas Nomes Principais na Lista)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.42.0 (Filtros e Topo Ficha Ajustados)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -1184,8 +1184,12 @@
                         let posNum = parseInt(String(d.pos).replace('º', '').trim(), 10);
                         let pts = (posNum > 0 && posNum <= tabelaPontosArr.length) ? tabelaPontosArr[posNum - 1] : 0;
                         if (pts > 0) {
-                            if (!pilotoPontos[d.piloto]) pilotoPontos[d.piloto] = 0;
-                            pilotoPontos[d.piloto] += pts;
+                            let pNome = d.piloto;
+                            let sKey = pNome.replace(/[.#$\/\[\]]/g, "_");
+                            if (mesclagensCache[sKey]) pNome = mesclagensCache[sKey];
+
+                            if (!pilotoPontos[pNome]) pilotoPontos[pNome] = 0;
+                            pilotoPontos[pNome] += pts;
                         }
                     });
                 }
@@ -1583,14 +1587,14 @@
                 return `<label class="checkbox-item"><input type="checkbox" value="${key}" class="filter-bateria" ${marcado} onchange="atualizarDashboard()"> ${escapeHtml(sessaoFormatada)}</label>`;
             }).join('');
 
-            // Filtrando apenas os nomes principais (excluindo os nomes de origem que foram mesclados)
-            let pilotosFiltradosUnicos = Array.from(pilotosSet).filter(p => {
-                let safeKey = p.replace(/[.#$\/\[\]]/g, "_");
-                // Se este nome é destino de alguma mesclagem, ele fica. Se ele é chave em mesclagensCache (significa que foi absorvido), ele é ocultado da lista principal.
-                return !mesclagensCache[safeKey];
+            // Garante que apenas os nomes principais reais fiquem visíveis na lista de filtro de pilotos
+            let pilotosListaFinal = Array.from(pilotosSet).map(p => {
+                let sKey = p.replace(/[.#$\/\[\]]/g, "_");
+                return mesclagensCache[sKey] ? mesclagensCache[sKey] : p;
             });
+            let pilotosUnicosSet = Array.from(new Set(pilotosListaFinal));
 
-            pilContainer.innerHTML = pilotosFiltradosUnicos.sort().map(piloto => {
+            pilContainer.innerHTML = pilotosUnicosSet.sort().map(piloto => {
                 let meta = pilotosMetadadosCache[piloto] || {};
                 let labelExib = meta.apelido ? `${piloto} (${meta.apelido})` : piloto;
                 let marcado = primeiraVezPil || pilotosSelecionadosAntigos.includes(piloto) ? 'checked' : '';
@@ -1608,7 +1612,7 @@
             let meta = pilotosMetadadosCache[nomePiloto] || {};
             let tituloNome = meta.apelido ? `${nomePiloto} (${meta.apelido})` : nomePiloto;
 
-            document.getElementById('modal-piloto-nome').innerHTML = `🏎️ Ficha do Piloto: <span style="color: var(--accent-gold);"><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(nomePiloto)}')">${escapeHtml(tituloNome)}</a></span>`;
+            document.getElementById('modal-piloto-nome').innerHTML = `🏎️ Ficha do Piloto: <span style="color: var(--accent-gold);">${escapeHtml(tituloNome)}</span>`;
             
             let dadosBase = obterTodosDadosConsolidados();
             let participacoes = dadosBase.filter(d => d.piloto === nomePiloto && d.laps && d.laps.length > 0);
@@ -1651,7 +1655,7 @@
             if (subNomesMesclados.length > 0) {
                 let itensDesfazer = subNomesMesclados.map(subKey => `
                     <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-card); margin-top: 4px; font-size: 0.85rem;">
-                        <span>🔗 Mesclado de: <strong style="color:var(--accent-blue);"><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(subKey)}')">${escapeHtml(subKey)}</a></strong></span>
+                        <span>🔗 Mesclado de: <strong style="color:var(--accent-blue);">${escapeHtml(subKey)}</strong></span>
                         <button class="btn-text-action" style="color: var(--accent-red);" onclick="desfazerMesclagemPiloto('${escapeHtml(subKey)}')">Desfazer Mesclagem</button>
                     </div>
                 `).join('');
@@ -1700,25 +1704,30 @@
                 if (arq.dados) {
                     arq.dados.forEach(d => {
                         if (d.piloto && d.piloto !== nomePilotoDestino) {
-                            todosPilotosSet.add(d.piloto);
+                            let pName = d.piloto;
+                            let sKey = pName.replace(/[.#$\/\[\]]/g, "_");
+                            if (mesclagensCache[sKey]) pName = mesclagensCache[sKey];
+                            if (pName !== nomePilotoDestino) todosPilotosSet.add(pName);
                         }
                     });
                 }
             });
             Object.keys(pilotosMetadadosCache).forEach(p => {
-                if (p !== nomePilotoDestino) todosPilotosSet.add(p);
+                let sKey = p.replace(/[.#$\/\[\]]/g, "_");
+                let pFinal = mesclagensCache[sKey] || p;
+                if (pFinal !== nomePilotoDestino) todosPilotosSet.add(pFinal);
             });
 
             let checkboxHtml = Array.from(todosPilotosSet).sort().map(p => `
                 <label class="checkbox-item-merge">
-                    <input type="checkbox" class="piloto-mesclar-checkbox" value="${escapeHtml(p)}"> <a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(p)}')">${escapeHtml(p)}</a>
+                    <input type="checkbox" class="piloto-mesclar-checkbox" value="${escapeHtml(p)}"> <span>${escapeHtml(p)}</span>
                 </label>
             `).join('');
 
             let container = document.getElementById('container-mesclagem-protegido');
             container.innerHTML = `
                 <div class="config-panel" style="border-color: var(--accent-green);">
-                    <div class="config-panel-title" style="color: var(--accent-green);">🔀 Selecione os pilotos para mesclar em "<a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(nomePilotoDestino)}')">${escapeHtml(nomePilotoDestino)}</a>"</div>
+                    <div class="config-panel-title" style="color: var(--accent-green);">🔀 Selecione os pilotos para mesclar em "${escapeHtml(nomePilotoDestino)}"</div>
                     <div class="checkbox-container-merge">${checkboxHtml}</div>
                     <div style="margin-top: 15px; display: flex; justify-content: flex-end;">
                         <button class="btn-action-primary" style="background: var(--accent-green); color: #000; font-weight: 700;" onclick="executarMesclagemMultipla('${escapeHtml(nomePilotoDestino)}')">Mesclar Selecionados</button>
