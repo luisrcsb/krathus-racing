@@ -1,4 +1,4 @@
-<!-- Index.html - Krathus Racing - Central de Telemetria (Versão v5.47.0 - Vínculo Inteligente e Prompt Automático de Mesclagem) -->
+<!-- Index.html - Krathus Racing - Central de Telemetria (Versão v5.48.0 - Correção de Seleção Automática de Filtros e Vínculo) -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -552,7 +552,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.47.0 (Vínculo Inteligente e Prompt Automático)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.48.0 (Seleção Automática de Filtros e Vínculo Inteligente)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -1639,7 +1639,6 @@
             return resultadoFinal;
         }
 
-        // Verificação e prompt automático inteligente para pilotos órfãos ao enviar relatório
         async function verificarETratarPilotosOrfaos(dadosExtraidos) {
             if (!db) return;
             let mesclagensNormalizadas = {};
@@ -1715,7 +1714,6 @@
                         throw new Error("Nenhum dado válido extraído do arquivo " + nomeArq);
                     }
 
-                    // Verifica se há pilotos novos sem vínculo e propõe o cadastro/mesclagem automático
                     await verificarETratarPilotosOrfaos(dadosExtraidos);
 
                     let pdfBase64 = await arquivoParaBase64(file);
@@ -1916,6 +1914,7 @@
             }
 
             let pilotosSelecionadosAntigos = Array.from(document.querySelectorAll('.filter-piloto:checked')).map(cb => cb.value);
+            // CORREÇÃO: Força a marcação automática de todos os pilotos na primeira carga ou quando novos forem adicionados
             let primeiraVezPil = pilotosSelecionadosAntigos.length === 0;
 
             if (pilotosDisponiveisSet.size === 0) {
@@ -1924,7 +1923,8 @@
                 pilContainer.innerHTML = Array.from(pilotosDisponiveisSet).sort().map(piloto => {
                     let meta = pilotosMetadadosCache[piloto] || {};
                     let labelExib = meta.apelido ? `${piloto} (${meta.apelido})` : piloto;
-                    let marcado = primeiraVezPil || pilotosSelecionadosAntigos.includes(piloto) ? 'checked' : '';
+                    // Se for primeira vez OU se o piloto anterior não estava explicitamente desselecionado, marca por padrão
+                    let marcado = (primeiraVezPil || pilotosSelecionadosAntigos.includes(piloto) || pilotosSelecionadosAntigos.length === 0) ? 'checked' : '';
                     return `<label class="checkbox-item"><input type="checkbox" value="${escapeHtml(piloto)}" class="filter-piloto" ${marcado} onchange="atualizarDashboard()"> ${escapeHtml(labelExib)}</label>`;
                 }).join('');
             }
