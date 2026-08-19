@@ -1,4 +1,4 @@
-<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Corrigida: Leitura Completa e Unificada de Pilotos e Voltas) -->
+<!-- Index.html - Krathus Racing - Central de Telemetria (Versão v5.45.0 - Consolidação Completa de Voltas e Variantes de Pilotos) -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -552,7 +552,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.44.0 (Correção Leitura e Mesclagem de Pilotos)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.45.0 (Consolidação Completa de Voltas e Variantes)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -751,7 +751,7 @@
             });
             selectDestino.innerHTML = selectHtml;
 
-            // Renderiza Checkboxes de Origem (Nomes existentes nos relatórios)
+            // Renderiza Checkboxes de Origem
             let checkHtml = "";
             let candidatosOrigem = new Set();
             todosRelatoriosPilotosSet.forEach(p => candidatosOrigem.add(p));
@@ -1150,8 +1150,6 @@
                 });
 
                 rankingGridTreino.sort((a, b) => a.melhorTempo - b.melhorTempo);
-
-                let pdfBase64 = await arquivoParaBase64(file);
 
                 await db.ref(`campeonatos/${campeonatoAtivoKey}/gridTreinoDados`).set(rankingGridTreino);
                 document.getElementById('status-treino-grid-info').innerText = `✅ Treino processado! Grid inicial formado com ${rankingGridTreino.length} pilotos.`;
@@ -1742,7 +1740,7 @@
         };
 
         function obterTodosDadosConsolidados() {
-            let consolidado = [];
+            let mapaSessaoPiloto = {};
             if (listaJsonsCache && Array.isArray(listaJsonsCache)) {
                 listaJsonsCache.forEach(arq => {
                     if (arq.dados && Array.isArray(arq.dados)) {
@@ -1753,19 +1751,66 @@
                             let safeNomeKey = pilotoOriginal ? pilotoOriginal.replace(/[.#$\/\[\]]/g, "_") : "";
                             let pilotoReal = mesclagensCache[safeNomeKey] || pilotoOriginal;
 
-                            let meta = pilotosMetadadosCache[pilotoReal] || {};
-                            consolidado.push({
-                                ...d,
-                                piloto: pilotoReal,
-                                pilotoOriginal: pilotoOriginal,
-                                bateriaKey: arq.firebaseKey,
-                                pilotoExibicao: meta.apelido ? `${pilotoReal} (${meta.apelido})` : pilotoReal,
-                                apelido: meta.apelido || ''
-                            });
+                            let chaveUnica = `${arq.firebaseKey}_${pilotoReal}`;
+                            if (!mapaSessaoPiloto[chaveUnica]) {
+                                mapaSessaoPiloto[chaveUnica] = {
+                                    ...d,
+                                    piloto: pilotoReal,
+                                    pilotoOriginal: pilotoOriginal,
+                                    bateriaKey: arq.firebaseKey,
+                                    laps: [...d.laps]
+                                };
+                            } else {
+                                // Consolida/funde voltas caso haja múltiplas variantes do mesmo piloto na mesma bateria
+                                let lapsAtuais = mapaSessaoPiloto[chaveUnica].laps;
+                                d.laps.forEach((l, idx) => {
+                                    let tempoVal = typeof l === 'object' ? l.tempo : l;
+                                    if (tempoVal !== undefined && tempoVal !== null && !isNaN(tempoVal)) {
+                                        if (lapsAtuais[idx] === undefined || lapsAtuais[idx] === null) {
+                                            lapsAtuais[idx] = tempoVal;
+                                        }
+                                    }
+                                });
+                                mapaSessaoPiloto[chaveUnica].laps = lapsAtuais;
+                            }
                         });
                     }
                 });
             }
+
+            let consolidado = [];
+            Object.values(mapaSessaoPiloto).forEach(pObj => {
+                let lapsLimpos = (pObj.laps || []).filter(l => {
+                    let t = typeof l === 'object' ? l.tempo : l;
+                    return t !== undefined && !isNaN(t) && t > 0;
+                });
+
+                if (lapsLimpos.length > 0) {
+                    let melhor = Math.min(...lapsLimpos);
+                    let soma = lapsLimpos.reduce((a, b) => a + (typeof b === 'object' ? b.tempo : b), 0);
+                    let media = soma / lapsLimpos.length;
+                    let variancia = lapsLimpos.reduce((sum, l) => {
+                        let t = typeof l === 'object' ? l.tempo : l;
+                        return sum + Math.pow(t - media, 2);
+                    }, 0) / lapsLimpos.length;
+                    let desvio = Math.sqrt(variancia);
+
+                    pObj.laps = lapsLimpos;
+                    pObj.melhorVoltaVal = parseFloat(melhor.toFixed(3));
+                    pObj.melhorVoltaTxt = melhor.toFixed(3).replace('.', ',') + 's';
+                    pObj.mediaVal = parseFloat(media.toFixed(3));
+                    pObj.mediaTxt = media.toFixed(3).replace('.', ',') + 's';
+                    pObj.desvioVal = parseFloat(desvio.toFixed(3));
+                    pObj.desvio = `±${desvio.toFixed(3).replace('.', ',')}s`;
+                    pObj.voltasTotais = lapsLimpos.length;
+                }
+
+                let meta = pilotosMetadadosCache[pObj.piloto] || {};
+                pObj.pilotoExibicao = meta.apelido ? `${pObj.piloto} (${meta.apelido})` : pObj.piloto;
+                pObj.apelido = meta.apelido || '';
+                consolidado.push(pObj);
+            });
+
             return consolidado;
         }
 
@@ -1774,7 +1819,6 @@
             const pilContainer = document.getElementById('filtro-pilotos-container');
             if (!batContainer || !pilContainer) return;
 
-            // Combina pilotos cadastrados com todos os nomes unificados encontrados nos relatórios
             const pilotosDisponiveisSet = new Set(Object.keys(pilotosMetadadosCache));
             listaJsonsCache.forEach(arq => {
                 if (arq.dados) {
