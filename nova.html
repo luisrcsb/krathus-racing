@@ -1,4 +1,4 @@
-<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Completa Corrigida - Chefe de Equipe & Alias) -->
+<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Completa Corrigida - Análise Avançada por Piloto) -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -489,7 +489,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.45.0 (Chefe de Equipe Individual & Alias Edgard/DJ)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.46.0 (Chefe de Equipe Avançado & Alias Edgard/DJ)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -2291,9 +2291,14 @@
                     let tbodyCons = document.getElementById(`tabela-unificada-${bateriaKey}`);
                     if (tbodyCons) {
                         tbodyCons.innerHTML = "";
+                        
+                        // Cálculo da melhor volta geral da bateria para referência de recorde
+                        let melhorVoltaBateria = Math.min(...dadosSessao.map(d => Math.min(...(d.laps || [999]))));
+
                         dadosSessao.forEach(d => {
                             let laps = (d.laps || []).map(l => typeof l === 'object' ? l.tempo : l).filter(Boolean);
                             if (laps.length === 0) return;
+                            
                             let melhor = Math.min(...laps);
                             let media = laps.reduce((a,b)=>a+b,0) / laps.length;
                             let desvio = Math.sqrt(laps.reduce((sum, t) => sum + Math.pow(t - media, 2), 0) / laps.length);
@@ -2301,28 +2306,66 @@
                             let meta = pilotosMetadadosCache[d.piloto] || {};
                             let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
                             
-                            // ANÁLISE INDIVIDUALIZADA - OLHAR DE CHEFE DE EQUIPE
-                            let statusRitmo = (melhor < media * 0.95) ? "agressivo e focado em ataque" : "cauteloso e voltado para preservação";
-                            let nivelConsistencia = (desvio < 0.15) ? "cirúrgico e de altíssima precisão" : (desvio < 0.3 ? "oscilante, exigindo foco nas tangências" : "bastante instável e irregular");
-
-                            let txtRitmo = `O piloto manteve um ritmo ${statusRitmo}. `;
-                            txtRitmo += (desvio < 0.1) ? `As voltas foram extremamente lineares (desvio de apenas ±${desvio.toFixed(3)}s), demonstrando cadência de relógio e excelente leitura do traçado.` : 
-                                        (desvio < 0.25) ? `Constatamos variações pontuais nas parciais, indicando que o desgaste de pneus ou pequenas correções de trajetória custaram décimos valiosos.` : 
-                                        `O ritmo apresentou picos de instabilidade acentuados; o tempo de volta oscilou muito entre o início e o fim dos giros, demonstrando dificuldades no controle de tração.`;
-
-                            let txtConsistencia = `O índice de constância foi ${nivelConsistencia}. `;
-                            txtConsistencia += (desvio < 0.15) ? `Com uma média de ${media.toFixed(3)}s próxima à sua melhor marca de ${melhor.toFixed(3)}s, o piloto executou uma pilotagem limpa, previsível e sem desperdício de energia.` : 
-                                               `O desvio padrão de ±${desvio.toFixed(3)}s evidencia que a frenagem e as saídas de curva carecem de maior refinamento técnico para evitar perda de aderência.`;
-
-                            let posNum = parseInt(String(d.pos).replace('º', '').trim(), 10) || 99;
-                            let txtLaudo = `Análise do Chefe de Equipe para ${nomeExib}: `;
-                            if (posNum === 1) {
-                                txtLaudo += `Desempenho impecável de vitória! O setup atual respondeu perfeitamente e o piloto soube administrar a vantagem com maestria sobre o grid.`;
-                            } else if (posNum <= 3) {
-                                txtLaudo += `Excelente pódio garantido. O ritmo geral foi forte, mas a telemetria mostra margem de ganho nas curvas de alta velocidade para tentar a liderança na próxima.`;
+                            // ==========================================
+                            // 1. ANÁLISE EXCLUSIVA DE RITMO DE PROVA
+                            // ==========================================
+                            let primeiraMetade = laps.slice(0, Math.ceil(laps.length / 2));
+                            let segundaMetade = laps.slice(Math.ceil(laps.length / 2));
+                            let mediaPrimeira = primeiraMetade.reduce((a,b)=>a+b,0) / primeiraMetade.length;
+                            let mediaSegunda = segundaMetade.reduce((a,b)=>a+b,0) / segundaMetade.length;
+                            
+                            let tendenciaRitmo = "";
+                            if (mediaSegunda < mediaPrimeira - 0.05) {
+                                tendenciaRitmo = "Demonstrou forte progressão na segunda metade da bateria, acelerando o ritmo à medida que a pista emborrachava e o acerto se estabilizava.";
+                            } else if (mediaSegunda > mediaPrimeira + 0.1) {
+                                tendenciaRitmo = "Sofocou queda notável de ritmo na fase final, sugerindo degradação acentuada de pneus ou desgaste físico/térmico do conjunto.";
                             } else {
-                                txtLaudo += `Corrida de recuperação necessária. O rendimento geral ficou abaixo do potencial do equipamento. Precisamos revisar a distribuição de peso e ajustar o set de molas para melhorar a estabilidade dianteira.`;
+                                tendenciaRitmo = "Meteu um ritmo linear e constante do apagar das luzes à bandeirada, sem grandes variações entre as metades da prova.";
                             }
+
+                            // Identificação de picos ou voltas atípicas
+                            let voltasLentas = laps.filter(t => t > media + (desvio * 1.5));
+                            let detalhesQuedas = voltasLentas.length > 0 ? `Foram identificados ${voltasLentas.length} momentos de perda expressiva de tempo por volta, reflexo provável de pequenas escapadas ou tráfego.` : `Não houve travadas severas ou quedas bruscas de rendimento ao longo dos giros.`;
+
+                            let txtRitmo = `Evolução de voltas: ${tendenciaRitmo} ${detalhesQuedas}`;
+
+                            // ==========================================
+                            // 2. ANÁLISE EXCLUSIVA DE CONSISTÊNCIA (Limites Flexíveis)
+                            // ==========================================
+                            let avaliacaoConsistencia = "";
+                            if (desvio <= 0.12) {
+                                avaliacaoConsistencia = `Padrão cirúrgico! Com um desvio padrão incrivelmente baixo de ±${desvio.toFixed(3)}s, o piloto operou dentro de uma margem de variação exemplar, provando controle absoluto sob pressão.`;
+                            } else if (desvio <= 0.25) {
+                                avaliacaoConsistencia = `Padrão estável e dentro da normalidade esperada para o grid (desvio de ±${desvio.toFixed(3)}s). Houve pequenas flutuações normais de contorno de curva, mas sem fugir do padrão competitivo.`;
+                            } else if (desvio <= 0.45) {
+                                avaliacaoConsistencia = `Oscilação moderada detectada (desvio de ±${desvio.toFixed(3)}s). O piloto apresentou alguns picos fora do padrão habitual nas tangências, indicando margem clara para polir a constância.`;
+                            } else {
+                                avaliacaoConsistencia = `Padrão altamente irregular (desvio de ±${desvio.toFixed(3)}s). O comportamento do carro e os tempos oscilaram fortemente entre giros consecutivos, exigindo intervenção no setup de suspensão.`;
+                            }
+
+                            let txtConsistencia = avaliacaoConsistencia;
+
+                            // ==========================================
+                            // 3. LAUDO TÉCNICO AVANÇADO - CHEFE DE EQUIPE
+                            // ==========================================
+                            let posNum = parseInt(String(d.pos).replace('º', '').trim(), 10) || 99;
+                            let btePilotoPil = matrizPos[d.piloto] || [];
+                            let posLargada = btePilotoPil.length > 0 ? btePilotoPil[0] : posNum;
+                            let posChegada = posNum;
+                            let ganhoPerdaPosicoes = posLargada - posChegada;
+
+                            let trechoMovimentacao = "";
+                            if (ganhoPerdaPosicoes > 0) {
+                                trechoMovimentacao = `Grande corrida de recuperação! O piloto escalou o pelotão ganhando ${ganhoPerdaPosicoes} posição(ões) desde a largada até a bandeirada.`;
+                            } else if (ganhoPerdaPosicoes < 0) {
+                                trechoMovimentacao = `Faltou ritmo defensivo; o piloto acabou perdendo ${Math.abs(ganhoPerdaPosicoes)} posição(ões) ao longo das voltas devido à pressão dos adversários.`;
+                            } else {
+                                trechoMovimentacao = `Manteve sua posição de grid intacta, defendendo com unhas e dentes a posição conquistada na fase inicial.`;
+                            }
+
+                            let trechoRecorde = (Math.abs(melhor - melhorVoltaBateria) < 0.001) ? ` Destaque absoluto para a batida de recorde/melhor volta absoluta da sessão em sua marca de ${melhor.toFixed(3)}s!` : ``;
+
+                            let txtLaudo = `Relatório Técnico de ${nomeExib}: ${trechoMovimentacao}${trechoRecorde} A análise global aponta que a gestão de prova foi ${posNum <= 3 ? 'eficiente' : 'comprometida por tráfego ou ajustes incorretos'}. O chefe de equipe recomenda reavaliar a pressão dos compostos e a cambagem para a próxima bateria.`;
 
                             tbodyCons.innerHTML += `
                                 <tr class="main-row">
