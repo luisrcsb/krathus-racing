@@ -1,4 +1,4 @@
-<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Completa com Pódio no Cabeçalho da Sessão) -->
+<!-- Index.html - Krathus Racing - Central de Telemetria (Versão Completa com Compartilhamento Formatado) -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -489,7 +489,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.37.0 (Pódio Completo no Cabeçalho da Sessão)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.39.0 (Compartilhamento Formatado WhatsApp)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -1729,19 +1729,25 @@
                 return;
             }
 
-            if (!db) return;
-
-            for (let cb of checkboxes) {
-                let origem = cb.value;
-                let safeOrigKey = origem.replace(/[.#$\/\[\]]/g, "_");
-                try {
-                    await db.ref(`mesclagensPilotos/${safeOrigKey}`).set(nomeDestino);
-                } catch (err) {
-                    console.error("Erro na mesclagem de " + origem, err);
-                }
+            if (!db) {
+                alert("Erro: Firebase desconectado.");
+                return;
             }
-            alert("Pilotos mesclados com sucesso!");
-            window.abrirDossiePiloto(nomeDestino);
+
+            try {
+                let updates = {};
+                checkboxes.forEach(cb => {
+                    let origem = cb.value;
+                    let safeOrigKey = origem.replace(/[.#$\/\[\]]/g, "_");
+                    updates[`mesclagensPilotos/${safeOrigKey}`] = nomeDestino;
+                });
+
+                await db.ref().update(updates);
+                alert("Pilotos mesclados com sucesso!");
+                window.abrirDossiePiloto(nomeDestino);
+            } catch (err) {
+                alert("Erro ao executar mesclagem: " + err.message);
+            }
         };
 
         window.desfazerMesclagemPiloto = async function(origemKey) {
@@ -1893,9 +1899,19 @@
             return String(text).replace(/[&<>"']/g, m => map[m]);
         }
 
-        window.compartilharCorrida = function(bateriaKey, nomeSessao, podiumTexto) {
-            let txt = `🏁 *KRATHUS RACING* 🏁\nSessão: *${nomeSessao}*\nPódio: *${podiumTexto}*\n`;
-            navigator.clipboard.writeText(txt).then(() => alert("Resumo do pódio copiado!"));
+        window.compartilharCorrida = function(bateriaKey, nomeSessao) {
+            let dadosBateria = obterTodosDadosConsolidados().filter(d => d.bateriaKey === bateriaKey && d.laps && d.laps.length > 0);
+            let ordenados = ordenarParticipantesBateria(dadosBateria);
+
+            let vencedorNome = ordenados.length > 0 ? ordenados[0].piloto : "Nenhum";
+            let classifLinhas = ordenados.slice(0, 3).map((p, idx) => `${idx + 1}º - ${p.piloto}`).join('\n');
+            let linkPainel = window.location.href.split('#')[0];
+
+            let txt = `🏁 *KRATHUS RACING - TELEMETRIA* 🏁\n🗓️ Sessão: *${nomeSessao}*\n🏆 Vencedor: *${vencedorNome}*\n\n📊 *Classificação:*\n${classifLinhas}\n\nConfira todos os gráficos e detalhes no painel Krathus Racing! ${linkPainel}`;
+
+            navigator.clipboard.writeText(txt).then(() => {
+                alert("📋 Resumo formatado copiado para a área de transferência! Cole no WhatsApp.");
+            });
         };
 
         function atualizarDashboard() {
@@ -2031,13 +2047,11 @@
                 let participantesOrdenados = ordenarParticipantesBateria(todosBat);
                 
                 let podioHtml = "";
-                let podiumNomesCompartilhar = [];
 
                 if (participantesOrdenados.length > 0) {
                     let p1 = participantesOrdenados[0];
                     let meta1 = pilotosMetadadosCache[p1.piloto] || {};
                     let nome1Exib = meta1.apelido ? `${p1.piloto} (${meta1.apelido})` : p1.piloto;
-                    podiumNomesCompartilhar.push(`1º ${p1.piloto}`);
                     podioHtml += `<span class="session-podium-tag podium-gold">🏆 <a class="piloto-link" style="color: var(--accent-gold);" onclick="abrirDossiePiloto('${escapeHtml(p1.piloto)}')">${escapeHtml(nome1Exib)}</a></span>`;
                 }
 
@@ -2045,7 +2059,6 @@
                     let p2 = participantesOrdenados[1];
                     let meta2 = pilotosMetadadosCache[p2.piloto] || {};
                     let nome2Exib = meta2.apelido ? `${p2.piloto} (${meta2.apelido})` : p2.piloto;
-                    podiumNomesCompartilhar.push(`2º ${p2.piloto}`);
                     podioHtml += `<span class="session-podium-tag podium-silver">🥈 <a class="piloto-link" style="color: var(--accent-silver);" onclick="abrirDossiePiloto('${escapeHtml(p2.piloto)}')">${escapeHtml(nome2Exib)}</a></span>`;
                 }
 
@@ -2053,11 +2066,9 @@
                     let p3 = participantesOrdenados[2];
                     let meta3 = pilotosMetadadosCache[p3.piloto] || {};
                     let nome3Exib = meta3.apelido ? `${p3.piloto} (${meta3.apelido})` : p3.piloto;
-                    podiumNomesCompartilhar.push(`3º ${p3.piloto}`);
                     podioHtml += `<span class="session-podium-tag podium-bronze">🥉 <a class="piloto-link" style="color: var(--accent-bronze);" onclick="abrirDossiePiloto('${escapeHtml(p3.piloto)}')">${escapeHtml(nome3Exib)}</a></span>`;
                 }
 
-                let textoCompartilharPodio = podiumNomesCompartilhar.join(" | ");
                 let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
 
                 let botaoPdfHtml = "";
@@ -2077,7 +2088,7 @@
                         <div class="session-block-meta">
                             <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">${podioHtml}</div>
                             <button class="btn-like" onclick="curtirSessao('${bateriaKey}')">❤️ Curtir (<span id="like-count-${safeKey}">0</span>)</button>
-                            <button class="btn-share" onclick="compartilharCorrida('${bateriaKey}', '${escapeHtml(nomeSessaoFormatado)}', '${escapeHtml(textoCompartilharPodio)}')">🔗 Compartilhar</button>
+                            <button class="btn-share" onclick="compartilharCorrida('${bateriaKey}', '${escapeHtml(nomeSessaoFormatado)}')">🔗 Compartilhar</button>
                         </div>
                     </div>
                 `;
