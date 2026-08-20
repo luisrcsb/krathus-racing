@@ -1956,20 +1956,154 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             return String(text).replace(/[&<>"']/g, m => map[m]);
         }
 
-        window.compartilharCorrida = function(bateriaKey, nomeSessao) {
-            let dadosBateria = obterTodosDadosConsolidados().filter(d => d.bateriaKey === bateriaKey && d.laps && d.laps.length > 0);
-            let ordenados = ordenarParticipantesBateria(dadosBateria);
+        // ============================================================
+        // COMPARTILHAMENTO PROFISSIONAL DA BATERIA
+        // Usa os dados reais do banco/consolidação do Krathus Racing.
+        // ============================================================
+        function gerarTextoCompartilhamento(piloto, posicao, dadosBateria) {
+            let nome = piloto.nome || piloto.piloto || "Piloto";
+            let voltas = Number(piloto.voltas || 0);
+            let melhor = Number(piloto.melhorVolta);
+            let velocidade = Number(piloto.velocidadeMax);
+            let media = Number(piloto.tempoMedio);
+            let consistencia = Number(piloto.consistencia);
 
-            let vencedorNome = ordenados.length > 0 ? ordenados[0].piloto : "Nenhum";
-            let classifLinhas = ordenados.slice(0, 3).map((p, idx) => `${idx + 1}º - ${p.piloto}`).join('\n');
+            let texto = `*${posicao}º Lugar: ${nome}* — Completou ${voltas} ${voltas === 1 ? 'volta' : 'voltas'}.\n`;
+
+            if (Number.isFinite(melhor) && melhor > 0) {
+                texto += `Melhor volta: ${melhor.toFixed(3)}s`;
+                if (Number.isFinite(velocidade) && velocidade > 0) {
+                    texto += ` (Velocidade de ${velocidade.toFixed(1)} km/h)`;
+                }
+                texto += `.\n`;
+            }
+
+            if (Number.isFinite(media) && media > 0) {
+                texto += `Tempo médio por volta: ${media.toFixed(3)}s`;
+                if (Number.isFinite(consistencia) && consistencia >= 0) {
+                    texto += ` com consistência de ±${consistencia.toFixed(3)}s`;
+                }
+                texto += `.\n`;
+            }
+
+            // Recordes: comparação com tolerância para evitar problemas de precisão decimal.
+            if (Number.isFinite(melhor) && Number.isFinite(Number(dadosBateria.recordeHistorico)) &&
+                Math.abs(melhor - Number(dadosBateria.recordeHistorico)) < 0.001) {
+                texto += "🏆 *Esta foi a volta mais rápida histórica!*\n";
+            } else if (Number.isFinite(melhor) && Number.isFinite(Number(piloto.recordeParticular)) &&
+                       Math.abs(melhor - Number(piloto.recordeParticular)) < 0.001) {
+                texto += "⭐ *Esta foi a sua volta mais rápida particular!*\n";
+            }
+
+            if (Number.isFinite(Number(piloto.porcentagemMelhora))) {
+                const evolucao = Number(piloto.porcentagemMelhora);
+                if (evolucao > 0.0001) {
+                    texto += `📈 Evolução de ${evolucao.toFixed(1)}%.\n`;
+                } else if (evolucao < -0.0001) {
+                    texto += `📉 Desempenho ${Math.abs(evolucao).toFixed(1)}% abaixo da referência anterior.\n`;
+                }
+            }
+
+            return texto.trim();
+        }
+
+        window.compartilharCorrida = function(bateriaKey, nomeSessao) {
+            let todosDados = obterTodosDadosConsolidados();
+            let dadosBateria = todosDados.filter(d => d.bateriaKey === bateriaKey && d.laps && d.laps.length > 0);
+            let ordenados = ordenarParticipantesBateria(dadosBateria);
             let linkPainel = window.location.href.split('#')[0];
 
-            let txt = `🏁 *KRATHUS RACING - TELEMETRIA* 🏁\n🗓️ Sessão: *${nomeSessao}*\n🏆 Vencedor: *${vencedorNome}*\n\n📊 *Classificação:*\n${classifLinhas}\n\nConfira todos os gráficos e detalhes no painel Krathus Racing! ${linkPainel}`;
+            if (ordenados.length === 0) {
+                alert("Não há dados válidos para compartilhar nesta bateria.");
+                return;
+            }
 
-            navigator.clipboard.writeText(txt).then(() => {
-                alert("📋 Resumo formatado copiado para a área de transferência! Cole no WhatsApp.");
-            });
+            // Recorde histórico geral e recorde particular do piloto.
+            let todasVoltas = todosDados.flatMap(d => (d.laps || []).map(l => typeof l === 'object' ? Number(l.tempo) : Number(l)))
+                .filter(t => Number.isFinite(t) && t > 0);
+            let recordeHistorico = todasVoltas.length ? Math.min(...todasVoltas) : null;
+
+            let textoPilotos = ordenados.map((p, idx) => {
+                let lapsAtuais = (p.laps || []).map(l => typeof l === 'object' ? Number(l.tempo) : Number(l))
+                    .filter(t => Number.isFinite(t) && t > 0);
+                if (!lapsAtuais.length) return '';
+
+                let melhorVolta = Math.min(...lapsAtuais);
+                let media = lapsAtuais.reduce((a, b) => a + b, 0) / lapsAtuais.length;
+                let variancia = lapsAtuais.reduce((soma, t) => soma + Math.pow(t - media, 2), 0) / lapsAtuais.length;
+                let desvio = Math.sqrt(variancia);
+                let velocidadeMax = (26 / melhorVolta) * 3.6 * 28;
+
+                // Histórico anterior do mesmo piloto, antes da bateria atual.
+                let historicoPiloto = todosDados.filter(d => d.piloto === p.piloto && d.bateriaKey !== bateriaKey)
+                    .flatMap(d => (d.laps || []).map(l => typeof l === 'object' ? Number(l.tempo) : Number(l)))
+                    .filter(t => Number.isFinite(t) && t > 0);
+
+                let recordeParticular = historicoPiloto.length ? Math.min(...historicoPiloto) : null;
+
+                // Evolução: compara a média atual com a média das voltas anteriores do piloto.
+                let mediasAnteriores = todosDados.filter(d => d.piloto === p.piloto && d.bateriaKey !== bateriaKey)
+                    .map(d => {
+                        let laps = (d.laps || []).map(l => typeof l === 'object' ? Number(l.tempo) : Number(l))
+                            .filter(t => Number.isFinite(t) && t > 0);
+                        return laps.length ? laps.reduce((a, b) => a + b, 0) / laps.length : null;
+                    }).filter(v => Number.isFinite(v) && v > 0);
+
+                let mediaAnterior = mediasAnteriores.length ? mediasAnteriores.reduce((a, b) => a + b, 0) / mediasAnteriores.length : null;
+                let porcentagemMelhora = mediaAnterior ? ((mediaAnterior - media) / mediaAnterior) * 100 : null;
+
+                let piloto = {
+                    nome: p.piloto,
+                    voltas: lapsAtuais.length,
+                    melhorVolta,
+                    velocidadeMax,
+                    tempoMedio: media,
+                    consistencia: desvio,
+                    recordeParticular,
+                    porcentagemMelhora
+                };
+
+                return gerarTextoCompartilhamento(piloto, idx + 1, { recordeHistorico });
+            }).filter(Boolean).join('\n\n');
+
+            let vencedorNome = ordenados[0].piloto || "Nenhum";
+            let txt = `🏁 *KRATHUS RACING - TELEMETRIA* 🏁\n` +
+                      `🗓️ Sessão: *${nomeSessao}*\n` +
+                      `🏆 Vencedor: *${vencedorNome}*\n\n` +
+                      `📊 *RESULTADO DA BATERIA*\n\n` +
+                      `${textoPilotos}\n\n` +
+                      `🔎 Confira todos os gráficos, análises e detalhes no painel Krathus Racing:\n${linkPainel}`;
+
+            const compartilhar = () => {
+                if (navigator.share) {
+                    navigator.share({ title: 'Krathus Racing - Telemetria', text: txt, url: linkPainel }).catch(() => {});
+                } else if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(txt).then(() => {
+                        alert("📋 Relatório completo copiado para a área de transferência! Cole no WhatsApp.");
+                    }).catch(() => fallbackCopiarTexto(txt));
+                } else {
+                    fallbackCopiarTexto(txt);
+                }
+            };
+
+            compartilhar();
         };
+
+        function fallbackCopiarTexto(texto) {
+            const area = document.createElement('textarea');
+            area.value = texto;
+            area.style.position = 'fixed';
+            area.style.opacity = '0';
+            document.body.appendChild(area);
+            area.focus();
+            area.select();
+            try {
+                document.execCommand('copy');
+                alert("📋 Relatório completo copiado! Cole no WhatsApp.");
+            } finally {
+                document.body.removeChild(area);
+            }
+        }
 
         // [PARTE 7] Renderização Dinâmica de Gráficos (Chart.js), Cálculos de KPIs Globais, Geração de Blocos de Sessão e Tabelas de Posição Volta a Volta
         function atualizarDashboard() {
