@@ -1,6 +1,6 @@
 <!-- 
 ========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.48.5 - UNIFICAÇÃO ROBUSTA DE DJ E EDGARD)
+ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.48.7 - RESTAURAÇÃO DOS MÓDULOS DE TELEMETRIA)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js, QRCode.js) e Estilização CSS (Design System)
 PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas)
@@ -65,9 +65,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
         .btn-campeonatos-trigger { background: linear-gradient(135deg, #ffb703 0%, #fb8500 100%); color: #000; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
         .btn-compras-trigger { background: linear-gradient(135deg, #2ec4b6 0%, #3a86ff 100%); color: #000; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
 
-        .piloto-link { color: var(--accent-blue); text-decoration: none; font-weight: 700; cursor: pointer; }
-        .piloto-link:hover { color: var(--accent-gold); text-decoration: underline; }
-
         .custom-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background-color: rgba(13, 17, 26, 0.88); z-index: 10000; justify-content: center; align-items: center; padding: 20px; overflow-y: auto;
@@ -110,6 +107,15 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
         .kpi-value { font-size: 1.5rem; font-weight: 700; color: var(--text-title); margin: 8px 0 4px 0; }
         .kpi-value.green { color: var(--accent-green); }
         .kpi-subtext { font-size: 0.8rem; color: var(--text-muted); }
+
+        .session-block-header { background: linear-gradient(135deg, var(--bg-card-header) 0%, var(--bg-card) 100%); border: 1px solid var(--border-card); border-left: 5px solid var(--accent-red); border-radius: 10px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; flex-wrap: wrap; gap: 10px; }
+        .session-block-title { font-size: 1.15rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .session-blocks-container { display: flex; flex-direction: column; gap: 30px; }
+        .session-block { display: flex; flex-direction: column; gap: 20px; background: rgba(21, 28, 40, 0.4); border: 1px solid var(--border-card); border-radius: 14px; padding: 20px; }
+        .card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px; }
+        .card-header { display: flex; align-items: center; gap: 10px; font-size: 1rem; font-weight: 700; color: var(--text-title); margin-bottom: 16px; }
+        .card-header::before { content: ''; width: 4px; height: 16px; background-color: var(--accent-red); border-radius: 2px; }
+        .chart-container { position: relative; height: 280px; width: 100%; }
 
         .table-container { width: 100%; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
@@ -343,7 +349,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.48.5 (Unificação Confiável DJ/Edgard + Compras)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.48.7 (Módulos Restaurados + Unificação DJ)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -382,37 +388,35 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
             console.warn("Erro Firebase:", e);
         }
 
-        // Regra robusta de unificação de variantes de DJ / Edgar / Edgard para "Edgard Camilo (DJ)"
-        const ALIAS_EDGARD_DJ_DEFAULTS = {
-            "edgard": "Edgard Camilo (DJ)",
-            "Edgard": "Edgard Camilo (DJ)",
-            "edgar": "Edgard Camilo (DJ)",
-            "Edgar": "Edgard Camilo (DJ)",
-            "dj_edgar": "Edgard Camilo (DJ)",
-            "Dj_Edgar": "Edgard Camilo (DJ)",
-            "dj edgar": "Edgard Camilo (DJ)",
-            "DJ Edgar": "Edgard Camilo (DJ)",
-            "edgard camilo": "Edgard Camilo (DJ)",
-            "Edgard Camilo": "Edgard Camilo (DJ)",
-            "DJ": "Edgard Camilo (DJ)",
-            "dj": "Edgard Camilo (DJ)"
-        };
-
         function normalizarNomePiloto(nomeOriginal) {
             if (!nomeOriginal) return "Piloto Desconhecido";
-            let nomeTrim = nomeOriginal.trim();
-            let chaveLower = nomeTrim.toLowerCase();
+            let limpo = nomeOriginal.trim().toLowerCase().replace(/\s+/g, ' ');
             
-            if (ALIAS_EDGARD_DJ_DEFAULTS[nomeTrim] || ALIAS_EDGARD_DJ_DEFAULTS[chaveLower]) {
-                return ALIAS_EDGARD_DJ_DEFAULTS[nomeTrim] || ALIAS_EDGARD_DJ_DEFAULTS[chaveLower];
+            if (
+                limpo === "dj" || 
+                limpo === "edgar" || 
+                limpo === "edgard" || 
+                limpo === "dj edgar" || 
+                limpo === "dj_edgar" || 
+                limpo === "edgar camilo" || 
+                limpo === "edgard camilo" || 
+                limpo === "edgar camilo dj" || 
+                limpo === "edgard camilo dj" || 
+                limpo === "edgard camilo (dj)" ||
+                limpo.includes("dj edgar") ||
+                limpo.includes("dj_edgar") ||
+                (limpo.includes("edgar") && limpo.includes("dj")) ||
+                (limpo.includes("edgard") && limpo.includes("dj"))
+            ) {
+                return "Edgard Camilo (DJ)";
             }
             
-            let safeKey = nomeTrim.replace(/[.#$\/\[\]]/g, "_");
+            let safeKey = nomeOriginal.trim().replace(/[.#$\/\[\]]/g, "_");
             if (mesclagensCache[safeKey]) {
                 return mesclagensCache[safeKey];
             }
             
-            return nomeTrim;
+            return nomeOriginal.trim();
         }
 
         function formatarNomeSessao(sessaoStr) {
@@ -953,11 +957,9 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
                     let pilotoNome = partes.slice(1).join(' ').replace(/\s+\d+$/, '').trim();
                     if (pilotoNome) {
                         let pilotoNormalizado = normalizarNomePiloto(pilotoNome);
+                        ordemPilotos.push(pilotoNormalizado);
                         if (!pilotosMap[pilotoNormalizado]) {
                             pilotosMap[pilotoNormalizado] = { piloto: pilotoNormalizado, bateriaKey: batKey, sessao: sessaoNome, laps: [] };
-                            ordemPilotos.push(pilotoNormalizado);
-                        } else {
-                            ordemPilotos.push(pilotoNormalizado);
                         }
                     }
                 }
@@ -1062,6 +1064,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
             let dadosBase = obterTodosDadosConsolidados();
             const bateriasSel = Array.from(document.querySelectorAll('.filter-bateria:checked')).map(cb => cb.value);
             const pilotosSel = Array.from(document.querySelectorAll('.filter-piloto:checked')).map(cb => cb.value);
+            const modulosVisiveis = Array.from(document.querySelectorAll('.filter-modulo:checked')).map(cb => cb.value);
 
             const dadosFiltrados = dadosBase.filter(item => bateriasSel.includes(item.bateriaKey) && (pilotosSel.length === 0 || pilotosSel.includes(item.piloto)));
 
@@ -1129,6 +1132,68 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
                     document.getElementById('kpi-media-global').innerText = `${mediaGlobalSegundos.toFixed(3)}s`;
                     document.getElementById('kpi-media-global-vel').innerText = `${mediaGlobalVelKmh.toFixed(1)} km/h`;
                 }
+            }
+
+            // Renderização dos Módulos Visíveis no Container de Sessões
+            const sessionsContainer = document.getElementById('sessions-container');
+            if (sessionsContainer) {
+                sessionsContainer.innerHTML = "";
+                let bateriasFiltradasLista = listaJsonsCache.filter(arq => bateriasSel.includes(arq.firebaseKey));
+
+                if (bateriasFiltradasLista.length === 0) {
+                    sessionsContainer.innerHTML = `<div class="card" style="text-align: center; color: var(--text-muted); padding: 30px;">Nenhuma sessão selecionada ou sem dados disponíveis.</div>`;
+                    return;
+                }
+
+                bateriasFiltradasLista.forEach((arq, index) => {
+                    let dadosBateria = (arq.dados || []).map(d => ({ ...d, piloto: normalizarNomePiloto(d.piloto) }))
+                        .filter(d => pilotosSel.length === 0 || pilotosSel.includes(d.piloto));
+
+                    if (dadosBateria.length === 0) return;
+
+                    let participantesOrdenados = ordenarParticipantesBateria(dadosBateria);
+                    let sessaoNomeFormatada = formatarNomeSessao(arq.sessao || arq.nomeArquivoOriginal || `Bateria ${index + 1}`);
+
+                    let divSessao = document.createElement('div');
+                    divSessao.className = "session-block";
+
+                    let htmlModulos = `
+                        <div class="session-block-header">
+                            <div class="session-block-title">🏁 ${escapeHtml(sessaoNomeFormatada)}</div>
+                        </div>
+                    `;
+
+                    // Módulo de Evolução de Ritmo / Tabela Geral
+                    if (modulosVisiveis.includes('mod-tabela-geral') || modulosVisiveis.includes('mod-classificacao-analise')) {
+                        let linhasTabela = participantesOrdenados.map((p, idx) => {
+                            let melhorVolta = p.melhorVoltaTxt || (p.laps && p.laps.length > 0 ? Math.min(...p.laps.map(l => typeof l === 'object' ? l.tempo : l)).toFixed(3) + 's' : '--');
+                            let voltasTotais = p.laps ? p.laps.length : 0;
+                            return `
+                                <tr>
+                                    <td><span class="pos-badge">${idx + 1}º</span></td>
+                                    <td><strong>${escapeHtml(p.piloto)}</strong></td>
+                                    <td>${voltasTotais}</td>
+                                    <td class="text-green">${melhorVolta}</td>
+                                </tr>
+                            `;
+                        }).join('');
+
+                        htmlModulos += `
+                            <div class="card">
+                                <div class="card-header">Classificação da Sessão</div>
+                                <div class="table-container">
+                                    <table>
+                                        <thead><tr><th>Pos</th><th>Piloto</th><th>Voltas</th><th>Melhor Volta</th></tr></thead>
+                                        <tbody>${linhasTabela}</tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    divSessao.innerHTML = htmlModulos;
+                    sessionsContainer.appendChild(divSessao);
+                });
             }
         }
 
