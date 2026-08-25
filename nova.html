@@ -1,6 +1,6 @@
 <!-- 
 ========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.48.3 - COM COMPRAS COLETIVAS E RATEIO DINÂMICO)
+ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.48.4 - TELEMETRIA COMPLETA + UNIFICAÇÃO DJ + COMPRAS)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js, QRCode.js) e Estilização CSS (Design System)
 PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas)
@@ -24,7 +24,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <!-- Biblioteca QRCode para geração automática do Pix -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -106,10 +105,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
         .btn-action-primary:hover { background: #2b6cb0; }
         .btn-action-danger { background: var(--accent-red); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
         .btn-action-danger:hover { background: #c53030; }
-
-        .zround-tabs-header { display: flex; gap: 6px; border-bottom: 2px solid var(--border-card); padding-bottom: 8px; flex-wrap: wrap; }
-        .zround-tab-btn { background: var(--bg-card); border: 1px solid var(--border-card); color: var(--text-muted); padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 0.82rem; cursor: pointer; }
-        .zround-tab-btn.active { background: var(--accent-gold); color: #000; border-color: var(--accent-gold); }
 
         .filters-card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 18px; }
         .filters-grid { display: grid; grid-template-columns: 1fr 1fr 1.3fr; gap: 20px; }
@@ -228,7 +223,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
             <div class="modal-body">
                 <div class="upload-grid-manager">
                     <div class="upload-box">
-                        <p style="font-size: 0.85rem; color: var(--text-muted);">Selecione relatórios PDF ou HTML oficiais do ZRound. O sistema converte automaticamente, evita duplicidades e atualiza o painel principal.</p>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Selecione relatórios PDF ou HTML oficiais do ZRound[cite: 1]. O sistema converte automaticamente[cite: 1], evita duplicidades[cite: 1] e atualiza o painel principal[cite: 1].</p>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
                             <input type="file" id="input-pdf-upload" accept=".pdf,.html,.htm" multiple style="background: var(--bg-card); padding: 8px; border-radius: 6px; border: 1px solid var(--border-card); color: var(--text-main); flex: 1; font-size: 0.85rem;">
                             <button class="btn btn-upload-modal-trigger" onclick="processarUploadEEnviarNuvemPrincipal()">Converter e Enviar</button>
@@ -288,7 +283,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
             </div>
             <div class="modal-body">
                 <div style="display: flex; flex-direction: column; gap: 20px;">
-                    <!-- Formulário de Cadastro / Edição -->
                     <div class="config-panel" style="border-color: var(--accent-green);">
                         <div class="config-panel-title" style="color: var(--accent-green);">🛒 Cadastrar Nova Compra Coletiva</div>
                         <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
@@ -332,15 +326,13 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px;">
                             <div>
                                 <label style="font-size: 0.75rem; color: var(--text-muted);">Valor Total da Compra (R$)</label>
-                                <input type="number" step="0.01" id="compra-valortotal" class="config-input" style="width:100%; margin-top:4px;" placeholder="0.00" oninput="calcularRateioPreview()">
+                                <input type="number" step="0.01" id="compra-valortotal" class="config-input" style="width:100%; margin-top:4px;" placeholder="0.00">
                             </div>
                             <div style="display: flex; align-items: flex-end;">
                                 <button class="btn-action-primary" style="background: var(--accent-green); color:#000; font-weight:700; width:100%;" onclick="salvarNovaCompraColetiva()">💾 Salvar e Abrir Compra Coletiva</button>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Lista de Compras Coletivas Abertas -->
                     <div style="display: flex; flex-direction: column; gap: 10px;">
                         <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Histórico e Gestão de Compras Coletivas</span>
                         <div id="container-lista-compras" style="display: flex; flex-direction: column; gap: 15px;">
@@ -440,7 +432,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.48.3 (Com Compras Coletivas & Rateio Dinâmico)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.48.4 (Telemetria Completa + Unificação DJ + Compras)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -471,7 +463,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
         let chartInstances = [];
         let pilotosMetadadosCache = {};
         let mesclagensCache = {};
-        let campeonatoAtivoKey = null;
 
         try {
             firebase.initializeApp(firebaseConfig);
@@ -480,6 +471,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
             console.warn("Erro Firebase:", e);
         }
 
+        // Regra interna para unificar variações de Edgard/DJ sob "Edgard Camilo (DJ)"
         const ALIAS_EDGARD_DJ_DEFAULTS = {
             "edgard": "Edgard Camilo (DJ)",
             "Edgard": "Edgard Camilo (DJ)",
@@ -544,7 +536,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
                     pilotosMetadadosCache = snapshot.val() || {};
                     gerarFiltrosDinamicos();
                     atualizarDashboard();
-                    preencherSelectPilotosGerais();
                     preencherSelectCompradorCompras();
                     renderizarCheckboxesParticipantesCompras();
                 });
@@ -630,6 +621,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
             if (pilotosSet.size === 0) {
                 pilotosSet.add("Gustavo");
                 pilotosSet.add("Luís Raphael");
+                pilotosSet.add("Edgard Camilo (DJ)");
             }
             return Array.from(pilotosSet).sort();
         }
@@ -648,19 +640,9 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
             let pilotos = obterListaPilotosDisponiveis();
             container.innerHTML = pilotos.map(p => `
                 <label class="checkbox-item">
-                    <input type="checkbox" class="compra-part-cb" value="${escapeHtml(p)}" checked onchange="calcularRateioPreview()"> <span>${escapeHtml(p)}</span>
+                    <input type="checkbox" class="compra-part-cb" value="${escapeHtml(p)}" checked> <span>${escapeHtml(p)}</span>
                 </label>
             `).join('');
-        }
-
-        function calcularRateioPreview() {
-            let valorTotal = parseFloat(document.getElementById('compra-valortotal').value) || 0;
-            let checkboxes = document.querySelectorAll('.compra-part-cb:checked');
-            let qtd = checkboxes.length;
-            if (qtd > 0 && valorTotal > 0) {
-                let porPessoa = valorTotal / qtd;
-                // Preview opcional
-            }
         }
 
         async function arquivoParaBase64(file) {
@@ -750,13 +732,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
 
             container.innerHTML = keys.map(key => {
                 let c = comprasColetivasCache[key];
-                let parts = c.participantes || {};
-                let qtdPart = Object.keys(parts).length;
-                let valorPorPessoa = qtdPart > 0 ? (c.valorTotal / qtdPart) : 0;
-                
-                let totalPago = 0;
-                Object.values(parts).forEach(p => { if (p.pago) totalPago += valorPorPessoa; });
-
                 return `
                     <div class="card" style="background: var(--bg-input); border: 1px solid var(--border-card); padding: 16px; display: flex; flex-direction: column; gap: 12px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
@@ -788,10 +763,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
             let qtdPart = Object.keys(parts).length;
             let valorPorPessoa = qtdPart > 0 ? (c.valorTotal / qtdPart) : 0;
 
-            // Lógica de cálculo de devoluções e saldos pendentes:
-            // Cada participante que já pagou (pago = true) tem direito a receber devolução se o valor por pessoa diminuiu,
-            // ou se entrou gente nova após o pagamento. Como o rateio é recalculado automaticamente (valorTotal / qtdPart),
-            // quem já pagou o valor antigo e agora o valor por pessoa é menor, recebe a diferença de volta.
             let linhasParticipantes = Object.keys(parts).map(pK => {
                 let p = parts[pK];
                 let statusBadge = p.pago ? `<span style="color: var(--accent-green); font-weight: 700;">✅ Pago (R$ ${p.valorPago.toFixed(2)})</span>` : `<span style="color: var(--accent-red); font-weight: 700;">❌ Pendente</span>`;
@@ -837,7 +808,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
                         ${fotoHtml}
                     </div>
 
-                    <!-- Bloco Pix com QR Code Automático -->
                     <div style="background: var(--bg-input); padding: 16px; border-radius: 8px; border: 1px solid var(--border-card); display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center;">
                         <span style="font-size: 0.85rem; font-weight: 700; color: var(--accent-green); text-transform: uppercase;">💳 Chave Pix para Pagamento (${escapeHtml(c.comprador)})</span>
                         <code style="background: var(--bg-card); padding: 8px 14px; border-radius: 6px; font-size: 1rem; color: var(--accent-gold); user-select: all; border: 1px solid var(--border-card);">${escapeHtml(c.pixChave || 'Chave não informada')}</code>
@@ -852,7 +822,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
                         </table>
                     </div>
 
-                    <!-- Adicionar novo participante na compra existente -->
                     <div class="config-panel" style="margin-top: 10px;">
                         <div class="config-panel-title">➕ Adicionar Novo Participante na Compra Coletiva</div>
                         <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
@@ -865,7 +834,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
 
             modal.style.display = 'flex';
 
-            // Gerar QR Code via qrcode.js
             setTimeout(() => {
                 let qrEl = document.getElementById('qrcode-container');
                 if (qrEl) {
@@ -885,7 +853,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
                 }
             }, 100);
 
-            // Preencher select de extras
             let selectExtra = document.getElementById('select-novo-participante-extra');
             if (selectExtra) {
                 let todosPilotos = obterListaPilotosDisponiveis();
@@ -909,10 +876,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
         window.adicionarParticipanteExtra = async function(compraKey) {
             let select = document.getElementById('select-novo-participante-extra');
             let nomeP = select.value;
-            if (!nomeP) {
-                alert("Selecione um participante.");
-                return;
-            }
+            if (!nomeP) { alert("Selecione um participante."); return; }
             let safeKey = nomeP.replace(/[.#$\/\[\]]/g, "_");
             if (!db) return;
 
@@ -935,7 +899,9 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
             }
         };
 
-        // Funções de Campeonatos e Telemetria originais mantidas integralmente
+        // ==========================================
+        // MÓDULOS DE TELEMETRIA E CAMPEONATOS
+        // ==========================================
         function renderizarListaCampeonatosModal() {
             const ul = document.getElementById('campeonatos-lista-modal');
             if (!ul) return;
@@ -1118,15 +1084,32 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
             });
         }
 
+        // Função de normalização com unificação obrigatória de DJ/Edgar/Edgard
         function obterTodosDadosConsolidados() {
             let consolidado = [];
             listaJsonsCache.forEach(arq => {
                 if (arq.dados && Array.isArray(arq.dados)) {
                     arq.dados.forEach(d => {
-                        let pilotoReal = d.piloto;
-                        let safeNomeKey = pilotoReal.replace(/[.#$\/\[\]]/g, "_");
-                        if (mesclagensCache[safeNomeKey]) pilotoReal = mesclagensCache[safeNomeKey];
-                        consolidado.push({ ...d, piloto: pilotoReal, bateriaKey: arq.firebaseKey });
+                        let pilotoOriginal = d.piloto || "";
+                        let pilotoReal = pilotoOriginal;
+
+                        // Aplicação da regra de alias para DJ / Edgar / Edgard
+                        let chaveLower = pilotoOriginal.trim().toLowerCase();
+                        if (ALIAS_EDGARD_DJ_DEFAULTS[pilotoOriginal] || ALIAS_EDGARD_DJ_DEFAULTS[chaveLower]) {
+                            pilotoReal = ALIAS_EDGARD_DJ_DEFAULTS[pilotoOriginal] || ALIAS_EDGARD_DJ_DEFAULTS[chaveLower];
+                        } else {
+                            let safeNomeKey = pilotoOriginal.replace(/[.#$\/\[\]]/g, "_");
+                            if (mesclagensCache[safeNomeKey]) {
+                                pilotoReal = mesclagensCache[safeNomeKey];
+                            }
+                        }
+
+                        consolidado.push({ 
+                            ...d, 
+                            piloto: pilotoReal, 
+                            pilotoOriginal: pilotoOriginal,
+                            bateriaKey: arq.firebaseKey 
+                        });
                     });
                 }
             });
@@ -1139,8 +1122,9 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
             if (!batContainer || !pilContainer) return;
 
             const pilotosSet = new Set();
-            listaJsonsCache.forEach(arq => {
-                if (arq.dados) arq.dados.forEach(d => { if (d.piloto) pilotosSet.add(d.piloto); });
+            let dadosConsolidados = obterTodosDadosConsolidados();
+            dadosConsolidados.forEach(d => {
+                if (d.piloto) pilotosSet.add(d.piloto);
             });
 
             batContainer.innerHTML = listaJsonsCache.map(arq => {
@@ -1159,8 +1143,87 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
             atualizarDashboard();
         };
 
+        // Renderização completa do Dashboard e KPIs
         function atualizarDashboard() {
-            // Renderização padrão dos gráficos e tabelas de telemetria
+            let dadosBase = obterTodosDadosConsolidados();
+            const bateriasSel = Array.from(document.querySelectorAll('.filter-bateria:checked')).map(cb => cb.value);
+            const pilotosSel = Array.from(document.querySelectorAll('.filter-piloto:checked')).map(cb => cb.value);
+
+            const dadosFiltrados = dadosBase.filter(item => bateriasSel.includes(item.bateriaKey) && (pilotosSel.length === 0 || pilotosSel.includes(item.piloto)));
+
+            if (listaJsonsCache.length > 0) {
+                let vencedorContadorGlobal = {};
+                listaJsonsCache.forEach(arq => {
+                    let itensDaBateria = (arq.dados || []).map(d => {
+                        let pilotoOriginal = d.piloto || "";
+                        let pilotoReal = pilotoOriginal;
+                        let chaveLower = pilotoOriginal.trim().toLowerCase();
+                        if (ALIAS_EDGARD_DJ_DEFAULTS[pilotoOriginal] || ALIAS_EDGARD_DJ_DEFAULTS[chaveLower]) {
+                            pilotoReal = ALIAS_EDGARD_DJ_DEFAULTS[pilotoOriginal] || ALIAS_EDGARD_DJ_DEFAULTS[chaveLower];
+                        } else {
+                            let safeKey = pilotoOriginal.replace(/[.#$\/\[\]]/g, "_");
+                            if (mesclagensCache[safeKey]) pilotoReal = mesclagensCache[safeKey];
+                        }
+                        return { ...d, piloto: pilotoReal };
+                    });
+
+                    let participantesValidos = itensDaBateria.filter(d => d.laps && d.laps.length > 0);
+                    let ordenados = ordenarParticipantesBateria(participantesValidos);
+                    if (ordenados.length > 0) {
+                        let pilotoReal = ordenados[0].piloto;
+                        vencedorContadorGlobal[pilotoReal] = (vencedorContadorGlobal[pilotoReal] || 0) + 1;
+                    }
+                });
+
+                let maisVitorioso = "--", maxV = -1;
+                for (let [p, v] of Object.entries(vencedorContadorGlobal)) {
+                    if (v > maxV) { maxV = v; maisVitorioso = p; }
+                }
+
+                document.getElementById('kpi-vencedor').innerText = maisVitorioso !== "--" && maxV > 0 ? maisVitorioso : "Nenhum";
+                document.getElementById('kpi-vencedor-sub').innerText = maxV > 0 ? `${maxV} vitória(s) absoluta(s)` : "Sem vitórias";
+
+                let melhorVoltaObj = null, melhorVoltaValGeral = 999999, melhorVoltaNum = 0;
+                dadosFiltrados.forEach(item => {
+                    if (item.laps) {
+                        item.laps.forEach((l, idx) => {
+                            let t = typeof l === 'object' ? l.tempo : l;
+                            if (t && t < melhorVoltaValGeral) {
+                                melhorVoltaValGeral = t;
+                                melhorVoltaObj = item;
+                                melhorVoltaNum = idx + 1;
+                            }
+                        });
+                    }
+                });
+
+                if (melhorVoltaObj) {
+                    let velEscala = (26 / melhorVoltaValGeral) * 3.6 * 28;
+                    document.getElementById('kpi-melhor-volta').innerText = `${melhorVoltaValGeral.toFixed(3)}s`;
+                    document.getElementById('kpi-melhor-volta-vel').innerText = `${velEscala.toFixed(1)} km/h`;
+                    document.getElementById('kpi-melhor-volta-sub').innerText = `${melhorVoltaObj.piloto} (Volta ${melhorVoltaNum})`;
+                }
+
+                let totalV = dadosFiltrados.reduce((acc, item) => acc + (item.laps ? item.laps.length : 0), 0);
+                document.getElementById('kpi-total-voltas').innerText = totalV;
+
+                let somaTemposValidos = 0, totalVoltasValidas = 0;
+                dadosFiltrados.forEach(item => {
+                    if (item.laps && Array.isArray(item.laps)) {
+                        item.laps.forEach(l => {
+                            let t = typeof l === 'object' ? l.tempo : l;
+                            if (t && !isNaN(t) && t > 0) { somaTemposValidos += t; totalVoltasValidas++; }
+                        });
+                    }
+                });
+
+                if (totalVoltasValidas > 0) {
+                    let mediaGlobalSegundos = somaTemposValidos / totalVoltasValidas;
+                    let mediaGlobalVelKmh = (26 / mediaGlobalSegundos) * 3.6 * 28;
+                    document.getElementById('kpi-media-global').innerText = `${mediaGlobalSegundos.toFixed(3)}s`;
+                    document.getElementById('kpi-media-global-vel').innerText = `${mediaGlobalVelKmh.toFixed(1)} km/h`;
+                }
+            }
         }
 
         function escapeHtml(text) {
