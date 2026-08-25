@@ -21,7 +21,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Krathus Racing - Central de Telemetria</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=Euw-DHLgOJmK9GodP9_WPfF_pHw_-MNmQBxfRWA1Jbwm4Alel8HHekxvTtepbOL3ZdzPNw-bQjkigV7WPGt2etLcYqUBu9_kDchNIh_EgcMZxmogpyM_qO8EjSkCIFPB83vIy8BXVeb68fb3vSQozwBdYoW-CcIat8cpM3Or5ayfmeg91lgJgeMNxVc8IEOprUjA9iBDCRYzSTKRmam68CI07ulLmIURb9M59KdMj5We-yXf90PpwWsdXb5C0ZDPOnHq0k6PuA08fn_GPplPmOxTf-cFu4Mt16S-Nmc1oeglHHdsoU-YFG5iDSn0WBF6iAOYZxoSdbHF5_464nOQEA" charset="UTF-8"></script><link rel="stylesheet" crossorigin="anonymous" href="https://gc.kis.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css?attr=aHR0cHM6Ly9jaGF0Z3B0LmNvbS9iYWNrZW5kLWFwaS9lc3R1YXJ5L2NvbnRlbnQ_aWQ9ZmlsZV8wMDAwMDAwMGQxNzg4MjBlYWMyOWYxYmMzMzQzOGNiMCZmbj1pbmRleF9rcmF0aHVzX2xhdWRvX3RlY25pY28uaHRtbCZjZD1hdHRhY2htZW50JnRzPTQ5NjU3MiZwPWZzJmNpZD0xJnNpZz04YzYxZTVlZmE0ZGVmMWZjMjU2OWJlMTEzZjRjMDJmNzZkMzc2ZTIzOGM5NjNlOTc1YTExNGE0OTEzMjhlMDE4JnY9MA"/><script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -469,7 +469,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                             <label class="checkbox-item"><input type="checkbox" value="mod-grafico" class="filter-modulo" checked onchange="atualizarDashboard()"> 📈 Evolução de Ritmo</label>
                             <label class="checkbox-item"><input type="checkbox" value="mod-grafico-posicao" class="filter-modulo" checked onchange="atualizarDashboard()"> 📊 Posição Volta a Volta</label>
                             <label class="checkbox-item"><input type="checkbox" value="mod-log-posicao" class="filter-modulo" checked onchange="atualizarDashboard()"> 📝 Relatório de Ultrapassagens</label>
-                            <label class="checkbox-item"><input type="checkbox" value="mod-classificacao-analise" class="filter-modulo" checked onchange="atualizarDashboard()"> 🏆 Velocidade, Consistência Histórica & Laudo Técnico</label>
+                            <label class="checkbox-item"><input type="checkbox" value="mod-classificacao-analise" class="filter-modulo" checked onchange="atualizarDashboard()"> 📋 Laudo Técnico</label>
                             <label class="checkbox-item"><input type="checkbox" value="mod-tabela-geral" class="filter-modulo" checked onchange="atualizarDashboard()"> ⏱️ Tabela Geral com Gaps</label>
                             <label class="checkbox-item"><input type="checkbox" value="mod-comentarios" class="filter-modulo" checked onchange="atualizarDashboard()"> 💬 Comentários e Reações</label>
                         </div>
@@ -593,21 +593,50 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             return timestampData + sequencial;
         }
 
+        // Ordenação OFICIAL da chegada da bateria.
+        // Não usamos d.pos porque o parser de alguns relatórios ZRound pode
+        // capturar a coluna de posição de forma incorreta. A classificação
+        // real da chegada é determinada pelas voltas completadas e, em caso
+        // de empate no número de voltas, pelo menor tempo total.
         function ordenarParticipantesBateria(participantesValidos) {
             if (!participantesValidos || participantesValidos.length === 0) return [];
-            
+
+            const valorTempo = (l) => {
+                if (l && typeof l === 'object') return Number(l.tempo);
+                return Number(l);
+            };
+
+            const totalValido = (p) => (p.laps || [])
+                .map(valorTempo)
+                .filter(t => Number.isFinite(t) && t > 0)
+                .reduce((acc, t) => acc + t, 0);
+
             return [...participantesValidos].sort((a, b) => {
-                let voltasA = a.laps ? a.laps.length : 0;
-                let voltasB = b.laps ? b.laps.length : 0;
-                
-                if (voltasA !== voltasB) {
-                    return voltasB - voltasA;
-                }
-                
-                let tempoA = (a.laps || []).reduce((acc, l) => acc + (typeof l === 'object' ? l.tempo : l), 0);
-                let tempoB = (b.laps || []).reduce((acc, l) => acc + (typeof l === 'object' ? l.tempo : l), 0);
-                return tempoA - tempoB;
+                const voltasA = (a.laps || []).map(valorTempo).filter(t => Number.isFinite(t) && t > 0).length;
+                const voltasB = (b.laps || []).map(valorTempo).filter(t => Number.isFinite(t) && t > 0).length;
+
+                // 1º critério: quem completou mais voltas chegou na frente.
+                if (voltasA !== voltasB) return voltasB - voltasA;
+
+                // 2º critério: com o mesmo número de voltas, menor tempo total.
+                const tempoA = totalValido(a);
+                const tempoB = totalValido(b);
+                if (tempoA !== tempoB) return tempoA - tempoB;
+
+                // 3º critério apenas para desempate absoluto: melhor volta.
+                const melhorA = Math.min(...((a.laps || []).map(valorTempo).filter(t => Number.isFinite(t) && t > 0)), Infinity);
+                const melhorB = Math.min(...((b.laps || []).map(valorTempo).filter(t => Number.isFinite(t) && t > 0)), Infinity);
+                return melhorA - melhorB;
             });
+        }
+
+        function mapaPosicoesChegada(participantesValidos) {
+            const ordenados = ordenarParticipantesBateria(participantesValidos);
+            const mapa = {};
+            ordenados.forEach((p, idx) => {
+                mapa[p.piloto] = idx + 1;
+            });
+            return { ordenados, mapa };
         }
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -2066,6 +2095,10 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                 return gerarTextoCompartilhamento(piloto, idx + 1, { recordeHistorico });
             }).filter(Boolean).join('\n\n');
 
+            let sessaoObj = listaJsonsCache.find(item => item.firebaseKey === bateriaKey);
+            let pdfBase64 = sessaoObj ? sessaoObj.pdfBase64 : null;
+            let nomeArquivoOriginal = sessaoObj && sessaoObj.nomeArquivoOriginal ? sessaoObj.nomeArquivoOriginal : `${nomeSessao}.pdf`;
+
             let vencedorNome = ordenados[0].piloto || "Nenhum";
             let txt = `🏁 *KRATHUS RACING - TELEMETRIA* 🏁\n` +
                       `🗓️ Sessão: *${nomeSessao}*\n` +
@@ -2074,12 +2107,66 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                       `${textoPilotos}\n\n` +
                       `🔎 Confira todos os gráficos, análises e detalhes no painel Krathus Racing:\n${linkPainel}`;
 
-            const compartilhar = () => {
+            // Converte o PDF original salvo em Base64 para um arquivo real.
+            // Em celulares/navegadores que suportam Web Share com arquivos,
+            // o PDF será anexado de verdade ao compartilhamento.
+            const dataUrlParaFile = (dataUrl, nomeArquivo) => {
+                try {
+                    if (!dataUrl || typeof dataUrl !== 'string') return null;
+                    const partes = dataUrl.split(',');
+                    if (partes.length < 2) return null;
+                    const mimeMatch = partes[0].match(/data:([^;]+);base64/i);
+                    const mime = mimeMatch ? mimeMatch[1] : 'application/pdf';
+                    const bytes = atob(partes[1]);
+                    const buffer = new Uint8Array(bytes.length);
+                    for (let i = 0; i < bytes.length; i++) buffer[i] = bytes.charCodeAt(i);
+                    return new File([buffer], nomeArquivo || 'relatorio.pdf', { type: mime });
+                } catch (e) {
+                    console.warn('Não foi possível preparar o PDF para compartilhamento:', e);
+                    return null;
+                }
+            };
+
+            const compartilhar = async () => {
+                const pdfFile = dataUrlParaFile(pdfBase64, nomeArquivoOriginal);
+
+                // Primeiro tenta o compartilhamento nativo com o PDF anexado.
                 if (navigator.share) {
-                    navigator.share({ title: 'Krathus Racing - Telemetria', text: txt, url: linkPainel }).catch(() => {});
-                } else if (navigator.clipboard && navigator.clipboard.writeText) {
+                    try {
+                        if (pdfFile && navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+                            await navigator.share({
+                                title: 'Krathus Racing - Telemetria',
+                                text: txt,
+                                files: [pdfFile]
+                            });
+                            return;
+                        }
+
+                        await navigator.share({ title: 'Krathus Racing - Telemetria', text: txt, url: linkPainel });
+                        return;
+                    } catch (erroCompartilhamento) {
+                        // Cancelamento pelo usuário não precisa gerar erro visual.
+                        if (erroCompartilhamento && erroCompartilhamento.name === 'AbortError') return;
+                    }
+                }
+
+                // Fallback para desktop/navegadores sem Web Share com arquivos:
+                // baixa o PDF original e copia o relatório. Assim o usuário pode
+                // anexar imediatamente o PDF baixado no WhatsApp.
+                if (pdfBase64) {
+                    const linkPdf = document.createElement('a');
+                    linkPdf.href = pdfBase64;
+                    linkPdf.download = nomeArquivoOriginal || 'relatorio.pdf';
+                    document.body.appendChild(linkPdf);
+                    linkPdf.click();
+                    document.body.removeChild(linkPdf);
+                }
+
+                if (navigator.clipboard && navigator.clipboard.writeText) {
                     navigator.clipboard.writeText(txt).then(() => {
-                        alert("📋 Relatório completo copiado para a área de transferência! Cole no WhatsApp.");
+                        alert(pdfBase64
+                            ? "📋 Relatório copiado e o PDF original foi baixado. Anexe o PDF no WhatsApp junto com o texto."
+                            : "📋 Relatório completo copiado para a área de transferência! Cole no WhatsApp.");
                     }).catch(() => fallbackCopiarTexto(txt));
                 } else {
                     fallbackCopiarTexto(txt);
@@ -2213,20 +2300,12 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             }
 
             bateriasSel.forEach(bateriaKey => {
-                const dadosSessao = dadosBase.filter(d => d.bateriaKey === bateriaKey && d.laps && d.laps.length > 0 && (pilotosSel.length === 0 || pilotosSel.includes(d.piloto)));
+                let dadosSessao = dadosBase.filter(d => d.bateriaKey === bateriaKey && d.laps && d.laps.length > 0 && (pilotosSel.length === 0 || pilotosSel.includes(d.piloto)));
                 if (dadosSessao.length === 0) return;
 
-                dadosSessao.sort((a, b) => {
-                    let posA = parseInt(String(a.pos).replace('º', '').trim(), 10) || 99;
-                    let posB = parseInt(String(b.pos).replace('º', '').trim(), 10) || 99;
-                    if (posA !== posB) return posA - posB;
-                    let voltasA = a.laps ? a.laps.length : 0;
-                    let voltasB = b.laps ? b.laps.length : 0;
-                    if (voltasA !== voltasB) return voltasB - voltasA;
-                    let somaA = (a.laps || []).reduce((acc, l) => acc + (typeof l === 'object' ? l.tempo : l), 0);
-                    let somaB = (b.laps || []).reduce((acc, l) => acc + (typeof l === 'object' ? l.tempo : l), 0);
-                    return somaA - somaB;
-                });
+                // A ordem visual da bateria deve ser a ordem real de chegada,
+                // e não a posição capturada pelo parser do PDF.
+                dadosSessao = ordenarParticipantesBateria(dadosSessao);
 
                 let sessaoObj = listaJsonsCache.find(item => item.firebaseKey === bateriaKey);
                 let sessaoOriginal = sessaoObj ? (sessaoObj.sessao || bateriaKey) : bateriaKey;
@@ -2295,7 +2374,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                     html += `<div class="card"><div class="card-header">📝 Relatório Detalhado de Ultrapassagens</div><div class="position-analysis-container" style="margin-top:0;"><div class="position-analysis-title">Histórico Volta a Volta</div><div class="position-log-list" id="pos-logs-${bateriaKey}"></div></div></div>`;
                 }
                 if (modulosSel.includes('mod-classificacao-analise')) {
-                    html += `<div class="card"><div class="card-header">🏆 Velocidade, Consistência Histórica & Laudo Técnico do Chefe de Equipe</div><div class="table-container"><table><thead><tr><th>POS</th><th>PILOTO</th><th>SESSÃO</th><th>VOLTAS</th><th>MELHOR</th><th>VEL. ESCALA (1/28)</th><th>MÉDIA</th><th>DESVIO</th></tr></thead><tbody id="tabela-unificada-${bateriaKey}"></tbody></table></div></div>`;
+                    html += `<div class="card"><div class="card-header">📋 Laudo Técnico do Chefe de Equipe</div><div class="table-container"><table><thead><tr><th>POS</th><th>PILOTO</th><th>SESSÃO</th><th>VOLTAS</th><th>MELHOR</th><th>VEL. ESCALA (1/28)</th><th>MÉDIA</th><th>DESVIO</th></tr></thead><tbody id="tabela-unificada-${bateriaKey}"></tbody></table></div></div>`;
                 }
                 if (modulosSel.includes('mod-tabela-geral')) {
                     html += `<div class="card"><div class="card-header">⏱️ Tabela Geral Volta a Volta (com Gaps e Voltas Atrás)</div><div class="table-container"><table><thead><tr id="head-lapbyLap-${bateriaKey}"><th>VOLTA</th></tr></thead><tbody id="body-lapbyLap-${bateriaKey}"></tbody></table></div></div>`;
@@ -2450,6 +2529,9 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                         tbodyCons.innerHTML = "";
                         
                         let melhorVoltaBateria = Math.min(...dadosSessao.map(d => Math.min(...(d.laps || [999]))));
+                        // Posição oficial da bateria: calculada a partir da chegada.
+                        const classificacaoBateria = mapaPosicoesChegada(dadosSessao);
+                        const posicaoChegada = classificacaoBateria.mapa;
 
                         let historicoConfrontosPiloto = {};
                         dadosSessao.forEach(d => { historicoConfrontosPiloto[d.piloto] = []; });
@@ -2581,11 +2663,14 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                             // ==========================================
                             // 3. LAUDO TÉCNICO AVANÇADO - CHEFE DE EQUIPE
                             // ==========================================
-                            let posNum = parseInt(String(d.pos).replace('º', '').trim(), 10) || 99;
+                            // IMPORTANTE: nunca usar d.pos para a posição final,
+                            // pois ela pode vir incorreta do parser do ZRound.
+                            // A posição final é a classificação calculada acima.
+                            let posNum = posicaoChegada[d.piloto] || 99;
                             let btePilotoPil = matrizPos[d.piloto] || [];
                             let posLargada = btePilotoPil.length > 0 ? btePilotoPil[0] : posNum;
-                            let posChegada = posNum;
-                            let ganhoPerdaPosicoes = posLargada - posChegada;
+                            let posChegadaFinal = posNum;
+                            let ganhoPerdaPosicoes = posLargada - posChegadaFinal;
 
                             let trechoMovimentacao = "";
                             if (ganhoPerdaPosicoes > 0) {
@@ -2602,7 +2687,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
 
                             tbodyCons.innerHTML += `
                                 <tr class="main-row">
-                                    <td><span class="pos-badge">${d.pos}</span></td>
+                                    <td><span class="pos-badge">${posNum}º</span></td>
                                     <td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(d.piloto)}')">${escapeHtml(nomeExib)}</a></strong></td>
                                     <td><span class="session-badge">${escapeHtml(nomeSessaoFormatado)}</span></td>
                                     <td>${laps.length} voltas</td>
