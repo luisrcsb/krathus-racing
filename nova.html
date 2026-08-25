@@ -3,7 +3,7 @@
 ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.48.2 - CONSISTÊNCIA BASEada NA MÉDIA DO HISTÓRICO ANTERIOR)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
-PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads e Championship Manager)
+PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas)
 PARTE 3: Estrutura Principal do Dashboard, Filtros de Baterias/Pilotos/Módulos e KPIs Globais
 PARTE 4: Inicialização do Firebase, Configuração de Cache, Regras de Alias (Edgard/DJ) e Ordenação
 PARTE 5: Módulo de Gerenciamento de Campeonatos (ZRound, Bancos Separados, Grids de Largada e Pontuação)
@@ -21,7 +21,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Krathus Racing - Central de Telemetria</title>
-    <script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=Euw-DHLgOJmK9GodP9_WPfF_pHw_-MNmQBxfRWA1Jbwm4Alel8HHekxvTtepbOL3ZdzPNw-bQjkigV7WPGt2etLcYqUBu9_kDchNIh_EgcMZxmogpyM_qO8EjSkCIFPB83vIy8BXVeb68fb3vSQozwBdYoW-CcIat8cpM3Or5ayfmeg91lgJgeMNxVc8IEOprUjA9iBDCRYzSTKRmam68CI07ulLmIURb9M59KdMj5We-yXf90PpwWsdXb5C0ZDPOnHq0k6PuA08fn_GPplPmOxTf-cFu4Mt16S-Nmc1oeglHHdsoU-YFG5iDSn0WBF6iAOYZxoSdbHF5_464nOQEA" charset="UTF-8"></script><link rel="stylesheet" crossorigin="anonymous" href="https://gc.kis.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css?attr=aHR0cHM6Ly9jaGF0Z3B0LmNvbS9iYWNrZW5kLWFwaS9lc3R1YXJ5L2NvbnRlbnQ_aWQ9ZmlsZV8wMDAwMDAwMGQxNzg4MjBlYWMyOWYxYmMzMzQzOGNiMCZmbj1pbmRleF9rcmF0aHVzX2xhdWRvX3RlY25pY28uaHRtbCZjZD1hdHRhY2htZW50JnRzPTQ5NjU3MiZwPWZzJmNpZD0xJnNpZz04YzYxZTVlZmE0ZGVmMWZjMjU2OWJlMTEzZjRjMDJmNzZkMzc2ZTIzOGM5NjNlOTc1YTExNGE0OTEzMjhlMDE4JnY9MA"/><script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -207,6 +207,33 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             body { background-color: #ffffff !important; padding: 10px !important; font-size: 11px !important; }
             .header-actions, .filters-card, .btn-pdf-global, .comments-section, .custom-modal { display: none !important; }
         }
+
+        /* ==================== COMPRAS COLETIVAS ==================== */
+        .btn-compras-trigger { background: linear-gradient(135deg,#8e44ad 0%,#6c5ce7 100%); color:#fff; font-size:.9rem; padding:10px 18px; font-weight:700; border-radius:8px; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:8px; }
+        .cc-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+        .cc-grid-3 { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+        .cc-field { display:flex; flex-direction:column; gap:6px; }
+        .cc-field label { font-size:.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; }
+        .cc-item { background:var(--bg-input); border:1px solid var(--border-card); border-radius:10px; padding:14px; display:flex; flex-direction:column; gap:12px; }
+        .cc-item-head { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+        .cc-item-preview { width:82px; height:82px; object-fit:cover; border-radius:8px; border:1px solid var(--border-card); background:#0b0f16; }
+        .cc-item-row { display:grid; grid-template-columns:82px 1fr; gap:12px; align-items:start; }
+        .cc-pilotos { display:flex; flex-wrap:wrap; gap:7px; max-height:150px; overflow:auto; padding:8px; background:var(--bg-card); border:1px solid var(--border-card); border-radius:7px; }
+        .cc-piloto-chip { display:inline-flex; align-items:center; gap:6px; padding:6px 8px; border:1px solid var(--border-card); border-radius:999px; background:var(--bg-input); font-size:.78rem; }
+        .cc-summary { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+        .cc-summary-card { background:var(--bg-input); border:1px solid var(--border-card); border-radius:8px; padding:12px; text-align:center; }
+        .cc-summary-card b { display:block; color:var(--accent-gold); font-size:1.1rem; margin-top:4px; }
+        .cc-status { display:inline-flex; padding:5px 9px; border-radius:999px; font-size:.72rem; font-weight:800; }
+        .cc-status.pendente { color:#ffb703; background:rgba(255,183,3,.12); border:1px solid rgba(255,183,3,.3); }
+        .cc-status.concluida { color:#2ec4b6; background:rgba(46,196,182,.12); border:1px solid rgba(46,196,182,.3); }
+        .cc-table { width:100%; border-collapse:collapse; font-size:.82rem; }
+        .cc-table th,.cc-table td { padding:9px; border-bottom:1px solid var(--border-card); text-align:left; vertical-align:middle; }
+        .cc-table th { color:var(--text-muted); font-size:.7rem; text-transform:uppercase; }
+        .cc-thumb { width:46px;height:46px;object-fit:cover;border-radius:6px;border:1px solid var(--border-card); }
+        .cc-color-dot { display:inline-block;width:12px;height:12px;border-radius:50%;border:1px solid rgba(255,255,255,.35);vertical-align:middle;margin-right:5px; }
+        .cc-empty { text-align:center; color:var(--text-muted); padding:28px; border:1px dashed var(--border-card); border-radius:10px; }
+        @media(max-width:800px){.cc-grid,.cc-grid-3,.cc-summary{grid-template-columns:1fr}.cc-item-row{grid-template-columns:1fr}.cc-item-preview{width:100%;height:160px}.header-actions{width:100%}.header-actions .btn{flex:1;justify-content:center}}
+
     </style>
 </head>
 <body>
@@ -437,6 +464,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             <div class="header-actions">
                 <button class="btn btn-upload-modal-trigger" onclick="abrirModalUpload()">📤 Uploads</button>
                 <button class="btn btn-campeonatos-trigger" onclick="abrirModalCampeonatos()">🏆 Championship Manager</button>
+                <button class="btn btn-compras-trigger" onclick="abrirModalComprasColetivas()">🛒 Compras coletivas</button>
                 <button class="btn btn-pdf-global" onclick="gerarRelatórioPDF()">📄 Gerar relatório</button>
             </div>
         </header>
@@ -661,6 +689,11 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                     if (campeonatoAtivoKey && campeonatosCache[campeonatoAtivoKey]) {
                         atualizarInterfacePainelZRound();
                     }
+                });
+
+                db.ref('comprasColetivas').on('value', snapshot => {
+                    comprasColetivasCache = snapshot.val() || {};
+                    if (document.getElementById('modal-compras-coletivas')?.style.display === 'flex') renderizarComprasColetivas();
                 });
 
                 db.ref('baterias').on('value', snapshot => {
@@ -2805,6 +2838,124 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                     }
                 }
             });
+        }
+
+
+        // ================================================================
+        // MÓDULO: COMPRAS COLETIVAS
+        // Persistência no Firebase Realtime Database em /comprasColetivas
+        // ================================================================
+        let comprasColetivasCache = {};
+        let ccItensForm = [];
+
+        function abrirModalComprasColetivas(){
+            const m=document.getElementById('modal-compras-coletivas');
+            if(m){m.style.display='flex';}
+            renderizarPilotosCompraNova();
+            if(!document.getElementById('cc-data').value) document.getElementById('cc-data').value=new Date().toISOString().slice(0,10);
+            if(!ccItensForm.length) adicionarItemCompra();
+            renderizarComprasColetivas();
+        }
+        function fecharModalComprasColetivas(){const m=document.getElementById('modal-compras-coletivas');if(m)m.style.display='none';}
+        window.addEventListener('click',e=>{const m=document.getElementById('modal-compras-coletivas');if(e.target===m)fecharModalComprasColetivas();});
+
+        function ccEsc(s){return escapeHtml(String(s??''));}
+        function ccMoeda(v){return 'R$ '+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+        function ccKey(s){return String(s||'').replace(/[.#$\[\]/]/g,'_');}
+        function ccPilotosDisponiveis(){
+            const set=new Set();
+            Object.keys(pilotosMetadadosCache||{}).forEach(p=>set.add(p));
+            (typeof dadosBase!=='undefined'&&Array.isArray(dadosBase)?dadosBase:[]).forEach(d=>{if(d.piloto)set.add(d.piloto)});
+            Object.keys(mesclagensCache||{}).forEach(p=>set.add(mesclagensCache[p]));
+            return Array.from(set).filter(Boolean).sort((a,b)=>a.localeCompare(b,'pt-BR'));
+        }
+        function renderizarPilotosCompraNova(){
+            const el=document.getElementById('cc-pilotos-nova'); if(!el)return;
+            const pilotos=ccPilotosDisponiveis();
+            el.innerHTML=pilotos.length?pilotos.map(p=>`<label class="cc-piloto-chip"><input type="checkbox" class="cc-piloto-novo" value="${ccEsc(p)}"> ${ccEsc(p)}</label>`).join(''):'<span style="color:var(--text-muted);font-size:.8rem">Nenhum piloto cadastrado ainda.</span>';
+        }
+        function adicionarItemCompra(item={}){
+            ccItensForm.push({id:'i'+Date.now()+Math.random().toString(16).slice(2),nome:item.nome||'',link:item.link||'',imagem:item.imagem||'',preco:Number(item.preco||0),quantidade:Number(item.quantidade||1),cor:item.cor||'',participantes:Array.isArray(item.participantes)?item.participantes:[]});
+            renderizarItensFormulario();
+        }
+        function removerItemCompra(id){ccItensForm=ccItensForm.filter(i=>i.id!==id);renderizarItensFormulario();}
+        function renderizarItensFormulario(){
+            const box=document.getElementById('cc-itens-nova');if(!box)return;
+            if(!ccItensForm.length){box.innerHTML='<div class="cc-empty">Nenhum item adicionado.</div>';return;}
+            const pilotos=ccPilotosDisponiveis();
+            box.innerHTML=ccItensForm.map((it,idx)=>`
+              <div class="cc-item">
+                <div class="cc-item-head"><strong>Item ${idx+1}</strong><button class="btn-action-danger" style="padding:5px 9px" onclick="removerItemCompra('${it.id}')">🗑️ Remover</button></div>
+                <div class="cc-item-row">
+                  <img id="cc-preview-${it.id}" class="cc-item-preview" src="${ccEsc(it.imagem||'')}" onerror="this.style.display='none'" ${it.imagem?'':'style="display:none"'}>
+                  <div class="cc-grid-3">
+                    <div class="cc-field"><label>Nome do item</label><input class="config-input" value="${ccEsc(it.nome)}" oninput="ccAtualizarItem('${it.id}','nome',this.value)"></div>
+                    <div class="cc-field"><label>Preço unitário</label><input class="config-input" type="number" min="0" step="0.01" value="${it.preco||''}" oninput="ccAtualizarItem('${it.id}','preco',this.value)"></div>
+                    <div class="cc-field"><label>Quantidade</label><input class="config-input" type="number" min="1" step="1" value="${it.quantidade||1}" oninput="ccAtualizarItem('${it.id}','quantidade',this.value)"></div>
+                    <div class="cc-field"><label>Link do item</label><input class="config-input" value="${ccEsc(it.link)}" placeholder="https://..." oninput="ccAtualizarItem('${it.id}','link',this.value)"></div>
+                    <div class="cc-field"><label>Foto / URL da foto</label><input class="config-input" value="${ccEsc(it.imagem)}" placeholder="URL da imagem" oninput="ccAtualizarItem('${it.id}','imagem',this.value)"></div>
+                    <div class="cc-field"><label>Cor / opção</label><input class="config-input" value="${ccEsc(it.cor)}" placeholder="Ex.: Preto, Azul, Vermelho" oninput="ccAtualizarItem('${it.id}','cor',this.value)"></div>
+                  </div>
+                </div>
+                <div class="config-row"><button class="btn-action-primary" style="background:#6c5ce7" onclick="ccEscanearItem('${it.id}')">🔎 Escanear página pelo link</button><span id="cc-scan-${it.id}" style="font-size:.75rem;color:var(--text-muted)">O scanner tenta obter nome e imagem automaticamente. Sites que bloqueiam CORS exigem preenchimento manual.</span></div>
+                <div class="cc-field"><label>Pilotos que participam deste item</label><div class="cc-pilotos">${pilotos.length?pilotos.map(p=>`<label class="cc-piloto-chip"><input type="checkbox" ${it.participantes.includes(p)?'checked':''} onchange="ccToggleParticipante('${it.id}','${ccEsc(p)}',this.checked)"> ${ccEsc(p)}</label>`).join(''):'<span style="color:var(--text-muted);font-size:.8rem">Cadastre pilotos primeiro.</span>'}</div></div>
+              </div>`).join('');
+        }
+        function ccAtualizarItem(id,campo,valor){const it=ccItensForm.find(x=>x.id===id);if(!it)return;it[campo]=campo==='preco'?Number(valor||0):campo==='quantidade'?Math.max(1,parseInt(valor||1,10)):valor;if(campo==='imagem'){const im=document.getElementById('cc-preview-'+id);if(im){im.src=valor;im.style.display=valor?'block':'none';}}}
+        function ccToggleParticipante(id,p,checked){const it=ccItensForm.find(x=>x.id===id);if(!it)return;if(checked&&!it.participantes.includes(p))it.participantes.push(p);if(!checked)it.participantes=it.participantes.filter(x=>x!==p);}
+        function ccSelecionadosGlobais(){return Array.from(document.querySelectorAll('.cc-piloto-novo:checked')).map(x=>x.value);}
+        async function ccEscanearItem(id){
+            const it=ccItensForm.find(x=>x.id===id);if(!it||!it.link){alert('Informe o link do item primeiro.');return;}
+            const status=document.getElementById('cc-scan-'+id);if(status)status.textContent='🔎 Lendo a página...';
+            try{
+                const r=await fetch(it.link,{mode:'cors'});if(!r.ok)throw new Error('HTTP '+r.status);const html=await r.text();
+                const doc=new DOMParser().parseFromString(html,'text/html');
+                const meta=(prop)=>{const e=doc.querySelector(`meta[property="${prop}"],meta[name="${prop}"]`);return e?.content||''};
+                const nome=meta('og:title')||doc.querySelector('h1')?.textContent?.trim()||doc.title;
+                const img=meta('og:image');if(nome)it.nome=nome.trim();if(img)it.imagem=img.trim();
+                renderizarItensFormulario();if(status)status.textContent='✅ Página lida. Confira e ajuste nome, foto, preço e cor.';
+            }catch(e){if(status)status.textContent='⚠️ O site bloqueou a leitura automática (CORS). O link foi mantido; preencha nome/foto/preço/cor manualmente.';}
+        }
+        function ccCalcular(compra){
+            const porPiloto={};let total=0;
+            (compra.itens||[]).forEach(it=>{const subtotal=Number(it.preco||0)*Number(it.quantidade||1);total+=subtotal;const ps=it.participantes||[];if(ps.length){const parte=subtotal/ps.length;ps.forEach(p=>{porPiloto[p]=(porPiloto[p]||0)+parte;});}});
+            const pagamentos={};Object.entries(compra.pagamentos||{}).forEach(([p,v])=>pagamentos[p]=Number(v||0));
+            const saldos={};const todos=new Set([...Object.keys(porPiloto),...(compra.participantes||[])]);todos.forEach(p=>saldos[p]=(pagamentos[ccKey(p)]||0)-(porPiloto[p]||0));
+            return {total,porPiloto,pagamentos,saldos,quitado};
+        }
+        async function salvarCompraColetiva(){
+            const nome=document.getElementById('cc-nome').value.trim();if(!nome){alert('Informe o nome da compra.');return;}if(!ccItensForm.length){alert('Adicione pelo menos um item.');return;}
+            const globais=ccSelecionadosGlobais();const participantes=globais.length?globais:Array.from(new Set(ccItensForm.flatMap(i=>i.participantes||[])));
+            if(!participantes.length){alert('Selecione pelo menos um piloto participante.');return;}
+            const itens=ccItensForm.map(i=>({...i,preco:Number(i.preco||0),quantidade:Number(i.quantidade||1),participantes:i.participantes.length?i.participantes:[...participantes]}));
+            const key=db.ref('comprasColetivas').push().key;const compra={nome,data:document.getElementById('cc-data').value||new Date().toISOString().slice(0,10),participantes,itens,pagamentos:{},status:'pendente',rastreamento:{codigo:'',transportadora:'',url:''},criadaEm:Date.now(),concluidaEm:null};
+            if(!db){alert('Firebase não está disponível.');return;}await db.ref('comprasColetivas/'+key).set(compra);alert('Compra coletiva salva com sucesso!');limparFormularioCompra();
+        }
+        function limparFormularioCompra(){document.getElementById('cc-nome').value='';document.getElementById('cc-data').value=new Date().toISOString().slice(0,10);ccItensForm=[];renderizarPilotosCompraNova();renderizarItensFormulario();document.getElementById('cc-status-form').textContent='';}
+        function renderizarComprasColetivas(){
+            const box=document.getElementById('cc-lista-compras');if(!box)return;const arr=Object.entries(comprasColetivasCache||{}).sort((a,b)=>(b[1].criadaEm||0)-(a[1].criadaEm||0));
+            box.innerHTML=`<div class="config-panel"><div class="config-panel-title">📋 Compras cadastradas</div>${arr.length?`<table class="cc-table"><thead><tr><th>Compra</th><th>Data</th><th>Itens</th><th>Total</th><th>Status</th><th>Ações</th></tr></thead><tbody>${arr.map(([k,c])=>{const calc=ccCalcular(c);return `<tr><td><strong>${ccEsc(c.nome)}</strong></td><td>${ccEsc(c.data||'-')}</td><td>${(c.itens||[]).length}</td><td>${ccMoeda(calc.total)}</td><td><span class="cc-status ${c.status==='concluida'?'concluida':'pendente'}">${c.status==='concluida'?'CONCLUÍDA':'PENDENTE'}</span></td><td><button class="btn-text-action" onclick="abrirGerenciamentoCompra('${k}')">Gerenciar</button> · <button class="btn-text-action" onclick="imprimirCompraColetiva('${k}')">🖨️ Print</button></td></tr>`}).join('')}</tbody></table>`:'<div class="cc-empty">Nenhuma compra coletiva cadastrada.</div>'}</div>`;
+            document.getElementById('cc-gerenciamento').innerHTML='<div class="config-panel-title">🛠️ Gerenciamento</div><div class="cc-empty">Selecione uma compra acima para gerenciar pagamentos, rastreio, cores e conclusão.</div>';
+        }
+        function abrirGerenciamentoCompra(key){
+            const c=comprasColetivasCache[key];if(!c)return;const calc=ccCalcular(c);const g=document.getElementById('cc-gerenciamento');
+            g.innerHTML=`<div class="config-panel-title">🛠️ ${ccEsc(c.nome)} <span class="cc-status ${c.status==='concluida'?'concluida':'pendente'}">${c.status==='concluida'?'CONCLUÍDA':'PENDENTE'}</span></div>
+              <div class="cc-summary"><div class="cc-summary-card">Total<b>${ccMoeda(calc.total)}</b></div><div class="cc-summary-card">Participantes<b>${(c.participantes||[]).length}</b></div><div class="cc-summary-card">Pago<b>${ccMoeda(Object.values(calc.pagamentos).reduce((a,b)=>a+b,0))}</b></div><div class="cc-summary-card">Saldo em aberto<b>${ccMoeda(Object.values(calc.saldos).filter(v=>v<0).reduce((a,b)=>a+Math.abs(b),0))}</b></div></div>
+              <div class="config-panel"><div class="config-panel-title">💰 Rateio e pagamentos</div><table class="cc-table"><thead><tr><th>Piloto</th><th>Parte</th><th>Pago</th><th>Saldo</th><th>Registrar pagamento</th></tr></thead><tbody>${Object.keys(calc.porPiloto).sort().map(p=>`<tr><td><strong>${ccEsc(p)}</strong></td><td>${ccMoeda(calc.porPiloto[p])}</td><td>${ccMoeda(calc.pagamentos[ccKey(p)]||0)}</td><td style="color:${calc.saldos[p]>=-0.005?'var(--accent-green)':'var(--accent-red)'}">${calc.saldos[p]>=-0.005?'Quitado':ccMoeda(Math.abs(calc.saldos[p]))+' pendente'}</td><td><input class="config-input" style="max-width:130px" type="number" min="0" step="0.01" id="cc-pag-${ccKey(key)}-${ccKey(p)}" placeholder="R$" value="${calc.pagamentos[p]||''}"> <button class="btn-action-primary" onclick="registrarPagamentoCompra('${key}','${ccEsc(p)}')">Salvar</button></td></tr>`).join('')}</tbody></table></div>
+              <div class="config-panel"><div class="config-panel-title">🚚 Rastreamento</div><div class="cc-grid-3"><div class="cc-field"><label>Transportadora</label><input id="cc-transp-${key}" class="config-input" value="${ccEsc(c.rastreamento?.transportadora||'')}"></div><div class="cc-field"><label>Código de rastreio</label><input id="cc-rastreio-${key}" class="config-input" value="${ccEsc(c.rastreamento?.codigo||'')}"></div><div class="cc-field"><label>Link de rastreio</label><input id="cc-rastreio-url-${key}" class="config-input" value="${ccEsc(c.rastreamento?.url||'')}"></div></div><button class="btn-action-primary" onclick="salvarRastreamentoCompra('${key}')">💾 Salvar rastreio</button></div>
+              <div class="config-panel"><div class="config-panel-title">🎨 Opções de cores / transparência</div><table class="cc-table"><thead><tr><th>Item</th><th>Foto</th><th>Cor escolhida</th><th>Participantes</th></tr></thead><tbody>${(c.itens||[]).map((it,i)=>`<tr><td>${ccEsc(it.nome||'Item '+(i+1))}</td><td>${it.imagem?`<img class="cc-thumb" src="${ccEsc(it.imagem)}" onerror="this.style.display='none'">`:'-'}</td><td><input class="config-input" id="cc-cor-${key}-${i}" value="${ccEsc(it.cor||'')}" placeholder="Cor / opção"><button class="btn-action-primary" style="margin-top:5px" onclick="salvarCorCompra('${key}',${i})">Salvar</button></td><td>${(it.participantes||[]).map(p=>ccEsc(p)).join(', ')}</td></tr>`).join('')}</tbody></table></div>
+              <div class="config-row"><button class="btn-action-primary" style="background:#6c5ce7" onclick="imprimirCompraColetiva('${key}')">🖨️ Imprimir / gerar print</button><button class="btn-action-primary" style="background:var(--accent-green);color:#000" onclick="concluirCompraColetiva('${key}')">🏁 Concluir compra</button><button class="btn-action-danger" onclick="excluirCompraColetiva('${key}')">🗑️ Excluir compra</button></div>`;
+        }
+        async function registrarPagamentoCompra(key,p){const c=comprasColetivasCache[key];const id='cc-pag-'+ccKey(key)+'-'+ccKey(p);const v=Number(document.getElementById(id)?.value||0);if(!c.pagamentos)c.pagamentos={};c.pagamentos[p]=v;await db.ref('comprasColetivas/'+key+'/pagamentos/'+ccKey(p)).set(v);abrirGerenciamentoCompra(key);}
+        async function salvarRastreamentoCompra(key){const r={transportadora:document.getElementById('cc-transp-'+key)?.value||'',codigo:document.getElementById('cc-rastreio-'+key)?.value||'',url:document.getElementById('cc-rastreio-url-'+key)?.value||''};await db.ref('comprasColetivas/'+key+'/rastreamento').set(r);alert('Rastreamento salvo.');}
+        async function salvarCorCompra(key,i){const v=document.getElementById(`cc-cor-${key}-${i}`)?.value||'';await db.ref(`comprasColetivas/${key}/itens/${i}/cor`).set(v);alert('Opção salva.');}
+        async function concluirCompraColetiva(key){const c=comprasColetivasCache[key];const calc=ccCalcular(c);const pend=Object.entries(calc.porPiloto).filter(([p,v])=>(calc.pagamentos[ccKey(p)]||0)+0.005<v);if(pend.length){alert('A compra ainda possui valores pendentes:\n\n'+pend.map(([p,v])=>`${p}: ${ccMoeda(v-(calc.pagamentos[ccKey(p)]||0))}`).join('\n'));return;}if(!confirm('Todos os valores estão quitados. Marcar a compra como CONCLUÍDA?'))return;await db.ref('comprasColetivas/'+key).update({status:'concluida',concluidaEm:Date.now()});}
+        async function excluirCompraColetiva(key){if(!confirm('Excluir esta compra coletiva? Esta ação não pode ser desfeita.'))return;await db.ref('comprasColetivas/'+key).remove();}
+        function imprimirCompraColetiva(key){
+            const c=comprasColetivasCache[key];if(!c)return;const calc=ccCalcular(c);const win=window.open('','_blank');if(!win){alert('Permita pop-ups para gerar o print.');return;}
+            const itens=(c.itens||[]).map(it=>`<tr><td>${it.imagem?`<img src="${ccEsc(it.imagem)}" style="width:55px;height:55px;object-fit:cover">`:''}</td><td>${ccEsc(it.nome)}</td><td>${ccEsc(it.cor||'-')}</td><td>${it.quantidade}</td><td>R$ ${Number(it.preco||0).toFixed(2)}</td><td>R$ ${(Number(it.preco||0)*Number(it.quantidade||1)).toFixed(2)}</td><td>${(it.participantes||[]).map(ccEsc).join(', ')}</td></tr>`).join('');
+            const partes=Object.keys(calc.porPiloto).sort().map(p=>`<tr><td>${ccEsc(p)}</td><td>${ccMoeda(calc.porPiloto[p])}</td><td>${ccMoeda(calc.pagamentos[ccKey(p)]||0)}</td><td>${calc.saldos[p]>=-0.005?'QUITADO':ccMoeda(Math.abs(calc.saldos[p]))+' PENDENTE'}</td></tr>`).join('');
+            win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${ccEsc(c.nome)}</title><style>body{font-family:Arial,sans-serif;margin:30px;color:#111}h1{margin-bottom:4px}table{width:100%;border-collapse:collapse;margin:18px 0}th,td{border:1px solid #ccc;padding:8px;text-align:left}th{background:#eee}.total{font-size:20px;font-weight:bold}.ok{color:#078c6c;font-weight:bold}.warn{color:#b36b00;font-weight:bold}@media print{button{display:none}}</style></head><body><h1>🛒 ${ccEsc(c.nome)}</h1><div>Data: ${ccEsc(c.data||'-')} | Status: <b>${c.status==='concluida'?'CONCLUÍDA':'PENDENTE'}</b></div><h2>Itens</h2><table><tr><th>Foto</th><th>Item</th><th>Cor</th><th>Qtd.</th><th>Unitário</th><th>Subtotal</th><th>Participantes</th></tr>${itens}</table><div class="total">Total: ${ccMoeda(calc.total)}</div><h2>Rateio</h2><table><tr><th>Piloto</th><th>Parte</th><th>Pago</th><th>Saldo</th></tr>${partes}</table><h2>Rastreamento</h2><p>Transportadora: ${ccEsc(c.rastreamento?.transportadora||'-')}<br>Código: ${ccEsc(c.rastreamento?.codigo||'-')}<br>Link: ${ccEsc(c.rastreamento?.url||'-')}</p><script>window.onload=()=>setTimeout(()=>window.print(),300)<\/script></body></html>`);win.document.close();
         }
 
         function gerarRelatórioPDF() { window.print(); }
