@@ -1,16 +1,16 @@
 <!-- 
 ========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.48.8 - EVOLUÇÃO DE RITMO + MÓDULOS COMPLETOS)
+ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.48.9 - TELEMETRIA COMPLETA + COMPRAS COLETIVAS)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js, QRCode.js) e Estilização CSS (Design System)
 PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas)
-PARTE 3: Estrutura Principal do Dashboard, Filtros e KPIs Globais
-PARTE 4: Inicialização do Firebase, Configuração de Cache, Regras de Alias e Ordenação
+PARTE 3: Estrutura Principal do Dashboard, Filtros de Baterias/Pilotos/Módulos e KPIs Globais
+PARTE 4: Inicialização do Firebase, Sincronização, Regras de Alias (Edgard/DJ) e Ordenação
 PARTE 5: Módulo de Gerenciamento de Campeonatos (ZRound, Bancos Separados, Grids de Largada e Pontuação)
 PARTE 6: Processamento e Conversão de Arquivos (PDF para Texto, Parser de Voltas, Base64 e Banco de Dados)
-PARTE 7: Renderização Dinâmica de Gráficos e Relatórios
-PARTE 8: Análises Avançadas por Piloto (Ritmo, Consistência Histórica e Laudo)
-PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Coletivas & Rateio Inteligente
+PARTE 7: Renderização Dinâmica de Gráficos (Evolução de Ritmo e Posição Volta a Volta) e Relatórios
+PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova, Consistência Histórica e Laudo)
+PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações, Curtidas e Módulo de Compras Coletivas & Rateio
 ========================================================================================================================
 -->
 
@@ -65,6 +65,14 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
         .btn-campeonatos-trigger { background: linear-gradient(135deg, #ffb703 0%, #fb8500 100%); color: #000; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
         .btn-compras-trigger { background: linear-gradient(135deg, #2ec4b6 0%, #3a86ff 100%); color: #000; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
 
+        .btn-share { background: rgba(58, 134, 255, 0.15); color: var(--accent-blue); border: 1px solid var(--accent-blue); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; }
+        .btn-like { background: rgba(230, 57, 70, 0.15); color: var(--accent-red); border: 1px solid var(--accent-red); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; }
+        .btn-pdf-atalho { background: rgba(255, 183, 3, 0.15); color: var(--accent-gold); border: 1px solid var(--accent-gold); padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; }
+        .btn-pdf-atalho:hover { background: rgba(255, 183, 3, 0.25); }
+
+        .piloto-link { color: var(--accent-blue); text-decoration: none; font-weight: 700; cursor: pointer; }
+        .piloto-link:hover { color: var(--accent-gold); text-decoration: underline; }
+
         .custom-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background-color: rgba(13, 17, 26, 0.88); z-index: 10000; justify-content: center; align-items: center; padding: 20px; overflow-y: auto;
@@ -77,14 +85,28 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
         .modal-close { background: transparent; border: none; color: var(--text-muted); font-size: 1.4rem; cursor: pointer; font-weight: bold; }
         .modal-body { padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
 
+        .dossier-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+        .dossier-kpi { background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 4px; text-align: center; }
+        .dossier-kpi-label { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+        .dossier-kpi-value { font-size: 1.25rem; font-weight: 700; color: var(--accent-gold); }
+
+        .config-box-trigger { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+        .btn-config-open { background: var(--bg-input); border: 1px solid var(--border-card); color: var(--accent-gold); padding: 6px 14px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .btn-merge-open { background: var(--bg-input); border: 1px solid var(--border-card); color: var(--accent-green); padding: 6px 14px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+
         .config-panel { background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
         .config-panel-title { font-size: 0.82rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid var(--border-card); padding-bottom: 8px; }
         
+        .config-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         .config-input { background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-card); padding: 8px 12px; border-radius: 6px; flex: 1; font-size: 0.85rem; }
         .config-select { background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-card); padding: 8px 12px; border-radius: 6px; flex: 1; font-size: 0.85rem; }
 
         .btn-action-primary { background: var(--accent-blue); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
         .btn-action-danger { background: var(--accent-red); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
+
+        .zround-tabs-header { display: flex; gap: 6px; border-bottom: 2px solid var(--border-card); padding-bottom: 8px; flex-wrap: wrap; }
+        .zround-tab-btn { background: var(--bg-card); border: 1px solid var(--border-card); color: var(--text-muted); padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 0.82rem; cursor: pointer; }
+        .zround-tab-btn.active { background: var(--accent-gold); color: #000; border-color: var(--accent-gold); }
 
         .filters-card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 18px; }
         .filters-grid { display: grid; grid-template-columns: 1fr 1fr 1.3fr; gap: 20px; }
@@ -100,6 +122,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
         .upload-box { background: var(--bg-input); border: 1px dashed var(--border-card); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
         ul#upload-lista-historico { list-style: none; display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; padding-right: 4px; }
         ul#upload-lista-historico li { background: var(--bg-input); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-card); display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; }
+        pre#upload-json-viewer { background: var(--bg-body); color: var(--accent-green); padding: 12px; border-radius: 6px; font-size: 0.75rem; max-height: 200px; overflow: auto; border: 1px solid var(--border-card); line-height: 1.4; }
 
         .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
         .kpi-card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; justify-content: space-between; }
@@ -110,6 +133,13 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
 
         .session-block-header { background: linear-gradient(135deg, var(--bg-card-header) 0%, var(--bg-card) 100%); border: 1px solid var(--border-card); border-left: 5px solid var(--accent-red); border-radius: 10px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; flex-wrap: wrap; gap: 10px; }
         .session-block-title { font-size: 1.15rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .session-block-meta { font-size: 0.85rem; color: var(--text-muted); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        
+        .session-podium-tag { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.80rem; border: 1px solid; }
+        .podium-gold { background: rgba(255, 183, 3, 0.15); color: var(--accent-gold); border-color: var(--accent-gold); }
+        .podium-silver { background: rgba(192, 192, 192, 0.15); color: var(--accent-silver); border-color: var(--accent-silver); }
+        .podium-bronze { background: rgba(205, 127, 50, 0.15); color: var(--accent-bronze); border-color: var(--accent-bronze); }
+
         .session-blocks-container { display: flex; flex-direction: column; gap: 30px; }
         .session-block { display: flex; flex-direction: column; gap: 20px; background: rgba(21, 28, 40, 0.4); border: 1px solid var(--border-card); border-radius: 14px; padding: 20px; }
         .card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px; }
@@ -117,12 +147,47 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
         .card-header::before { content: ''; width: 4px; height: 16px; background-color: var(--accent-red); border-radius: 2px; }
         .chart-container { position: relative; height: 280px; width: 100%; }
 
+        .position-analysis-container { margin-top: 20px; background: var(--bg-input); border-left: 4px solid var(--accent-gold); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+        .position-analysis-title { font-size: 0.85rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase; }
+        .position-log-list { display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; line-height: 1.5; max-height: 220px; overflow-y: auto; }
+        .position-log-item { background: rgba(21, 28, 40, 0.5); padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border-card); }
+        .tag-gain { color: var(--accent-green); font-weight: 700; }
+        .tag-loss { color: var(--accent-red); font-weight: 700; }
+
+        .comments-section { margin-top: 15px; background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+        .comments-title { font-size: 0.85rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase; display: flex; align-items: center; gap: 6px; }
+        .comments-list { display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto; }
+        .comment-item { background: rgba(21, 28, 40, 0.6); padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border-card); font-size: 0.85rem; display: flex; flex-direction: column; gap: 6px; }
+        .comment-header-row { display: flex; justify-content: space-between; align-items: center; }
+        .comment-author { font-weight: 700; color: var(--accent-gold); }
+        .comment-text { color: var(--text-main); word-break: break-word; line-height: 1.4; }
+        .comment-reactions { display: flex; gap: 12px; margin-top: 4px; align-items: center; }
+        .btn-comment-reaction { background: rgba(28, 38, 59, 0.8); border: 1px solid var(--border-card); color: var(--text-muted); padding: 3px 8px; border-radius: 6px; font-size: 0.78rem; font-weight: 600; cursor: pointer; }
+        
+        .comment-form { display: flex; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
+        .comment-input-name { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 6px; padding: 8px 12px; color: var(--text-main); font-size: 0.85rem; width: 160px; }
+        .comment-input-text { flex: 1; background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 6px; padding: 8px 12px; color: var(--text-main); font-size: 0.85rem; min-width: 200px; }
+        .btn-comment { background: var(--accent-blue); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
+
         .table-container { width: 100%; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
         th { background-color: var(--bg-card-header); color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; padding: 12px 16px; font-weight: 700; border-bottom: 1px solid var(--border-card); }
         td { padding: 12px 16px; border-bottom: 1px solid var(--border-card); vertical-align: middle; }
+        .main-row td { border-bottom: none !important; }
+        .sub-row td { padding: 0 16px 16px 16px !important; border-bottom: 1px solid var(--border-card) !important; }
+
         .pos-badge { background: var(--accent-gold); color: #000; font-weight: bold; font-size: 0.8rem; padding: 4px 8px; border-radius: 4px; display: inline-block; }
+        .session-badge { background: #1d3557; color: var(--accent-blue); padding: 4px 10px; border-radius: 4px; font-size: 0.80rem; font-weight: 600; display: inline-block; }
         .text-green { color: var(--accent-green); font-weight: 700; }
+        
+        .analysis-subrow-box { background: rgba(28, 38, 59, 0.6); border-left: 4px solid var(--accent-blue); border-radius: 6px; padding: 16px 20px; font-size: 0.88rem; color: var(--text-main); line-height: 1.7; display: flex; flex-direction: column; gap: 12px; }
+        .analysis-section-block { display: flex; flex-direction: column; gap: 4px; background: rgba(13, 17, 26, 0.4); padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border-card); }
+        .analysis-section-title { color: var(--accent-gold); text-transform: uppercase; font-size: 0.78rem; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+        .analysis-section-content { color: var(--text-main); font-size: 0.86rem; }
+        
+        .lap-cell-inline { display: inline-flex; align-items: baseline; gap: 6px; white-space: nowrap; }
+        .leader-badge { background: var(--accent-gold); color: #000; font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-left: 6px; display: inline-block; text-transform: uppercase; }
+        .lap-gap { color: var(--accent-gap); font-size: 0.8rem; font-weight: 600; margin-left: 4px; }
 
         .footer-container { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px 24px; display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 10px; }
         .footer-meta-info { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 16px; font-size: 0.82rem; color: var(--text-muted); background: var(--bg-input); padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border-card); }
@@ -133,13 +198,24 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
         @media print {
             body, body * { color: #000000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             body { background-color: #ffffff !important; padding: 10px !important; font-size: 11px !important; }
-            .header-actions, .filters-card, .custom-modal { display: none !important; }
+            .header-actions, .filters-card, .btn-pdf-global, .comments-section, .custom-modal { display: none !important; }
         }
     </style>
 </head>
 <body>
 
-    <!-- 📤 Modal Central de Uploads -->
+    <!-- 🏎️ Modal Ficha do Piloto -->
+    <div id="piloto-modal" class="custom-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-piloto-nome">🏎️ Ficha do Piloto</div>
+                <button class="modal-close" onclick="fecharDossiePiloto()">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-piloto-corpo"></div>
+        </div>
+    </div>
+
+    <!-- 📤 Modal Central de Uploads (Banco Principal) -->
     <div id="upload-modal" class="custom-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -156,11 +232,18 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
                         </div>
                     </div>
                     <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Arquivos Carregados</span>
+                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Arquivos Carregados (Banco Principal)</span>
                         <ul id="upload-lista-historico">
                             <li>Carregando arquivos...</li>
                         </ul>
+                        <div style="display: flex; justify-content: flex-end; margin-top: 4px;">
+                            <button class="btn-action-danger" style="padding: 6px 12px; font-size: 0.8rem;" onclick="excluirArquivosSelecionadosPrincipal()">🗑️ Excluir Selecionados</button>
+                        </div>
                     </div>
+                </div>
+                <div>
+                    <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Inspetor de Estrutura JSON</span>
+                    <pre id="upload-json-viewer">Selecione "Inspecionar" em um arquivo ao lado para visualizar os dados...</pre>
                 </div>
             </div>
         </div>
@@ -193,7 +276,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
         </div>
     </div>
 
-    <!-- 🛍️ Modal Compras Coletivas -->
+    <!-- 🛍️ Modal Compras Coletivas & Rateio Inteligente -->
     <div id="compras-modal" class="custom-modal">
         <div class="modal-content" style="max-width: 1200px;">
             <div class="modal-header">
@@ -289,65 +372,73 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
             </div>
         </header>
 
-        <section class="filters-card">
-            <div class="filters-grid">
-                <div class="filter-group">
-                    <div class="filter-group-header">
-                        <label class="group-title">SESSÕES / BATERIAS</label>
-                        <button class="btn-text-action" onclick="limparSelecao('filter-bateria')">🗑️ Limpar</button>
+        <div id="tab-telemetria" class="tab-content">
+            <section class="filters-card">
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <div class="filter-group-header">
+                            <label class="group-title">SESSÕES / BATERIAS</label>
+                            <button class="btn-text-action" onclick="limparSelecao('filter-bateria')">🗑️ Limpar</button>
+                        </div>
+                        <div class="checkbox-container" id="filtro-baterias-container"></div>
                     </div>
-                    <div class="checkbox-container" id="filtro-baterias-container"></div>
-                </div>
-                <div class="filter-group">
-                    <div class="filter-group-header">
-                        <label class="group-title">PILOTOS</label>
-                        <button class="btn-text-action" onclick="limparSelecao('filter-piloto')">🗑️ Limpar</button>
-                    </div>
-                    <div class="checkbox-container" id="filtro-pilotos-container"></div>
-                </div>
-                <div class="filter-group">
-                    <div class="filter-group-header">
-                        <label class="group-title">MÓDULOS VISÍVEIS</label>
-                        <button class="btn-text-action" onclick="limparSelecao('filter-modulo')">🗑️ Limpar</button>
-                    </div>
-                    <div class="checkbox-container">
-                        <label class="checkbox-item"><input type="checkbox" value="mod-grafico" class="filter-modulo" checked onchange="atualizarDashboard()"> 📈 Evolução de Ritmo</label>
-                        <label class="checkbox-item"><input type="checkbox" value="mod-tabela-geral" class="filter-modulo" checked onchange="atualizarDashboard()"> ⏱️ Tabela Geral com Gaps</label>
-                    </div>
-                </div>
-            </div>
-        </section>
 
-        <section class="kpi-grid">
-            <div class="kpi-card">
-                <span class="kpi-label">Piloto com Mais Vitórias</span>
-                <div class="kpi-value" id="kpi-vencedor">--</div>
-                <span class="kpi-subtext" id="kpi-vencedor-sub">Aguardando dados</span>
-            </div>
-            <div class="kpi-card">
-                <span class="kpi-label">Melhor Volta Geral</span>
-                <div class="kpi-value green" id="kpi-melhor-volta">--</div>
-                <div class="kpi-value" id="kpi-melhor-volta-vel" style="color: var(--accent-gold); margin-top: 2px;">--</div>
-                <span class="kpi-subtext" id="kpi-melhor-volta-sub">--</span>
-            </div>
-            <div class="kpi-card">
-                <span class="kpi-label">Voltas Válidas Analisadas</span>
-                <div class="kpi-value" id="kpi-total-voltas">0</div>
-                <span class="kpi-subtext">Total nas sessões marcadas</span>
-            </div>
-            <div class="kpi-card">
-                <span class="kpi-label">Média Global do Grid</span>
-                <div class="kpi-value" id="kpi-media-global">--</div>
-                <div class="kpi-value" id="kpi-media-global-vel" style="color: var(--accent-gold); margin-top: 2px;">--</div>
-                <span class="kpi-subtext">Média geral</span>
-            </div>
-        </section>
+                    <div class="filter-group">
+                        <div class="filter-group-header">
+                            <label class="group-title">PILOTOS</label>
+                            <button class="btn-text-action" onclick="limparSelecao('filter-piloto')">🗑️ Limpar</button>
+                        </div>
+                        <div class="checkbox-container" id="filtro-pilotos-container"></div>
+                    </div>
 
-        <div id="sessions-container" class="session-blocks-container" style="margin-top: 20px;"></div>
+                    <div class="filter-group">
+                        <div class="filter-group-header">
+                            <label class="group-title">MÓDULOS VISÍVEIS</label>
+                            <button class="btn-text-action" onclick="limparSelecao('filter-modulo')">🗑️ Limpar</button>
+                        </div>
+                        <div class="checkbox-container">
+                            <label class="checkbox-item"><input type="checkbox" value="mod-grafico" class="filter-modulo" checked onchange="atualizarDashboard()"> 📈 Evolução de Ritmo</label>
+                            <label class="checkbox-item"><input type="checkbox" value="mod-grafico-posicao" class="filter-modulo" checked onchange="atualizarDashboard()"> 📊 Posição Volta a Volta</label>
+                            <label class="checkbox-item"><input type="checkbox" value="mod-log-posicao" class="filter-modulo" checked onchange="atualizarDashboard()"> 📝 Relatório de Ultrapassagens</label>
+                            <label class="checkbox-item"><input type="checkbox" value="mod-classificacao-analise" class="filter-modulo" checked onchange="atualizarDashboard()"> 📋 Laudo Técnico</label>
+                            <label class="checkbox-item"><input type="checkbox" value="mod-tabela-geral" class="filter-modulo" checked onchange="atualizarDashboard()"> ⏱️ Tabela Geral com Gaps</label>
+                            <label class="checkbox-item"><input type="checkbox" value="mod-comentarios" class="filter-modulo" checked onchange="atualizarDashboard()"> 💬 Comentários e Reações</label>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="kpi-grid">
+                <div class="kpi-card">
+                    <span class="kpi-label">Piloto com Mais Vitórias</span>
+                    <div class="kpi-value" id="kpi-vencedor">--</div>
+                    <span class="kpi-subtext" id="kpi-vencedor-sub">Aguardando dados</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-label">Melhor Volta Geral</span>
+                    <div class="kpi-value green" id="kpi-melhor-volta">--</div>
+                    <div class="kpi-value" id="kpi-melhor-volta-vel" style="color: var(--accent-gold); margin-top: 2px;">--</div>
+                    <span class="kpi-subtext" id="kpi-melhor-volta-sub">--</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-label">Voltas Válidas Analisadas</span>
+                    <div class="kpi-value" id="kpi-total-voltas">0</div>
+                    <span class="kpi-subtext">Total nas sessões marcadas</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-label">Média Global do Grid</span>
+                    <div class="kpi-value" id="kpi-media-global">--</div>
+                    <div class="kpi-value" id="kpi-media-global-vel" style="color: var(--accent-gold); margin-top: 2px;">--</div>
+                    <span class="kpi-subtext">Média geral</span>
+                </div>
+            </section>
+
+            <div id="sessions-container" class="session-blocks-container" style="margin-top: 20px;"></div>
+        </div>
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.48.8 (Evolução de Ritmo Restaurada)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.48.9 (Telemetria + Compras Coletivas)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -386,34 +477,28 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
             console.warn("Erro Firebase:", e);
         }
 
+        const ALIAS_EDGARD_DJ_DEFAULTS = {
+            "edgard": "Edgard Camilo (DJ)",
+            "Edgard": "Edgard Camilo (DJ)",
+            "edgar": "Edgard Camilo (DJ)",
+            "Edgar": "Edgard Camilo (DJ)",
+            "Dj_Edgar": "Edgard Camilo (DJ)",
+            "DJ": "Edgard Camilo (DJ)"
+        };
+
         function normalizarNomePiloto(nomeOriginal) {
             if (!nomeOriginal) return "Piloto Desconhecido";
             let limpo = nomeOriginal.trim().toLowerCase().replace(/\s+/g, ' ');
-            
             if (
-                limpo === "dj" || 
-                limpo === "edgar" || 
-                limpo === "edgard" || 
-                limpo === "dj edgar" || 
-                limpo === "dj_edgar" || 
-                limpo === "edgar camilo" || 
-                limpo === "edgard camilo" || 
-                limpo === "edgar camilo dj" || 
-                limpo === "edgard camilo dj" || 
-                limpo === "edgard camilo (dj)" ||
-                limpo.includes("dj edgar") ||
-                limpo.includes("dj_edgar") ||
+                limpo === "dj" || limpo === "edgar" || limpo === "edgard" || 
+                limpo.includes("dj edgar") || limpo.includes("dj_edgar") || 
                 (limpo.includes("edgar") && limpo.includes("dj")) ||
                 (limpo.includes("edgard") && limpo.includes("dj"))
             ) {
                 return "Edgard Camilo (DJ)";
             }
-            
             let safeKey = nomeOriginal.trim().replace(/[.#$\/\[\]]/g, "_");
-            if (mesclagensCache[safeKey]) {
-                return mesclagensCache[safeKey];
-            }
-            
+            if (mesclagensCache[safeKey]) return mesclagensCache[safeKey];
             return nomeOriginal.trim();
         }
 
@@ -466,6 +551,13 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
             });
         }
 
+        function mapaPosicoesChegada(participantesValidos) {
+            const ordenados = ordenarParticipantesBateria(participantesValidos);
+            const mapa = {};
+            ordenados.forEach((p, idx) => { mapa[p.piloto] = idx + 1; });
+            return { ordenados, mapa };
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
             if (db) {
                 db.ref('pilotosMetadados').on('value', snapshot => {
@@ -478,7 +570,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
 
                 db.ref('mesclagensPilotos').on('value', snapshot => {
                     let servidorMesclagens = snapshot.val() || {};
-                    mesclagensCache = Object.assign({}, servidorMesclagens);
+                    mesclagensCache = Object.assign({}, ALIAS_EDGARD_DJ_DEFAULTS, servidorMesclagens);
                     gerarFiltrosDinamicos();
                     atualizarDashboard();
                 });
@@ -509,6 +601,8 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
                     gerarFiltrosDinamicos();
                     atualizarListaUploadHistoricoPrincipal();
                     atualizarDashboard();
+                    preencherSelectCompradorCompras();
+                    renderizarCheckboxesParticipantesCompras();
                 });
             }
         });
@@ -871,45 +965,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
             renderizarListaCampeonatosModal();
         };
 
-        window.processarUploadEEnviarNuvemPrincipal = async function() {
-            let inputEl = document.getElementById('input-pdf-upload');
-            if (!inputEl || !inputEl.files || inputEl.files.length === 0) { alert("Selecione arquivos."); return; }
-            if (!db) return;
-
-            for (let file of inputEl.files) {
-                let nomeArq = file.name;
-                let sessaoNome = nomeArq.replace(/\.[^/.]+$/, "").trim();
-                let batKey = "bat_" + sessaoNome.toLowerCase().replace(/[^a-z0-9]/g, "_") + "_" + Date.now();
-                try {
-                    let textoExtraido = "";
-                    const extensao = nomeArq.split('.').pop().toLowerCase();
-                    if (extensao === 'html' || extensao === 'htm') {
-                        const htmlText = await file.text();
-                        const parser = new DOMParser();
-                        const docHtml = parser.parseFromString(htmlText, 'text/html');
-                        textoExtraido = docHtml.body.innerText;
-                    } else {
-                        textoExtraido = await converterPdfParaTexto(file);
-                    }
-                    const dadosExtraidos = parsearTextoConvertido(textoExtraido, sessaoNome, batKey);
-                    let pdfBase64 = await arquivoParaBase64(file);
-                    await db.ref('baterias/' + batKey).set({
-                        bateriaKey: batKey,
-                        sessao: sessaoNome,
-                        id: Date.now(),
-                        dados: dadosExtraidos,
-                        pdfBase64: pdfBase64,
-                        nomeArquivoOriginal: nomeArq
-                    });
-                } catch (err) {
-                    alert("Erro ao enviar arquivo principal (" + nomeArq + "): " + err.message);
-                }
-            }
-            inputEl.value = "";
-            alert("Arquivos processados e enviados com sucesso!");
-            fecharModalUpload();
-        };
-
         async function converterPdfParaTexto(arquivo) {
             const arrayBuffer = await arquivo.arrayBuffer();
             const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
@@ -996,6 +1051,45 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
             return resultadoFinal;
         }
 
+        window.processarUploadEEnviarNuvemPrincipal = async function() {
+            let inputEl = document.getElementById('input-pdf-upload');
+            if (!inputEl || !inputEl.files || inputEl.files.length === 0) { alert("Selecione arquivos."); return; }
+            if (!db) return;
+
+            for (let file of inputEl.files) {
+                let nomeArq = file.name;
+                let sessaoNome = nomeArq.replace(/\.[^/.]+$/, "").trim();
+                let batKey = "bat_" + sessaoNome.toLowerCase().replace(/[^a-z0-9]/g, "_") + "_" + Date.now();
+                try {
+                    let textoExtraido = "";
+                    const extensao = nomeArq.split('.').pop().toLowerCase();
+                    if (extensao === 'html' || extensao === 'htm') {
+                        const htmlText = await file.text();
+                        const parser = new DOMParser();
+                        const docHtml = parser.parseFromString(htmlText, 'text/html');
+                        textoExtraido = docHtml.body.innerText;
+                    } else {
+                        textoExtraido = await converterPdfParaTexto(file);
+                    }
+                    const dadosExtraidos = parsearTextoConvertido(textoExtraido, sessaoNome, batKey);
+                    let pdfBase64 = await arquivoParaBase64(file);
+                    await db.ref('baterias/' + batKey).set({
+                        bateriaKey: batKey,
+                        sessao: sessaoNome,
+                        id: Date.now(),
+                        dados: dadosExtraidos,
+                        pdfBase64: pdfBase64,
+                        nomeArquivoOriginal: nomeArq
+                    });
+                } catch (err) {
+                    alert("Erro ao enviar arquivo principal (" + nomeArq + "): " + err.message);
+                }
+            }
+            inputEl.value = "";
+            alert("Arquivos processados e enviados com sucesso!");
+            fecharModalUpload();
+        };
+
         function atualizarListaUploadHistoricoPrincipal() {
             const ul = document.getElementById('upload-lista-historico');
             if (!ul) return;
@@ -1004,13 +1098,39 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
                 ul.innerHTML = `<li style="color: var(--text-muted); text-align: center; padding: 6px;">Nenhum arquivo na nuvem principal.</li>`;
                 return;
             }
-            listaJsonsCache.forEach((item) => {
+            listaJsonsCache.forEach((item, index) => {
                 let nomeExibicao = item.sessao || `ID ${item.id}`;
                 const li = document.createElement('li');
-                li.innerHTML = `<span>📄 <strong>${escapeHtml(nomeExibicao)}</strong></span>`;
+                li.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
+                        <input type="checkbox" class="checkbox-excluir-lote-principal" value="${item.firebaseKey}" style="accent-color: var(--accent-red); width: 16px; height: 16px; cursor: pointer;">
+                        <span>📄 <strong>${escapeHtml(nomeExibicao)}</strong></span>
+                    </div>
+                    <button class="btn-text-action" onclick="inspecionarJsonUploadPrincipal(${index})">Inspecionar</button>
+                `;
                 ul.appendChild(li);
             });
         }
+
+        window.excluirArquivosSelecionadosPrincipal = async function() {
+            let checkboxes = document.querySelectorAll('.checkbox-excluir-lote-principal:checked');
+            if (checkboxes.length === 0) { alert("Selecione pelo menos um arquivo."); return; }
+            if (!db) return;
+            if (confirm(`Deseja realmente excluir os ${checkboxes.length} arquivo(s) selecionado(s)?`)) {
+                try {
+                    let promessas = Array.from(checkboxes).map(cb => db.ref('baterias/' + cb.value).remove());
+                    await Promise.all(promessas);
+                    alert("Arquivos excluídos com sucesso!");
+                } catch (err) {
+                    alert("Erro ao excluir: " + err.message);
+                }
+            }
+        };
+
+        window.inspecionarJsonUploadPrincipal = function(index) {
+            const item = listaJsonsCache[index];
+            if (item) document.getElementById('upload-json-viewer').textContent = JSON.stringify(item, null, 4);
+        };
 
         function obterTodosDadosConsolidados() {
             let consolidado = [];
@@ -1041,6 +1161,9 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
             dadosConsolidados.forEach(d => {
                 if (d.piloto) pilotosSet.add(d.piloto);
             });
+            Object.keys(pilotosMetadadosCache).forEach(p => {
+                pilotosSet.add(normalizarNomePiloto(p));
+            });
 
             batContainer.innerHTML = listaJsonsCache.map(arq => {
                 let key = arq.firebaseKey;
@@ -1058,6 +1181,94 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
             atualizarDashboard();
         };
 
+        window.curtirSessao = function(bateriaKey) {
+            if (!db) return;
+            let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
+            db.ref('likes/' + safeKey).transaction(c => (c || 0) + 1);
+        };
+
+        function escutarCurtidas(bateriaKey) {
+            if (!db) return;
+            let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
+            db.ref('likes/' + safeKey).on('value', snap => {
+                let el = document.getElementById(`like-count-${safeKey}`);
+                if (el) el.innerText = snap.val() || 0;
+            });
+        }
+
+        window.enviarComentario = function(bateriaKey) {
+            if (!db) return;
+            let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
+            let nomeInput = document.getElementById(`comment-name-${safeKey}`);
+            let textInput = document.getElementById(`comment-text-${safeKey}`);
+            let autor = nomeInput.value.trim() || "Convidado";
+            let texto = textInput.value.trim();
+            if (!texto) return;
+            db.ref('comments/' + safeKey).push({ autor, texto, timestamp: Date.now(), likes: 0, dislikes: 0 });
+            textInput.value = "";
+        };
+
+        window.reagirComentario = function(bateriaKey, comId, tipo) {
+            if (!db) return;
+            let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
+            db.ref(`comments/${safeKey}/${comId}/${tipo}`).transaction(c => (c || 0) + 1);
+        };
+
+        function escutarComentarios(bateriaKey) {
+            if (!db) return;
+            let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
+            let container = document.getElementById(`comments-list-${safeKey}`);
+            db.ref('comments/' + safeKey).on('value', snap => {
+                let html = '';
+                if (!snap.exists()) {
+                    container.innerHTML = `<div style="font-size:0.85rem; color: var(--text-muted); text-align:center;">Nenhum comentário.</div>`;
+                    return;
+                }
+                snap.forEach(child => {
+                    let id = child.key;
+                    let c = child.val();
+                    html += `
+                        <div class="comment-item">
+                            <div class="comment-header-row"><span class="comment-author">${escapeHtml(c.autor)}</span></div>
+                            <div class="comment-text">${escapeHtml(c.texto)}</div>
+                            <div class="comment-reactions">
+                                <button class="btn-comment-reaction" onclick="reagirComentario('${bateriaKey}', '${id}', 'likes')">👍 (${c.likes || 0})</button>
+                                <button class="btn-comment-reaction" onclick="reagirComentario('${bateriaKey}', '${id}', 'dislikes')">👎 (${c.dislikes || 0})</button>
+                            </div>
+                        </div>`;
+                });
+                container.innerHTML = html;
+            });
+        }
+
+        window.compartilharCorrida = function(bateriaKey, nomeSessao) {
+            let todosDados = obterTodosDadosConsolidados();
+            let dadosBateria = todosDados.filter(d => d.bateriaKey === bateriaKey && d.laps && d.laps.length > 0);
+            let ordenados = ordenarParticipantesBateria(dadosBateria);
+            let linkPainel = window.location.href.split('#')[0];
+
+            if (ordenados.length === 0) {
+                alert("Não há dados para compartilhar.");
+                return;
+            }
+
+            let textoPilotos = ordenados.map((p, idx) => {
+                let laps = (p.laps || []).map(l => typeof l === 'object' ? l.tempo : l).filter(t => t > 0);
+                let melhor = laps.length ? Math.min(...laps) : 0;
+                return `*${idx + 1}º Lugar: ${p.piloto}* — ${laps.length} voltas | Melhor: ${melhor.toFixed(3)}s`;
+            }).join('\n');
+
+            let txt = `🏁 *KRATHUS RACING - TELEMETRIA* 🏁\nSessão: *${nomeSessao}*\n\n${textoPilotos}\n\nConfira no painel:\n${linkPainel}`;
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(txt).then(() => {
+                    alert("📋 Relatório copiado para a área de transferência! Cole no WhatsApp.");
+                });
+            } else {
+                alert(txt);
+            }
+        };
+
         function atualizarDashboard() {
             let dadosBase = obterTodosDadosConsolidados();
             const bateriasSel = Array.from(document.querySelectorAll('.filter-bateria:checked')).map(cb => cb.value);
@@ -1069,11 +1280,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
             if (listaJsonsCache.length > 0) {
                 let vencedorContadorGlobal = {};
                 listaJsonsCache.forEach(arq => {
-                    let itensDaBateria = (arq.dados || []).map(d => {
-                        let pilotoReal = normalizarNomePiloto(d.piloto);
-                        return { ...d, piloto: pilotoReal };
-                    });
-
+                    let itensDaBateria = (arq.dados || []).map(d => ({ ...d, piloto: normalizarNomePiloto(d.piloto) }));
                     let participantesValidos = itensDaBateria.filter(d => d.laps && d.laps.length > 0);
                     let ordenados = ordenarParticipantesBateria(participantesValidos);
                     if (ordenados.length > 0) {
@@ -1132,7 +1339,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
                 }
             }
 
-            // Destruir gráficos anteriores
             chartInstances.forEach(c => c.destroy());
             chartInstances = [];
 
@@ -1154,6 +1360,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
 
                     let participantesOrdenados = ordenarParticipantesBateria(dadosBateria);
                     let sessaoNomeFormatada = formatarNomeSessao(arq.sessao || arq.nomeArquivoOriginal || `Bateria ${index + 1}`);
+                    let safeKey = arq.firebaseKey.replace(/[.#$\/\[\]]/g, "_");
 
                     let divSessao = document.createElement('div');
                     divSessao.className = "session-block";
@@ -1161,10 +1368,13 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
                     let htmlModulos = `
                         <div class="session-block-header">
                             <div class="session-block-title">🏁 ${escapeHtml(sessaoNomeFormatada)}</div>
+                            <div class="session-block-meta">
+                                <button class="btn-like" onclick="curtirSessao('${arq.firebaseKey}')">❤️ Curtir (<span id="like-count-${safeKey}">0</span>)</button>
+                                <button class="btn-share" onclick="compartilharCorrida('${arq.firebaseKey}', '${escapeHtml(sessaoNomeFormatada)}')">🔗 Compartilhar</button>
+                            </div>
                         </div>
                     `;
 
-                    // Módulo de Evolução de Ritmo (Gráfico Chart.js)
                     if (modulosVisiveis.includes('mod-grafico')) {
                         let canvasId = `chart_ritmo_${index}_${Date.now()}`;
                         htmlModulos += `
@@ -1177,8 +1387,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
                         `;
                     }
 
-                    // Módulo de Tabela Geral
-                    if (modulosVisiveis.includes('mod-tabela-geral')) {
+                    if (modulosVisiveis.includes('mod-tabela-geral') || modulosVisiveis.includes('mod-classificacao-analise')) {
                         let linhasTabela = participantesOrdenados.map((p, idx) => {
                             let melhorVolta = p.melhorVoltaTxt || (p.laps && p.laps.length > 0 ? Math.min(...p.laps.map(l => typeof l === 'object' ? l.tempo : l)).toFixed(3) + 's' : '--');
                             let voltasTotais = p.laps ? p.laps.length : 0;
@@ -1205,10 +1414,28 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários e Módulo de Compras Co
                         `;
                     }
 
+                    if (modulosVisiveis.includes('mod-comentarios')) {
+                        htmlModulos += `
+                            <div class="comments-section">
+                                <div class="comments-title">💬 Comentários e Reações</div>
+                                <div class="comments-list" id="comments-list-${safeKey}"></div>
+                                <div class="comment-form">
+                                    <input type="text" id="comment-name-${safeKey}" class="comment-input-name" placeholder="Seu Nome">
+                                    <input type="text" id="comment-text-${safeKey}" class="comment-input-text" placeholder="Escreva seu comentário..." onkeypress="if(event.key === 'Enter') enviarComentario('${arq.firebaseKey}')">
+                                    <button class="btn-comment" onclick="enviarComentario('${arq.firebaseKey}')">Enviar</button>
+                                </div>
+                            </div>
+                        `;
+                    }
+
                     divSessao.innerHTML = htmlModulos;
                     sessionsContainer.appendChild(divSessao);
 
-                    // Inicializar o Gráfico de Evolução de Ritmo se visível
+                    escutarCurtidas(arq.firebaseKey);
+                    if (modulosVisiveis.includes('mod-comentarios')) {
+                        escutarComentarios(arq.firebaseKey);
+                    }
+
                     if (modulosVisiveis.includes('mod-grafico')) {
                         setTimeout(() => {
                             let canvasEl = document.getElementById(canvasId);
