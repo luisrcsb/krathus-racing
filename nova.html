@@ -1,13 +1,13 @@
 <!-- 
 ========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.53.0 - COMPRAS COLETIVAS REFORMULADO + RASTREIO + DESCONTOS)
+ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.54.0 - COMPRAS COLETIVAS + PIX NATIVO + COTISTAS)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
 PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas)
 PARTE 3: Estrutura Principal do Dashboard, Filtros de Baterias/Pilotos/Módulos e KPIs Globais
 PARTE 4: Inicialização do Firebase, Configuração de Cache, Regras de Alias e Ordenação
 PARTE 5: Módulo de Gerenciamento de Campeonatos (ZRound, Bancos Separados, Grids de Largada e Pontuação)
-PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Tela Única, Rastreio, Subtotal Auto, Descontos, Pix e Rateio)
+PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix Nativo, Cotistas)
 PARTE 6: Processamento e Conversão de Arquivos (PDF para Texto, Parser de Voltas, Base64 e Banco de Dados)
 PARTE 7: Renderização Dinâmica de Gráficos (Evolução de Ritmo e Posição Volta a Volta) e Relatórios
 PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado, Consistência Histórica e Laudo)
@@ -65,13 +65,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
         .btn-upload-modal-trigger { background: linear-gradient(135deg, #3a86ff 0%, #2ec4b6 100%); color: #ffffff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
         .btn-campeonatos-trigger { background: linear-gradient(135deg, #ffb703 0%, #fb8500 100%); color: #000; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
         .btn-compras-coletivas-trigger { background: linear-gradient(135deg, #2a9d8f 0%, #264653 100%); color: #fff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
-        
-        .btn-share, .btn-like { background: rgba(58, 134, 255, 0.15); color: var(--accent-blue); border: 1px solid var(--accent-blue); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; }
-        .btn-like { background: rgba(230, 57, 70, 0.15); color: var(--accent-red); border: 1px solid var(--accent-red); }
-        .btn-pdf-atalho { background: rgba(255, 183, 3, 0.15); color: var(--accent-gold); border: 1px solid var(--accent-gold); padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; }
-
-        .piloto-link { color: var(--accent-blue); text-decoration: none; font-weight: 700; cursor: pointer; }
-        .piloto-link:hover { color: var(--accent-gold); text-decoration: underline; }
 
         .custom-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(13, 17, 26, 0.88); z-index: 10000; justify-content: center; align-items: center; padding: 20px; overflow-y: auto; }
         .modal-content { background: var(--bg-card); border: 1px solid var(--border-card); border-top: 5px solid var(--accent-gold); border-radius: 14px; width: 100%; max-width: 1100px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; }
@@ -109,9 +102,8 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
 </head>
 <body>
 
-    <!-- Modais: Ficha Piloto, Upload, Championship Manager (Ocultos no snippet para foco nas Compras Coletivas) -->
+    <!-- Modais: Ficha Piloto, Upload, Championship Manager -->
     <div id="upload-modal" class="custom-modal"><div class="modal-content"><div class="modal-header"><div class="modal-title">📤 Uploads</div><button class="modal-close" onclick="fecharModalUpload()">&times;</button></div><div class="modal-body"><p>Módulo de upload principal.</p></div></div></div>
-    
     <div id="campeonatos-modal" class="custom-modal"><div class="modal-content"><div class="modal-header"><div class="modal-title">🏆 Championship Manager</div><button class="modal-close" onclick="fecharModalCampeonatos()">&times;</button></div><div class="modal-body"><p>Módulo ZRound Original.</p></div></div></div>
 
     <!-- 🛒 Compras Coletivas -->
@@ -163,7 +155,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 8px;">
                             <div>
                                 <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Subtotal dos Itens (R$)</label>
-                                <input type="number" id="cc-form-subtotal" class="config-input" style="width: 100%; margin-top: 4px; background: var(--bg-body); font-weight: bold;" value="0" readonly title="Soma automática dos itens abaixo">
+                                <input type="number" id="cc-form-subtotal" class="config-input" style="width: 100%; margin-top: 4px; background: var(--bg-body); font-weight: bold;" value="0" readonly>
                             </div>
                             <div>
                                 <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Desconto (R$)</label>
@@ -212,20 +204,20 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                         </div>
                     </div>
 
-                    <!-- 3. Comprador, Participantes e PIX -->
+                    <!-- 3. Comprador, Cotistas e PIX -->
                     <div class="config-panel">
-                        <div class="config-panel-title" style="color: var(--accent-cc);">3. Comprador, Pagadores e Chave PIX</div>
+                        <div class="config-panel-title" style="color: var(--accent-cc);">3. Comprador, Cotistas e Chave PIX</div>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                             
                             <div style="display: flex; flex-direction: column; gap: 12px;">
                                 <div>
                                     <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Comprador (Responsável)</label>
-                                    <select id="cc-form-comprador" class="config-select" style="width: 100%; margin-top: 4px;" onchange="atualizarChecksParticipantesCC(); atualizarCalculosCC();">
+                                    <select id="cc-form-comprador" class="config-select" style="width: 100%; margin-top: 4px;" onchange="aoMudarComprador()">
                                         <option value="">Selecione quem fará a compra...</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Participantes do Rateio (Dividem o Total)</label>
+                                    <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Cotistas (Dividem o Total)</label>
                                     <div id="cc-form-participantes-container" style="background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 6px; padding: 10px; max-height: 150px; overflow-y: auto; margin-top: 4px; display: flex; flex-direction: column; gap: 6px;">
                                         <!-- Checkboxes gerados via JS -->
                                     </div>
@@ -235,11 +227,11 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                             <div style="display: flex; flex-direction: column; gap: 12px; background: rgba(42, 157, 143, 0.05); padding: 14px; border-radius: 8px; border: 1px dashed var(--accent-cc);">
                                 <div>
                                     <label style="font-size: 0.72rem; color: var(--accent-cc); font-weight: bold; text-transform: uppercase;">Chave PIX do Comprador</label>
-                                    <input type="text" id="cc-form-pix" class="config-input" style="width: 100%; margin-top: 4px;" placeholder="Ex: CPF, E-mail ou Telefone" oninput="gerarQrCodePixCC()">
+                                    <input type="text" id="cc-form-pix" class="config-input" style="width: 100%; margin-top: 4px;" placeholder="Ex: CPF, Telefone (+55) ou E-mail" oninput="gerarQrCodePixCC()">
                                 </div>
                                 <div style="display: flex; align-items: center; justify-content: center; flex: 1; flex-direction: column; gap: 8px;">
-                                    <img id="cc-pix-qrcode" src="" alt="QR Code PIX" style="width: 120px; height: 120px; background: #fff; padding: 6px; border-radius: 8px; display: none;">
-                                    <span id="cc-pix-placeholder" style="font-size: 0.8rem; color: var(--text-muted); text-align: center;">Insira a chave PIX acima para gerar o QR Code de pagamento.</span>
+                                    <img id="cc-pix-qrcode" src="" alt="QR Code PIX EMV" style="width: 120px; height: 120px; background: #fff; padding: 6px; border-radius: 8px; display: none;">
+                                    <span id="cc-pix-placeholder" style="font-size: 0.8rem; color: var(--text-muted); text-align: center;">Insira a chave PIX para gerar o QR Code compatível com apps bancários.</span>
                                 </div>
                             </div>
 
@@ -248,14 +240,14 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
 
                     <!-- 4. Resumo de Rateio e Gerenciamento de Pagamentos -->
                     <div class="config-panel">
-                        <div class="config-panel-title" style="color: var(--accent-cc);">4. Resumo por Participante e Pagamentos</div>
+                        <div class="config-panel-title" style="color: var(--accent-cc);">4. Resumo de Cotas e Pagamentos</div>
                         <div class="table-container">
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>Participante</th>
+                                        <th>Cotista</th>
                                         <th>Papel</th>
-                                        <th>Valor a Pagar (R$)</th>
+                                        <th>Valor da Cota (R$)</th>
                                         <th style="text-align: center;">Status de Pagamento</th>
                                     </tr>
                                 </thead>
@@ -311,7 +303,8 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
         let compraAbertaKey = null;
         let compraAbertaDados = null; 
         
-        let pilotosDisponiveisGlobal = ["Edgard Camilo (DJ)", "Raphael Belowodski", "Matheus", "Luiz", "Otávio"];
+        // Lista Base Inicial (pode ser sobrescrita pelo Firebase abaixo)
+        let pilotosDisponiveisGlobal = ["Rafael", "DJ", "Ronaldo", "Gustavo"];
 
         try {
             firebase.initializeApp(firebaseConfig);
@@ -322,6 +315,18 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
 
         document.addEventListener("DOMContentLoaded", () => {
             if (db) {
+                // Tenta puxar a lista de pilotos reais do banco de dados (se houver o nó "pilotos")
+                db.ref('pilotos').on('value', snap => {
+                    if (snap.exists()) {
+                        let novaLista = [];
+                        snap.forEach(child => {
+                            let nome = child.val().nome || child.key;
+                            novaLista.push(nome);
+                        });
+                        if(novaLista.length > 0) pilotosDisponiveisGlobal = novaLista;
+                    }
+                });
+
                 db.ref('comprasColetivas').on('value', snapshot => {
                     comprasColetivasCache = snapshot.val() || {};
                     if(document.getElementById('campeonatos2-modal').style.display === 'flex') {
@@ -357,9 +362,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             renderizarListaComprasColetivas();
         };
 
-        // -----------------------------------------------------------------------------
-        // CRUD BÁSICO E LISTAGEM
-        // -----------------------------------------------------------------------------
         window.criarCompraColetiva = async function() {
             let senha = prompt("🔒 Digite a senha unificada de segurança para criar uma nova compra coletiva:");
             if (senha !== SENHA_UNIFICADA) { alert("❌ Senha incorreta!"); return; }
@@ -436,9 +438,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             });
         }
 
-        // -----------------------------------------------------------------------------
-        // GESTÃO DE RASTREIO
-        // -----------------------------------------------------------------------------
         window.toggleMenuRastreio = function(e, menuId) {
             e.stopPropagation();
             let menu = document.getElementById(menuId);
@@ -449,27 +448,21 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
 
         window.addRastreio = async function(key) {
             let code = prompt("📦 Insira o código de rastreio (Ex: NL123456789BR):");
-            if (code && code.trim() !== "" && db) {
-                await db.ref(`comprasColetivas/${key}/rastreio`).set(code.trim());
-            }
+            if (code && code.trim() !== "" && db) await db.ref(`comprasColetivas/${key}/rastreio`).set(code.trim());
         };
 
         window.editarRastreio = async function(key) {
             let c = comprasColetivasCache[key];
             let code = prompt("✏️ Edite o código de rastreio:", c.rastreio || "");
-            if (code !== null && db) {
-                await db.ref(`comprasColetivas/${key}/rastreio`).set(code.trim());
-            }
+            if (code !== null && db) await db.ref(`comprasColetivas/${key}/rastreio`).set(code.trim());
         };
 
         window.excluirRastreio = async function(key) {
-            if (confirm("Deseja remover o rastreio desta compra?") && db) {
-                await db.ref(`comprasColetivas/${key}/rastreio`).remove();
-            }
+            if (confirm("Deseja remover o rastreio desta compra?") && db) await db.ref(`comprasColetivas/${key}/rastreio`).remove();
         };
 
         // -----------------------------------------------------------------------------
-        // TELA ÚNICA DE GERENCIAMENTO (CÁLCULOS E UI)
+        // GERENCIAMENTO ÚNICO
         // -----------------------------------------------------------------------------
         window.abrirGerenciadorCompra = function(key) {
             compraAbertaKey = key;
@@ -506,6 +499,16 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             atualizarChecksParticipantesCC();
         }
 
+        window.aoMudarComprador = function() {
+            let novo = document.getElementById('cc-form-comprador').value;
+            // Marca o novo comprador automaticamente como cotista na primeira vez, permitindo desmarcar
+            if (novo && compraAbertaDados.participantes[novo] === undefined) {
+                compraAbertaDados.participantes[novo] = true;
+            }
+            atualizarChecksParticipantesCC();
+            atualizarCalculosCC();
+        };
+
         window.atualizarChecksParticipantesCC = function() {
             let container = document.getElementById('cc-form-participantes-container');
             let compradorAtual = document.getElementById('cc-form-comprador').value;
@@ -513,15 +516,13 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             
             pilotosDisponiveisGlobal.forEach(p => {
                 let isComprador = (p === compradorAtual);
-                let isChecked = isComprador || compraAbertaDados.participantes[p];
-                let disabledStr = isComprador ? 'disabled' : '';
-                let labelExtra = isComprador ? ' (Comprador - Automático)' : '';
+                let isChecked = compraAbertaDados.participantes[p] === true;
+                let labelExtra = isComprador ? ' <span style="color:var(--accent-gold); font-size: 0.75rem;">(Comprador)</span>' : '';
                 
-                if (isComprador) { compraAbertaDados.participantes[p] = true; }
-
+                // Note que removemos a trava (disabled) para permitir desmarcar o comprador
                 html += `
-                    <label class="checkbox-item" style="${isComprador ? 'opacity: 0.7;' : ''}">
-                        <input type="checkbox" class="cc-check-participante" value="${escapeHtml(p)}" ${isChecked ? 'checked' : ''} ${disabledStr} onchange="toggleParticipante('${escapeHtml(p)}', this.checked)">
+                    <label class="checkbox-item">
+                        <input type="checkbox" class="cc-check-participante" value="${escapeHtml(p)}" ${isChecked ? 'checked' : ''} onchange="toggleParticipante('${escapeHtml(p)}', this.checked)">
                         ${escapeHtml(p)}${labelExtra}
                     </label>
                 `;
@@ -548,7 +549,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
         window.atualizarCalculosCC = function() {
             if (!compraAbertaDados) return;
 
-            // 1. Lendo os inputs de configuração global
             compraAbertaDados.nome = document.getElementById('cc-form-nome').value.trim();
             compraAbertaDados.desconto = parseFloat(document.getElementById('cc-form-desconto').value) || 0;
             compraAbertaDados.frete = parseFloat(document.getElementById('cc-form-frete').value) || 0;
@@ -558,7 +558,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             compraAbertaDados.comprador = document.getElementById('cc-form-comprador').value;
             compraAbertaDados.chavePix = document.getElementById('cc-form-pix').value.trim();
 
-            // 2. Lendo os valores dos itens da tabela
             let rows = document.querySelectorAll('.cc-item-row');
             rows.forEach((r, idx) => {
                 if(compraAbertaDados.itens[idx]) {
@@ -570,24 +569,20 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                 }
             });
 
-            // 3. Cálculos do Subtotal
             let somaPuraItens = 0;
             compraAbertaDados.itens.forEach(i => { somaPuraItens += (i.valor * i.qtd); });
             document.getElementById('cc-form-subtotal').value = somaPuraItens.toFixed(2);
             
-            // 4. Cálculo do Total Global (com descontos e taxas)
             let totalTaxas = compraAbertaDados.frete + compraAbertaDados.imposto + compraAbertaDados.icms;
             let totalDescontos = compraAbertaDados.desconto + compraAbertaDados.outrosDescontos;
             let totalGlobalFinal = somaPuraItens + totalTaxas - totalDescontos;
             
             document.getElementById('cc-form-total-global').innerText = `R$ ${totalGlobalFinal.toFixed(2)}`;
 
-            // 5. Renderizar Lista de Itens (agora mostrando só o Subtotal puro do item)
             let tbodyItens = document.getElementById('cc-tabela-itens');
             tbodyItens.innerHTML = "";
             compraAbertaDados.itens.forEach((it, idx) => {
                 let subtotalPuro = it.valor * it.qtd;
-                
                 let imgBox = it.imgUrl ? `<img src="${it.imgUrl}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-card);">` : `<div style="width: 40px; height: 40px; background: var(--bg-input); border-radius: 4px; display:flex; align-items:center; justify-content:center; font-size:0.6rem; color:var(--text-muted); text-align:center; border: 1px dashed var(--border-card);">Sem Img</div>`;
 
                 tbodyItens.innerHTML += `
@@ -606,11 +601,8 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                 `;
             });
             
-            if(compraAbertaDados.itens.length === 0) {
-                tbodyItens.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Nenhum item inserido.</td></tr>`;
-            }
+            if(compraAbertaDados.itens.length === 0) tbodyItens.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Nenhum item inserido.</td></tr>`;
 
-            // 6. Resumo e Rateio
             let participantesArr = Object.keys(compraAbertaDados.participantes);
             let numPart = participantesArr.length;
             let valorPorPessoa = numPart > 0 ? (totalGlobalFinal / numPart) : 0;
@@ -619,12 +611,13 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             tbodyRateio.innerHTML = "";
             
             if (numPart === 0) {
-                tbodyRateio.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Marque participantes acima para gerar o rateio.</td></tr>`;
+                tbodyRateio.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Marque cotistas acima para gerar o rateio.</td></tr>`;
             } else {
                 participantesArr.forEach(p => {
                     let isComprador = (p === compraAbertaDados.comprador);
-                    let papel = isComprador ? `<span style="color:var(--accent-cc); font-weight:bold;">Comprador (Recebedor)</span>` : `Participante`;
+                    let papel = isComprador ? `<span style="color:var(--accent-cc); font-weight:bold;">Comprador (Recebedor)</span>` : `Cotista`;
                     
+                    // Se o comprador for cotista, ele automaticamente já tem sua parte "paga" para si mesmo
                     if (isComprador) compraAbertaDados.pagamentos[p] = true;
                     
                     let pago = compraAbertaDados.pagamentos[p] ? 'checked' : '';
@@ -652,13 +645,54 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             atualizarCalculosCC();
         };
 
+        // Função de montagem do payload EMV (BR Code) do PIX
+        function gerarPayloadPixEMV(chaveRaw) {
+            let chave = chaveRaw.replace(/\s/g, ''); // Limpa espaços
+            if (!chave) return "";
+            
+            let nome = "Recebedor";
+            let cidade = "Brasil"; 
+            
+            // Tratamento simplificado: se for só números com 11 dígitos, insere +55 (Celular padrão)
+            if (chave.length === 11 && !chave.includes('@') && !isNaN(chave)) {
+                chave = "+55" + chave;
+            }
+
+            let payload_format = "000201";
+            let gui = "0014br.gov.bcb.pix";
+            let key_str = `01${chave.length.toString().padStart(2, '0')}${chave}`;
+            let merchant_account = `26${(gui.length + key_str.length).toString().padStart(2, '0')}${gui}${key_str}`;
+            let category_code = "52040000";
+            let currency = "5303986";
+            let country = "5802BR";
+            let merchant_name = `59${nome.length.toString().padStart(2, '0')}${nome}`;
+            let merchant_city = `60${cidade.length.toString().padStart(2, '0')}${cidade}`;
+            let additional_data = "62070503***";
+
+            let payload = `${payload_format}${merchant_account}${category_code}${currency}${country}${merchant_name}${merchant_city}${additional_data}6304`;
+
+            // Cálculo CRC16-CCITT (Polinômio 0x1021)
+            let crc = 0xFFFF;
+            for (let i = 0; i < payload.length; i++) {
+                crc ^= payload.charCodeAt(i) << 8;
+                for (let j = 0; j < 8; j++) {
+                    if ((crc & 0x8000) > 0) crc = (crc << 1) ^ 0x1021;
+                    else crc = crc << 1;
+                }
+            }
+            let crcHex = (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+            return payload + crcHex;
+        }
+
         window.gerarQrCodePixCC = function() {
             let chave = document.getElementById('cc-form-pix').value.trim();
             let imgEl = document.getElementById('cc-pix-qrcode');
             let placeEl = document.getElementById('cc-pix-placeholder');
             
             if (chave) {
-                imgEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(chave)}`;
+                // Transforma a chave pura no código estruturado de pagamentos brasileiro (BR Code)
+                let pixPayload = gerarPayloadPixEMV(chave);
+                imgEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pixPayload)}`;
                 imgEl.style.display = 'block';
                 placeEl.style.display = 'none';
             } else {
@@ -667,36 +701,21 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             }
         };
 
-        // -----------------------------------------------------------------------------
-        // SALVAR E EXCLUIR DEFINITIVAMENTE
-        // -----------------------------------------------------------------------------
         window.salvarCompraColetivaAberta = async function() {
             let senha = prompt("🔒 Digite a senha unificada de segurança para Salvar:");
             if (senha !== SENHA_UNIFICADA) { alert("❌ Senha incorreta!"); return; }
             if (!db || !compraAbertaKey) return;
-
-            try {
-                await db.ref(`comprasColetivas/${compraAbertaKey}`).set(compraAbertaDados);
-                alert("✅ Compra Coletiva salva com sucesso!");
-                voltarListaCompras();
-            } catch (err) {
-                alert("Erro ao salvar: " + err.message);
-            }
+            try { await db.ref(`comprasColetivas/${compraAbertaKey}`).set(compraAbertaDados); alert("✅ Compra Coletiva salva com sucesso!"); voltarListaCompras(); }
+            catch (err) { alert("Erro ao salvar: " + err.message); }
         };
 
         window.excluirCompraColetivaAberta = async function() {
             let senha = prompt("🔒 Digite a senha unificada de segurança para Excluir:");
             if (senha !== SENHA_UNIFICADA) { alert("❌ Senha incorreta!"); return; }
             if (!db || !compraAbertaKey) return;
-
             if (confirm(`Tem certeza absoluta que deseja excluir a compra "${compraAbertaDados.nome}"?`)) {
-                try {
-                    await db.ref(`comprasColetivas/${compraAbertaKey}`).remove();
-                    alert("🗑️ Compra Coletiva excluída.");
-                    voltarListaCompras();
-                } catch (err) {
-                    alert("Erro ao excluir: " + err.message);
-                }
+                try { await db.ref(`comprasColetivas/${compraAbertaKey}`).remove(); alert("🗑️ Compra Coletiva excluída."); voltarListaCompras(); }
+                catch (err) { alert("Erro ao excluir: " + err.message); }
             }
         };
 
