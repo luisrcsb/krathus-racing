@@ -1,13 +1,13 @@
 <!-- 
 ========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.90.0 - ÁREA A4 ESTENDIDA E SEM ROLAGEM)
+ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.91.0 - SEM BARRAS DE ROLAGEM E CONTEÚDO EXPANDIDO)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
 PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas)
 PARTE 3: Estrutura Principal do Dashboard, Filtros de Baterias/Pilotos/Módulos e KPIs Globais
 PARTE 4: Inicialização do Firebase, Configuração de Cache, Regras de Alias e Ordenação
 PARTE 5: Módulo de Gerenciamento de Campeonatos (ZRound, Bancos Separados, Grids de Largada e Pontuação)
-PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Blocos Verticais, QR Code 200%, Tabela A4 Estendida sem Scroll)
+PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Blocos Verticais, QR Code 200%, Conteúdo Estendido sem Scroll)
 PARTE 6: Processamento e Conversão de Arquivos (PDF para Texto, Parser de Voltas, Base64 e Banco de Dados)
 PARTE 7: Renderização Dinâmica de Gráficos (Evolução de Ritmo e Posição Volta a Volta) e Relatórios
 PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado, Consistência Histórica e Laudo)
@@ -66,13 +66,13 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
         .btn-compras-coletivas-trigger { background: linear-gradient(135deg, #2a9d8f 0%, #264653 100%); color: #fff; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; }
 
         .custom-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(13, 17, 26, 0.85); z-index: 10000; justify-content: center; align-items: center; padding: 16px; overflow-y: auto; }
-        .modal-content { background: var(--bg-card); border: 1px solid var(--border-card); border-top: 5px solid var(--accent-gold); border-radius: 12px; width: 100%; max-width: 900px; max-height: 94vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.6); margin: auto; }
+        .modal-content { background: var(--bg-card); border: 1px solid var(--border-card); border-top: 5px solid var(--accent-gold); border-radius: 12px; width: 100%; max-width: 900px; height: auto; display: flex; flex-direction: column; overflow: visible; box-shadow: 0 10px 30px rgba(0,0,0,0.6); margin: auto; }
         .modal-header { padding: 14px 20px; background: var(--bg-card-header); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-card); }
         .modal-title { font-size: 1.15rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 8px; }
         .modal-close { background: transparent; border: none; color: var(--text-muted); font-size: 1.3rem; cursor: pointer; font-weight: bold; }
-        .modal-body { padding: 16px 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; flex: 1; }
+        .modal-body { padding: 16px 20px; overflow: visible; display: flex; flex-direction: column; gap: 14px; flex: 1; }
 
-        .config-panel { background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; width: 100%; }
+        .config-panel { background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; width: 100%; overflow: visible; }
         .config-panel-title { font-size: 0.8rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid var(--border-card); padding-bottom: 6px; }
         
         .config-input, .config-select { background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-card); padding: 6px 10px; border-radius: 6px; flex: 1; font-size: 0.82rem; width: 100%; }
@@ -93,9 +93,9 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
 
         .checkbox-item { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-main); cursor: pointer; }
         
-        .table-container { width: 100%; overflow-x: auto; }
+        .table-container { width: 100%; overflow: visible; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
-        th { background-color: var(--bg-card-header); color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; padding: 8px 12px; font-weight: 700; border-bottom: 1px solid var(--border-card); position: sticky; top: 0; z-index: 2; }
+        th { background-color: var(--bg-card-header); color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; padding: 8px 12px; font-weight: 700; border-bottom: 1px solid var(--border-card); position: static; }
         td { padding: 8px 12px; border-bottom: 1px solid var(--border-card); vertical-align: middle; }
 
         .pix-clickable { cursor: pointer; transition: transform 0.1s ease; }
@@ -110,12 +110,12 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
 
     <!-- MODAL DE RESUMO FISCAL E PAGAMENTO RÁPIDO -->
     <div id="resumo-fiscal-modal" class="custom-modal" style="z-index: 11000;">
-        <div class="modal-content" style="border-top-color: #480ca8; max-width: 850px; height: auto; max-height: 94vh;">
+        <div class="modal-content" style="border-top-color: #480ca8; max-width: 850px; height: auto;">
             <div class="modal-header">
                 <div class="modal-title" id="resumo-fiscal-titulo">📊 Resumo Fiscal e de Pagamentos</div>
                 <button class="modal-close" onclick="fecharModalResumoFiscal()">&times;</button>
             </div>
-            <div class="modal-body" id="resumo-fiscal-body" style="display: flex; flex-direction: column; gap: 14px;">
+            <div class="modal-body" id="resumo-fiscal-body" style="display: flex; flex-direction: column; gap: 14px; overflow: visible;">
                 <!-- Conteúdo injetado via JS -->
             </div>
         </div>
@@ -123,18 +123,18 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
 
     <!-- 🛒 Compras Coletivas -->
     <div id="campeonatos2-modal" class="custom-modal">
-        <div class="modal-content" style="border-top-color: var(--accent-cc); max-width: 1050px;">
+        <div class="modal-content" style="border-top-color: var(--accent-cc); max-width: 1050px; height: auto;">
             <div class="modal-header">
                 <div class="modal-title">🛒 Gestão de Compras Coletivas</div>
                 <button class="modal-close" onclick="fecharModalCampeonatos2()">&times;</button>
             </div>
-            <div class="modal-body" style="position: relative;">
+            <div class="modal-body" style="position: relative; overflow: visible;">
                 
                 <div id="lista-compras-coletivas-view" style="display: flex; flex-direction: column; gap: 16px;">
                     <!-- 1. Compras Cadastradas (No Topo) -->
                     <div style="display: flex; flex-direction: column; gap: 8px;">
                         <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Compras Coletivas Cadastradas</span>
-                        <ul id="cc-lista-cadastradas" style="list-style: none; display: flex; flex-direction: column; gap: 10px; max-height: 420px; overflow-y: auto; padding-right: 4px;">
+                        <ul id="cc-lista-cadastradas" style="list-style: none; display: flex; flex-direction: column; gap: 10px; overflow: visible; padding-right: 0;">
                             <!-- Injetado via JS -->
                         </ul>
                     </div>
@@ -168,7 +168,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                     <!-- Bloco 2: Itens da Compra -->
                     <div class="config-panel">
                         <div class="config-panel-title" style="color: var(--accent-cc);">2. Itens da Compra</div>
-                        <div class="table-container" style="max-height: 150px;">
+                        <div class="table-container">
                             <table>
                                 <thead>
                                     <tr>
@@ -224,10 +224,10 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                         </div>
                     </div>
 
-                    <!-- Bloco 4: Seleção de Cotistas, Rateio e Comprador (Área A4 Estendida sem Rolagem Interna) -->
+                    <!-- Bloco 4: Seleção de Cotistas, Rateio e Comprador -->
                     <div class="config-panel">
                         <div class="config-panel-title" style="color: var(--accent-cc);">4. Seleção de Cotistas, Rateio e Definição de Comprador</div>
-                        <div class="table-container" style="max-height: none; overflow: visible;">
+                        <div class="table-container">
                             <table>
                                 <thead>
                                     <tr>
@@ -610,7 +610,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                     <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 6px;">
                         <div>
                             <span style="font-size: 0.72rem; font-weight: bold; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; display: block;">Itens da Compra Coletiva</span>
-                            <div style="max-height: 140px; overflow-y: auto; padding-right: 4px;">
+                            <div style="overflow: visible;">
                                 ${itensHtmlList}
                             </div>
                         </div>
@@ -648,7 +648,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                 <div class="config-panel" style="margin: 0;">
                     <div class="config-panel-title">4. Participantes e Status de Pagamento</div>
                     <p style="font-size: 0.72rem; color: var(--text-muted);">Clique em um participante pendente para visualizar as opções de quitação.</p>
-                    <div style="max-height: 140px; overflow-y: auto; margin-top: 6px;">
+                    <div style="overflow: visible; margin-top: 6px;">
                         ${htmlCotistasList}
                     </div>
                 </div>
