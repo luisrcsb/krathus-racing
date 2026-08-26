@@ -1,13 +1,13 @@
 <!-- 
 ========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.79.0 - PIX SEM VALOR FIXO - ÁREA 44)
+ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.81.0 - ITEM 4 UNIFICADO E COTA MÍNIMA - ÁREA 44)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
 PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas)
 PARTE 3: Estrutura Principal do Dashboard, Filtros de Baterias/Pilotos/Módulos e KPIs Globais
 PARTE 4: Inicialização do Firebase, Configuração de Cache, Regras de Alias e Ordenação
 PARTE 5: Módulo de Gerenciamento de Campeonatos (ZRound, Bancos Separados, Grids de Largada e Pontuação)
-PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix Livre, Fluxo Integrado)
+PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix, Item 4 Unificado)
 PARTE 6: Processamento e Conversão de Arquivos (PDF para Texto, Parser de Voltas, Base64 e Banco de Dados)
 PARTE 7: Renderização Dinâmica de Gráficos (Evolução de Ritmo e Posição Volta a Volta) e Relatórios
 PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado, Consistência Histórica e Laudo)
@@ -221,10 +221,10 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                         </div>
                     </div>
 
-                    <!-- 6 & 7. COTISTAS, RATEIO E COMPRADOR UNIFICADOS -->
+                    <!-- 4. SELEÇÃO DE COTISTAS, RATEIO E COMPRADOR UNIFICADOS -->
                     <div class="config-panel">
-                        <div class="config-panel-title" style="color: var(--accent-cc);">6 & 7. Seleção de Cotistas, Rateio e Definição de Comprador</div>
-                        <p style="font-size: 0.78rem; color: var(--text-muted);">Marque os participantes ativos abaixo. Em seguida, selecione quem será o <strong>Comprador (Responsável)</strong> entre os participantes marcados.</p>
+                        <div class="config-panel-title" style="color: var(--accent-cc);">4. Seleção de Cotistas, Rateio e Definição de Comprador</div>
+                        <p style="font-size: 0.78rem; color: var(--text-muted);">Marque os participantes ativos abaixo. Em seguida, selecione quem será o <strong>Comprador (Responsável)</strong>. O valor mínimo pago por cada cotista é o valor da cota base.</p>
                         
                         <div class="table-container" style="margin-top: 6px;">
                             <table>
@@ -234,8 +234,8 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                                         <th>Cotista</th>
                                         <th style="width: 160px; text-align: center;">Papel (Definir Comprador)</th>
                                         <th>Cota Base (R$)</th>
-                                        <th>Valor Pago (R$) (Caixa de Texto Livre)</th>
-                                        <th>Situação / Ação (Restituição ou Diferença)</th>
+                                        <th>Valor Pago (R$)</th>
+                                        <th>Situação</th>
                                         <th style="text-align: center;">Status (Pago ✅)</th>
                                     </tr>
                                 </thead>
@@ -417,7 +417,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                 let parts = Object.keys(c.participantes || {}).filter(p => c.participantes[p] === true && !p.toLowerCase().includes("belovotsky"));
                 let totalParts = parts.length;
                 let pagos = 0;
-                parts.forEach(p => { if (c.pagamentos && c.pagamentos[p]) pagos++; });
+                parts.forEach(p => { if (c.pagamentos && c.pagamentos[p] === true) pagos++; });
                 let perc = totalParts > 0 ? (pagos / totalParts) * 100 : 0;
 
                 let rastreioBtnHtml = "";
@@ -482,33 +482,15 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             let numCotistas = cotistasArr.length;
             let cotaBase = numCotistas > 0 ? (totalGlobal / numCotistas) : 0;
 
-            let cotistasPendentes = [];
-            let totalExcedente = 0;
-
-            cotistasArr.forEach(p => {
-                let isPago = c.pagamentos && c.pagamentos[p] === true;
-                let pago = c.valoresPagos && c.valoresPagos[p] !== undefined ? c.valoresPagos[p] : (isPago ? cotaBase : 0);
-                if (isPago && pago > cotaBase + 0.005) {
-                    totalExcedente += (pago - cotaBase);
-                }
-                if (!isPago) {
-                    cotistasPendentes.push(p);
-                }
-            });
-
-            let acrescimoPendentes = cotistasPendentes.length > 0 ? (totalExcedente / cotistasPendentes.length) : 0;
-            let cotaEfetivaPendentes = cotaBase + acrescimoPendentes;
-
             let htmlCotistasList = "";
             if (numCotistas === 0) {
                 htmlCotistasList = `<div style="color: var(--text-muted); text-align:center; padding: 10px;">Nenhum cotista vinculado a esta compra.</div>`;
             } else {
                 cotistasArr.forEach(p => {
                     let isPago = c.pagamentos && c.pagamentos[p] === true;
-                    let cotaDevida = isPago ? cotaBase : cotaEfetivaPendentes;
                     let icon = isPago ? "✅" : "⏳";
                     let badgeColor = isPago ? "var(--accent-green)" : "var(--accent-red)";
-                    let acaoClick = isPago ? "" : `onclick="abrirPainelPagamentoRapido('${key}', '${escapeHtml(p)}', ${cotaDevida})" style="cursor: pointer; border: 1px dashed var(--accent-red);"`;
+                    let acaoClick = isPago ? "" : `onclick="abrirPainelPagamentoRapido('${key}', '${escapeHtml(p)}', ${cotaBase})" style="cursor: pointer; border: 1px dashed var(--accent-red);"`;
 
                     htmlCotistasList += `
                         <div ${acaoClick} style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); padding: 10px 14px; border-radius: 8px; margin-bottom: 6px;">
@@ -516,7 +498,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                                 <span style="font-size: 1.1rem;">${icon}</span>
                                 <div>
                                     <strong>${escapeHtml(p)}</strong>
-                                    <div style="font-size: 0.75rem; color: var(--text-muted);">Cota devida: R$ ${cotaDevida.toFixed(2)}</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);">Cota devida: R$ ${cotaBase.toFixed(2)}</div>
                                 </div>
                             </div>
                             <div style="text-align: right;">
@@ -547,11 +529,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                         <div class="config-panel-title">💰 Status das Cotas</div>
                         <div style="display: flex; flex-direction: column; gap: 6px; font-size: 0.85rem; margin-top: 6px;">
                             <div style="display: flex; justify-content: space-between;"><span>Total de Cotistas:</span> <strong>${numCotistas}</strong></div>
-                            <div style="display: flex; justify-content: space-between;"><span>Cota Base Original:</span> <strong>R$ ${cotaBase.toFixed(2)}</strong></div>
-                            <div style="display: flex; justify-content: space-between;"><span>Excedente a Repassar:</span> <strong style="color: var(--accent-green);">R$ ${totalExcedente.toFixed(2)}</strong></div>
-                            <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--border-card); padding-top: 6px; margin-top: 4px;">
-                                <span>Cota Efetiva Pendentes:</span> <strong>R$ ${cotaEfetivaPendentes.toFixed(2)}</strong>
-                            </div>
+                            <div style="display: flex; justify-content: space-between;"><span>Cota Base (Mínima):</span> <strong style="color: var(--accent-gold);">R$ ${cotaBase.toFixed(2)}</strong></div>
                         </div>
                     </div>
                 </div>
@@ -585,10 +563,10 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                     <div class="config-panel-title" style="color: var(--accent-green);">📲 Envio de Comprovante & Quitação para ${escapeHtml(cotistaNome)}</div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: center;">
                         <div style="display: flex; flex-direction: column; gap: 10px;">
-                            <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold;">1. Simular Anexo de Comprovante (OCR / Leitura Automática)</label>
+                            <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold;">1. Simular Anexo de Comprovante (Mín. R$ ${cotaDevida.toFixed(2)})</label>
                             <input type="file" id="input-arquivo-comprovante" class="config-input" accept="image/*,.pdf" style="font-size: 0.8rem;" onchange="simularLeituraComprovante('${key}', '${escapeHtml(cotistaNome)}', ${cotaDevida})">
                             
-                            <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold; margin-top: 4px;">2. Valor Pago (Permitido alterar para cima, mín. R$ ${cotaDevida.toFixed(2)})</label>
+                            <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold; margin-top: 4px;">2. Valor Pago (Mínimo: R$ ${cotaDevida.toFixed(2)})</label>
                             <input type="number" step="0.01" id="input-valor-pago-rapido" class="config-input" value="${cotaDevida.toFixed(2)}" min="${cotaDevida}" style="font-weight: bold; font-size: 1rem; color: var(--accent-gold);">
                             
                             <button class="btn-action-primary" style="background: var(--accent-green); margin-top: 6px; padding: 10px;" onclick="confirmarBaixaPagamentoRapido('${key}', '${escapeHtml(cotistaNome)}', ${cotaDevida})">✅ Confirmar Quitação / Baixa</button>
@@ -609,7 +587,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                 setTimeout(() => {
                     let valorSugerido = cotaDevida + (Math.random() > 0.7 ? 10.00 : 0);
                     document.getElementById('input-valor-pago-rapido').value = valorSugerido.toFixed(2);
-                    alert(`🔍 Comprovante lido com sucesso pelo sistema!\nValor identificado no comprovante: R$ ${valorSugerido.toFixed(2)}`);
+                    alert(`🔍 Comprovante lido com sucesso pelo sistema!\nValor identificado: R$ ${valorSugerido.toFixed(2)}`);
                 }, 600);
             }
         };
@@ -619,7 +597,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             let valorInformado = parseFloat(inputVal.value) || cotaDevida;
 
             if (valorInformado < cotaDevida - 0.005) {
-                alert(`❌ O valor pago (R$ ${valorInformado.toFixed(2)}) não pode ser inferior à cota devida (R$ ${cotaDevida.toFixed(2)})!`);
+                alert(`❌ O valor pago (R$ ${valorInformado.toFixed(2)}) não pode ser inferior ao valor mínimo da cota (R$ ${cotaDevida.toFixed(2)})!`);
                 return;
             }
 
@@ -779,13 +757,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                 }
             });
 
-            let inputsPago = document.querySelectorAll('.cc-input-pago');
-            inputsPago.forEach(inp => {
-                let pName = inp.getAttribute('data-cotista');
-                let val = parseFloat(inp.value.replace(',', '.')) || 0;
-                compraAbertaDados.valoresPagos[pName] = val;
-            });
-
             let somaPuraItens = 0;
             compraAbertaDados.itens.forEach(i => { somaPuraItens += (i.valor * i.qtd); });
             document.getElementById('cc-form-subtotal').value = somaPuraItens.toFixed(2);
@@ -827,28 +798,18 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             let comprador = compraAbertaDados.comprador;
             if (comprador && compraAbertaDados.participantes[comprador]) {
                 compraAbertaDados.pagamentos[comprador] = true;
-                if (compraAbertaDados.valoresPagos[comprador] === undefined || compraAbertaDados.valoresPagos[comprador] === 0) {
+                if (compraAbertaDados.valoresPagos[comprador] === undefined || compraAbertaDados.valoresPagos[comprador] < cotaBaseOriginal) {
                     compraAbertaDados.valoresPagos[comprador] = cotaBaseOriginal;
                 }
             }
 
-            let totalExcedente = 0;
-            let cotistasPendentes = [];
-
-            cotistasAtivosArr.forEach(p => {
-                let isPago = compraAbertaDados.pagamentos && compraAbertaDados.pagamentos[p] === true;
-                let pago = compraAbertaDados.valoresPagos && compraAbertaDados.valoresPagos[p] !== undefined ? compraAbertaDados.valoresPagos[p] : (isPago ? cotaBaseOriginal : 0);
-
-                if (isPago && pago > cotaBaseOriginal + 0.005) {
-                    totalExcedente += (pago - cotaBaseOriginal);
-                }
-                if (!isPago) {
-                    cotistasPendentes.push(p);
-                }
+            let inputsPago = document.querySelectorAll('.cc-input-pago');
+            inputsPago.forEach(inp => {
+                let pName = inp.getAttribute('data-cotista');
+                let val = parseFloat(inp.value.replace(',', '.')) || cotaBaseOriginal;
+                if (val < cotaBaseOriginal) val = cotaBaseOriginal; // Respeita o mínimo da cota base
+                compraAbertaDados.valoresPagos[pName] = val;
             });
-
-            let acrescimoPorPendente = cotistasPendentes.length > 0 ? (totalExcedente / cotistasPendentes.length) : 0;
-            let cotaEfetivaPendentes = cotaBaseOriginal + acrescimoPorPendente;
 
             let tbodyTabelaUnificada = document.getElementById('cc-tabela-cotistas-rateio');
             tbodyTabelaUnificada.innerHTML = "";
@@ -868,11 +829,9 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                     `;
                 }
 
-                let papel = isComprador ? `<span style="color:var(--accent-gold); font-weight:bold;">Comprador & Cotista</span>` : (isChecked ? `Cotista` : `<span style="color:var(--text-muted);">Inativo</span>`);
-                
                 let isPago = compraAbertaDados.pagamentos && compraAbertaDados.pagamentos[p] === true;
-                let cotaIndividual = isPago ? cotaBaseOriginal : cotaEfetivaPendentes;
-                let valorPagoAtual = compraAbertaDados.valoresPagos && compraAbertaDados.valoresPagos[p] !== undefined ? compraAbertaDados.valoresPagos[p] : (isPago ? cotaBaseOriginal : 0);
+                let valorPagoAtual = compraAbertaDados.valoresPagos && compraAbertaDados.valoresPagos[p] !== undefined ? compraAbertaDados.valoresPagos[p] : cotaBaseOriginal;
+                if (valorPagoAtual < cotaBaseOriginal) valorPagoAtual = cotaBaseOriginal;
 
                 let situacaoHtml = `<span style="color: var(--text-muted);">-</span>`;
                 let statusBadge = `<span style="color: var(--text-muted);">-</span>`;
@@ -881,7 +840,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
 
                 if (isChecked) {
                     cotaDisplayHtml = `<strong style="color: var(--accent-gold);">R$ ${cotaBaseOriginal.toFixed(2)}</strong>`;
-                    inputValorHtml = `<input type="text" class="config-input cc-input-pago" data-cotista="${escapeHtml(p)}" value="${valorPagoAtual > 0 ? valorPagoAtual.toFixed(2) : ''}" placeholder="0.00" onchange="atualizarCalculosCC()" style="width: 110px;" ${isComprador ? 'readonly' : ''}>`;
+                    inputValorHtml = `<input type="number" step="0.01" min="${cotaBaseOriginal.toFixed(2)}" class="config-input cc-input-pago" data-cotista="${escapeHtml(p)}" value="${valorPagoAtual.toFixed(2)}" onchange="atualizarCalculosCC()" style="width: 110px;" ${isComprador ? 'readonly' : ''}>`;
                     
                     let diff = valorPagoAtual - cotaBaseOriginal;
                     if (isPago && diff > 0.005) {
@@ -889,7 +848,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                     } else if (isPago) {
                         situacaoHtml = `<span style="color: var(--text-muted);">Quitado conforme cota base</span>`;
                     } else {
-                        situacaoHtml = `<span style="color: var(--accent-gold);">Pendente (Rateio: R$ ${cotaIndividual.toFixed(2)})</span>`;
+                        situacaoHtml = `<span style="color: var(--accent-gold);">Pendente (Mínimo: R$ ${cotaBaseOriginal.toFixed(2)})</span>`;
                     }
 
                     let badgeText = isPago ? 'Pago ✅' : 'Pendente ⏳';
@@ -934,7 +893,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                 let cotistasAtivosArr = pilotosDisponiveisGlobal.filter(p => compraAbertaDados.participantes && compraAbertaDados.participantes[p] === true);
                 let cotaBaseOriginal = cotistasAtivosArr.length > 0 ? (totalGlobalFinal / cotistasAtivosArr.length) : 0;
 
-                if (!compraAbertaDados.valoresPagos[nome] || compraAbertaDados.valoresPagos[nome] === 0) {
+                if (!compraAbertaDados.valoresPagos[nome] || compraAbertaDados.valoresPagos[nome] < cotaBaseOriginal) {
                     compraAbertaDados.valoresPagos[nome] = cotaBaseOriginal;
                 }
             }
