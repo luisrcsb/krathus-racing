@@ -1,13 +1,13 @@
 <!-- 
 ========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.72.0 - CORREÇÃO Z-INDEX DOS MODAIS - ÁREA 44)
+ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.73.0 - CORREÇÃO DE DUPLICAÇÃO DE PILOTO - ÁREA 44)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
 PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas)
 PARTE 3: Estrutura Principal do Dashboard, Filtros de Baterias/Pilotos/Módulos e KPIs Globais
 PARTE 4: Inicialização do Firebase, Configuração de Cache, Regras de Alias e Ordenação
 PARTE 5: Módulo de Gerenciamento de Campeonatos (ZRound, Bancos Separados, Grids de Largada e Pontuação)
-PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix, Resumo Fiscal, Z-Index)
+PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix, Resumo Fiscal Limpo)
 PARTE 6: Processamento e Conversão de Arquivos (PDF para Texto, Parser de Voltas, Base64 e Banco de Dados)
 PARTE 7: Renderização Dinâmica de Gráficos (Evolução de Ritmo e Posição Volta a Volta) e Relatórios
 PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado, Consistência Histórica e Laudo)
@@ -105,7 +105,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
     <div id="upload-modal" class="custom-modal"><div class="modal-content"><div class="modal-header"><div class="modal-title">📤 Uploads de Telemetria e Arquivos</div><button class="modal-close" onclick="fecharModalUpload()">&times;</button></div><div class="modal-body"><p>Módulo de upload principal de PDFs e arquivos ZRound.</p></div></div></div>
     <div id="campeonatos-modal" class="custom-modal"><div class="modal-content"><div class="modal-header"><div class="modal-title">🏆 Championship Manager (ZRound)</div><button class="modal-close" onclick="fecharModalCampeonatos()">&times;</button></div><div class="modal-body"><p>Módulo ZRound Original com bancos separados e pontuações.</p></div></div></div>
 
-    <!-- MODAL DE RESUMO FISCAL E PAGAMENTO RÁPIDO (Z-INDEX 11000 PARA FICAR NA FRENTE DO MODAL DE COMPRAS) -->
+    <!-- MODAL DE RESUMO FISCAL E PAGAMENTO RÁPIDO -->
     <div id="resumo-fiscal-modal" class="custom-modal" style="z-index: 11000;">
         <div class="modal-content" style="border-top-color: #480ca8; max-width: 800px;">
             <div class="modal-header">
@@ -328,6 +328,26 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
         
         let pilotosDisponiveisGlobal = ["Rafael", "DJ", "Ronaldo", "Gustavo"];
 
+        // Função para limpar e normalizar lista de pilotos, eliminando variações e duplicidades (ex: "Rafael Belovotsky")
+        function sanitizarListaPilotos(listaBruta) {
+            let unicosMap = {};
+            listaBruta.forEach(nome => {
+                if (!nome) return;
+                let nomeClean = nome.trim();
+                let lower = nomeClean.toLowerCase();
+                
+                // Ignora variações longas/duplicadas indesejadas do primeiro nome se houver versão limpa
+                if (lower.includes("belovotsky") || lower.includes("silva belowodski")) {
+                    return; // Ignora o nome completo duplicado para manter apenas o nome limpo "Rafael"
+                }
+                
+                unicosMap[nomeClean] = true;
+            });
+            let resultado = Object.keys(unicosMap);
+            if (resultado.length === 0) resultado = ["Rafael", "DJ", "Ronaldo", "Gustavo"];
+            return resultado;
+        }
+
         try {
             firebase.initializeApp(firebaseConfig);
             db = firebase.database();
@@ -344,7 +364,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                             let nome = child.val().nome || child.key;
                             novaLista.push(nome);
                         });
-                        if(novaLista.length > 0) pilotosDisponiveisGlobal = novaLista;
+                        pilotosDisponiveisGlobal = sanitizarListaPilotos(novaLista);
                     }
                 });
 
