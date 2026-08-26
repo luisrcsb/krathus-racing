@@ -3,11 +3,11 @@
 ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.48.2 - CONSISTÊNCIA BASEada NA MÉDIA DO HISTÓRICO ANTERIOR)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
-PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Championship Manager 2)
+PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas)
 PARTE 3: Estrutura Principal do Dashboard, Filtros de Baterias/Pilotos/Módulos e KPIs Globais
 PARTE 4: Inicialização do Firebase, Configuração de Cache, Regras de Alias (Edgard/DJ) e Ordenação
 PARTE 5: Módulo de Gerenciamento de Campeonatos (ZRound, Bancos Separados, Grids de Largada e Pontuação)
-PARTE 5.1: Módulo de Gerenciamento do Championship Manager 2
+PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas
 PARTE 6: Processamento e Conversão de Arquivos (PDF para Texto, Parser de Voltas, Base64 e Banco de Dados)
 PARTE 7: Renderização Dinâmica de Gráficos (Evolução de Ritmo e Posição Volta a Volta) e Relatórios
 PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado, Consistência Histórica com Média de Todas as Baterias Anteriores vs. Atual e Laudo)
@@ -64,7 +64,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
         .btn-pdf-global { background: linear-gradient(135deg, #ff5722 0%, #e63946 100%); color: #ffffff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; }
         .btn-upload-modal-trigger { background: linear-gradient(135deg, #3a86ff 0%, #2ec4b6 100%); color: #ffffff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
         .btn-campeonatos-trigger { background: linear-gradient(135deg, #ffb703 0%, #fb8500 100%); color: #000; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
-        .btn-campeonatos2-trigger { background: linear-gradient(135deg, #7209b7 0%, #b5179e 100%); color: #fff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-compras-coletivas-trigger { background: linear-gradient(135deg, #2a9d8f 0%, #264653 100%); color: #fff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
         
         .btn-share { background: rgba(58, 134, 255, 0.15); color: var(--accent-blue); border: 1px solid var(--accent-blue); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; }
         .btn-like { background: rgba(230, 57, 70, 0.15); color: var(--accent-red); border: 1px solid var(--accent-red); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; }
@@ -213,7 +213,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
 </head>
 <body>
 
-    <!-- [PARTE 2] Modais do Sistema: Modal de Ficha do Piloto, Central de Uploads, Championship Manager e Championship Manager 2 -->
+    <!-- [PARTE 2] Modais do Sistema: Modal de Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas -->
     <!-- 🏎️ Modal Ficha do Piloto -->
     <div id="piloto-modal" class="custom-modal">
         <div class="modal-content">
@@ -430,34 +430,34 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
         </div>
     </div>
 
-    <!-- 🏆 Championship Manager 2 -->
+    <!-- 🛒 Compras Coletivas -->
     <div id="campeonatos2-modal" class="custom-modal">
-        <div class="modal-content" style="border-top-color: #b5179e;">
+        <div class="modal-content" style="border-top-color: #2a9d8f;">
             <div class="modal-header">
-                <div class="modal-title">🏆 Championship Manager 2</div>
+                <div class="modal-title">🛒 Compras Coletivas</div>
                 <button class="modal-close" onclick="fecharModalCampeonatos2()">&times;</button>
             </div>
             <div class="modal-body">
                 <div style="display: flex; flex-direction: column; gap: 20px;">
                     <div class="upload-box">
-                        <span style="font-size: 0.82rem; font-weight: 700; color: #b5179e; text-transform: uppercase;">🔒 Criar Novo Campeonato 2 (Protegido por Senha Unificada)</span>
+                        <span style="font-size: 0.82rem; font-weight: 700; color: #2a9d8f; text-transform: uppercase;">🔒 Criar Nova Compra Coletiva (Protegido por Senha Unificada)</span>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-                            <input type="text" id="input-nome-campeonato2" class="config-input" placeholder="Nome do Campeonato 2 (Ex: Endurance Krathus 2026)">
-                            <button class="btn-action-primary" style="background: #7209b7;" onclick="criarCampeonato2Protegido()">Criar Campeonato 2</button>
+                            <input type="text" id="input-nome-campeonato2" class="config-input" placeholder="Nome da Compra Coletiva (Ex: Lote Peças RC 2026)">
+                            <button class="btn-action-primary" style="background: #2a9d8f;" onclick="criarCampeonato2Protegido()">Criar Compra Coletiva</button>
                         </div>
                     </div>
 
                     <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Campeonatos 2 Cadastrados</span>
+                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Compras Coletivas Cadastradas</span>
                         <ul id="campeonatos2-lista-modal" style="list-style: none; display: flex; flex-direction: column; gap: 10px; max-height: 220px; overflow-y: auto;">
-                            <li>Carregando campeonatos 2...</li>
+                            <li>Carregando compras coletivas...</li>
                         </ul>
                     </div>
 
                     <!-- PAINEL ZROUND 2 COM 5 ABAS PRINCIPAIS -->
                     <div id="container-zround2-campeonato" style="display: none; flex-direction: column; gap: 15px; border-top: 2px solid var(--border-card); padding-top: 15px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                            <h3 id="zround2-camp-titulo-ativo" style="font-size: 1.1rem; color: #b5179e;">Configurando: --</h3>
+                            <h3 id="zround2-camp-titulo-ativo" style="font-size: 1.1rem; color: #2a9d8f;">Configurando: --</h3>
                             <button class="btn-action-danger" style="padding: 4px 10px; font-size: 0.78rem;" onclick="fecharPainelZRound2Camp()">Fechar Painel</button>
                         </div>
 
@@ -472,7 +472,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                         <!-- ABA 1 -->
                         <div id="zround2-aba-1" class="zround2-aba-content zround-aba-content" style="display: flex; flex-direction: column; gap: 12px;">
                             <div class="config-panel">
-                                <div class="config-panel-title" style="color: #b5179e;">Parâmetros Gerais e Sistema de Pontuação (CM 2)</div>
+                                <div class="config-panel-title" style="color: #2a9d8f;">Parâmetros Gerais e Sistema de Pontuação (Compras Coletivas)</div>
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                                     <div>
                                         <label style="font-size: 0.75rem; color: var(--text-muted);">Número de Provas Previstas</label>
@@ -487,15 +487,15 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                                     <label style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Tabela de Pontuação (1º ao 10º)</label>
                                     <input type="text" id="zround2-tabela-pontos-input" class="config-input" style="width:100%; margin-top:4px;" value="25, 18, 15, 12, 10, 8, 6, 4, 2, 1">
                                 </div>
-                                <div style="margin-top: 12px; background: rgba(114, 9, 183, 0.08); padding: 12px; border-radius: 8px; border: 1px solid var(--border-card);">
+                                <div style="margin-top: 12px; background: rgba(42, 157, 143, 0.08); padding: 12px; border-radius: 8px; border: 1px solid var(--border-card);">
                                     <label class="checkbox-item" style="font-weight: 600;">
                                         <input type="checkbox" id="zround2-usa-grid-treino" style="width: 18px; height: 18px;">
                                         Formar grid a partir de treino (pega os 3 melhores tempos de cada piloto e descarta o pior)
                                     </label>
                                 </div>
                                 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px;">
-                                    <button class="btn-action-danger" onclick="excluirCampeonato2Atual()">🗑️ Excluir Campeonato 2</button>
-                                    <button class="btn-action-primary" style="background: #7209b7;" onclick="salvarAba1ConfigGeral2()">Salvar Configurações</button>
+                                    <button class="btn-action-danger" onclick="excluirCampeonato2Atual()">🗑️ Excluir Compra Coletiva</button>
+                                    <button class="btn-action-primary" style="background: #2a9d8f;" onclick="salvarAba1ConfigGeral2()">Salvar Configurações</button>
                                 </div>
                             </div>
                         </div>
@@ -503,22 +503,22 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                         <!-- ABA 2 -->
                         <div id="zround2-aba-2" class="zround2-aba-content zround-aba-content" style="display: none; flex-direction: column; gap: 12px;">
                             <div class="config-panel">
-                                <div class="config-panel-title" style="color: #b5179e;">Inscrição Manual ou Importação de Pilotos do Banco Geral</div>
+                                <div class="config-panel-title" style="color: #2a9d8f;">Inscrição Manual ou Importação de Pilotos do Banco Geral</div>
                                 <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
                                     <select id="zround2-select-piloto-geral" class="config-select">
                                         <option value="">Selecione um piloto já cadastrado no site...</option>
                                     </select>
-                                    <button class="btn-action-primary" style="background: #7209b7;" onclick="importarPilotoBancoGeral2()">Adicionar do Banco Geral</button>
+                                    <button class="btn-action-primary" style="background: #2a9d8f;" onclick="importarPilotoBancoGeral2()">Adicionar do Banco Geral</button>
                                 </div>
                                 <div class="config-row" style="margin-top: 6px;">
                                     <input type="text" id="zround2-novo-piloto-manual" class="config-input" placeholder="Ou digite o nome de um novo piloto">
-                                    <button class="btn-action-primary" style="background: #7209b7;" onclick="adicionarPilotoManualZRound2()">Cadastrar Novo Piloto</button>
+                                    <button class="btn-action-primary" style="background: #2a9d8f;" onclick="adicionarPilotoManualZRound2()">Cadastrar Novo Piloto</button>
                                 </div>
                                 <div class="table-container" style="margin-top: 10px;">
                                     <table>
-                                        <thead><tr><th>Piloto Inscrito no Campeonato 2</th><th style="text-align: right;">Ações</th></tr></thead>
+                                        <thead><tr><th>Piloto Participante</th><th style="text-align: right;">Ações</th></tr></thead>
                                         <tbody id="zround2-tabela-pilotos-inscritos">
-                                            <tr><td colspan="2" style="text-align: center; color: var(--text-muted);">Nenhum piloto inscrito.</td></tr>
+                                            <tr><td colspan="2" style="text-align: center; color: var(--text-muted);">Nenhum participante inscrito.</td></tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -528,35 +528,35 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                         <!-- ABA 3 -->
                         <div id="zround2-aba-3" class="zround2-aba-content zround-aba-content" style="display: none; flex-direction: column; gap: 12px;">
                             <div class="upload-box">
-                                <span style="font-size: 0.82rem; font-weight: 700; color: #b5179e; text-transform: uppercase;">📤 Upload e Seleção de Provas (Banco de Dados Separado)</span>
-                                <p style="font-size: 0.82rem; color: var(--text-muted);">Adicione novos arquivos de provas (PDF/HTML) ou importe relatórios salvos no banco principal para o banco dedicado deste campeonato.</p>
+                                <span style="font-size: 0.82rem; font-weight: 700; color: #2a9d8f; text-transform: uppercase;">📤 Upload e Seleção de Provas (Banco de Dados Separado)</span>
+                                <p style="font-size: 0.82rem; color: var(--text-muted);">Adicione novos arquivos de provas (PDF/HTML) ou importe relatórios salvos no banco principal para o banco dedicado desta compra coletiva.</p>
                                 <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 6px;">
                                     <input type="file" id="zround2-input-file-prova" accept=".pdf,.html,.htm" multiple style="background: var(--bg-card); padding: 8px; border-radius: 6px; border: 1px solid var(--border-card); color: var(--text-main); flex: 1; font-size: 0.85rem;">
-                                    <button class="btn btn-upload-modal-trigger" style="background: linear-gradient(135deg, #7209b7 0%, #b5179e 100%);" onclick="uploadProvasBancoSeparado2()">Enviar Prova (Banco Separado)</button>
+                                    <button class="btn btn-upload-modal-trigger" style="background: linear-gradient(135deg, #2a9d8f 0%, #264653 100%);" onclick="uploadProvasBancoSeparado2()">Enviar Prova (Banco Separado)</button>
                                 </div>
                             </div>
 
-                            <div class="upload-box" style="border-color: #b5179e; background: rgba(181, 23, 158, 0.04);">
-                                <span style="font-size: 0.82rem; font-weight: 700; color: #b5179e; text-transform: uppercase;">⏱️ Sessão de Treino Exclusiva para Grid (Regra: 3 Melhores Voltas, descarta a pior)</span>
+                            <div class="upload-box" style="border-color: #2a9d8f; background: rgba(42, 157, 143, 0.04);">
+                                <span style="font-size: 0.82rem; font-weight: 700; color: #2a9d8f; text-transform: uppercase;">⏱️ Sessão de Treino Exclusiva para Grid (Regra: 3 Melhores Voltas, descarta a pior)</span>
                                 <p style="font-size: 0.82rem; color: var(--text-muted);">Envie um relatório de treino oficial para o cálculo automático do grid de largada inicial da primeira prova.</p>
                                 <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 6px;">
                                     <input type="file" id="zround2-input-file-treino-grid" accept=".pdf,.html,.htm" style="background: var(--bg-card); padding: 8px; border-radius: 6px; border: 1px solid var(--border-card); color: var(--text-main); flex: 1; font-size: 0.85rem;">
-                                    <button class="btn-action-primary" style="background: #b5179e; color: #fff; font-weight: 700;" onclick="processarTreinoParaGrid2()">Processar Treino p/ Grid</button>
+                                    <button class="btn-action-primary" style="background: #2a9d8f; color: #fff; font-weight: 700;" onclick="processarTreinoParaGrid2()">Processar Treino p/ Grid</button>
                                 </div>
                                 <div id="status-treino-grid2-info" style="font-size: 0.8rem; color: var(--accent-green); margin-top: 4px;">Nenhum treino de grid processado.</div>
                             </div>
 
                             <div class="upload-box" style="border-style: solid; border-color: var(--border-card);">
-                                <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">📥 Importar Provas Existentes do Banco Principal do Site</span>
+                                <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">📥 Importar Provas Existentes do Banco Principal do Site</span>
                                 <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 6px;">
                                     <select id="zround2-select-prova-banco-principal" class="config-select">
                                         <option value="">Selecione uma prova do banco principal...</option>
                                     </select>
-                                    <button class="btn-action-primary" style="background: #7209b7;" onclick="importarProvaDoBancoPrincipalParaCampeonato2()">Importar para o Banco Separado</button>
+                                    <button class="btn-action-primary" style="background: #2a9d8f;" onclick="importarProvaDoBancoPrincipalParaCampeonato2()">Importar para o Banco Separado</button>
                                 </div>
                             </div>
                             <div style="display: flex; flex-direction: column; gap: 8px;">
-                                <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Provas Registradas no Banco Separado deste Campeonato 2</span>
+                                <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Provas Registradas no Banco Separado desta Compra Coletiva</span>
                                 <ul id="zround2-lista-provas-banco-separado" style="list-style: none; display: flex; flex-direction: column; gap: 6px; max-height: 180px; overflow-y: auto;">
                                     <li>Nenhuma prova registrada no banco separado.</li>
                                 </ul>
@@ -566,7 +566,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                         <!-- ABA 4 -->
                         <div id="zround2-aba-4" class="zround2-aba-content zround-aba-content" style="display: none; flex-direction: column; gap: 12px;">
                             <div class="config-panel">
-                                <div class="config-panel-title" style="color: #b5179e;">Formação dos Grids de Largada</div>
+                                <div class="config-panel-title" style="color: #2a9d8f;">Formação dos Grids de Largada</div>
                                 <div style="margin-bottom: 6px;">
                                     <label class="checkbox-item"><input type="checkbox" id="zround2-inverter-segunda" onchange="atualizarInterfacePainelZRound2()"> Inverter automaticamente a ordem da bateria seguinte com base no resultado da prova anterior</label>
                                 </div>
@@ -579,7 +579,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                         <!-- ABA 5 -->
                         <div id="zround2-aba-5" class="zround2-aba-content zround-aba-content" style="display: none; flex-direction: column; gap: 12px;">
                             <div class="config-panel">
-                                <div class="config-panel-title" style="color: #b5179e;">Classificação Geral do Campeonato 2</div>
+                                <div class="config-panel-title" style="color: #2a9d8f;">Classificação Geral da Compra Coletiva</div>
                                 <div class="table-container" style="margin-top: 6px;">
                                     <table>
                                         <thead><tr><th>Pos</th><th>Piloto</th><th style="text-align: right;">Pontos Totais</th></tr></thead>
@@ -589,7 +589,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                                     </table>
                                 </div>
                                 <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
-                                    <button class="btn-action-danger" style="background: linear-gradient(135deg, #7209b7 0%, #b5179e 100%); color: #fff; font-weight: 700; padding: 12px 24px;" onclick="finalizarCampeonato2Atual()">🏁 Finalizar Campeonato 2</button>
+                                    <button class="btn-action-danger" style="background: linear-gradient(135deg, #2a9d8f 0%, #264653 100%); color: #fff; font-weight: 700; padding: 12px 24px;" onclick="finalizarCampeonato2Atual()">🏁 Finalizar Compra Coletiva</button>
                                 </div>
                             </div>
                         </div>
@@ -610,7 +610,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             <div class="header-actions">
                 <button class="btn btn-upload-modal-trigger" onclick="abrirModalUpload()">📤 Uploads</button>
                 <button class="btn btn-campeonatos-trigger" onclick="abrirModalCampeonatos()">🏆 Championship Manager</button>
-                <button class="btn btn-campeonatos2-trigger" onclick="abrirModalCampeonatos2()">🏆 Championship Manager 2</button>
+                <button class="btn btn-compras-coletivas-trigger" onclick="abrirModalCampeonatos2()">🛒 Compras Coletivas</button>
                 <button class="btn btn-pdf-global" onclick="gerarRelatórioPDF()">📄 Gerar relatório</button>
             </div>
         </header>
@@ -890,7 +890,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
         };
         window.fecharModalCampeonatos = function() { document.getElementById('campeonatos-modal').style.display = 'none'; };
 
-        // [PARTE 5.1] Módulo de Gerenciamento do Championship Manager 2
+        // [PARTE 5.1] Módulo de Gerenciamento de Compras Coletivas
         window.abrirModalCampeonatos2 = function() {
             document.getElementById('campeonatos2-modal').style.display = 'flex';
             renderizarListaCampeonatos2Modal();
@@ -943,7 +943,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
         };
 
         window.criarCampeonato2Protegido = async function() {
-            let senha = prompt("🔒 Digite a senha unificada de segurança para criar um novo campeonato 2:");
+            let senha = prompt("🔒 Digite a senha unificada de segurança para criar uma nova compra coletiva:");
             if (senha === null) return;
             if (senha !== SENHA_UNIFICADA) {
                 alert("❌ Senha incorreta!");
@@ -952,7 +952,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
 
             let nomeCamp = document.getElementById('input-nome-campeonato2').value.trim();
             if (!nomeCamp) {
-                alert("Digite o nome do campeonato 2.");
+                alert("Digite o nome da compra coletiva.");
                 return;
             }
 
@@ -981,7 +981,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
 
             await db.ref('campeonatos2/' + campKey).set(novoCamp);
             document.getElementById('input-nome-campeonato2').value = "";
-            alert(`Campeonato 2 "${nomeCamp}" criado com sucesso!`);
+            alert(`Compra coletiva "${nomeCamp}" criada com sucesso!`);
             renderizarListaCampeonatos2Modal();
         };
 
@@ -1051,7 +1051,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             ul.innerHTML = "";
             let keys = Object.keys(campeonatos2Cache);
             if (keys.length === 0) {
-                ul.innerHTML = `<li style="color: var(--text-muted); text-align: center; padding: 6px;">Nenhum campeonato 2 cadastrado.</li>`;
+                ul.innerHTML = `<li style="color: var(--text-muted); text-align: center; padding: 6px;">Nenhuma compra coletiva cadastrada.</li>`;
                 return;
             }
 
@@ -1070,10 +1070,10 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                 let topoHtml = `
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                         <div>
-                            <span style="font-size: 1rem; font-weight: 700; color: var(--text-title);">🏆 ${escapeHtml(camp.nome)}</span>
-                            <span style="font-size: 0.78rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-left: 8px; background: ${statusCamp === 'Finalizada' ? 'rgba(46,196,182,0.15); color: var(--accent-green);' : 'rgba(181,23,158,0.15); color: #b5179e;'}">${statusCamp}</span>
+                            <span style="font-size: 1rem; font-weight: 700; color: var(--text-title);">🛒 ${escapeHtml(camp.nome)}</span>
+                            <span style="font-size: 0.78rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-left: 8px; background: ${statusCamp === 'Finalizada' ? 'rgba(46,196,182,0.15); color: var(--accent-green);' : 'rgba(42,157,143,0.15); color: #2a9d8f;'}">${statusCamp}</span>
                         </div>
-                        <button class="btn-action-primary" style="background: #7209b7; padding: 5px 14px; font-size: 0.8rem;" onclick="selecionarCampeonatoZRound2('${key}')">Gerenciar</button>
+                        <button class="btn-action-primary" style="background: #2a9d8f; padding: 5px 14px; font-size: 0.8rem;" onclick="selecionarCampeonatoZRound2('${key}')">Gerenciar</button>
                     </div>`;
 
                 let podiumHtml = "";
@@ -1091,7 +1091,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                                 <span>${medals[idx].icon}</span>
                                 <strong style="color: ${medals[idx].color};">${medals[idx].label}</strong>
                                 <a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(r.piloto)}')">${escapeHtml(r.piloto)}</a>
-                                <span style="color: #b5179e; font-size: 0.78rem;">(${r.pontos} pts)</span>
+                                <span style="color: #2a9d8f; font-size: 0.78rem;">(${r.pontos} pts)</span>
                             </div>
                         `).join('');
                         podiumHtml = `<div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px;">${badgesStr}</div>`;
@@ -1270,16 +1270,16 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             let select = document.getElementById('zround2-select-piloto-geral');
             let nomeP = select.value;
             if (!nomeP) {
-                alert("Selecione um piloto do banco geral.");
+                alert("Selecione um participante do banco geral.");
                 return;
             }
             let pKey = "pil2_" + nomeP.toLowerCase().replace(/[^a-z0-9]/g, "_") + "_" + Date.now();
             try {
                 await db.ref(`campeonatos2/${campeonato2AtivoKey}/pilotosInscritos/${pKey}`).set({ nome: nomeP });
-                alert(`Piloto "${nomeP}" importado com sucesso para o campeonato 2!`);
+                alert(`Participante "${nomeP}" importado com sucesso para a compra coletiva!`);
                 select.value = "";
             } catch (err) {
-                alert("Erro ao importar piloto: " + err.message);
+                alert("Erro ao importar participante: " + err.message);
             }
         };
 
@@ -1304,16 +1304,16 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             if (!campeonato2AtivoKey || !db) return;
             let nomeP = document.getElementById('zround2-novo-piloto-manual').value.trim();
             if (!nomeP) {
-                alert("Digite o nome do piloto.");
+                alert("Digite o nome do participante.");
                 return;
             }
             let pKey = "pil2_" + nomeP.toLowerCase().replace(/[^a-z0-9]/g, "_") + "_" + Date.now();
             try {
                 await db.ref(`campeonatos2/${campeonato2AtivoKey}/pilotosInscritos/${pKey}`).set({ nome: nomeP });
                 document.getElementById('zround2-novo-piloto-manual').value = "";
-                alert(`Piloto "${nomeP}" cadastrado com sucesso!`);
+                alert(`Participante "${nomeP}" cadastrado com sucesso!`);
             } catch (err) {
-                alert("Erro ao cadastrar piloto: " + err.message);
+                alert("Erro ao cadastrar participante: " + err.message);
             }
         };
 
@@ -1326,7 +1326,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
 
         window.removerPilotoCampeonato2ZRound = async function(pKey) {
             if (!campeonato2AtivoKey || !db) return;
-            if (confirm("Deseja remover este piloto do campeonato 2?")) {
+            if (confirm("Deseja remover este participante da compra coletiva?")) {
                 await db.ref(`campeonatos2/${campeonato2AtivoKey}/pilotosInscritos/${pKey}`).remove();
             }
         };
@@ -1409,11 +1409,11 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
 
         window.excluirCampeonato2Atual = async function() {
             if (!campeonato2AtivoKey || !db) {
-                alert("Nenhum campeonato 2 selecionado.");
+                alert("Nenhuma compra coletiva selecionada.");
                 return;
             }
             
-            let senha = prompt("🔒 Digite a senha unificada de segurança para EXCLUIR este campeonato 2:");
+            let senha = prompt("🔒 Digite a senha unificada de segurança para EXCLUIR esta compra coletiva:");
             if (senha === null) return;
             if (senha !== SENHA_UNIFICADA) {
                 alert("❌ Senha incorreta!");
@@ -1421,16 +1421,16 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             }
 
             let camp = campeonatos2Cache[campeonato2AtivoKey];
-            let nomeCamp = camp ? camp.nome : "este campeonato 2";
+            let nomeCamp = camp ? camp.nome : "esta compra coletiva";
 
-            if (confirm(`Tem certeza absoluta que deseja excluir o campeonato 2 "${nomeCamp}"? Todos os dados, provas e inscrições vinculadas serão perdidos.`)) {
+            if (confirm(`Tem certeza absoluta que deseja excluir a compra coletiva "${nomeCamp}"? Todos os dados e itens vinculados serão perdidos.`)) {
                 try {
                     await db.ref(`campeonatos2/${campeonato2AtivoKey}`).remove();
-                    alert("Campeonato 2 excluído com sucesso!");
+                    alert("Compra coletiva excluída com sucesso!");
                     fecharPainelZRound2Camp();
                     renderizarListaCampeonatos2Modal();
                 } catch (err) {
-                    alert("Erro ao excluir campeonato 2: " + err.message);
+                    alert("Erro ao excluir compra coletiva: " + err.message);
                 }
             }
         };
@@ -1491,7 +1491,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
         window.processarTreinoParaGrid2 = async function() {
             if (!campeonato2AtivoKey || !db) return;
             let inputEl = document.getElementById('zround2-input-file-treino-grid');
-            if (!inputEl || !inputEl.files || inputEl.files.length === 0) {
+            if (!inputEl || !inputEl.files || !inputEl.files.length === 0) {
                 alert("Selecione um arquivo de treino (PDF ou HTML).");
                 return;
             }
@@ -1532,7 +1532,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
 
                 rankingGridTreino.sort((a, b) => a.melhorTempo - b.melhorTempo);
                 await db.ref(`campeonatos2/${campeonato2AtivoKey}/gridTreinoDados`).set(rankingGridTreino);
-                document.getElementById('status-treino-grid2-info').innerText = `✅ Treino processado! Grid inicial formado com ${rankingGridTreino.length} pilotos.`;
+                document.getElementById('status-treino-grid2-info').innerText = `✅ Treino processado! Grid inicial formado com ${rankingGridTreino.length} participantes.`;
                 inputEl.value = "";
                 alert("Treino processado com sucesso para formação do grid!");
                 atualizarInterfacePainelZRound2();
@@ -1600,7 +1600,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
 
         window.uploadProvasBancoSeparado2 = async function() {
             if (!campeonato2AtivoKey || !db) {
-                alert("Nenhum campeonato 2 selecionado.");
+                alert("Nenhuma compra coletiva selecionada.");
                 return;
             }
             let inputEl = document.getElementById('zround2-input-file-prova');
@@ -1651,7 +1651,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             }
 
             inputEl.value = "";
-            alert("Prova(s) convertida(s) e salva(s) com sucesso no BANCO SEPARADO do campeonato 2!");
+            alert("Prova(s) convertida(s) e salva(s) com sucesso no BANCO SEPARADO da compra coletiva!");
             atualizarInterfacePainelZRound2();
         };
 
@@ -1695,7 +1695,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
 
         window.importarProvaDoBancoPrincipalParaCampeonato2 = async function() {
             if (!campeonato2AtivoKey || !db) {
-                alert("Nenhum campeonato 2 selecionado.");
+                alert("Nenhuma compra coletiva selecionada.");
                 return;
             }
             let select = document.getElementById('zround2-select-prova-banco-principal');
@@ -1723,7 +1723,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
 
             try {
                 await db.ref(`campeonatos2/${campeonato2AtivoKey}/bateriasBancoSeparado/${batKey}`).set(registroCopia);
-                alert("Prova importada com sucesso do banco principal para o banco separado deste campeonato 2!");
+                alert("Prova importada com sucesso do banco principal para o banco separado desta compra coletiva!");
                 select.value = "";
                 atualizarInterfacePainelZRound2();
             } catch (err) {
@@ -1741,7 +1741,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
 
         window.excluirProvaBancoSeparado2 = async function(batKey) {
             if (!campeonato2AtivoKey || !db) return;
-            if (confirm("Deseja excluir esta prova do banco de dados separado do campeonato 2?")) {
+            if (confirm("Deseja excluir esta prova do banco de dados separado da compra coletiva?")) {
                 await db.ref(`campeonatos2/${campeonato2AtivoKey}/bateriasBancoSeparado/${batKey}`).remove();
                 atualizarInterfacePainelZRound2();
             }
@@ -1759,9 +1759,9 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
 
         window.finalizarCampeonato2Atual = async function() {
             if (!campeonato2AtivoKey || !db) return;
-            if (confirm("Deseja realmente finalizar este campeonato 2? O status será alterado para 'Finalizada' e o pódio será exibido na listagem.")) {
+            if (confirm("Deseja realmente finalizar esta compra coletiva? O status será alterado para 'Finalizada' e o pódio será exibido na listagem.")) {
                 await db.ref(`campeonatos2/${campeonato2AtivoKey}/status`).set("Finalizada");
-                alert("Campeonato 2 finalizado com sucesso!");
+                alert("Compra coletiva finalizada com sucesso!");
                 fecharPainelZRound2Camp();
                 renderizarListaCampeonatos2Modal();
             }
@@ -1901,7 +1901,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             let pilotosInscritos = camp.pilotosInscritos || {};
             let pKeys = Object.keys(pilotosInscritos);
             if (pKeys.length === 0) {
-                tbodyPilotos.innerHTML = `<tr><td colspan="2" style="text-align: center; color: var(--text-muted);">Nenhum piloto inscrito.</td></tr>`;
+                tbodyPilotos.innerHTML = `<tr><td colspan="2" style="text-align: center; color: var(--text-muted);">Nenhum participante inscrito.</td></tr>`;
             } else {
                 tbodyPilotos.innerHTML = pKeys.map(pk => `
                     <tr>
@@ -1980,7 +1980,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
 
                 let linhasGridHtml = '';
                 if (pilotoGridAtual.length === 0) {
-                    linhasGridHtml = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">Sem pilotos definidos para este grid.</td></tr>`;
+                    linhasGridHtml = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">Sem participantes definidos para este grid.</td></tr>`;
                 } else {
                     linhasGridHtml = pilotoGridAtual.map((pilotoNome, idx) => `
                         <tr>
@@ -2014,7 +2014,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                     <tr>
                         <td><span class="pos-badge">${idx + 1}º</span></td>
                         <td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(r.piloto)}')">${escapeHtml(r.piloto)}</a></strong></td>
-                        <td style="text-align: right; color: #b5179e; font-weight: 700;">${r.pontos} pts</td>
+                        <td style="text-align: right; color: #2a9d8f; font-weight: 700;">${r.pontos} pts</td>
                     </tr>`).join('');
             }
         }
