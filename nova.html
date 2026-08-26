@@ -1,13 +1,13 @@
 <!-- 
 ========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.66.0 - COMPRAS COLETIVAS + SOMA NA COTA AJUSTADA)
+ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.67.0 - COMPRAS COLETIVAS + RATEIO DIRETO DE EXCEDENTES)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
 PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas)
 PARTE 3: Estrutura Principal do Dashboard, Filtros de Baterias/Pilotos/Módulos e KPIs Globais
 PARTE 4: Inicialização do Firebase, Configuração de Cache, Regras de Alias e Ordenação
 PARTE 5: Módulo de Gerenciamento de Campeonatos (ZRound, Bancos Separados, Grids de Largada e Pontuação)
-PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix, Cotistas, Soma na Cota)
+PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix, Cotistas, Rateio Direto)
 PARTE 6: Processamento e Conversão de Arquivos (PDF para Texto, Parser de Voltas, Base64 e Banco de Dados)
 PARTE 7: Renderização Dinâmica de Gráficos (Evolução de Ritmo e Posição Volta a Volta) e Relatórios
 PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado, Consistência Histórica e Laudo)
@@ -375,7 +375,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             let nova = {
                 chave: key, nome: nome, frete: 0, imposto: 0, icms: 0, desconto: 0, outrosDescontos: 0,
                 itens: [{ imgUrl: "", nomeItem: "", link: "", valor: 0, qtd: 1 }],
-                comprador: "", chavePix: "", chavesPixPorComprador: {}, participantes: {}, pagamentos: {}, valoresPagos: {}, redistribuirCotistas: {}, rastreio: ""
+                comprador: "", chavePix: "", chavesPixPorComprador: {}, participantes: {}, pagamentos: {}, valoresPagos: {}, rastreio: ""
             };
 
             await db.ref(`comprasColetivas/${key}`).set(nova);
@@ -469,7 +469,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             if (!compraAbertaDados.participantes) compraAbertaDados.participantes = {};
             if (!compraAbertaDados.pagamentos) compraAbertaDados.pagamentos = {};
             if (!compraAbertaDados.valoresPagos) compraAbertaDados.valoresPagos = {};
-            if (!compraAbertaDados.redistribuirCotistas) compraAbertaDados.redistribuirCotistas = {};
             if (!compraAbertaDados.chavesPixPorComprador) compraAbertaDados.chavesPixPorComprador = {};
 
             document.getElementById('lista-compras-coletivas-view').style.display = 'none';
@@ -511,12 +510,24 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
 
         window.aoMudarComprador = function() {
             let novoComprador = document.getElementById('cc-form-comprador').value;
+            let compradorAnterior = compraAbertaDados.comprador;
+            
             compraAbertaDados.comprador = novoComprador;
 
-            if (novoComprador && compraAbertaDados.participantes[novoComprador] === undefined && !compraAbertaDados._compradorInicializado) {
-                compraAbertaDados.participantes[novoComprador] = true;
+            if (compradorAnterior && compradorAnterior !== novoComprador) {
+                // Se trocou o comprador, remove o status automático do anterior se ele não tiver pago manualmente
+                if (compraAbertaDados.valoresPagos[compradorAnterior] === undefined) {
+                    delete compraAbertaDados.pagamentos[compradorAnterior];
+                }
             }
-            compraAbertaDados._compradorInicializado = true;
+
+            if (novoComprador) {
+                if (compraAbertaDados.participantes[novoComprador] === undefined) {
+                    compraAbertaDados.participantes[novoComprador] = true;
+                }
+                // Comprador participante já entra com pagamento marcado e valor base assumido
+                compraAbertaDados.pagamentos[novoComprador] = true;
+            }
 
             let inputPix = document.getElementById('cc-form-pix');
             if (novoComprador && compraAbertaDados.chavesPixPorComprador && compraAbertaDados.chavesPixPorComprador[novoComprador]) {
@@ -565,11 +576,14 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
         window.toggleParticipante = function(nome, isChecked) {
             if (isChecked) { 
                 compraAbertaDados.participantes[nome] = true; 
+                let compradorAtual = document.getElementById('cc-form-comprador').value;
+                if (nome === compradorAtual) {
+                    compraAbertaDados.pagamentos[nome] = true;
+                }
             } else { 
                 delete compraAbertaDados.participantes[nome]; 
                 delete compraAbertaDados.pagamentos[nome]; 
                 delete compraAbertaDados.valoresPagos[nome];
-                delete compraAbertaDados.redistribuirCotistas[nome];
             }
             atualizarCalculosCC();
         };
@@ -648,30 +662,38 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             
             if(compraAbertaDados.itens.length === 0) tbodyItens.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Nenhum item inserido.</td></tr>`;
 
-            // ITEM 6: Cálculo de Excedentes e Rateio com Soma Automática no Valor Pago
+            // ITEM 6: Lógica de Rateio Direto de Excedentes entre Participantes Pendentes
             let cotistasArr = pilotosDisponiveisGlobal.filter(p => compraAbertaDados.participantes && compraAbertaDados.participantes[p] === true);
             let numCotistas = cotistasArr.length;
             let cotaBaseOriginal = numCotistas > 0 ? (totalGlobalFinal / numCotistas) : 0;
 
+            // Garante que o comprador (se selecionado e participante) venha com pagamento marcado e valor base padrão, a menos que customizado
+            let comprador = compraAbertaDados.comprador;
+            if (comprador && compraAbertaDados.participantes[comprador]) {
+                if (compraAbertaDados.pagamentos[comprador] === undefined) {
+                    compraAbertaDados.pagamentos[comprador] = true;
+                }
+            }
+
+            // Calcula o excedente total gerado por quem pagou acima da cota base
             let totalExcedente = 0;
+            let cotistasPendentes = [];
+
             cotistasArr.forEach(p => {
-                let pago = compraAbertaDados.valoresPagos[p] !== undefined ? compraAbertaDados.valoresPagos[p] : 0;
                 let isPago = compraAbertaDados.pagamentos[p] === true;
+                let pago = compraAbertaDados.valoresPagos[p] !== undefined ? compraAbertaDados.valoresPagos[p] : (isPago ? cotaBaseOriginal : 0);
+
                 if (isPago && pago > cotaBaseOriginal + 0.005) {
                     totalExcedente += (pago - cotaBaseOriginal);
                 }
+                if (!isPago) {
+                    cotistasPendentes.push(p);
+                }
             });
 
-            let cotistasParaRedistribuir = cotistasArr.filter(p => {
-                let isPago = compraAbertaDados.pagamentos[p] === true;
-                let marcadoRedist = compraAbertaDados.redistribuirCotistas[p] === true;
-                return !isPago && marcadoRedist;
-            });
-
-            let cotaAjustadaPendentes = cotaBaseOriginal;
-            if (cotistasParaRedistribuir.length > 0 && totalExcedente > 0) {
-                cotaAjustadaPendentes = cotaBaseOriginal + (totalExcedente / cotistasParaRedistribuir.length);
-            }
+            // O excedente é dividido igualmente entre todos os cotistas pendentes
+            let acrescimoPorPendente = cotistasPendentes.length > 0 ? (totalExcedente / cotistasPendentes.length) : 0;
+            let cotaEfetivaPendentes = cotaBaseOriginal + acrescimoPorPendente;
 
             let tbodyRateio = document.getElementById('cc-tabela-rateio');
             tbodyRateio.innerHTML = "";
@@ -684,22 +706,16 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                     let papel = isComprador ? `<span style="color:var(--accent-cc); font-weight:bold;">Comprador & Cotista</span>` : `Cotista`;
                     
                     let isPago = compraAbertaDados.pagamentos[p] === true;
-                    let marcadoRedist = compraAbertaDados.redistribuirCotistas[p] === true;
+                    
+                    // Cota individual devida: se pago, é cota base; se pendente, cota base + acréscimo proporcional do excedente
+                    let cotaIndividual = isPago ? cotaBaseOriginal : cotaEfetivaPendentes;
 
-                    // Se estiver marcado para redistribuição, a cota efetiva absorve o excedente proporcionalmente
-                    let cotaEfetiva = (isPago || !marcadoRedist) ? cotaBaseOriginal : cotaAjustadaPendentes;
-                    if (isComprador) {
-                        compraAbertaDados.pagamentos[p] = true;
-                        cotaEfetiva = cotaBaseOriginal;
-                    }
+                    let valorPagoAtual = compraAbertaDados.valoresPagos[p] !== undefined ? compraAbertaDados.valoresPagos[p] : (isPago ? cotaBaseOriginal : 0);
 
-                    // Se não estiver pago, mas estiver marcado na redistribuição, o valor a pagar (exibido na caixa) já reflete a cota ajustada
-                    let valorPagoAtual = compraAbertaDados.valoresPagos[p] !== undefined ? compraAbertaDados.valoresPagos[p] : 0;
-                    if (!isPago && marcadoRedist && (valorPagoAtual === 0 || valorPagoAtual === cotaBaseOriginal)) {
-                        valorPagoAtual = cotaEfetiva;
-                        compraAbertaDados.valoresPagos[p] = cotaEfetiva;
-                    } else if (!isPago && !marcadoRedist && valorPagoAtual === 0) {
+                    // Se for comprador e o valor pago não foi preenchido, assume cota base
+                    if (isComprador && compraAbertaDados.valoresPagos[p] === undefined) {
                         valorPagoAtual = cotaBaseOriginal;
+                        compraAbertaDados.valoresPagos[p] = cotaBaseOriginal;
                     }
 
                     let situacaoHtml = "";
@@ -710,15 +726,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                     } else if (isPago) {
                         situacaoHtml = `<span style="color: var(--text-muted);">Quitado conforme cota base</span>`;
                     } else {
-                        situacaoHtml = `
-                            <div style="display: flex; flex-direction: column; gap: 4px;">
-                                <span style="color: var(--accent-gold);">Pendente (Cota: R$ ${cotaEfetiva.toFixed(2)})</span>
-                                <label class="checkbox-item" style="font-size: 0.78rem; color: var(--text-muted); margin: 0;">
-                                    <input type="checkbox" style="accent-color: var(--accent-cc); width: 14px; height: 14px;" ${marcadoRedist ? 'checked' : ''} onchange="toggleRedistribuirCotista('${escapeHtml(p)}', this.checked)">
-                                    Incluir na redistribuição de cotas
-                                </label>
-                            </div>
-                        `;
+                        situacaoHtml = `<span style="color: var(--accent-gold);">Pendente (Inclui acréscimo de rateio: R$ ${cotaIndividual.toFixed(2)})</span>`;
                     }
 
                     let statusBadge = isPago ? '<span style="color:var(--accent-green); font-weight:bold;">Pago ✅</span>' : '<span style="color:var(--accent-red); font-weight:bold;">Pendente ⏳</span>';
@@ -758,25 +766,11 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                 if (!compraAbertaDados.valoresPagos[nome] || compraAbertaDados.valoresPagos[nome] === 0) {
                     compraAbertaDados.valoresPagos[nome] = cotaBaseOriginal;
                 }
-                delete compraAbertaDados.redistribuirCotistas[nome];
-            }
-            atualizarCalculosCC();
-        };
-
-        window.toggleRedistribuirCotista = function(nome, isChecked) {
-            if (isChecked) {
-                compraAbertaDados.redistribuirCotistas[nome] = true;
             } else {
-                delete compraAbertaDados.redistribuirCotistas[nome];
-                // Reseta o valor pago para a cota base ao desmarcar
-                let somaPuraItens = 0;
-                compraAbertaDados.itens.forEach(i => { somaPuraItens += (i.valor * i.qtd); });
-                let totalTaxas = compraAbertaDados.frete + compraAbertaDados.imposto + compraAbertaDados.icms;
-                let totalDescontos = compraAbertaDados.desconto + compraAbertaDados.outrosDescontos;
-                let totalGlobalFinal = somaPuraItens + totalTaxas - totalDescontos;
-                let cotistasArr = pilotosDisponiveisGlobal.filter(p => compraAbertaDados.participantes && compraAbertaDados.participantes[p] === true);
-                let cotaBaseOriginal = cotistasArr.length > 0 ? (totalGlobalFinal / cotistasArr.length) : 0;
-                compraAbertaDados.valoresPagos[nome] = cotaBaseOriginal;
+                let comprador = compraAbertaDados.comprador;
+                if (nome === comprador) {
+                    alert("⚠️ O comprador é responsável pela compra. Desmarcar o pagamento exige atenção ao fluxo de caixa.");
+                }
             }
             atualizarCalculosCC();
         };
