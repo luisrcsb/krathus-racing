@@ -1,13 +1,13 @@
 <!-- 
 ========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.84.0 - RESUMO COM LISTAGEM DE ITENS)
+ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.87.0 - QR CODE PIX NO RESUMO FISCAL)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
 PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas)
 PARTE 3: Estrutura Principal do Dashboard, Filtros de Baterias/Pilotos/Módulos e KPIs Globais
 PARTE 4: Inicialização do Firebase, Configuração de Cache, Regras de Alias e Ordenação
 PARTE 5: Módulo de Gerenciamento de Campeonatos (ZRound, Bancos Separados, Grids de Largada e Pontuação)
-PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix, Item 4 Unificado)
+PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Item 6 Rastreio, QR Code no Resumo Fiscal)
 PARTE 6: Processamento e Conversão de Arquivos (PDF para Texto, Parser de Voltas, Base64 e Banco de Dados)
 PARTE 7: Renderização Dinâmica de Gráficos (Evolução de Ritmo e Posição Volta a Volta) e Relatórios
 PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado, Consistência Histórica e Laudo)
@@ -49,54 +49,54 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
-        body { background-color: var(--bg-body); color: var(--text-main); padding: 24px; }
+        body { background-color: var(--bg-body); color: var(--text-main); padding: 16px; }
         .dashboard-container { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
 
-        .header { display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 20px 24px; border-radius: 12px; border: 1px solid var(--border-card); flex-wrap: wrap; gap: 15px; }
-        .brand-title h1 { font-size: 1.5rem; color: var(--text-title); letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
-        .brand-title p { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
+        .header { display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 16px 24px; border-radius: 12px; border: 1px solid var(--border-card); flex-wrap: wrap; gap: 15px; }
+        .brand-title h1 { font-size: 1.4rem; color: var(--text-title); letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
+        .brand-title p { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
 
-        .header-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-        .btn { padding: 10px 18px; border-radius: 8px; border: none; font-weight: 600; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .header-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .btn { padding: 8px 16px; border-radius: 8px; border: none; font-weight: 600; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 8px; }
         .btn-text-action { background: transparent; border: none; color: var(--accent-blue); font-size: 0.78rem; font-weight: 600; cursor: pointer; padding: 0; text-align: left; }
         .btn-text-action:hover { text-decoration: underline; }
 
-        .btn-upload-modal-trigger { background: linear-gradient(135deg, #3a86ff 0%, #2ec4b6 100%); color: #ffffff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
-        .btn-campeonatos-trigger { background: linear-gradient(135deg, #ffb703 0%, #fb8500 100%); color: #000; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
-        .btn-compras-coletivas-trigger { background: linear-gradient(135deg, #2a9d8f 0%, #264653 100%); color: #fff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-upload-modal-trigger { background: linear-gradient(135deg, #3a86ff 0%, #2ec4b6 100%); color: #ffffff; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; }
+        .btn-campeonatos-trigger { background: linear-gradient(135deg, #ffb703 0%, #fb8500 100%); color: #000; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; }
+        .btn-compras-coletivas-trigger { background: linear-gradient(135deg, #2a9d8f 0%, #264653 100%); color: #fff; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; }
 
-        .custom-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(13, 17, 26, 0.88); z-index: 10000; justify-content: center; align-items: center; padding: 20px; overflow-y: auto; }
-        .modal-content { background: var(--bg-card); border: 1px solid var(--border-card); border-top: 5px solid var(--accent-gold); border-radius: 14px; width: 100%; max-width: 1100px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; }
-        .modal-header { padding: 20px 24px; background: var(--bg-card-header); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-card); }
-        .modal-title { font-size: 1.25rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 10px; }
-        .modal-close { background: transparent; border: none; color: var(--text-muted); font-size: 1.4rem; cursor: pointer; font-weight: bold; }
-        .modal-body { padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
+        .custom-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(13, 17, 26, 0.85); z-index: 10000; justify-content: center; align-items: center; padding: 12px; }
+        .modal-content { background: var(--bg-card); border: 1px solid var(--border-card); border-top: 5px solid var(--accent-gold); border-radius: 12px; width: 100%; max-width: 1250px; height: 95vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
+        .modal-header { padding: 14px 20px; background: var(--bg-card-header); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-card); }
+        .modal-title { font-size: 1.15rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 8px; }
+        .modal-close { background: transparent; border: none; color: var(--text-muted); font-size: 1.3rem; cursor: pointer; font-weight: bold; }
+        .modal-body { padding: 16px 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; flex: 1; }
 
-        .config-panel { background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
-        .config-panel-title { font-size: 0.85rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid var(--border-card); padding-bottom: 8px; }
+        .config-panel { background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+        .config-panel-title { font-size: 0.8rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid var(--border-card); padding-bottom: 6px; }
         
-        .config-input, .config-select { background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-card); padding: 8px 12px; border-radius: 6px; flex: 1; font-size: 0.85rem; }
+        .config-input, .config-select { background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-card); padding: 6px 10px; border-radius: 6px; flex: 1; font-size: 0.82rem; }
         .config-input[readonly] { opacity: 0.7; cursor: not-allowed; }
 
-        .btn-action-primary { background: var(--accent-blue); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
-        .btn-action-danger { background: var(--accent-red); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
-        .btn-action-track { background: #3f37c9; color: #fff; border: none; padding: 6px 14px; border-radius: 6px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 6px; }
-        .btn-action-summary { background: #480ca8; color: #fff; border: none; padding: 6px 14px; border-radius: 6px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .btn-action-primary { background: var(--accent-blue); color: #fff; border: none; padding: 7px 14px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; }
+        .btn-action-danger { background: var(--accent-red); color: #fff; border: none; padding: 7px 14px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; }
+        .btn-action-track { background: #3f37c9; color: #fff; border: none; padding: 5px 12px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; cursor: pointer; display: flex; align-items: center; gap: 6px; text-decoration: none; }
+        .btn-action-summary { background: #480ca8; color: #fff; border: none; padding: 5px 12px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; cursor: pointer; display: flex; align-items: center; gap: 6px; }
 
-        .progress-bar-container { width: 100%; background-color: var(--bg-card); border-radius: 8px; border: 1px solid var(--border-card); overflow: hidden; height: 16px; margin-top: 6px; position: relative; }
+        .progress-bar-container { width: 100%; background-color: var(--bg-card); border-radius: 6px; border: 1px solid var(--border-card); overflow: hidden; height: 14px; margin-top: 4px; position: relative; }
         .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #2a9d8f, #2ec4b6); width: 0%; transition: width 0.3s; }
-        .progress-bar-text { position: absolute; width: 100%; text-align: center; top: 0; font-size: 0.7rem; font-weight: 700; color: #fff; line-height: 16px; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
+        .progress-bar-text { position: absolute; width: 100%; text-align: center; top: 0; font-size: 0.65rem; font-weight: 700; color: #fff; line-height: 14px; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
 
         .dropdown-menu { display: none; position: absolute; background: var(--bg-card-header); border: 1px solid var(--border-card); border-radius: 8px; padding: 6px 0; min-width: 150px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 1000; }
-        .dropdown-item { padding: 8px 16px; font-size: 0.82rem; color: var(--text-main); cursor: pointer; display: block; text-decoration: none; }
+        .dropdown-item { padding: 8px 16px; font-size: 0.8rem; color: var(--text-main); cursor: pointer; display: block; text-decoration: none; }
         .dropdown-item:hover { background: var(--bg-input); color: #fff; }
 
-        .checkbox-item { display: flex; align-items: center; gap: 10px; font-size: 0.88rem; color: var(--text-main); cursor: pointer; }
+        .checkbox-item { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-main); cursor: pointer; }
         
-        .table-container { width: 100%; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
-        th { background-color: var(--bg-card-header); color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; padding: 12px 16px; font-weight: 700; border-bottom: 1px solid var(--border-card); }
-        td { padding: 12px 16px; border-bottom: 1px solid var(--border-card); vertical-align: middle; }
+        .table-container { width: 100%; overflow-x: auto; max-height: 220px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
+        th { background-color: var(--bg-card-header); color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; padding: 8px 12px; font-weight: 700; border-bottom: 1px solid var(--border-card); position: sticky; top: 0; z-index: 2; }
+        td { padding: 8px 12px; border-bottom: 1px solid var(--border-card); vertical-align: middle; }
     </style>
 </head>
 <body>
@@ -107,12 +107,12 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
 
     <!-- MODAL DE RESUMO FISCAL E PAGAMENTO RÁPIDO -->
     <div id="resumo-fiscal-modal" class="custom-modal" style="z-index: 11000;">
-        <div class="modal-content" style="border-top-color: #480ca8; max-width: 850px;">
+        <div class="modal-content" style="border-top-color: #480ca8; max-width: 950px; height: auto; max-height: 92vh;">
             <div class="modal-header">
                 <div class="modal-title" id="resumo-fiscal-titulo">📊 Resumo Fiscal e de Pagamentos</div>
                 <button class="modal-close" onclick="fecharModalResumoFiscal()">&times;</button>
             </div>
-            <div class="modal-body" id="resumo-fiscal-body" style="display: flex; flex-direction: column; gap: 16px;">
+            <div class="modal-body" id="resumo-fiscal-body" style="display: flex; flex-direction: column; gap: 12px;">
                 <!-- Conteúdo injetado via JS -->
             </div>
         </div>
@@ -127,18 +127,18 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             </div>
             <div class="modal-body" style="position: relative;">
                 
-                <div id="lista-compras-coletivas-view" style="display: flex; flex-direction: column; gap: 20px;">
+                <div id="lista-compras-coletivas-view" style="display: flex; flex-direction: column; gap: 16px;">
                     <!-- 1. Compras Cadastradas (No Topo) -->
-                    <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Compras Coletivas Cadastradas</span>
-                        <ul id="cc-lista-cadastradas" style="list-style: none; display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; padding-right: 5px;">
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Compras Coletivas Cadastradas</span>
+                        <ul id="cc-lista-cadastradas" style="list-style: none; display: flex; flex-direction: column; gap: 10px; max-height: 420px; overflow-y: auto; padding-right: 4px;">
                             <!-- Injetado via JS -->
                         </ul>
                     </div>
 
                     <!-- 2. Criar Nova Compra Coletiva (Na Base) -->
                     <div class="config-panel" style="border-color: var(--accent-cc);">
-                        <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-cc); text-transform: uppercase;">🔒 Criar Nova Compra Coletiva</span>
+                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--accent-cc); text-transform: uppercase;">🔒 Criar Nova Compra Coletiva</span>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
                             <input type="text" id="cc-input-nova-compra" class="config-input" placeholder="Nome da Compra (Ex: Peças RC AliExpress)">
                             <button class="btn-action-primary" style="background: var(--accent-cc);" onclick="criarCompraColetiva()">Criar Compra Coletiva</button>
@@ -147,94 +147,104 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                 </div>
 
                 <!-- PAINEL ÚNICO DE GERENCIAMENTO -->
-                <div id="painel-unica-compra-view" style="display: none; flex-direction: column; gap: 18px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-bottom: 2px solid var(--border-card); padding-bottom: 12px;">
-                        <h3 id="cc-titulo-gerenciamento" style="font-size: 1.2rem; color: var(--accent-cc);">Cadastro de Compra Coletiva: --</h3>
-                        <button class="btn-action-danger" style="padding: 6px 12px; font-size: 0.8rem; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-card);" onclick="voltarListaCompras()">⬅️ Voltar para Lista</button>
+                <div id="painel-unica-compra-view" style="display: none; flex-direction: column; gap: 14px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-bottom: 2px solid var(--border-card); padding-bottom: 10px;">
+                        <h3 id="cc-titulo-gerenciamento" style="font-size: 1.1rem; color: var(--accent-cc);">Cadastro de Compra Coletiva: --</h3>
+                        <button class="btn-action-danger" style="padding: 5px 10px; font-size: 0.78rem; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-card);" onclick="voltarListaCompras()">⬅️ Voltar para Lista</button>
                     </div>
 
-                    <!-- 1. Identificação / Nome da Compra -->
-                    <div class="config-panel">
-                        <div class="config-panel-title" style="color: var(--accent-cc);">1. Nome da Compra</div>
-                        <div>
-                            <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Nome da Compra Coletiva</label>
-                            <input type="text" id="cc-form-nome" class="config-input" style="width: 100%; margin-top: 4px;" oninput="atualizarCalculosCC()">
+                    <!-- Grid Compacto para otimizar espaço de tela -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <!-- 1. Identificação / Nome da Compra -->
+                        <div class="config-panel" style="margin: 0;">
+                            <div class="config-panel-title" style="color: var(--accent-cc);">1. Nome da Compra</div>
+                            <div>
+                                <label style="font-size: 0.7rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Nome da Compra Coletiva</label>
+                                <input type="text" id="cc-form-nome" class="config-input" style="width: 100%; margin-top: 2px;" oninput="atualizarCalculosCC()">
+                            </div>
+                        </div>
+
+                        <!-- 6. Cadastro de Rastreio -->
+                        <div class="config-panel" style="margin: 0; border-color: #3f37c9;">
+                            <div class="config-panel-title" style="color: #3f37c9;">6. Cadastro de Rastreio do Pedido</div>
+                            <div>
+                                <label style="font-size: 0.7rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Código de Rastreio (Ex: NL123456789BR)</label>
+                                <input type="text" id="cc-form-rastreio" class="config-input" style="width: 100%; margin-top: 2px; font-weight: bold;" placeholder="Inserir código Correios / 17track" oninput="atualizarCalculosCC()">
+                            </div>
                         </div>
                     </div>
 
                     <!-- 2. Itens da Compra -->
                     <div class="config-panel">
                         <div class="config-panel-title" style="color: var(--accent-cc);">2. Itens da Compra</div>
-                        <div class="table-container">
+                        <div class="table-container" style="max-height: 150px;">
                             <table>
                                 <thead>
                                     <tr>
-                                        <th style="width: 60px;">Imagem</th>
+                                        <th style="width: 50px;">Img</th>
                                         <th>Nome / Descrição</th>
                                         <th>Link (URL)</th>
-                                        <th style="width: 100px;">Valor (R$)</th>
-                                        <th style="width: 70px;">Qtd</th>
-                                        <th style="width: 120px;">Subtotal</th>
-                                        <th style="text-align: right; width: 60px;">Ação</th>
+                                        <th style="width: 90px;">Valor (R$)</th>
+                                        <th style="width: 60px;">Qtd</th>
+                                        <th style="width: 100px;">Subtotal</th>
+                                        <th style="text-align: right; width: 50px;">Ação</th>
                                     </tr>
                                 </thead>
                                 <tbody id="cc-tabela-itens"></tbody>
                             </table>
                         </div>
-                        <div style="display: flex; justify-content: flex-start; margin-top: 10px;">
-                            <button class="btn-action-primary" style="background: var(--accent-cc);" onclick="adicionarItemCC()">➕ Adicionar Mais Um Item</button>
+                        <div style="display: flex; justify-content: flex-start; margin-top: 6px;">
+                            <button class="btn-action-primary" style="background: var(--accent-cc); padding: 5px 12px; font-size: 0.78rem;" onclick="adicionarItemCC()">➕ Adicionar Item</button>
                         </div>
                     </div>
 
                     <!-- 3. Informações Financeiras / Fiscais e Valor Global -->
                     <div class="config-panel">
                         <div class="config-panel-title" style="color: var(--accent-cc);">3. Informações Financeiras e Fiscais</div>
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                        <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;">
                             <div>
-                                <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Subtotal dos Itens (R$)</label>
-                                <input type="number" id="cc-form-subtotal" class="config-input" style="width: 100%; margin-top: 4px; background: var(--bg-body); font-weight: bold;" value="0" readonly>
+                                <label style="font-size: 0.65rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Subtotal</label>
+                                <input type="number" id="cc-form-subtotal" class="config-input" style="width: 100%; margin-top: 2px; background: var(--bg-body); font-weight: bold;" value="0" readonly>
                             </div>
                             <div>
-                                <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Desconto (R$)</label>
-                                <input type="number" id="cc-form-desconto" class="config-input" style="width: 100%; margin-top: 4px;" value="0" step="0.01" oninput="atualizarCalculosCC()">
+                                <label style="font-size: 0.65rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Desconto</label>
+                                <input type="number" id="cc-form-desconto" class="config-input" style="width: 100%; margin-top: 2px;" value="0" step="0.01" oninput="atualizarCalculosCC()">
                             </div>
                             <div>
-                                <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Frete Total (R$)</label>
-                                <input type="number" id="cc-form-frete" class="config-input" style="width: 100%; margin-top: 4px;" value="0" step="0.01" oninput="atualizarCalculosCC()">
+                                <label style="font-size: 0.65rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Frete</label>
+                                <input type="number" id="cc-form-frete" class="config-input" style="width: 100%; margin-top: 2px;" value="0" step="0.01" oninput="atualizarCalculosCC()">
                             </div>
                             <div>
-                                <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Imp. Importação (R$)</label>
-                                <input type="number" id="cc-form-imposto" class="config-input" style="width: 100%; margin-top: 4px;" value="0" step="0.01" oninput="atualizarCalculosCC()">
+                                <label style="font-size: 0.65rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Imposto</label>
+                                <input type="number" id="cc-form-imposto" class="config-input" style="width: 100%; margin-top: 2px;" value="0" step="0.01" oninput="atualizarCalculosCC()">
                             </div>
                             <div>
-                                <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">ICMS (R$)</label>
-                                <input type="number" id="cc-form-icms" class="config-input" style="width: 100%; margin-top: 4px;" value="0" step="0.01" oninput="atualizarCalculosCC()">
+                                <label style="font-size: 0.65rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">ICMS</label>
+                                <input type="number" id="cc-form-icms" class="config-input" style="width: 100%; margin-top: 2px;" value="0" step="0.01" oninput="atualizarCalculosCC()">
                             </div>
                             <div>
-                                <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Outros Descontos (R$)</label>
-                                <input type="number" id="cc-form-outros-descontos" class="config-input" style="width: 100%; margin-top: 4px;" value="0" step="0.01" oninput="atualizarCalculosCC()">
+                                <label style="font-size: 0.65rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Outros</label>
+                                <input type="number" id="cc-form-outros-descontos" class="config-input" style="width: 100%; margin-top: 2px;" value="0" step="0.01" oninput="atualizarCalculosCC()">
                             </div>
                         </div>
-                        <div style="margin-top: 10px; background: rgba(255, 183, 3, 0.05); padding: 12px; border-radius: 8px; border: 1px dashed var(--accent-gold); display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 0.8rem; font-weight: bold; text-transform: uppercase; color: var(--text-title);">Valor Global Final Calculado:</span>
-                            <div id="cc-form-total-global" style="font-size: 1.3rem; font-weight: 900; color: var(--accent-gold);">R$ 0,00</div>
+                        <div style="margin-top: 6px; background: rgba(255, 183, 3, 0.05); padding: 8px 12px; border-radius: 6px; border: 1px dashed var(--accent-gold); display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.75rem; font-weight: bold; text-transform: uppercase; color: var(--text-title);">Valor Global Final Calculado:</span>
+                            <div id="cc-form-total-global" style="font-size: 1.15rem; font-weight: 900; color: var(--accent-gold);">R$ 0,00</div>
                         </div>
                     </div>
 
                     <!-- 4. SELEÇÃO DE COTISTAS, RATEIO E COMPRADOR UNIFICADOS -->
                     <div class="config-panel">
                         <div class="config-panel-title" style="color: var(--accent-cc);">4. Seleção de Cotistas, Rateio e Definição de Comprador</div>
-                        <p style="font-size: 0.78rem; color: var(--text-muted);">Marque os participantes ativos abaixo. Em seguida, selecione quem será o <strong>Comprador (Responsável)</strong>. O valor mínimo pago por cada cotista é o valor da cota base.</p>
-                        
-                        <div class="table-container" style="margin-top: 6px;">
+                        <div class="table-container" style="max-height: 160px;">
                             <table>
                                 <thead>
                                     <tr>
-                                        <th style="width: 50px; text-align: center;">Ativo</th>
+                                        <th style="width: 45px; text-align: center;">Ativo</th>
                                         <th>Cotista</th>
-                                        <th style="width: 160px; text-align: center;">Papel (Definir Comprador)</th>
-                                        <th>Cota Base (R$)</th>
-                                        <th>Valor Pago (R$)</th>
+                                        <th style="width: 140px; text-align: center;">Comprador</th>
+                                        <th>Cota Base</th>
+                                        <th>Valor Pago</th>
                                         <th>Situação</th>
                                         <th style="text-align: center;">Status (Pago ✅)</th>
                                     </tr>
@@ -244,25 +254,25 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                         </div>
                     </div>
 
-                    <!-- 5. Chave Pix do Comprador (Sem Valor Embutido) -->
+                    <!-- 5. Chave Pix do Comprador -->
                     <div class="config-panel">
-                        <div class="config-panel-title" style="color: var(--accent-cc);">5. Chave Pix do Comprador (Valor livre digitado pelo pagador)</div>
-                        <div style="display: flex; flex-direction: column; gap: 12px; background: rgba(42, 157, 143, 0.05); padding: 14px; border-radius: 8px; border: 1px dashed var(--accent-cc);">
-                            <div>
-                                <label style="font-size: 0.72rem; color: var(--accent-cc); font-weight: bold; text-transform: uppercase;">Chave Pix do Comprador Atual (<span id="cc-label-nome-comprador">Nenhum</span>)</label>
-                                <input type="text" id="cc-form-pix" class="config-input" style="width: 100%; margin-top: 4px;" placeholder="Ex: CPF, Telefone (+55) ou E-mail" oninput="aoDigitarPix()">
+                        <div class="config-panel-title" style="color: var(--accent-cc);">5. Chave Pix do Comprador (<span id="cc-label-nome-comprador">Nenhum</span>)</div>
+                        <div style="display: flex; gap: 12px; align-items: center; background: rgba(42, 157, 143, 0.05); padding: 10px; border-radius: 6px; border: 1px dashed var(--accent-cc);">
+                            <div style="flex: 1;">
+                                <label style="font-size: 0.7rem; color: var(--accent-cc); font-weight: bold; text-transform: uppercase;">Chave Pix (Valor livre digitado pelo pagador)</label>
+                                <input type="text" id="cc-form-pix" class="config-input" style="width: 100%; margin-top: 2px;" placeholder="Ex: CPF, Telefone (+55) ou E-mail" oninput="aoDigitarPix()">
                             </div>
-                            <div style="display: flex; align-items: center; justify-content: center; flex: 1; flex-direction: column; gap: 8px;">
-                                <img id="cc-pix-qrcode" src="" alt="QR Code Pix EMV" style="width: 130px; height: 130px; background: #fff; padding: 6px; border-radius: 8px; display: none;">
-                                <span id="cc-pix-placeholder" style="font-size: 0.8rem; color: var(--text-muted); text-align: center;">Insira a chave Pix para gerar o QR Code padrão (o pagador digitará o valor no app).</span>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <img id="cc-pix-qrcode" src="" alt="QR Code Pix" style="width: 75px; height: 75px; background: #fff; padding: 4px; border-radius: 6px; display: none;">
+                                <span id="cc-pix-placeholder" style="font-size: 0.75rem; color: var(--text-muted); text-align: center; max-width: 180px;">Insira a chave Pix para gerar o QR Code padrão.</span>
                             </div>
                         </div>
                     </div>
 
                     <!-- Ações Finais -->
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
                         <button class="btn-action-danger" onclick="excluirCompraColetivaAberta()">🗑️ Excluir Compra Coletiva</button>
-                        <button class="btn-action-primary" style="background: var(--accent-cc); padding: 12px 24px; font-size: 1rem;" onclick="salvarCompraColetivaAberta()">💾 Salvar Tudo</button>
+                        <button class="btn-action-primary" style="background: var(--accent-cc); padding: 10px 20px; font-size: 0.9rem;" onclick="salvarCompraColetivaAberta()">💾 Salvar Tudo</button>
                     </div>
 
                 </div>
@@ -422,32 +432,32 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
 
                 let rastreioBtnHtml = "";
                 if (!c.rastreio || c.rastreio.trim() === "") {
-                    rastreioBtnHtml = `<button class="btn-action-track" style="background: rgba(63, 55, 201, 0.2); border: 1px dashed #3f37c9; color: #3f37c9;" onclick="addRastreio('${key}')">📦 Add Rastreio</button>`;
+                    rastreioBtnHtml = `<button class="btn-action-track" style="background: rgba(63, 55, 201, 0.2); border: 1px dashed #3f37c9; color: #3f37c9;" onclick="addRastreioRapido('${key}')">📦 Add Rastreio</button>`;
                 } else {
                     rastreioBtnHtml = `
                         <div style="position: relative; display: inline-block;">
                             <button class="btn-action-track" onclick="toggleMenuRastreio(event, 'menu-track-${key}')">📦 Rastrear (${escapeHtml(c.rastreio)}) ▾</button>
                             <div id="menu-track-${key}" class="dropdown-menu" style="right: 0; top: 100%; margin-top: 4px;">
                                 <a class="dropdown-item" href="https://t.17track.net/pt#nums=${c.rastreio}" target="_blank">🔍 Acompanhar (17track)</a>
-                                <div class="dropdown-item" onclick="editarRastreio('${key}')">✏️ Editar Código</div>
-                                <div class="dropdown-item" onclick="excluirRastreio('${key}')" style="color: var(--accent-red);">🗑️ Excluir Rastreio</div>
+                                <div class="dropdown-item" onclick="editarRastreioRapido('${key}')">✏️ Editar Código</div>
+                                <div class="dropdown-item" onclick="excluirRastreioRapido('${key}')" style="color: var(--accent-red);">🗑️ Excluir Rastreio</div>
                             </div>
                         </div>
                     `;
                 }
 
                 ul.innerHTML += `
-                    <li style="background: var(--bg-input); padding: 14px 16px; border-radius: 10px; border: 1px solid var(--border-card); display: flex; flex-direction: column; gap: 10px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                            <span style="font-size: 1.05rem; font-weight: 700; color: var(--text-title);">🛒 ${escapeHtml(c.nome)}</span>
-                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <li style="background: var(--bg-input); padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border-card); display: flex; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                            <span style="font-size: 1rem; font-weight: 700; color: var(--text-title);">🛒 ${escapeHtml(c.nome)}</span>
+                            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
                                 <button class="btn-action-summary" onclick="abrirModalResumoFiscal('${key}')">📊 Resumir</button>
                                 ${rastreioBtnHtml}
                                 <button class="btn-action-primary" style="background: var(--accent-cc);" onclick="abrirGerenciadorCompra('${key}')">⚙️ Gerenciar</button>
                             </div>
                         </div>
                         <div>
-                            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold;">STATUS DE PAGAMENTOS (${pagos}/${totalParts})</span>
+                            <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: bold;">STATUS DE PAGAMENTOS (${pagos}/${totalParts})</span>
                             <div class="progress-bar-container">
                                 <div class="progress-bar-fill" style="width: ${perc}%;"></div>
                                 <div class="progress-bar-text">${Math.round(perc)}% Concluído</div>
@@ -473,29 +483,29 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                 c.itens.forEach(i => {
                     somaPuraItens += ((i.valor || 0) * (i.qtd || 1));
                     let imgBox = i.imgUrl ? 
-                        `<img src="${escapeHtml(i.imgUrl)}" style="width: 36px; height: 36px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-card);">` : 
-                        `<div style="width: 36px; height: 36px; background: var(--bg-card); border-radius: 4px; display:flex; align-items:center; justify-content:center; font-size:0.55rem; color:var(--text-muted); border: 1px dashed var(--border-card);">Sem Img</div>`;
+                        `<img src="${escapeHtml(i.imgUrl)}" style="width: 32px; height: 32px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-card);">` : 
+                        `<div style="width: 32px; height: 32px; background: var(--bg-card); border-radius: 4px; display:flex; align-items:center; justify-content:center; font-size:0.5rem; color:var(--text-muted); border: 1px dashed var(--border-card);">Sem Img</div>`;
                     
                     let nomeItemStr = i.nomeItem ? escapeHtml(i.nomeItem) : "Item sem descrição";
-                    let linkItemHtml = i.link ? `<a href="${escapeHtml(i.link)}" target="_blank" style="font-size:0.75rem; color:var(--accent-blue); text-decoration:none;">🔗 Acessar Link</a>` : "";
+                    let linkItemHtml = i.link ? `<a href="${escapeHtml(i.link)}" target="_blank" style="font-size:0.7rem; color:var(--accent-blue); text-decoration:none;">🔗 Acessar Link</a>` : "";
 
                     itensHtmlList += `
-                        <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-card); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-card); margin-bottom: 6px;">
-                            <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-card); padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-card); margin-bottom: 4px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
                                 ${imgBox}
                                 <div>
-                                    <div style="font-size: 0.85rem; font-weight: bold; color: var(--text-title);">${nomeItemStr}</div>
+                                    <div style="font-size: 0.8rem; font-weight: bold; color: var(--text-title);">${nomeItemStr}</div>
                                     ${linkItemHtml}
                                 </div>
                             </div>
-                            <div style="font-size: 0.85rem; font-weight: bold; color: var(--accent-gold); background: var(--bg-input); padding: 4px 10px; border-radius: 6px;">
+                            <div style="font-size: 0.8rem; font-weight: bold; color: var(--accent-gold); background: var(--bg-input); padding: 2px 8px; border-radius: 4px;">
                                 Qtd: ${i.qtd || 1}
                             </div>
                         </div>
                     `;
                 });
             } else {
-                itensHtmlList = `<div style="color: var(--text-muted); text-align:center; padding: 10px; font-size: 0.85rem;">Nenhum item cadastrado.</div>`;
+                itensHtmlList = `<div style="color: var(--text-muted); text-align:center; padding: 8px; font-size: 0.8rem;">Nenhum item cadastrado.</div>`;
             }
 
             let frete = c.frete || 0;
@@ -511,7 +521,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
 
             let htmlCotistasList = "";
             if (numCotistas === 0) {
-                htmlCotistasList = `<div style="color: var(--text-muted); text-align:center; padding: 10px;">Nenhum cotista vinculado a esta compra.</div>`;
+                htmlCotistasList = `<div style="color: var(--text-muted); text-align:center; padding: 8px;">Nenhum cotista vinculado a esta compra.</div>`;
             } else {
                 cotistasArr.forEach(p => {
                     let isPago = c.pagamentos && c.pagamentos[p] === true;
@@ -520,76 +530,101 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                     let acaoClick = isPago ? "" : `onclick="abrirPainelPagamentoRapido('${key}', '${escapeHtml(p)}', ${cotaBase})" style="cursor: pointer; border: 1px dashed var(--accent-red);"`;
 
                     htmlCotistasList += `
-                        <div ${acaoClick} style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); padding: 10px 14px; border-radius: 8px; margin-bottom: 6px;">
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <span style="font-size: 1.1rem;">${icon}</span>
+                        <div ${acaoClick} style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); padding: 8px 12px; border-radius: 6px; margin-bottom: 4px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 1rem;">${icon}</span>
                                 <div>
-                                    <strong>${escapeHtml(p)}</strong>
-                                    <div style="font-size: 0.75rem; color: var(--text-muted);">Cota devida: R$ ${cotaBase.toFixed(2)}</div>
+                                    <strong style="font-size: 0.85rem;">${escapeHtml(p)}</strong>
+                                    <div style="font-size: 0.7rem; color: var(--text-muted);">Cota devida: R$ ${cotaBase.toFixed(2)}</div>
                                 </div>
                             </div>
                             <div style="text-align: right;">
-                                <span style="color: ${badgeColor}; font-weight: bold; font-size: 0.85rem;">${isPago ? 'Quitado' : 'Pendente (Clique p/ Pagar)'}</span>
+                                <span style="color: ${badgeColor}; font-weight: bold; font-size: 0.8rem;">${isPago ? 'Quitado' : 'Pendente (Clique p/ Pagar)'}</span>
                             </div>
                         </div>
                     `;
                 });
             }
 
+            // Rastreio
             let rastreioHtml = c.rastreio && c.rastreio.trim() !== "" ? 
-                `<div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
-                    <span>Código: <strong>${escapeHtml(c.rastreio)}</strong></span>
-                    <a href="https://t.17track.net/pt#nums=${c.rastreio}" target="_blank" class="btn-action-track" style="padding: 4px 10px; font-size: 0.75rem; text-decoration: none;">📦 Rastrear Correios / 17track</a>
+                `<div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem;">
+                    <span>Código: <strong style="color: var(--accent-gold);">${escapeHtml(c.rastreio)}</strong></span>
+                    <a href="https://t.17track.net/pt#nums=${c.rastreio}" target="_blank" class="btn-action-track" style="padding: 3px 8px; font-size: 0.72rem; text-decoration: none;">📦 Rastrear Correios / 17track</a>
                  </div>` : 
                 `<span style="color: var(--text-muted); font-size: 0.8rem;">Nenhum código de rastreio cadastrado.</span>`;
+
+            // Geração do QR Code Pix do Comprador para o Resumo Financeiro
+            let compradorNome = c.comprador || "";
+            let chavePixComprador = (c.chavesPixPorComprador && compradorNome && c.chavesPixPorComprador[compradorNome]) ? c.chavesPixPorComprador[compradorNome] : (c.chavePix || "");
+            let pixPayloadResumo = chavePixComprador ? gerarPayloadPixEMVPersonalizado(chavePixComprador, compradorNome) : "";
+            let qrCodeResumoUrl = pixPayloadResumo ? `https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(pixPayloadResumo)}` : "";
+
+            let pixResumoBoxHtml = "";
+            if (compradorNome && chavePixComprador) {
+                pixResumoBoxHtml = `
+                    <div style="display: flex; align-items: center; gap: 12px; background: var(--bg-card); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-card);">
+                        <img src="${qrCodeResumoUrl}" style="width: 70px; height: 70px; background: #fff; padding: 3px; border-radius: 4px;">
+                        <div style="font-size: 0.78rem; display: flex; flex-direction: column; gap: 2px;">
+                            <span>Comprador: <strong style="color: var(--accent-gold);">${escapeHtml(compradorNome)}</strong></span>
+                            <span>Chave Pix: <strong style="color: var(--text-title);">${escapeHtml(chavePixComprador)}</strong></span>
+                            <span style="color: var(--text-muted); font-size: 0.7rem;">Escaneie o QR Code ou use a chave para realizar pagamentos.</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                pixResumoBoxHtml = `<span style="color: var(--text-muted); font-size: 0.78rem;">Comprador ou Chave Pix não definidos para esta compra.</span>`;
+            }
 
             let body = document.getElementById('resumo-fiscal-body');
             body.innerHTML = `
                 <!-- Seção 1: Resumo Fiscal dos Itens -->
                 <div class="config-panel" style="margin: 0;">
                     <div class="config-panel-title">1. Resumo Fiscal dos Itens</div>
-                    <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; margin-top: 6px; align-items: start;">
+                    <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 12px; margin-top: 4px; align-items: start;">
                         <div>
-                            <span style="font-size: 0.75rem; font-weight: bold; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; display: block;">Itens da Compra Coletiva</span>
-                            <div style="max-height: 160px; overflow-y: auto; padding-right: 4px;">
+                            <span style="font-size: 0.7rem; font-weight: bold; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; display: block;">Itens da Compra Coletiva</span>
+                            <div style="max-height: 110px; overflow-y: auto; padding-right: 4px;">
                                 ${itensHtmlList}
                             </div>
                         </div>
-                        <div style="display: flex; flex-direction: column; gap: 6px; font-size: 0.85rem; background: var(--bg-card); padding: 12px; border-radius: 8px; border: 1px solid var(--border-card);">
+                        <div style="display: flex; flex-direction: column; gap: 4px; font-size: 0.8rem; background: var(--bg-card); padding: 10px; border-radius: 6px; border: 1px solid var(--border-card);">
                             <div style="display: flex; justify-content: space-between;"><span>Subtotal Bruto:</span> <strong>R$ ${somaPuraItens.toFixed(2)}</strong></div>
                             <div style="display: flex; justify-content: space-between;"><span>Frete:</span> <strong>R$ ${frete.toFixed(2)}</strong></div>
                             <div style="display: flex; justify-content: space-between;"><span>Impostos / ICMS:</span> <strong>R$ ${(imposto + icms).toFixed(2)}</strong></div>
                             <div style="display: flex; justify-content: space-between;"><span>Descontos:</span> <strong style="color: var(--accent-red);">- R$ ${(desconto + outrosDescontos).toFixed(2)}</strong></div>
-                            <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--border-card); padding-top: 6px; margin-top: 4px;">
+                            <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--border-card); padding-top: 4px; margin-top: 2px;">
                                 <span style="font-weight: bold; color: var(--accent-gold);">Total Global Final:</span> 
-                                <strong style="color: var(--accent-gold); font-size: 1.05rem;">R$ ${totalGlobal.toFixed(2)}</strong>
+                                <strong style="color: var(--accent-gold); font-size: 0.95rem;">R$ ${totalGlobal.toFixed(2)}</strong>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                    <!-- Seção 2: Status das Cotas -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <!-- Seção 2: Status das Cotas & QR Code Pix do Comprador -->
                     <div class="config-panel" style="margin: 0;">
-                        <div class="config-panel-title">2. Status das Cotas</div>
-                        <div style="display: flex; flex-direction: column; gap: 6px; font-size: 0.85rem; margin-top: 6px;">
-                            <div style="display: flex; justify-content: space-between;"><span>Total de Cotistas:</span> <strong>${numCotistas}</strong></div>
-                            <div style="display: flex; justify-content: space-between;"><span>Cota Base (Mínima):</span> <strong style="color: var(--accent-gold);">R$ ${cotaBase.toFixed(2)}</strong></div>
+                        <div class="config-panel-title">2. Status das Cotas & Pix</div>
+                        <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 4px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.8rem;"><span>Cota Base por Cotista:</span> <strong style="color: var(--accent-gold);">R$ ${cotaBase.toFixed(2)}</strong></div>
+                            ${pixResumoBoxHtml}
                         </div>
                     </div>
                     
                     <!-- Seção 3: Rastreio do Pedido -->
                     <div class="config-panel" style="margin: 0;">
                         <div class="config-panel-title">3. Rastreio do Pedido</div>
-                        ${rastreioHtml}
+                        <div style="margin-top: 4px;">
+                            ${rastreioHtml}
+                        </div>
                     </div>
                 </div>
 
                 <!-- Seção 4: Participantes e Status de Pagamento -->
                 <div class="config-panel" style="margin: 0;">
                     <div class="config-panel-title">4. Participantes e Status de Pagamento</div>
-                    <p style="font-size: 0.78rem; color: var(--text-muted);">Clique em um participante pendente para visualizar o QR Code Pix e quitar o pagamento.</p>
-                    <div style="max-height: 220px; overflow-y: auto; margin-top: 8px;">
+                    <p style="font-size: 0.72rem; color: var(--text-muted);">Clique em um participante pendente para visualizar as opções de quitação.</p>
+                    <div style="max-height: 120px; overflow-y: auto; margin-top: 6px;">
                         ${htmlCotistasList}
                     </div>
                 </div>
@@ -607,27 +642,27 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
         window.abrirPainelPagamentoRapido = function(key, cotistaNome, cotaDevida) {
             let c = comprasColetivasCache[key];
             let chavePix = (c.chavesPixPorComprador && c.chavesPixPorComprador[c.comprador]) ? c.chavesPixPorComprador[c.comprador] : (c.chavePix || "");
-            let pixPayload = chavePix ? gerarPayloadPixEMV(chavePix) : "";
-            let qrCodeUrl = pixPayload ? `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(pixPayload)}` : "";
+            let pixPayload = chavePix ? gerarPayloadPixEMVPersonalizado(chavePix, c.comprador || "Recebedor") : "";
+            let qrCodeUrl = pixPayload ? `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(pixPayload)}` : "";
 
             let container = document.getElementById('container-pagamento-rapido');
             container.style.display = 'block';
             container.innerHTML = `
-                <div class="config-panel" style="border-color: var(--accent-green); background: rgba(46, 196, 182, 0.05);">
+                <div class="config-panel" style="border-color: var(--accent-green); background: rgba(46, 196, 182, 0.05); margin-top: 4px;">
                     <div class="config-panel-title" style="color: var(--accent-green);">📲 Envio de Comprovante & Quitação via Pix para ${escapeHtml(cotistaNome)}</div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: center;">
-                        <div style="display: flex; flex-direction: column; gap: 10px;">
-                            <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold;">1. Simular Anexo de Comprovante (Mín. R$ ${cotaDevida.toFixed(2)})</label>
-                            <input type="file" id="input-arquivo-comprovante" class="config-input" accept="image/*,.pdf" style="font-size: 0.8rem;" onchange="simularLeituraComprovante('${key}', '${escapeHtml(cotistaNome)}', ${cotaDevida})">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: center;">
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                            <label style="font-size: 0.7rem; color: var(--text-muted); font-weight: bold;">1. Simular Anexo de Comprovante</label>
+                            <input type="file" id="input-arquivo-comprovante" class="config-input" accept="image/*,.pdf" style="font-size: 0.75rem;" onchange="simularLeituraComprovante('${key}', '${escapeHtml(cotistaNome)}', ${cotaDevida})">
                             
-                            <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold; margin-top: 4px;">2. Valor Pago (Mínimo: R$ ${cotaDevida.toFixed(2)})</label>
-                            <input type="number" step="0.01" id="input-valor-pago-rapido" class="config-input" value="${cotaDevida.toFixed(2)}" min="${cotaDevida}" style="font-weight: bold; font-size: 1rem; color: var(--accent-gold);">
+                            <label style="font-size: 0.7rem; color: var(--text-muted); font-weight: bold;">2. Valor Pago (Mín: R$ ${cotaDevida.toFixed(2)})</label>
+                            <input type="number" step="0.01" id="input-valor-pago-rapido" class="config-input" value="${cotaDevida.toFixed(2)}" min="${cotaDevida}" style="font-weight: bold; font-size: 0.9rem; color: var(--accent-gold);">
                             
-                            <button class="btn-action-primary" style="background: var(--accent-green); margin-top: 6px; padding: 10px;" onclick="confirmarBaixaPagamentoRapido('${key}', '${escapeHtml(cotistaNome)}', ${cotaDevida})">✅ Confirmar Quitação / Baixa</button>
+                            <button class="btn-action-primary" style="background: var(--accent-green); padding: 7px;" onclick="confirmarBaixaPagamentoRapido('${key}', '${escapeHtml(cotistaNome)}', ${cotaDevida})">✅ Confirmar Quitação</button>
                         </div>
-                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; background: var(--bg-card); padding: 12px; border-radius: 8px; border: 1px solid var(--border-card);">
-                            <span style="font-size: 0.75rem; font-weight: bold; color: var(--accent-cc);">QR Code Pix (Gerado da Configuração)</span>
-                            ${qrCodeUrl ? `<img src="${qrCodeUrl}" style="width: 140px; height: 140px; background: #fff; padding: 4px; border-radius: 6px;">` : `<span style="font-size: 0.75rem; color: var(--accent-red); text-align: center;">Chave Pix do comprador não configurada.</span>`}
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; background: var(--bg-card); padding: 8px; border-radius: 6px; border: 1px solid var(--border-card);">
+                            <span style="font-size: 0.7rem; font-weight: bold; color: var(--accent-cc);">QR Code Pix</span>
+                            ${qrCodeUrl ? `<img src="${qrCodeUrl}" style="width: 110px; height: 110px; background: #fff; padding: 3px; border-radius: 4px;">` : `<span style="font-size: 0.7rem; color: var(--accent-red); text-align: center;">Chave Pix não informada.</span>`}
                         </div>
                     </div>
                 </div>
@@ -641,8 +676,8 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                 setTimeout(() => {
                     let valorSugerido = cotaDevida + (Math.random() > 0.7 ? 10.00 : 0);
                     document.getElementById('input-valor-pago-rapido').value = valorSugerido.toFixed(2);
-                    alert(`🔍 Comprovante lido com sucesso pelo sistema!\nValor identificado: R$ ${valorSugerido.toFixed(2)}`);
-                }, 600);
+                    alert(`🔍 Comprovante lido com sucesso!\nValor identificado: R$ ${valorSugerido.toFixed(2)}`);
+                }, 500);
             }
         };
 
@@ -651,7 +686,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             let valorInformado = parseFloat(inputVal.value) || cotaDevida;
 
             if (valorInformado < cotaDevida - 0.005) {
-                alert(`❌ O valor pago (R$ ${valorInformado.toFixed(2)}) não pode ser inferior ao valor mínimo da cota (R$ ${cotaDevida.toFixed(2)})!`);
+                alert(`❌ O valor pago não pode ser inferior à cota base (R$ ${cotaDevida.toFixed(2)})!`);
                 return;
             }
 
@@ -666,7 +701,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
 
             try {
                 await db.ref(`comprasColetivas/${key}`).set(c);
-                alert(`✅ Pagamento de ${cotistaNome} quitado com sucesso no sistema!`);
+                alert(`✅ Pagamento de ${cotistaNome} quitado com sucesso!`);
                 abrirModalResumoFiscal(key);
             } catch (err) {
                 alert("Erro ao salvar pagamento: " + err.message);
@@ -681,18 +716,18 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             if (!isDisplay) menu.style.display = 'block';
         };
 
-        window.addRastreio = async function(key) {
+        window.addRastreioRapido = async function(key) {
             let code = prompt("📦 Insira o código de rastreio (Ex: NL123456789BR):");
             if (code && code.trim() !== "" && db) await db.ref(`comprasColetivas/${key}/rastreio`).set(code.trim());
         };
 
-        window.editarRastreio = async function(key) {
+        window.editarRastreioRapido = async function(key) {
             let c = comprasColetivasCache[key];
             let code = prompt("✏️ Edite o código de rastreio:", c.rastreio || "");
             if (code !== null && db) await db.ref(`comprasColetivas/${key}/rastreio`).set(code.trim());
         };
 
-        window.excluirRastreio = async function(key) {
+        window.excluirRastreioRapido = async function(key) {
             if (confirm("Deseja remover o rastreio desta compra?") && db) await db.ref(`comprasColetivas/${key}/rastreio`).remove();
         };
 
@@ -718,6 +753,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             document.getElementById('cc-titulo-gerenciamento').innerText = `Cadastro de Compra Coletiva: ${compraAbertaDados.nome}`;
 
             document.getElementById('cc-form-nome').value = compraAbertaDados.nome || "";
+            document.getElementById('cc-form-rastreio').value = compraAbertaDados.rastreio || "";
             document.getElementById('cc-form-desconto').value = compraAbertaDados.desconto || 0;
             document.getElementById('cc-form-frete').value = compraAbertaDados.frete || 0;
             document.getElementById('cc-form-imposto').value = compraAbertaDados.imposto || 0;
@@ -778,6 +814,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             if (!compraAbertaDados) return;
 
             compraAbertaDados.nome = document.getElementById('cc-form-nome').value.trim();
+            compraAbertaDados.rastreio = document.getElementById('cc-form-rastreio').value.trim();
             compraAbertaDados.desconto = parseFloat(document.getElementById('cc-form-desconto').value) || 0;
             compraAbertaDados.frete = parseFloat(document.getElementById('cc-form-frete').value) || 0;
             compraAbertaDados.imposto = parseFloat(document.getElementById('cc-form-imposto').value) || 0;
@@ -825,25 +862,25 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             tbodyItens.innerHTML = "";
             compraAbertaDados.itens.forEach((it, idx) => {
                 let subtotalPuro = it.valor * it.qtd;
-                let imgBox = it.imgUrl ? `<img src="${it.imgUrl}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-card);">` : `<div style="width: 40px; height: 40px; background: var(--bg-input); border-radius: 4px; display:flex; align-items:center; justify-content:center; font-size:0.6rem; color:var(--text-muted); text-align:center; border: 1px dashed var(--border-card);">Sem Img</div>`;
+                let imgBox = it.imgUrl ? `<img src="${it.imgUrl}" style="width: 32px; height: 32px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-card);">` : `<div style="width: 32px; height: 32px; background: var(--bg-input); border-radius: 4px; display:flex; align-items:center; justify-content:center; font-size:0.5rem; color:var(--text-muted); text-align:center; border: 1px dashed var(--border-card);">Sem</div>`;
 
                 tbodyItens.innerHTML += `
                     <tr class="cc-item-row">
                         <td>${imgBox}</td>
                         <td>
-                            <input type="text" class="config-input cc-item-nome" value="${escapeHtml(it.nomeItem)}" placeholder="Descrição" oninput="atualizarCalculosCC()" style="width:100%; margin-bottom:4px;">
-                            <input type="text" class="config-input cc-item-imgurl" value="${escapeHtml(it.imgUrl)}" placeholder="URL da Imagem (.jpg/.png)" oninput="atualizarCalculosCC()" style="width:100%; font-size: 0.75rem;">
+                            <input type="text" class="config-input cc-item-nome" value="${escapeHtml(it.nomeItem)}" placeholder="Descrição" oninput="atualizarCalculosCC()" style="width:100%; margin-bottom:2px; font-size:0.78rem;">
+                            <input type="text" class="config-input cc-item-imgurl" value="${escapeHtml(it.imgUrl)}" placeholder="URL Imagem" oninput="atualizarCalculosCC()" style="width:100%; font-size: 0.7rem;">
                         </td>
-                        <td><input type="text" class="config-input cc-item-link" value="${escapeHtml(it.link)}" placeholder="https://..." oninput="atualizarCalculosCC()" style="width:100%;"></td>
-                        <td><input type="number" step="0.01" class="config-input cc-item-val" value="${it.valor}" oninput="atualizarCalculosCC()" style="width:100%;"></td>
-                        <td><input type="number" class="config-input cc-item-qtd" value="${it.qtd}" min="1" oninput="atualizarCalculosCC()" style="width:100%;"></td>
-                        <td style="font-weight:bold; color: var(--accent-gold);">R$ ${subtotalPuro.toFixed(2)}</td>
+                        <td><input type="text" class="config-input cc-item-link" value="${escapeHtml(it.link)}" placeholder="https://..." oninput="atualizarCalculosCC()" style="width:100%; font-size:0.78rem;"></td>
+                        <td><input type="number" step="0.01" class="config-input cc-item-val" value="${it.valor}" oninput="atualizarCalculosCC()" style="width:100%; font-size:0.78rem;"></td>
+                        <td><input type="number" class="config-input cc-item-qtd" value="${it.qtd}" min="1" oninput="atualizarCalculosCC()" style="width:100%; font-size:0.78rem;"></td>
+                        <td style="font-weight:bold; color: var(--accent-gold); font-size:0.8rem;">R$ ${subtotalPuro.toFixed(2)}</td>
                         <td style="text-align: right;"><button class="btn-text-action" style="color: var(--accent-red);" onclick="removerItemCC(${idx})">🗑️</button></td>
                     </tr>
                 `;
             });
             
-            if(compraAbertaDados.itens.length === 0) tbodyItens.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Nenhum item inserido.</td></tr>`;
+            if(compraAbertaDados.itens.length === 0) tbodyItens.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); font-size:0.8rem;">Nenhum item inserido.</td></tr>`;
 
             let cotistasAtivosArr = pilotosDisponiveisGlobal.filter(p => compraAbertaDados.participantes && compraAbertaDados.participantes[p] === true);
             let numCotistas = cotistasAtivosArr.length;
@@ -872,13 +909,13 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                 let isChecked = compraAbertaDados.participantes && compraAbertaDados.participantes[p] === true;
                 let isComprador = (p === comprador);
                 
-                let radioCompradorHtml = `<span style="color: var(--text-muted); font-size: 0.75rem;">(Marque ativo primeiro)</span>`;
+                let radioCompradorHtml = `<span style="color: var(--text-muted); font-size: 0.7rem;">(Ative primeiro)</span>`;
                 if (isChecked) {
                     let checkedAttr = isComprador ? 'checked' : '';
                     radioCompradorHtml = `
                         <label class="checkbox-item" style="justify-content: center; margin: 0; cursor: pointer;">
-                            <input type="radio" name="radio-comprador-grupo" style="accent-color: var(--accent-gold); width: 16px; height: 16px;" ${checkedAttr} onchange="selecionarComprador('${escapeHtml(p)}')">
-                            <span style="font-size: 0.78rem; font-weight: bold; color: ${isComprador ? 'var(--accent-gold)' : 'var(--text-main);'}">${isComprador ? 'Comprador' : 'Definir'}</span>
+                            <input type="radio" name="radio-comprador-grupo" style="accent-color: var(--accent-gold); width: 14px; height: 14px;" ${checkedAttr} onchange="selecionarComprador('${escapeHtml(p)}')">
+                            <span style="font-size: 0.72rem; font-weight: bold; color: ${isComprador ? 'var(--accent-gold)' : 'var(--text-main);'}">${isComprador ? 'Comprador' : 'Definir'}</span>
                         </label>
                     `;
                 }
@@ -894,15 +931,15 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
 
                 if (isChecked) {
                     cotaDisplayHtml = `<strong style="color: var(--accent-gold);">R$ ${cotaBaseOriginal.toFixed(2)}</strong>`;
-                    inputValorHtml = `<input type="number" step="0.01" min="${cotaBaseOriginal.toFixed(2)}" class="config-input cc-input-pago" data-cotista="${escapeHtml(p)}" value="${valorPagoAtual.toFixed(2)}" onchange="atualizarCalculosCC()" style="width: 110px;" ${isComprador ? 'readonly' : ''}>`;
+                    inputValorHtml = `<input type="number" step="0.01" min="${cotaBaseOriginal.toFixed(2)}" class="config-input cc-input-pago" data-cotista="${escapeHtml(p)}" value="${valorPagoAtual.toFixed(2)}" onchange="atualizarCalculosCC()" style="width: 95px; font-size:0.8rem;" ${isComprador ? 'readonly' : ''}>`;
                     
                     let diff = valorPagoAtual - cotaBaseOriginal;
                     if (isPago && diff > 0.005) {
-                        situacaoHtml = `<span style="color: var(--accent-green); font-weight: bold;">🔄 Restituir R$ ${diff.toFixed(2)} (Crédito)</span>`;
+                        situacaoHtml = `<span style="color: var(--accent-green); font-weight: bold; font-size:0.72rem;">🔄 Restituir R$ ${diff.toFixed(2)}</span>`;
                     } else if (isPago) {
-                        situacaoHtml = `<span style="color: var(--text-muted);">Quitado conforme cota base</span>`;
+                        situacaoHtml = `<span style="color: var(--text-muted); font-size:0.72rem;">Quitado (Cota Base)</span>`;
                     } else {
-                        situacaoHtml = `<span style="color: var(--accent-gold);">Pendente (Mínimo: R$ ${cotaBaseOriginal.toFixed(2)})</span>`;
+                        situacaoHtml = `<span style="color: var(--accent-gold); font-size:0.72rem;">Pendente (Mín: R$ ${cotaBaseOriginal.toFixed(2)})</span>`;
                     }
 
                     let badgeText = isPago ? 'Pago ✅' : 'Pendente ⏳';
@@ -911,8 +948,8 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                     
                     statusBadge = `
                         <label class="checkbox-item" style="justify-content: center; margin: 0;">
-                            <input type="checkbox" style="accent-color: var(--accent-green); width: 16px; height: 16px;" ${isPago ? 'checked' : ''} ${disabledCheckbox} onchange="toggleCheckboxPagamento('${escapeHtml(p)}', this.checked)">
-                            <span style="color: ${badgeColor}; font-weight: bold;">${badgeText}</span>
+                            <input type="checkbox" style="accent-color: var(--accent-green); width: 14px; height: 14px;" ${isPago ? 'checked' : ''} ${disabledCheckbox} onchange="toggleCheckboxPagamento('${escapeHtml(p)}', this.checked)">
+                            <span style="color: ${badgeColor}; font-weight: bold; font-size: 0.78rem;">${badgeText}</span>
                         </label>
                     `;
                 }
@@ -920,9 +957,9 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                 tbodyTabelaUnificada.innerHTML += `
                     <tr>
                         <td style="text-align: center;">
-                            <input type="checkbox" class="cc-check-participante" data-piloto="${escapeHtml(p)}" style="accent-color: var(--accent-cc); width: 18px; height: 18px; cursor: pointer;" ${isChecked ? 'checked' : ''} onchange="atualizarCalculosCC()">
+                            <input type="checkbox" class="cc-check-participante" data-piloto="${escapeHtml(p)}" style="accent-color: var(--accent-cc); width: 16px; height: 16px; cursor: pointer;" ${isChecked ? 'checked' : ''} onchange="atualizarCalculosCC()">
                         </td>
-                        <td><strong>${escapeHtml(p)}</strong></td>
+                        <td><strong style="font-size:0.82rem;">${escapeHtml(p)}</strong></td>
                         <td style="text-align: center;">${radioCompradorHtml}</td>
                         <td>${cotaDisplayHtml}</td>
                         <td>${inputValorHtml}</td>
@@ -954,11 +991,11 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             atualizarCalculosCC();
         };
 
-        function gerarPayloadPixEMV(chaveRaw) {
+        function gerarPayloadPixEMVPersonalizado(chaveRaw, nomeRecebedor) {
             let chave = chaveRaw.replace(/\s/g, '');
             if (!chave) return "";
             
-            let nome = compraAbertaDados.comprador || "Recebedor";
+            let nome = nomeRecebedor || "Recebedor";
             let cidade = "Brasil"; 
             
             if (chave.length === 11 && !chave.includes('@') && !isNaN(chave)) {
@@ -996,8 +1033,8 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             let placeEl = document.getElementById('cc-pix-placeholder');
             
             if (chave) {
-                let pixPayload = gerarPayloadPixEMV(chave);
-                imgEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pixPayload)}`;
+                let pixPayload = gerarPayloadPixEMVPersonalizado(chave, compraAbertaDados ? compraAbertaDados.comprador : "");
+                imgEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(pixPayload)}`;
                 imgEl.style.display = 'block';
                 placeEl.style.display = 'none';
             } else {
