@@ -1,13 +1,13 @@
 <!-- 
 ========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.67.0 - COMPRAS COLETIVAS + RATEIO DIRETO DE EXCEDENTES)
+ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.68.0 - COMPRAS COLETIVAS + LAYOUT INVERTIDO)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
 PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas)
 PARTE 3: Estrutura Principal do Dashboard, Filtros de Baterias/Pilotos/Módulos e KPIs Globais
 PARTE 4: Inicialização do Firebase, Configuração de Cache, Regras de Alias e Ordenação
 PARTE 5: Módulo de Gerenciamento de Campeonatos (ZRound, Bancos Separados, Grids de Largada e Pontuação)
-PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix, Cotistas, Rateio Direto)
+PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix, Cotistas, Layout Invertido)
 PARTE 6: Processamento e Conversão de Arquivos (PDF para Texto, Parser de Voltas, Base64 e Banco de Dados)
 PARTE 7: Renderização Dinâmica de Gráficos (Evolução de Ritmo e Posição Volta a Volta) e Relatórios
 PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado, Consistência Histórica e Laudo)
@@ -116,19 +116,21 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             <div class="modal-body" style="position: relative;">
                 
                 <div id="lista-compras-coletivas-view" style="display: flex; flex-direction: column; gap: 20px;">
+                    <!-- 1. Compras Cadastradas (AGORA NO TOPO) -->
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Compras Coletivas Cadastradas</span>
+                        <ul id="cc-lista-cadastradas" style="list-style: none; display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; padding-right: 5px;">
+                            <!-- Injetado via JS -->
+                        </ul>
+                    </div>
+
+                    <!-- 2. Criar Nova Compra Coletiva (AGORA NA BASE) -->
                     <div class="config-panel" style="border-color: var(--accent-cc);">
                         <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-cc); text-transform: uppercase;">🔒 Criar Nova Compra Coletiva</span>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
                             <input type="text" id="cc-input-nova-compra" class="config-input" placeholder="Nome da Compra (Ex: Peças RC AliExpress)">
                             <button class="btn-action-primary" style="background: var(--accent-cc);" onclick="criarCompraColetiva()">Criar Compra Coletiva</button>
                         </div>
-                    </div>
-
-                    <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Compras Coletivas Cadastradas</span>
-                        <ul id="cc-lista-cadastradas" style="list-style: none; display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; padding-right: 5px;">
-                            <!-- Injetado via JS -->
-                        </ul>
                     </div>
                 </div>
 
@@ -515,7 +517,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             compraAbertaDados.comprador = novoComprador;
 
             if (compradorAnterior && compradorAnterior !== novoComprador) {
-                // Se trocou o comprador, remove o status automático do anterior se ele não tiver pago manualmente
                 if (compraAbertaDados.valoresPagos[compradorAnterior] === undefined) {
                     delete compraAbertaDados.pagamentos[compradorAnterior];
                 }
@@ -525,7 +526,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                 if (compraAbertaDados.participantes[novoComprador] === undefined) {
                     compraAbertaDados.participantes[novoComprador] = true;
                 }
-                // Comprador participante já entra com pagamento marcado e valor base assumido
                 compraAbertaDados.pagamentos[novoComprador] = true;
             }
 
@@ -662,12 +662,10 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             
             if(compraAbertaDados.itens.length === 0) tbodyItens.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Nenhum item inserido.</td></tr>`;
 
-            // ITEM 6: Lógica de Rateio Direto de Excedentes entre Participantes Pendentes
             let cotistasArr = pilotosDisponiveisGlobal.filter(p => compraAbertaDados.participantes && compraAbertaDados.participantes[p] === true);
             let numCotistas = cotistasArr.length;
             let cotaBaseOriginal = numCotistas > 0 ? (totalGlobalFinal / numCotistas) : 0;
 
-            // Garante que o comprador (se selecionado e participante) venha com pagamento marcado e valor base padrão, a menos que customizado
             let comprador = compraAbertaDados.comprador;
             if (comprador && compraAbertaDados.participantes[comprador]) {
                 if (compraAbertaDados.pagamentos[comprador] === undefined) {
@@ -675,7 +673,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                 }
             }
 
-            // Calcula o excedente total gerado por quem pagou acima da cota base
             let totalExcedente = 0;
             let cotistasPendentes = [];
 
@@ -691,7 +688,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                 }
             });
 
-            // O excedente é dividido igualmente entre todos os cotistas pendentes
             let acrescimoPorPendente = cotistasPendentes.length > 0 ? (totalExcedente / cotistasPendentes.length) : 0;
             let cotaEfetivaPendentes = cotaBaseOriginal + acrescimoPorPendente;
 
@@ -706,13 +702,10 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                     let papel = isComprador ? `<span style="color:var(--accent-cc); font-weight:bold;">Comprador & Cotista</span>` : `Cotista`;
                     
                     let isPago = compraAbertaDados.pagamentos[p] === true;
-                    
-                    // Cota individual devida: se pago, é cota base; se pendente, cota base + acréscimo proporcional do excedente
                     let cotaIndividual = isPago ? cotaBaseOriginal : cotaEfetivaPendentes;
 
                     let valorPagoAtual = compraAbertaDados.valoresPagos[p] !== undefined ? compraAbertaDados.valoresPagos[p] : (isPago ? cotaBaseOriginal : 0);
 
-                    // Se for comprador e o valor pago não foi preenchido, assume cota base
                     if (isComprador && compraAbertaDados.valoresPagos[p] === undefined) {
                         valorPagoAtual = cotaBaseOriginal;
                         compraAbertaDados.valoresPagos[p] = cotaBaseOriginal;
