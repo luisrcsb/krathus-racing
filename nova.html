@@ -1,13 +1,13 @@
 <!-- 
 ========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.88.0 - QR CODE 200% E BLOCOS VERTICAIS EMPILHADOS)
+ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.89.0 - COPIAR PIX AO TOCAR NO QR CODE OU CHAVE)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
 PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas)
 PARTE 3: Estrutura Principal do Dashboard, Filtros de Baterias/Pilotos/Módulos e KPIs Globais
 PARTE 4: Inicialização do Firebase, Configuração de Cache, Regras de Alias e Ordenação
 PARTE 5: Módulo de Gerenciamento de Campeonatos (ZRound, Bancos Separados, Grids de Largada e Pontuação)
-PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Blocos Verticais Sequenciais, QR Code Ampliado, Layout Flex)
+PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Blocos Verticais, QR Code 200%, Copiar Chave ao Tocar)
 PARTE 6: Processamento e Conversão de Arquivos (PDF para Texto, Parser de Voltas, Base64 e Banco de Dados)
 PARTE 7: Renderização Dinâmica de Gráficos (Evolução de Ritmo e Posição Volta a Volta) e Relatórios
 PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado, Consistência Histórica e Laudo)
@@ -65,7 +65,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
         .btn-campeonatos-trigger { background: linear-gradient(135deg, #ffb703 0%, #fb8500 100%); color: #000; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; }
         .btn-compras-coletivas-trigger { background: linear-gradient(135deg, #2a9d8f 0%, #264653 100%); color: #fff; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; }
 
-        /* Modal Autoajustável e Responsivo */
         .custom-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(13, 17, 26, 0.85); z-index: 10000; justify-content: center; align-items: center; padding: 16px; overflow-y: auto; }
         .modal-content { background: var(--bg-card); border: 1px solid var(--border-card); border-top: 5px solid var(--accent-gold); border-radius: 12px; width: 100%; max-width: 900px; max-height: 92vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.6); margin: auto; }
         .modal-header { padding: 14px 20px; background: var(--bg-card-header); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-card); }
@@ -98,6 +97,10 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
         th { background-color: var(--bg-card-header); color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; padding: 8px 12px; font-weight: 700; border-bottom: 1px solid var(--border-card); position: sticky; top: 0; z-index: 2; }
         td { padding: 8px 12px; border-bottom: 1px solid var(--border-card); vertical-align: middle; }
+
+        /* Estilo interativo para elementos Pix clicáveis */
+        .pix-clickable { cursor: pointer; transition: transform 0.1s ease; }
+        .pix-clickable:active { transform: scale(0.97); }
     </style>
 </head>
 <body>
@@ -106,7 +109,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
     <div id="upload-modal" class="custom-modal"><div class="modal-content"><div class="modal-header"><div class="modal-title">📤 Uploads de Telemetria e Arquivos</div><button class="modal-close" onclick="fecharModalUpload()">&times;</button></div><div class="modal-body"><p>Módulo de upload principal de PDFs e arquivos ZRound.</p></div></div></div>
     <div id="campeonatos-modal" class="custom-modal"><div class="modal-content"><div class="modal-header"><div class="modal-title">🏆 Championship Manager (ZRound)</div><button class="modal-close" onclick="fecharModalCampeonatos()">&times;</button></div><div class="modal-body"><p>Módulo ZRound Original com bancos separados e pontuações.</p></div></div></div>
 
-    <!-- MODAL DE RESUMO FISCAL E PAGAMENTO RÁPIDO (Blocos Verticais Sequenciais) -->
+    <!-- MODAL DE RESUMO FISCAL E PAGAMENTO RÁPIDO -->
     <div id="resumo-fiscal-modal" class="custom-modal" style="z-index: 11000;">
         <div class="modal-content" style="border-top-color: #480ca8; max-width: 850px; height: auto; max-height: 94vh;">
             <div class="modal-header">
@@ -114,7 +117,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                 <button class="modal-close" onclick="fecharModalResumoFiscal()">&times;</button>
             </div>
             <div class="modal-body" id="resumo-fiscal-body" style="display: flex; flex-direction: column; gap: 14px;">
-                <!-- Conteúdo injetado via JS em blocos empilhados de cima para baixo -->
+                <!-- Conteúdo injetado via JS -->
             </div>
         </div>
     </div>
@@ -147,7 +150,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                     </div>
                 </div>
 
-                <!-- PAINEL ÚNICO DE GERENCIAMENTO (Blocos Sequenciais Verticais) -->
+                <!-- PAINEL ÚNICO DE GERENCIAMENTO -->
                 <div id="painel-unica-compra-view" style="display: none; flex-direction: column; gap: 14px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-bottom: 2px solid var(--border-card); padding-bottom: 10px;">
                         <h3 id="cc-titulo-gerenciamento" style="font-size: 1.1rem; color: var(--accent-cc);">Cadastro de Compra Coletiva: --</h3>
@@ -252,7 +255,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                                 <input type="text" id="cc-form-pix" class="config-input" style="width: 100%; margin-top: 2px;" placeholder="Ex: CPF, Telefone (+55) ou E-mail" oninput="aoDigitarPix()">
                             </div>
                             <div style="display: flex; align-items: center; gap: 12px; justify-content: center;">
-                                <img id="cc-pix-qrcode" src="" alt="QR Code Pix" style="width: 120px; height: 120px; background: #fff; padding: 4px; border-radius: 6px; display: none;">
+                                <img id="cc-pix-qrcode" class="pix-clickable" src="" alt="QR Code Pix" title="Toque para copiar a chave Pix" onclick="copiarChavePixAtual()" style="width: 120px; height: 120px; background: #fff; padding: 4px; border-radius: 6px; display: none;">
                                 <span id="cc-pix-placeholder" style="font-size: 0.75rem; color: var(--text-muted); text-align: center;">Insira a chave Pix para gerar o QR Code padrão.</span>
                             </div>
                         </div>
@@ -409,6 +412,34 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             alert("Compra cadastrada! Clique em Gerenciar para adicionar os detalhes.");
         };
 
+        window.copiarTextoParaClipboard = function(texto, mensagemSucesso) {
+            if (!texto) {
+                alert("❌ Nenhum texto/chave Pix disponível para copiar.");
+                return;
+            }
+            navigator.clipboard.writeText(texto).then(() => {
+                alert(`✅ ${mensagemSucesso || "Chave Pix copiada com sucesso!"}\n\n"${texto}"`);
+            }).catch(err => {
+                // Fallback seguro caso o navegador bloqueie o clipboard direto
+                let aux = document.createElement("input");
+                aux.setAttribute("value", texto);
+                document.body.appendChild(aux);
+                aux.select();
+                document.execCommand("copy");
+                document.body.removeChild(aux);
+                alert(`✅ ${mensagemSucesso || "Chave Pix copiada!"}\n\n"${texto}"`);
+            });
+        };
+
+        window.copiarChavePixAtual = function() {
+            let chave = document.getElementById('cc-form-pix').value.trim();
+            copiarTextoParaClipboard(chave, "Chave Pix copiada para a área de transferência!");
+        };
+
+        window.copiarChavePixResumo = function(chave) {
+            copiarTextoParaClipboard(chave, "Chave Pix copiada com sucesso!");
+        };
+
         function renderizarListaComprasColetivas() {
             const ul = document.getElementById('cc-lista-cadastradas');
             ul.innerHTML = "";
@@ -552,21 +583,22 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                  </div>` : 
                 `<span style="color: var(--text-muted); font-size: 0.8rem;">Nenhum código de rastreio cadastrado.</span>`;
 
-            // QR Code Pix do Comprador com 200% de aumento (280x280)
+            // QR Code Pix do Comprador Ampliado (280x280) com recurso de cópia ao toque
             let compradorNome = c.comprador || "";
             let chavePixComprador = (c.chavesPixPorComprador && compradorNome && c.chavesPixPorComprador[compradorNome]) ? c.chavesPixPorComprador[compradorNome] : (c.chavePix || "");
             let pixPayloadResumo = chavePixComprador ? gerarPayloadPixEMVPersonalizado(chavePixComprador, compradorNome) : "";
             let qrCodeResumoUrl = pixPayloadResumo ? `https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(pixPayloadResumo)}` : "";
 
             let pixResumoBoxHtml = "";
+            let chaveEscapada = escapeHtml(chavePixComprador);
             if (compradorNome && chavePixComprador) {
                 pixResumoBoxHtml = `
                     <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; background: var(--bg-card); padding: 14px; border-radius: 8px; border: 1px solid var(--border-card); text-align: center;">
-                        <img src="${qrCodeResumoUrl}" style="width: 280px; height: 280px; background: #fff; padding: 6px; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                        <img src="${qrCodeResumoUrl}" class="pix-clickable" title="Toque para copiar a Chave Pix" onclick="copiarChavePixResumo('${chaveEscapada}')" style="width: 280px; height: 280px; background: #fff; padding: 6px; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
                         <div style="font-size: 0.82rem; display: flex; flex-direction: column; gap: 3px;">
                             <span>Comprador Responsável: <strong style="color: var(--accent-gold);">${escapeHtml(compradorNome)}</strong></span>
-                            <span>Chave Pix: <strong style="color: var(--text-title);">${escapeHtml(chavePixComprador)}</strong></span>
-                            <span style="color: var(--text-muted); font-size: 0.72rem;">Escaneie o QR Code acima para efetuar o pagamento da sua cota.</span>
+                            <span>Chave Pix: <strong class="pix-clickable" title="Toque para copiar" onclick="copiarChavePixResumo('${chaveEscapada}')" style="color: var(--accent-green); text-decoration: underline;">${chaveEscapada}</strong></span>
+                            <span style="color: var(--text-muted); font-size: 0.72rem;">💡 Toque no QR Code ou na chave Pix acima para copiá-la instantaneamente.</span>
                         </div>
                     </div>
                 `;
@@ -619,15 +651,15 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                 <!-- Bloco 4: Participantes e Status de Pagamento -->
                 <div class="config-panel" style="margin: 0;">
                     <div class="config-panel-title">4. Participantes e Status de Pagamento</div>
-                    <p style="font-size: 0.72rem; color: var(--text-muted);">Clique em um participante pendente para visualizar o QR Code Pix ampliado e quitar o pagamento.</p>
+                    <p style="font-size: 0.72rem; color: var(--text-muted);">Clique em um participante pendente para visualizar as opções de quitação.</p>
                     <div style="max-height: 140px; overflow-y: auto; margin-top: 6px;">
                         ${htmlCotistasList}
                     </div>
                 </div>
 
-                <!-- Bloco 5: QR Code Pix do Comprador (Ampliado 200%) -->
+                <!-- Bloco 5: QR Code Pix do Comprador (Ampliado e Clicável) -->
                 <div class="config-panel" style="margin: 0;">
-                    <div class="config-panel-title">5. QR Code Pix para Pagamento</div>
+                    <div class="config-panel-title">5. QR Code Pix para Pagamento (Toque para Copiar)</div>
                     <div style="margin-top: 4px;">
                         ${pixResumoBoxHtml}
                     </div>
@@ -648,6 +680,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             let chavePix = (c.chavesPixPorComprador && c.chavesPixPorComprador[c.comprador]) ? c.chavesPixPorComprador[c.comprador] : (c.chavePix || "");
             let pixPayload = chavePix ? gerarPayloadPixEMVPersonalizado(chavePix, c.comprador || "Recebedor") : "";
             let qrCodeUrl = pixPayload ? `https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(pixPayload)}` : "";
+            let chaveEscapada = escapeHtml(chavePix);
 
             let container = document.getElementById('container-pagamento-rapido');
             container.style.display = 'block';
@@ -665,8 +698,8 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                             <button class="btn-action-primary" style="background: var(--accent-green); padding: 8px;" onclick="confirmarBaixaPagamentoRapido('${key}', '${escapeHtml(cotistaNome)}', ${cotaDevida})">✅ Confirmar Quitação</button>
                         </div>
                         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; background: var(--bg-card); padding: 12px; border-radius: 8px; border: 1px solid var(--border-card);">
-                            <span style="font-size: 0.75rem; font-weight: bold; color: var(--accent-cc);">QR Code Pix Ampliado (200%)</span>
-                            ${qrCodeUrl ? `<img src="${qrCodeUrl}" style="width: 280px; height: 280px; background: #fff; padding: 6px; border-radius: 6px;">` : `<span style="font-size: 0.75rem; color: var(--accent-red);">Chave Pix não informada.</span>`}
+                            <span style="font-size: 0.75rem; font-weight: bold; color: var(--accent-cc);">QR Code Pix (Toque para Copiar Chave)</span>
+                            ${qrCodeUrl ? `<img src="${qrCodeUrl}" class="pix-clickable" title="Toque para copiar a chave Pix" onclick="copiarChavePixResumo('${chaveEscapada}')" style="width: 280px; height: 280px; background: #fff; padding: 6px; border-radius: 6px;">` : `<span style="font-size: 0.75rem; color: var(--accent-red);">Chave Pix não informada.</span>`}
                         </div>
                     </div>
                 </div>
