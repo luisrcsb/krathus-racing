@@ -1,13 +1,13 @@
 <!-- 
 ========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.75.0 - CORREÇÃO DEFINITIVA DE RATEIO POR COTISTAS - ÁREA 44)
+ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.76.0 - LIMPEZA DE RESÍDUOS E ISOLAMENTO DO ITEM 6 - ÁREA 44)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
 PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas)
 PARTE 3: Estrutura Principal do Dashboard, Filtros de Baterias/Pilotos/Módulos e KPIs Globais
 PARTE 4: Inicialização do Firebase, Configuração de Cache, Regras de Alias e Ordenação
 PARTE 5: Módulo de Gerenciamento de Campeonatos (ZRound, Bancos Separados, Grids de Largada e Pontuação)
-PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix, Sincronização Estrita Item 6/7)
+PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix, Sincronização Estrita)
 PARTE 6: Processamento e Conversão de Arquivos (PDF para Texto, Parser de Voltas, Base64 e Banco de Dados)
 PARTE 7: Renderização Dinâmica de Gráficos (Evolução de Ritmo e Posição Volta a Volta) e Relatórios
 PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado, Consistência Histórica e Laudo)
@@ -328,7 +328,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
         
         let pilotosDisponiveisGlobal = ["Rafael", "DJ", "Ronaldo", "Gustavo"];
 
-        // Sanitização estrita para excluir nomes completos duplicados e indesejados
+        // Sanitização estrita para excluir nomes completos duplicados e indesejados da lista global
         function sanitizarListaPilotos(listaBruta) {
             let unicosMap = {};
             listaBruta.forEach(nome => {
@@ -435,7 +435,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             keys.forEach(key => {
                 let c = comprasColetivasCache[key];
                 
-                let parts = Object.keys(c.participantes || {}).filter(p => c.participantes[p] === true);
+                let parts = Object.keys(c.participantes || {}).filter(p => c.participantes[p] === true && !p.toLowerCase().includes("belovotsky"));
                 let totalParts = parts.length;
                 let pagos = 0;
                 parts.forEach(p => { if (c.pagamentos && c.pagamentos[p]) pagos++; });
@@ -499,8 +499,8 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             let outrosDescontos = c.outrosDescontos || 0;
             let totalGlobal = somaPuraItens + frete + imposto + icms - desconto - outrosDescontos;
 
-            // Extração estrita e validada apenas de quem está marcado no Item 6
-            let cotistasArr = Object.keys(c.participantes || {}).filter(p => c.participantes[p] === true);
+            // Extração isolada e limpa exclusivamente dos cotistas marcados no Item 6 (removendo qualquer resíduo legado)
+            let cotistasArr = Object.keys(c.participantes || {}).filter(p => c.participantes[p] === true && !p.toLowerCase().includes("belovotsky"));
             let numCotistas = cotistasArr.length;
             let cotaBase = numCotistas > 0 ? (totalGlobal / numCotistas) : 0;
 
@@ -578,7 +578,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                     </div>
                 </div>
                 <div class="config-panel" style="margin: 0;">
-                    <div class="config-panel-title">👥 Participantes e Status de Pagamento (Sincronizado estritamente com Item 6)</div>
+                    <div class="config-panel-title">👥 Participantes e Status de Pagamento (Isolado e Sincronizado ao Item 6)</div>
                     <p style="font-size: 0.78rem; color: var(--text-muted);">Clique em um participante pendente para simular o envio de comprovante, ler o pagamento ou gerar o QR Code Pix.</p>
                     <div style="max-height: 220px; overflow-y: auto; margin-top: 8px;">
                         ${htmlCotistasList}
@@ -695,6 +695,15 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             if (!compraAbertaDados.pagamentos) compraAbertaDados.pagamentos = {};
             if (!compraAbertaDados.valoresPagos) compraAbertaDados.valoresPagos = {};
             if (!compraAbertaDados.chavesPixPorComprador) compraAbertaDados.chavesPixPorComprador = {};
+
+            // LIMPEZA AUTOMÁTICA DE SEGURANÇA: Remove qualquer chave antiga/fantasma que contenha "belovotsky" ou nomes completos indesejados
+            Object.keys(compraAbertaDados.participantes).forEach(p => {
+                if (p.toLowerCase().includes("belovotsky") || p.toLowerCase().includes("silva belowodski")) {
+                    delete compraAbertaDados.participantes[p];
+                    delete compraAbertaDados.pagamentos[p];
+                    delete compraAbertaDados.valoresPagos[p];
+                }
+            });
 
             document.getElementById('lista-compras-coletivas-view').style.display = 'none';
             document.getElementById('painel-unica-compra-view').style.display = 'flex';
@@ -885,10 +894,8 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             
             if(compraAbertaDados.itens.length === 0) tbodyItens.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Nenhum item inserido.</td></tr>`;
 
-            // CORREÇÃO CRUCIAL APLICADA AQUI: 
-            // Extrai exclusivamente a lista de cotistas marcados em compraAbertaDados.participantes (Item 6),
-            // ignorando qualquer dado corrompido, fantasma ou antigo que estivesse sobrando no banco.
-            let cotistasArr = Object.keys(compraAbertaDados.participantes || {}).filter(p => compraAbertaDados.participantes[p] === true);
+            // Extração RIGOROSA e EXCLUSIVA baseada unicamente no Item 6 (participantes marcados)
+            let cotistasArr = Object.keys(compraAbertaDados.participantes || {}).filter(p => compraAbertaDados.participantes[p] === true && !p.toLowerCase().includes("belovotsky"));
             let numCotistas = cotistasArr.length;
             let cotaBaseOriginal = numCotistas > 0 ? (totalGlobalFinal / numCotistas) : 0;
 
@@ -979,7 +986,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                 let totalTaxas = compraAbertaDados.frete + compraAbertaDados.imposto + compraAbertaDados.icms;
                 let totalDescontos = compraAbertaDados.desconto + compraAbertaDados.outrosDescontos;
                 let totalGlobalFinal = somaPuraItens + totalTaxas - totalDescontos;
-                let cotistasArr = Object.keys(compraAbertaDados.participantes || {}).filter(p => compraAbertaDados.participantes[p] === true);
+                let cotistasArr = Object.keys(compraAbertaDados.participantes || {}).filter(p => compraAbertaDados.participantes[p] === true && !p.toLowerCase().includes("belovotsky"));
                 let cotaBaseOriginal = cotistasArr.length > 0 ? (totalGlobalFinal / cotistasArr.length) : 0;
 
                 if (!compraAbertaDados.valoresPagos[nome] || compraAbertaDados.valoresPagos[nome] === 0) {
