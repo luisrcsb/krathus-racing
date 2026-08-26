@@ -1,13 +1,13 @@
 <!-- 
 ========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.78.0 - FLUXO INTEGRADO COMPRADOR & COTISTAS - ÁREA 44)
+ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.79.0 - PIX SEM VALOR FIXO - ÁREA 44)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
 PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas)
 PARTE 3: Estrutura Principal do Dashboard, Filtros de Baterias/Pilotos/Módulos e KPIs Globais
 PARTE 4: Inicialização do Firebase, Configuração de Cache, Regras de Alias e Ordenação
 PARTE 5: Módulo de Gerenciamento de Campeonatos (ZRound, Bancos Separados, Grids de Largada e Pontuação)
-PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix, Fluxo Integrado 4 e 6)
+PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix Livre, Fluxo Integrado)
 PARTE 6: Processamento e Conversão de Arquivos (PDF para Texto, Parser de Voltas, Base64 e Banco de Dados)
 PARTE 7: Renderização Dinâmica de Gráficos (Evolução de Ritmo e Posição Volta a Volta) e Relatórios
 PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado, Consistência Histórica e Laudo)
@@ -244,9 +244,9 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                         </div>
                     </div>
 
-                    <!-- 5. Chave Pix do Comprador com Valor da Cota Base Fixado -->
+                    <!-- 5. Chave Pix do Comprador (Sem Valor Embutido) -->
                     <div class="config-panel">
-                        <div class="config-panel-title" style="color: var(--accent-cc);">5. Chave Pix do Comprador (Para Pagamento da Cota)</div>
+                        <div class="config-panel-title" style="color: var(--accent-cc);">5. Chave Pix do Comprador (Valor livre digitado pelo pagador)</div>
                         <div style="display: flex; flex-direction: column; gap: 12px; background: rgba(42, 157, 143, 0.05); padding: 14px; border-radius: 8px; border: 1px dashed var(--accent-cc);">
                             <div>
                                 <label style="font-size: 0.72rem; color: var(--accent-cc); font-weight: bold; text-transform: uppercase;">Chave Pix do Comprador Atual (<span id="cc-label-nome-comprador">Nenhum</span>)</label>
@@ -254,8 +254,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                             </div>
                             <div style="display: flex; align-items: center; justify-content: center; flex: 1; flex-direction: column; gap: 8px;">
                                 <img id="cc-pix-qrcode" src="" alt="QR Code Pix EMV" style="width: 130px; height: 130px; background: #fff; padding: 6px; border-radius: 8px; display: none;">
-                                <span id="cc-pix-placeholder" style="font-size: 0.8rem; color: var(--text-muted); text-align: center;">Insira a chave Pix para gerar o QR Code com o valor exato da cota base.</span>
-                                <div id="cc-pix-info-valor" style="font-size: 0.85rem; font-weight: bold; color: var(--accent-gold); display: none;"></div>
+                                <span id="cc-pix-placeholder" style="font-size: 0.8rem; color: var(--text-muted); text-align: center;">Insira a chave Pix para gerar o QR Code padrão (o pagador digitará o valor no app).</span>
                             </div>
                         </div>
                     </div>
@@ -576,7 +575,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
         window.abrirPainelPagamentoRapido = function(key, cotistaNome, cotaDevida) {
             let c = comprasColetivasCache[key];
             let chavePix = (c.chavesPixPorComprador && c.chavesPixPorComprador[c.comprador]) ? c.chavesPixPorComprador[c.comprador] : (c.chavePix || "");
-            let pixPayload = chavePix ? gerarPayloadPixEMV(chavePix, cotaDevida) : "";
+            let pixPayload = chavePix ? gerarPayloadPixEMV(chavePix) : "";
             let qrCodeUrl = pixPayload ? `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(pixPayload)}` : "";
 
             let container = document.getElementById('container-pagamento-rapido');
@@ -595,7 +594,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                             <button class="btn-action-primary" style="background: var(--accent-green); margin-top: 6px; padding: 10px;" onclick="confirmarBaixaPagamentoRapido('${key}', '${escapeHtml(cotistaNome)}', ${cotaDevida})">✅ Confirmar Quitação / Baixa</button>
                         </div>
                         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; background: var(--bg-card); padding: 12px; border-radius: 8px; border: 1px solid var(--border-card);">
-                            <span style="font-size: 0.75rem; font-weight: bold; color: var(--accent-cc);">QR Code Pix (Valor: R$ ${cotaDevida.toFixed(2)})</span>
+                            <span style="font-size: 0.75rem; font-weight: bold; color: var(--accent-cc);">QR Code Pix (Valor Livre)</span>
                             ${qrCodeUrl ? `<img src="${qrCodeUrl}" style="width: 140px; height: 140px; background: #fff; padding: 4px; border-radius: 6px;">` : `<span style="font-size: 0.75rem; color: var(--accent-red); text-align: center;">Chave Pix do comprador não configurada.</span>`}
                         </div>
                     </div>
@@ -851,7 +850,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             let acrescimoPorPendente = cotistasPendentes.length > 0 ? (totalExcedente / cotistasPendentes.length) : 0;
             let cotaEfetivaPendentes = cotaBaseOriginal + acrescimoPorPendente;
 
-            // Renderização da Tabela Unificada (6 & 7) com rádio/botão de escolha do Comprador integrado na linha
             let tbodyTabelaUnificada = document.getElementById('cc-tabela-cotistas-rateio');
             tbodyTabelaUnificada.innerHTML = "";
 
@@ -943,7 +941,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             atualizarCalculosCC();
         };
 
-        function gerarPayloadPixEMV(chaveRaw, valorCota) {
+        function gerarPayloadPixEMV(chaveRaw) {
             let chave = chaveRaw.replace(/\s/g, '');
             if (!chave) return "";
             
@@ -960,16 +958,12 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             let merchant_account = `26${(gui.length + key_str.length).toString().padStart(2, '0')}${gui}${key_str}`;
             let category_code = "52040000";
             let currency = "5303986";
-            
-            let valorStr = valorCota > 0 ? valorCota.toFixed(2) : "";
-            let amount_field = valorStr ? `54${valorStr.length.toString().padStart(2, '0')}${valorStr}` : "";
-
             let country = "5802BR";
             let merchant_name = `59${nome.length.toString().padStart(2, '0')}${nome}`;
             let merchant_city = `60${cidade.length.toString().padStart(2, '0')}${cidade}`;
             let additional_data = "62070503***";
 
-            let payload = `${payload_format}${merchant_account}${category_code}${currency}${amount_field}${country}${merchant_name}${merchant_city}${additional_data}6304`;
+            let payload = `${payload_format}${merchant_account}${category_code}${currency}${country}${merchant_name}${merchant_city}${additional_data}6304`;
 
             let crc = 0xFFFF;
             for (let i = 0; i < payload.length; i++) {
@@ -987,27 +981,15 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             let chave = document.getElementById('cc-form-pix').value.trim();
             let imgEl = document.getElementById('cc-pix-qrcode');
             let placeEl = document.getElementById('cc-pix-placeholder');
-            let infoEl = document.getElementById('cc-pix-info-valor');
             
-            let cotistasAtivosArr = pilotosDisponiveisGlobal.filter(p => compraAbertaDados.participantes && compraAbertaDados.participantes[p] === true);
-            let somaPuraItens = 0;
-            compraAbertaDados.itens.forEach(i => { somaPuraItens += (i.valor * i.qtd); });
-            let totalTaxas = compraAbertaDados.frete + compraAbertaDados.imposto + compraAbertaDados.icms;
-            let totalDescontos = compraAbertaDados.desconto + compraAbertaDados.outrosDescontos;
-            let totalGlobalFinal = somaPuraItens + totalTaxas - totalDescontos;
-            let cotaBaseOriginal = cotistasAtivosArr.length > 0 ? (totalGlobalFinal / cotistasAtivosArr.length) : 0;
-
-            if (chave && cotaBaseOriginal > 0) {
-                let pixPayload = gerarPayloadPixEMV(chave, cotaBaseOriginal);
+            if (chave) {
+                let pixPayload = gerarPayloadPixEMV(chave);
                 imgEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pixPayload)}`;
                 imgEl.style.display = 'block';
                 placeEl.style.display = 'none';
-                infoEl.style.display = 'block';
-                infoEl.innerText = `💡 QR Code fixado com o valor exato da cota base: R$ ${cotaBaseOriginal.toFixed(2)}`;
             } else {
                 imgEl.style.display = 'none';
                 placeEl.style.display = 'block';
-                infoEl.style.display = 'none';
             }
         };
 
