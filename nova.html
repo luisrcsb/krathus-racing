@@ -1,14 +1,14 @@
 <!-- 
 ========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.59.0 - COMPRAS COLETIVAS + ITEM PIX SEPARADO)
+ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.60.0 - COMPRAS COLETIVAS + RATEIO RIGOROSO ITEM 5)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
 PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas)
 PARTE 3: Estrutura Principal do Dashboard, Filtros de Baterias/Pilotos/Módulos e KPIs Globais
 PARTE 4: Inicialização do Firebase, Configuração de Cache, Regras de Alias e Ordenação
 PARTE 5: Módulo de Gerenciamento de Campeonatos (ZRound, Bancos Separados, Grids de Largada e Pontuação)
-PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix EMV Individualizado por Comprador)
-PARTE 6: Processamento e Conversão de arquivos (PDF para Texto, Parser de Voltas, Base64 e Banco de Dados)
+PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix Individual, Rateio Estrito)
+PARTE 6: Processamento e Conversão de Arquivos (PDF para Texto, Parser de Voltas, Base64 e Banco de Dados)
 PARTE 7: Renderização Dinâmica de Gráficos (Evolução de Ritmo e Posição Volta a Volta) e Relatórios
 PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado, Consistência Histórica e Laudo)
 PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
@@ -224,7 +224,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                                 <input type="text" id="cc-form-pix" class="config-input" style="width: 100%; margin-top: 4px;" placeholder="Ex: CPF, Telefone (+55) ou E-mail" oninput="aoDigitarPix()">
                             </div>
                             <div style="display: flex; align-items: center; justify-content: center; flex: 1; flex-direction: column; gap: 8px;">
-                                <img id="cc-pix-qrcode" src="" alt="QR Code PIX EMV" style="width: 120px; height: 120px; background: #fff; padding: 6px; border-radius: 8px; display: none;">
+                                <img id="cc-pix-qrcode" src="" alt="QR Code Pix EMV" style="width: 120px; height: 120px; background: #fff; padding: 6px; border-radius: 8px; display: none;">
                                 <span id="cc-pix-placeholder" style="font-size: 0.8rem; color: var(--text-muted); text-align: center;">Insira a chave Pix para gerar o QR Code compatível com apps bancários.</span>
                             </div>
                         </div>
@@ -634,8 +634,8 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             
             if(compraAbertaDados.itens.length === 0) tbodyItens.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Nenhum item inserido.</td></tr>`;
 
-            // ITEM 6: Resumo e Rateio
-            let cotistasArr = Object.keys(compraAbertaDados.participantes || {}).filter(p => compraAbertaDados.participantes[p] === true);
+            // ITEM 6: Filtro estrito baseado APENAS nos cotistas marcados com 'true' no Item 5
+            let cotistasArr = pilotosDisponiveisGlobal.filter(p => compraAbertaDados.participantes && compraAbertaDados.participantes[p] === true);
             let numCotistas = cotistasArr.length;
             let valorPorCota = numCotistas > 0 ? (totalGlobalFinal / numCotistas) : 0;
 
