@@ -1,6 +1,6 @@
 <!-- 
 ========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.82.0 - REMOÇÃO DE REFERÊNCIAS ESPECÍFICAS)
+ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.84.0 - RESUMO COM LISTAGEM DE ITENS)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
 PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas)
@@ -107,7 +107,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
 
     <!-- MODAL DE RESUMO FISCAL E PAGAMENTO RÁPIDO -->
     <div id="resumo-fiscal-modal" class="custom-modal" style="z-index: 11000;">
-        <div class="modal-content" style="border-top-color: #480ca8; max-width: 800px;">
+        <div class="modal-content" style="border-top-color: #480ca8; max-width: 850px;">
             <div class="modal-header">
                 <div class="modal-title" id="resumo-fiscal-titulo">📊 Resumo Fiscal e de Pagamentos</div>
                 <button class="modal-close" onclick="fecharModalResumoFiscal()">&times;</button>
@@ -468,9 +468,36 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             document.getElementById('resumo-fiscal-titulo').innerText = `📊 Resumo Fiscal: ${c.nome}`;
             
             let somaPuraItens = 0;
-            if (c.itens) {
-                c.itens.forEach(i => { somaPuraItens += ((i.valor || 0) * (i.qtd || 1)); });
+            let itensHtmlList = "";
+            if (c.itens && c.itens.length > 0) {
+                c.itens.forEach(i => {
+                    somaPuraItens += ((i.valor || 0) * (i.qtd || 1));
+                    let imgBox = i.imgUrl ? 
+                        `<img src="${escapeHtml(i.imgUrl)}" style="width: 36px; height: 36px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-card);">` : 
+                        `<div style="width: 36px; height: 36px; background: var(--bg-card); border-radius: 4px; display:flex; align-items:center; justify-content:center; font-size:0.55rem; color:var(--text-muted); border: 1px dashed var(--border-card);">Sem Img</div>`;
+                    
+                    let nomeItemStr = i.nomeItem ? escapeHtml(i.nomeItem) : "Item sem descrição";
+                    let linkItemHtml = i.link ? `<a href="${escapeHtml(i.link)}" target="_blank" style="font-size:0.75rem; color:var(--accent-blue); text-decoration:none;">🔗 Acessar Link</a>` : "";
+
+                    itensHtmlList += `
+                        <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-card); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-card); margin-bottom: 6px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                ${imgBox}
+                                <div>
+                                    <div style="font-size: 0.85rem; font-weight: bold; color: var(--text-title);">${nomeItemStr}</div>
+                                    ${linkItemHtml}
+                                </div>
+                            </div>
+                            <div style="font-size: 0.85rem; font-weight: bold; color: var(--accent-gold); background: var(--bg-input); padding: 4px 10px; border-radius: 6px;">
+                                Qtd: ${i.qtd || 1}
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                itensHtmlList = `<div style="color: var(--text-muted); text-align:center; padding: 10px; font-size: 0.85rem;">Nenhum item cadastrado.</div>`;
             }
+
             let frete = c.frete || 0;
             let imposto = c.imposto || 0;
             let icms = c.icms || 0;
@@ -509,12 +536,26 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                 });
             }
 
+            let rastreioHtml = c.rastreio && c.rastreio.trim() !== "" ? 
+                `<div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                    <span>Código: <strong>${escapeHtml(c.rastreio)}</strong></span>
+                    <a href="https://t.17track.net/pt#nums=${c.rastreio}" target="_blank" class="btn-action-track" style="padding: 4px 10px; font-size: 0.75rem; text-decoration: none;">📦 Rastrear Correios / 17track</a>
+                 </div>` : 
+                `<span style="color: var(--text-muted); font-size: 0.8rem;">Nenhum código de rastreio cadastrado.</span>`;
+
             let body = document.getElementById('resumo-fiscal-body');
             body.innerHTML = `
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                    <div class="config-panel" style="margin: 0;">
-                        <div class="config-panel-title">📋 Resumo Fiscal dos Itens</div>
-                        <div style="display: flex; flex-direction: column; gap: 6px; font-size: 0.85rem; margin-top: 6px;">
+                <!-- Seção 1: Resumo Fiscal dos Itens -->
+                <div class="config-panel" style="margin: 0;">
+                    <div class="config-panel-title">1. Resumo Fiscal dos Itens</div>
+                    <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; margin-top: 6px; align-items: start;">
+                        <div>
+                            <span style="font-size: 0.75rem; font-weight: bold; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; display: block;">Itens da Compra Coletiva</span>
+                            <div style="max-height: 160px; overflow-y: auto; padding-right: 4px;">
+                                ${itensHtmlList}
+                            </div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 6px; font-size: 0.85rem; background: var(--bg-card); padding: 12px; border-radius: 8px; border: 1px solid var(--border-card);">
                             <div style="display: flex; justify-content: space-between;"><span>Subtotal Bruto:</span> <strong>R$ ${somaPuraItens.toFixed(2)}</strong></div>
                             <div style="display: flex; justify-content: space-between;"><span>Frete:</span> <strong>R$ ${frete.toFixed(2)}</strong></div>
                             <div style="display: flex; justify-content: space-between;"><span>Impostos / ICMS:</span> <strong>R$ ${(imposto + icms).toFixed(2)}</strong></div>
@@ -525,21 +566,34 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <!-- Seção 2: Status das Cotas -->
                     <div class="config-panel" style="margin: 0;">
-                        <div class="config-panel-title">💰 Status das Cotas</div>
+                        <div class="config-panel-title">2. Status das Cotas</div>
                         <div style="display: flex; flex-direction: column; gap: 6px; font-size: 0.85rem; margin-top: 6px;">
                             <div style="display: flex; justify-content: space-between;"><span>Total de Cotistas:</span> <strong>${numCotistas}</strong></div>
                             <div style="display: flex; justify-content: space-between;"><span>Cota Base (Mínima):</span> <strong style="color: var(--accent-gold);">R$ ${cotaBase.toFixed(2)}</strong></div>
                         </div>
                     </div>
+                    
+                    <!-- Seção 3: Rastreio do Pedido -->
+                    <div class="config-panel" style="margin: 0;">
+                        <div class="config-panel-title">3. Rastreio do Pedido</div>
+                        ${rastreioHtml}
+                    </div>
                 </div>
+
+                <!-- Seção 4: Participantes e Status de Pagamento -->
                 <div class="config-panel" style="margin: 0;">
-                    <div class="config-panel-title">👥 Participantes e Status de Pagamento</div>
-                    <p style="font-size: 0.78rem; color: var(--text-muted);">Clique em um participante pendente para simular o envio de comprovante ou gerar o QR Code Pix.</p>
+                    <div class="config-panel-title">4. Participantes e Status de Pagamento</div>
+                    <p style="font-size: 0.78rem; color: var(--text-muted);">Clique em um participante pendente para visualizar o QR Code Pix e quitar o pagamento.</p>
                     <div style="max-height: 220px; overflow-y: auto; margin-top: 8px;">
                         ${htmlCotistasList}
                     </div>
                 </div>
+                
                 <div id="container-pagamento-rapido" style="display: none;"></div>
             `;
 
@@ -560,7 +614,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             container.style.display = 'block';
             container.innerHTML = `
                 <div class="config-panel" style="border-color: var(--accent-green); background: rgba(46, 196, 182, 0.05);">
-                    <div class="config-panel-title" style="color: var(--accent-green);">📲 Envio de Comprovante & Quitação para ${escapeHtml(cotistaNome)}</div>
+                    <div class="config-panel-title" style="color: var(--accent-green);">📲 Envio de Comprovante & Quitação via Pix para ${escapeHtml(cotistaNome)}</div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: center;">
                         <div style="display: flex; flex-direction: column; gap: 10px;">
                             <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold;">1. Simular Anexo de Comprovante (Mín. R$ ${cotaDevida.toFixed(2)})</label>
@@ -572,7 +626,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                             <button class="btn-action-primary" style="background: var(--accent-green); margin-top: 6px; padding: 10px;" onclick="confirmarBaixaPagamentoRapido('${key}', '${escapeHtml(cotistaNome)}', ${cotaDevida})">✅ Confirmar Quitação / Baixa</button>
                         </div>
                         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; background: var(--bg-card); padding: 12px; border-radius: 8px; border: 1px solid var(--border-card);">
-                            <span style="font-size: 0.75rem; font-weight: bold; color: var(--accent-cc);">QR Code Pix (Valor Livre)</span>
+                            <span style="font-size: 0.75rem; font-weight: bold; color: var(--accent-cc);">QR Code Pix (Gerado da Configuração)</span>
                             ${qrCodeUrl ? `<img src="${qrCodeUrl}" style="width: 140px; height: 140px; background: #fff; padding: 4px; border-radius: 6px;">` : `<span style="font-size: 0.75rem; color: var(--accent-red); text-align: center;">Chave Pix do comprador não configurada.</span>`}
                         </div>
                     </div>
