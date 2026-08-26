@@ -1,13 +1,13 @@
 <!-- 
 ========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.70.0 - COMPRAS COLETIVAS + REORGANIZAÇÃO DOS ITENS 1 A 7)
+ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.72.0 - CORREÇÃO Z-INDEX DOS MODAIS - ÁREA 44)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
 PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas)
 PARTE 3: Estrutura Principal do Dashboard, Filtros de Baterias/Pilotos/Módulos e KPIs Globais
 PARTE 4: Inicialização do Firebase, Configuração de Cache, Regras de Alias e Ordenação
 PARTE 5: Módulo de Gerenciamento de Campeonatos (ZRound, Bancos Separados, Grids de Largada e Pontuação)
-PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix, Reorganização Itens 1-7)
+PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix, Resumo Fiscal, Z-Index)
 PARTE 6: Processamento e Conversão de Arquivos (PDF para Texto, Parser de Voltas, Base64 e Banco de Dados)
 PARTE 7: Renderização Dinâmica de Gráficos (Evolução de Ritmo e Posição Volta a Volta) e Relatórios
 PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado, Consistência Histórica e Laudo)
@@ -20,7 +20,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Krathus Racing - Central de Telemetria</title>
+    <title>Krathus Racing - Central de Telemetria (Área 44)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
@@ -61,7 +61,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
         .btn-text-action { background: transparent; border: none; color: var(--accent-blue); font-size: 0.78rem; font-weight: 600; cursor: pointer; padding: 0; text-align: left; }
         .btn-text-action:hover { text-decoration: underline; }
 
-        .btn-pdf-global { background: linear-gradient(135deg, #ff5722 0%, #e63946 100%); color: #ffffff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; }
         .btn-upload-modal-trigger { background: linear-gradient(135deg, #3a86ff 0%, #2ec4b6 100%); color: #ffffff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
         .btn-campeonatos-trigger { background: linear-gradient(135deg, #ffb703 0%, #fb8500 100%); color: #000; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
         .btn-compras-coletivas-trigger { background: linear-gradient(135deg, #2a9d8f 0%, #264653 100%); color: #fff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
@@ -92,7 +91,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
         .dropdown-item { padding: 8px 16px; font-size: 0.82rem; color: var(--text-main); cursor: pointer; display: block; text-decoration: none; }
         .dropdown-item:hover { background: var(--bg-input); color: #fff; }
 
-        .checkbox-container { background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 10px; max-height: 150px; overflow-y: auto; }
         .checkbox-item { display: flex; align-items: center; gap: 10px; font-size: 0.88rem; color: var(--text-main); cursor: pointer; }
         
         .table-container { width: 100%; overflow-x: auto; }
@@ -104,11 +102,11 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
 <body>
 
     <!-- Modais: Ficha Piloto, Upload, Championship Manager -->
-    <div id="upload-modal" class="custom-modal"><div class="modal-content"><div class="modal-header"><div class="modal-title">📤 Uploads</div><button class="modal-close" onclick="fecharModalUpload()">&times;</button></div><div class="modal-body"><p>Módulo de upload principal.</p></div></div></div>
-    <div id="campeonatos-modal" class="custom-modal"><div class="modal-content"><div class="modal-header"><div class="modal-title">🏆 Championship Manager</div><button class="modal-close" onclick="fecharModalCampeonatos()">&times;</button></div><div class="modal-body"><p>Módulo ZRound Original.</p></div></div></div>
+    <div id="upload-modal" class="custom-modal"><div class="modal-content"><div class="modal-header"><div class="modal-title">📤 Uploads de Telemetria e Arquivos</div><button class="modal-close" onclick="fecharModalUpload()">&times;</button></div><div class="modal-body"><p>Módulo de upload principal de PDFs e arquivos ZRound.</p></div></div></div>
+    <div id="campeonatos-modal" class="custom-modal"><div class="modal-content"><div class="modal-header"><div class="modal-title">🏆 Championship Manager (ZRound)</div><button class="modal-close" onclick="fecharModalCampeonatos()">&times;</button></div><div class="modal-body"><p>Módulo ZRound Original com bancos separados e pontuações.</p></div></div></div>
 
-    <!-- MODAL DE RESUMO FISCAL E PAGAMENTO RÁPIDO -->
-    <div id="resumo-fiscal-modal" class="custom-modal">
+    <!-- MODAL DE RESUMO FISCAL E PAGAMENTO RÁPIDO (Z-INDEX 11000 PARA FICAR NA FRENTE DO MODAL DE COMPRAS) -->
+    <div id="resumo-fiscal-modal" class="custom-modal" style="z-index: 11000;">
         <div class="modal-content" style="border-top-color: #480ca8; max-width: 800px;">
             <div class="modal-header">
                 <div class="modal-title" id="resumo-fiscal-titulo">📊 Resumo Fiscal e de Pagamentos</div>
@@ -124,7 +122,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
     <div id="campeonatos2-modal" class="custom-modal">
         <div class="modal-content" style="border-top-color: var(--accent-cc);">
             <div class="modal-header">
-                <div class="modal-title">🛒 Gestão de Compras Coletivas</div>
+                <div class="modal-title">🛒 Gestão de Compras Coletivas (Área 44)</div>
                 <button class="modal-close" onclick="fecharModalCampeonatos2()">&times;</button>
             </div>
             <div class="modal-body" style="position: relative;">
@@ -296,8 +294,8 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
     <div class="dashboard-container">
         <header class="header">
             <div class="brand-title">
-                <h1>🏁 KRATHUS RACING</h1>
-                <p>Central de Telemetria e Análise de Desempenho</p>
+                <h1>🏁 KRATHUS RACING / ÁREA 44</h1>
+                <p>Central de Telemetria, Campeonatos e Gestão Coletiva</p>
             </div>
             <div class="header-actions">
                 <button class="btn btn-upload-modal-trigger" onclick="abrirModalUpload()">📤 Uploads</button>
@@ -306,7 +304,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             </div>
         </header>
         <div id="tab-telemetria" class="tab-content" style="min-height: 400px; padding: 20px; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-card); display: flex; align-items: center; justify-content: center;">
-            <p style="color: var(--text-muted);">Painel Base Principal de Telemetria (Estrutura mantida em background).</p>
+            <p style="color: var(--text-muted);">Painel Base Principal Integrado à Área 44 pronto para uso.</p>
         </div>
     </div>
 
@@ -364,6 +362,11 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                 }
             });
         });
+
+        window.abrirModalUpload = function() { document.getElementById('upload-modal').style.display = 'flex'; };
+        window.fecharModalUpload = function() { document.getElementById('upload-modal').style.display = 'none'; };
+        window.abrirModalCampeonatos = function() { document.getElementById('campeonatos-modal').style.display = 'flex'; };
+        window.fecharModalCampeonatos = function() { document.getElementById('campeonatos-modal').style.display = 'none'; };
 
         window.abrirModalCampeonatos2 = function() {
             document.getElementById('campeonatos2-modal').style.display = 'flex';
