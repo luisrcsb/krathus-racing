@@ -1,6 +1,6 @@
 <!-- 
 ========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.81.0 - ITEM 4 UNIFICADO E COTA MÍNIMA - ÁREA 44)
+ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.82.0 - REMOÇÃO DE REFERÊNCIAS ESPECÍFICAS)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
 PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas)
@@ -20,7 +20,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Krathus Racing - Central de Telemetria (Área 44)</title>
+    <title>Krathus Racing - Central de Telemetria e Gestão Coletiva</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
@@ -122,7 +122,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
     <div id="campeonatos2-modal" class="custom-modal">
         <div class="modal-content" style="border-top-color: var(--accent-cc);">
             <div class="modal-header">
-                <div class="modal-title">🛒 Gestão de Compras Coletivas (Área 44)</div>
+                <div class="modal-title">🛒 Gestão de Compras Coletivas</div>
                 <button class="modal-close" onclick="fecharModalCampeonatos2()">&times;</button>
             </div>
             <div class="modal-body" style="position: relative;">
@@ -274,7 +274,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
     <div class="dashboard-container">
         <header class="header">
             <div class="brand-title">
-                <h1>🏁 KRATHUS RACING / ÁREA 44</h1>
+                <h1>🏁 KRATHUS RACING</h1>
                 <p>Central de Telemetria, Campeonatos e Gestão Coletiva</p>
             </div>
             <div class="header-actions">
@@ -284,7 +284,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             </div>
         </header>
         <div id="tab-telemetria" class="tab-content" style="min-height: 400px; padding: 20px; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-card); display: flex; align-items: center; justify-content: center;">
-            <p style="color: var(--text-muted);">Painel Base Principal Integrado à Área 44 pronto para uso.</p>
+            <p style="color: var(--text-muted);">Painel Base Principal pronto para uso.</p>
         </div>
     </div>
 
@@ -807,7 +807,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             inputsPago.forEach(inp => {
                 let pName = inp.getAttribute('data-cotista');
                 let val = parseFloat(inp.value.replace(',', '.')) || cotaBaseOriginal;
-                if (val < cotaBaseOriginal) val = cotaBaseOriginal; // Respeita o mínimo da cota base
+                if (val < cotaBaseOriginal) val = cotaBaseOriginal;
                 compraAbertaDados.valoresPagos[pName] = val;
             });
 
