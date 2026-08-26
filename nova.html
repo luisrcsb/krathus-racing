@@ -1,13 +1,13 @@
 <!-- 
 ========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.77.0 - UNIFICAÇÃO DOS ITENS 6 E 7 - ÁREA 44)
+ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.78.0 - FLUXO INTEGRADO COMPRADOR & COTISTAS - ÁREA 44)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
 PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas)
 PARTE 3: Estrutura Principal do Dashboard, Filtros de Baterias/Pilotos/Módulos e KPIs Globais
 PARTE 4: Inicialização do Firebase, Configuração de Cache, Regras de Alias e Ordenação
 PARTE 5: Módulo de Gerenciamento de Campeonatos (ZRound, Bancos Separados, Grids de Largada e Pontuação)
-PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix, Tabela Única 6/7)
+PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix, Fluxo Integrado 4 e 6)
 PARTE 6: Processamento e Conversão de Arquivos (PDF para Texto, Parser de Voltas, Base64 e Banco de Dados)
 PARTE 7: Renderização Dinâmica de Gráficos (Evolução de Ritmo e Posição Volta a Volta) e Relatórios
 PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado, Consistência Histórica e Laudo)
@@ -221,36 +221,10 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                         </div>
                     </div>
 
-                    <!-- 4. Comprador -->
+                    <!-- 6 & 7. COTISTAS, RATEIO E COMPRADOR UNIFICADOS -->
                     <div class="config-panel">
-                        <div class="config-panel-title" style="color: var(--accent-cc);">4. Comprador</div>
-                        <div>
-                            <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Comprador (Responsável)</label>
-                            <select id="cc-form-comprador" class="config-select" style="width: 100%; margin-top: 4px;" onchange="aoMudarComprador()">
-                                <option value="">Selecione quem fará a compra...</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- 5. Chave Pix do Comprador -->
-                    <div class="config-panel">
-                        <div class="config-panel-title" style="color: var(--accent-cc);">5. Chave Pix do Comprador</div>
-                        <div style="display: flex; flex-direction: column; gap: 12px; background: rgba(42, 157, 143, 0.05); padding: 14px; border-radius: 8px; border: 1px dashed var(--accent-cc);">
-                            <div>
-                                <label style="font-size: 0.72rem; color: var(--accent-cc); font-weight: bold; text-transform: uppercase;">Chave Pix</label>
-                                <input type="text" id="cc-form-pix" class="config-input" style="width: 100%; margin-top: 4px;" placeholder="Ex: CPF, Telefone (+55) ou E-mail" oninput="aoDigitarPix()">
-                            </div>
-                            <div style="display: flex; align-items: center; justify-content: center; flex: 1; flex-direction: column; gap: 8px;">
-                                <img id="cc-pix-qrcode" src="" alt="QR Code Pix EMV" style="width: 120px; height: 120px; background: #fff; padding: 6px; border-radius: 8px; display: none;">
-                                <span id="cc-pix-placeholder" style="font-size: 0.8rem; color: var(--text-muted); text-align: center;">Insira a chave Pix para gerar o QR Code compatível com apps bancários.</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 6. COTISTAS & RATEIO (UNIFICADOS EM UMA SÓ SEÇÃO) -->
-                    <div class="config-panel">
-                        <div class="config-panel-title" style="color: var(--accent-cc);">6. Cotistas, Rateio, Devoluções e Pagamentos</div>
-                        <p style="font-size: 0.78rem; color: var(--text-muted);">Marque os participantes abaixo para ativar a cota de rateio automaticamente. Ajuste o valor pago e o status de quitação em cada linha.</p>
+                        <div class="config-panel-title" style="color: var(--accent-cc);">6 & 7. Seleção de Cotistas, Rateio e Definição de Comprador</div>
+                        <p style="font-size: 0.78rem; color: var(--text-muted);">Marque os participantes ativos abaixo. Em seguida, selecione quem será o <strong>Comprador (Responsável)</strong> entre os participantes marcados.</p>
                         
                         <div class="table-container" style="margin-top: 6px;">
                             <table>
@@ -258,7 +232,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                                     <tr>
                                         <th style="width: 50px; text-align: center;">Ativo</th>
                                         <th>Cotista</th>
-                                        <th>Papel</th>
+                                        <th style="width: 160px; text-align: center;">Papel (Definir Comprador)</th>
                                         <th>Cota Base (R$)</th>
                                         <th>Valor Pago (R$) (Caixa de Texto Livre)</th>
                                         <th>Situação / Ação (Restituição ou Diferença)</th>
@@ -267,6 +241,22 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                                 </thead>
                                 <tbody id="cc-tabela-cotistas-rateio"></tbody>
                             </table>
+                        </div>
+                    </div>
+
+                    <!-- 5. Chave Pix do Comprador com Valor da Cota Base Fixado -->
+                    <div class="config-panel">
+                        <div class="config-panel-title" style="color: var(--accent-cc);">5. Chave Pix do Comprador (Para Pagamento da Cota)</div>
+                        <div style="display: flex; flex-direction: column; gap: 12px; background: rgba(42, 157, 143, 0.05); padding: 14px; border-radius: 8px; border: 1px dashed var(--accent-cc);">
+                            <div>
+                                <label style="font-size: 0.72rem; color: var(--accent-cc); font-weight: bold; text-transform: uppercase;">Chave Pix do Comprador Atual (<span id="cc-label-nome-comprador">Nenhum</span>)</label>
+                                <input type="text" id="cc-form-pix" class="config-input" style="width: 100%; margin-top: 4px;" placeholder="Ex: CPF, Telefone (+55) ou E-mail" oninput="aoDigitarPix()">
+                            </div>
+                            <div style="display: flex; align-items: center; justify-content: center; flex: 1; flex-direction: column; gap: 8px;">
+                                <img id="cc-pix-qrcode" src="" alt="QR Code Pix EMV" style="width: 130px; height: 130px; background: #fff; padding: 6px; border-radius: 8px; display: none;">
+                                <span id="cc-pix-placeholder" style="font-size: 0.8rem; color: var(--text-muted); text-align: center;">Insira a chave Pix para gerar o QR Code com o valor exato da cota base.</span>
+                                <div id="cc-pix-info-valor" style="font-size: 0.85rem; font-weight: bold; color: var(--accent-gold); display: none;"></div>
+                            </div>
                         </div>
                     </div>
 
@@ -567,8 +557,8 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                     </div>
                 </div>
                 <div class="config-panel" style="margin: 0;">
-                    <div class="config-panel-title">👥 Participantes e Status de Pagamento (Tabela Unificada)</div>
-                    <p style="font-size: 0.78rem; color: var(--text-muted);">Clique em um participante pendente para simular o envio de comprovante, ler o pagamento ou gerar o QR Code Pix.</p>
+                    <div class="config-panel-title">👥 Participantes e Status de Pagamento</div>
+                    <p style="font-size: 0.78rem; color: var(--text-muted);">Clique em um participante pendente para simular o envio de comprovante ou gerar o QR Code Pix.</p>
                     <div style="max-height: 220px; overflow-y: auto; margin-top: 8px;">
                         ${htmlCotistasList}
                     </div>
@@ -586,7 +576,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
         window.abrirPainelPagamentoRapido = function(key, cotistaNome, cotaDevida) {
             let c = comprasColetivasCache[key];
             let chavePix = (c.chavesPixPorComprador && c.chavesPixPorComprador[c.comprador]) ? c.chavesPixPorComprador[c.comprador] : (c.chavePix || "");
-            let pixPayload = chavePix ? gerarPayloadPixEMV(chavePix) : "";
+            let pixPayload = chavePix ? gerarPayloadPixEMV(chavePix, cotaDevida) : "";
             let qrCodeUrl = pixPayload ? `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(pixPayload)}` : "";
 
             let container = document.getElementById('container-pagamento-rapido');
@@ -605,9 +595,8 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                             <button class="btn-action-primary" style="background: var(--accent-green); margin-top: 6px; padding: 10px;" onclick="confirmarBaixaPagamentoRapido('${key}', '${escapeHtml(cotistaNome)}', ${cotaDevida})">✅ Confirmar Quitação / Baixa</button>
                         </div>
                         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; background: var(--bg-card); padding: 12px; border-radius: 8px; border: 1px solid var(--border-card);">
-                            <span style="font-size: 0.75rem; font-weight: bold; color: var(--accent-cc);">QR Code Pix para Pagamento</span>
+                            <span style="font-size: 0.75rem; font-weight: bold; color: var(--accent-cc);">QR Code Pix (Valor: R$ ${cotaDevida.toFixed(2)})</span>
                             ${qrCodeUrl ? `<img src="${qrCodeUrl}" style="width: 140px; height: 140px; background: #fff; padding: 4px; border-radius: 6px;">` : `<span style="font-size: 0.75rem; color: var(--accent-red); text-align: center;">Chave Pix do comprador não configurada.</span>`}
-                            <span style="font-size: 0.7rem; color: var(--text-muted); text-align: center;">Escaneie com o app do banco</span>
                         </div>
                     </div>
                 </div>
@@ -685,7 +674,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             if (!compraAbertaDados.valoresPagos) compraAbertaDados.valoresPagos = {};
             if (!compraAbertaDados.chavesPixPorComprador) compraAbertaDados.chavesPixPorComprador = {};
 
-            // Limpeza automática de nomes duplicados/legados
             Object.keys(compraAbertaDados.participantes).forEach(p => {
                 if (p.toLowerCase().includes("belovotsky") || p.toLowerCase().includes("silva belowodski")) {
                     delete compraAbertaDados.participantes[p];
@@ -705,53 +693,36 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             document.getElementById('cc-form-icms').value = compraAbertaDados.icms || 0;
             document.getElementById('cc-form-outros-descontos').value = compraAbertaDados.outrosDescontos || 0;
 
-            preencherSelectComprador();
-            gerarQrCodePixCC();
             atualizarCalculosCC(); 
         };
 
-        function preencherSelectComprador() {
-            let selectComprador = document.getElementById('cc-form-comprador');
-            let opts = `<option value="">Nenhum...</option>`;
-            pilotosDisponiveisGlobal.forEach(p => {
-                let sel = (compraAbertaDados.comprador === p) ? "selected" : "";
-                opts += `<option value="${escapeHtml(p)}" ${sel}>${escapeHtml(p)}</option>`;
-            });
-            selectComprador.innerHTML = opts;
-        }
-
-        window.aoMudarComprador = function() {
-            let novoComprador = document.getElementById('cc-form-comprador').value;
+        window.selecionarComprador = function(pName) {
             let compradorAnterior = compraAbertaDados.comprador;
-            
-            compraAbertaDados.comprador = novoComprador;
+            compraAbertaDados.comprador = pName;
 
-            if (compradorAnterior && compradorAnterior !== novoComprador) {
+            if (compradorAnterior && compradorAnterior !== pName) {
                 if (compraAbertaDados.valoresPagos[compradorAnterior] === undefined) {
                     delete compraAbertaDados.pagamentos[compradorAnterior];
                 }
             }
 
-            if (novoComprador) {
-                if (compraAbertaDados.participantes[novoComprador] === undefined) {
-                    compraAbertaDados.participantes[novoComprador] = true;
-                }
-                compraAbertaDados.pagamentos[novoComprador] = true;
+            if (pName) {
+                compraAbertaDados.participantes[pName] = true;
+                compraAbertaDados.pagamentos[pName] = true;
             }
 
             let inputPix = document.getElementById('cc-form-pix');
-            if (novoComprador && compraAbertaDados.chavesPixPorComprador && compraAbertaDados.chavesPixPorComprador[novoComprador]) {
-                inputPix.value = compraAbertaDados.chavesPixPorComprador[novoComprador];
-            } else {
-                inputPix.value = ""; 
+            if (pName && compraAbertaDados.chavesPixPorComprador && compraAbertaDados.chavesPixPorComprador[pName]) {
+                inputPix.value = compraAbertaDados.chavesPixPorComprador[pName];
+            } else if (!pName) {
+                inputPix.value = "";
             }
 
-            gerarQrCodePixCC();
             atualizarCalculosCC();
         };
 
         window.aoDigitarPix = function() {
-            let compradorAtual = document.getElementById('cc-form-comprador').value;
+            let compradorAtual = compraAbertaDados.comprador;
             let chave = document.getElementById('cc-form-pix').value.trim();
             
             compraAbertaDados.chavePix = chave;
@@ -772,7 +743,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             atualizarCalculosCC();
         };
 
-        // Função principal unificada de cálculo e renderização da tabela 6/7
         window.atualizarCalculosCC = function() {
             if (!compraAbertaDados) return;
 
@@ -782,7 +752,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             compraAbertaDados.imposto = parseFloat(document.getElementById('cc-form-imposto').value) || 0;
             compraAbertaDados.icms = parseFloat(document.getElementById('cc-form-icms').value) || 0;
             compraAbertaDados.outrosDescontos = parseFloat(document.getElementById('cc-form-outros-descontos').value) || 0;
-            compraAbertaDados.comprador = document.getElementById('cc-form-comprador').value;
             compraAbertaDados.chavePix = document.getElementById('cc-form-pix').value.trim();
 
             let rows = document.querySelectorAll('.cc-item-row');
@@ -805,6 +774,9 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                     delete compraAbertaDados.participantes[pName];
                     delete compraAbertaDados.pagamentos[pName];
                     delete compraAbertaDados.valoresPagos[pName];
+                    if (compraAbertaDados.comprador === pName) {
+                        compraAbertaDados.comprador = "";
+                    }
                 }
             });
 
@@ -849,15 +821,15 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             
             if(compraAbertaDados.itens.length === 0) tbodyItens.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Nenhum item inserido.</td></tr>`;
 
-            // Lista estrita de cotistas ativos marcados na tabela unificada
             let cotistasAtivosArr = pilotosDisponiveisGlobal.filter(p => compraAbertaDados.participantes && compraAbertaDados.participantes[p] === true);
             let numCotistas = cotistasAtivosArr.length;
             let cotaBaseOriginal = numCotistas > 0 ? (totalGlobalFinal / numCotistas) : 0;
 
             let comprador = compraAbertaDados.comprador;
             if (comprador && compraAbertaDados.participantes[comprador]) {
-                if (compraAbertaDados.pagamentos[comprador] === undefined) {
-                    compraAbertaDados.pagamentos[comprador] = true;
+                compraAbertaDados.pagamentos[comprador] = true;
+                if (compraAbertaDados.valoresPagos[comprador] === undefined || compraAbertaDados.valoresPagos[comprador] === 0) {
+                    compraAbertaDados.valoresPagos[comprador] = cotaBaseOriginal;
                 }
             }
 
@@ -879,23 +851,30 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             let acrescimoPorPendente = cotistasPendentes.length > 0 ? (totalExcedente / cotistasPendentes.length) : 0;
             let cotaEfetivaPendentes = cotaBaseOriginal + acrescimoPorPendente;
 
-            // Renderização da Tabela Unificada (Itens 6 & 7 juntos)
+            // Renderização da Tabela Unificada (6 & 7) com rádio/botão de escolha do Comprador integrado na linha
             let tbodyTabelaUnificada = document.getElementById('cc-tabela-cotistas-rateio');
             tbodyTabelaUnificada.innerHTML = "";
 
             pilotosDisponiveisGlobal.forEach(p => {
                 let isChecked = compraAbertaDados.participantes && compraAbertaDados.participantes[p] === true;
                 let isComprador = (p === comprador);
-                let papel = isComprador ? `<span style="color:var(--accent-cc); font-weight:bold;">Comprador & Cotista</span>` : (isChecked ? `Cotista` : `<span style="color:var(--text-muted);">Inativo</span>`);
+                
+                let radioCompradorHtml = `<span style="color: var(--text-muted); font-size: 0.75rem;">(Marque ativo primeiro)</span>`;
+                if (isChecked) {
+                    let checkedAttr = isComprador ? 'checked' : '';
+                    radioCompradorHtml = `
+                        <label class="checkbox-item" style="justify-content: center; margin: 0; cursor: pointer;">
+                            <input type="radio" name="radio-comprador-grupo" style="accent-color: var(--accent-gold); width: 16px; height: 16px;" ${checkedAttr} onchange="selecionarComprador('${escapeHtml(p)}')">
+                            <span style="font-size: 0.78rem; font-weight: bold; color: ${isComprador ? 'var(--accent-gold)' : 'var(--text-main);'}">${isComprador ? 'Comprador' : 'Definir'}</span>
+                        </label>
+                    `;
+                }
+
+                let papel = isComprador ? `<span style="color:var(--accent-gold); font-weight:bold;">Comprador & Cotista</span>` : (isChecked ? `Cotista` : `<span style="color:var(--text-muted);">Inativo</span>`);
                 
                 let isPago = compraAbertaDados.pagamentos && compraAbertaDados.pagamentos[p] === true;
                 let cotaIndividual = isPago ? cotaBaseOriginal : cotaEfetivaPendentes;
                 let valorPagoAtual = compraAbertaDados.valoresPagos && compraAbertaDados.valoresPagos[p] !== undefined ? compraAbertaDados.valoresPagos[p] : (isPago ? cotaBaseOriginal : 0);
-
-                if (isChecked && isComprador && (!compraAbertaDados.valoresPagos || compraAbertaDados.valoresPagos[p] === undefined)) {
-                    valorPagoAtual = cotaBaseOriginal;
-                    compraAbertaDados.valoresPagos[p] = cotaBaseOriginal;
-                }
 
                 let situacaoHtml = `<span style="color: var(--text-muted);">-</span>`;
                 let statusBadge = `<span style="color: var(--text-muted);">-</span>`;
@@ -904,7 +883,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
 
                 if (isChecked) {
                     cotaDisplayHtml = `<strong style="color: var(--accent-gold);">R$ ${cotaBaseOriginal.toFixed(2)}</strong>`;
-                    inputValorHtml = `<input type="text" class="config-input cc-input-pago" data-cotista="${escapeHtml(p)}" value="${valorPagoAtual > 0 ? valorPagoAtual.toFixed(2) : ''}" placeholder="0.00" onchange="atualizarCalculosCC()" style="width: 110px;">`;
+                    inputValorHtml = `<input type="text" class="config-input cc-input-pago" data-cotista="${escapeHtml(p)}" value="${valorPagoAtual > 0 ? valorPagoAtual.toFixed(2) : ''}" placeholder="0.00" onchange="atualizarCalculosCC()" style="width: 110px;" ${isComprador ? 'readonly' : ''}>`;
                     
                     let diff = valorPagoAtual - cotaBaseOriginal;
                     if (isPago && diff > 0.005) {
@@ -917,23 +896,23 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
 
                     let badgeText = isPago ? 'Pago ✅' : 'Pendente ⏳';
                     let badgeColor = isPago ? 'var(--accent-green)' : 'var(--accent-red)';
+                    let disabledCheckbox = isComprador ? 'disabled title="O comprador já possui pagamento obrigatório quitado"' : '';
+                    
                     statusBadge = `
                         <label class="checkbox-item" style="justify-content: center; margin: 0;">
-                            <input type="checkbox" style="accent-color: var(--accent-green); width: 16px; height: 16px;" ${isPago ? 'checked' : ''} onchange="toggleCheckboxPagamento('${escapeHtml(p)}', this.checked)">
+                            <input type="checkbox" style="accent-color: var(--accent-green); width: 16px; height: 16px;" ${isPago ? 'checked' : ''} ${disabledCheckbox} onchange="toggleCheckboxPagamento('${escapeHtml(p)}', this.checked)">
                             <span style="color: ${badgeColor}; font-weight: bold;">${badgeText}</span>
                         </label>
                     `;
                 }
-
-                let labelCompradorExtra = isComprador ? ' <span style="color:var(--accent-gold); font-size: 0.75rem;">(Comprador)</span>' : '';
 
                 tbodyTabelaUnificada.innerHTML += `
                     <tr>
                         <td style="text-align: center;">
                             <input type="checkbox" class="cc-check-participante" data-piloto="${escapeHtml(p)}" style="accent-color: var(--accent-cc); width: 18px; height: 18px; cursor: pointer;" ${isChecked ? 'checked' : ''} onchange="atualizarCalculosCC()">
                         </td>
-                        <td><strong>${escapeHtml(p)}</strong>${labelCompradorExtra}</td>
-                        <td>${papel}</td>
+                        <td><strong>${escapeHtml(p)}</strong></td>
+                        <td style="text-align: center;">${radioCompradorHtml}</td>
                         <td>${cotaDisplayHtml}</td>
                         <td>${inputValorHtml}</td>
                         <td>${situacaoHtml}</td>
@@ -941,6 +920,9 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                     </tr>
                 `;
             });
+
+            document.getElementById('cc-label-nome-comprador').innerText = comprador ? comprador : "Nenhum selecionado";
+            gerarQrCodePixCC();
         };
 
         window.toggleCheckboxPagamento = function(nome, isChecked) {
@@ -961,11 +943,11 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             atualizarCalculosCC();
         };
 
-        function gerarPayloadPixEMV(chaveRaw) {
+        function gerarPayloadPixEMV(chaveRaw, valorCota) {
             let chave = chaveRaw.replace(/\s/g, '');
             if (!chave) return "";
             
-            let nome = "Recebedor";
+            let nome = compraAbertaDados.comprador || "Recebedor";
             let cidade = "Brasil"; 
             
             if (chave.length === 11 && !chave.includes('@') && !isNaN(chave)) {
@@ -978,12 +960,16 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             let merchant_account = `26${(gui.length + key_str.length).toString().padStart(2, '0')}${gui}${key_str}`;
             let category_code = "52040000";
             let currency = "5303986";
+            
+            let valorStr = valorCota > 0 ? valorCota.toFixed(2) : "";
+            let amount_field = valorStr ? `54${valorStr.length.toString().padStart(2, '0')}${valorStr}` : "";
+
             let country = "5802BR";
             let merchant_name = `59${nome.length.toString().padStart(2, '0')}${nome}`;
             let merchant_city = `60${cidade.length.toString().padStart(2, '0')}${cidade}`;
             let additional_data = "62070503***";
 
-            let payload = `${payload_format}${merchant_account}${category_code}${currency}${country}${merchant_name}${merchant_city}${additional_data}6304`;
+            let payload = `${payload_format}${merchant_account}${category_code}${currency}${amount_field}${country}${merchant_name}${merchant_city}${additional_data}6304`;
 
             let crc = 0xFFFF;
             for (let i = 0; i < payload.length; i++) {
@@ -1001,15 +987,27 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             let chave = document.getElementById('cc-form-pix').value.trim();
             let imgEl = document.getElementById('cc-pix-qrcode');
             let placeEl = document.getElementById('cc-pix-placeholder');
+            let infoEl = document.getElementById('cc-pix-info-valor');
             
-            if (chave) {
-                let pixPayload = gerarPayloadPixEMV(chave);
+            let cotistasAtivosArr = pilotosDisponiveisGlobal.filter(p => compraAbertaDados.participantes && compraAbertaDados.participantes[p] === true);
+            let somaPuraItens = 0;
+            compraAbertaDados.itens.forEach(i => { somaPuraItens += (i.valor * i.qtd); });
+            let totalTaxas = compraAbertaDados.frete + compraAbertaDados.imposto + compraAbertaDados.icms;
+            let totalDescontos = compraAbertaDados.desconto + compraAbertaDados.outrosDescontos;
+            let totalGlobalFinal = somaPuraItens + totalTaxas - totalDescontos;
+            let cotaBaseOriginal = cotistasAtivosArr.length > 0 ? (totalGlobalFinal / cotistasAtivosArr.length) : 0;
+
+            if (chave && cotaBaseOriginal > 0) {
+                let pixPayload = gerarPayloadPixEMV(chave, cotaBaseOriginal);
                 imgEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pixPayload)}`;
                 imgEl.style.display = 'block';
                 placeEl.style.display = 'none';
+                infoEl.style.display = 'block';
+                infoEl.innerText = `💡 QR Code fixado com o valor exato da cota base: R$ ${cotaBaseOriginal.toFixed(2)}`;
             } else {
                 imgEl.style.display = 'none';
                 placeEl.style.display = 'block';
+                infoEl.style.display = 'none';
             }
         };
 
