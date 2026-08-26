@@ -1,13 +1,13 @@
 <!-- 
 ========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.63.0 - COMPRAS COLETIVAS + CRÉDITO E RATEIO PENDENTES)
+ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.64.0 - COMPRAS COLETIVAS + INPUT LIVRE CORRIGIDO)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
 PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas)
 PARTE 3: Estrutura Principal do Dashboard, Filtros de Baterias/Pilotos/Módulos e KPIs Globais
 PARTE 4: Inicialização do Firebase, Configuração de Cache, Regras de Alias e Ordenação
 PARTE 5: Módulo de Gerenciamento de Campeonatos (ZRound, Bancos Separados, Grids de Largada e Pontuação)
-PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix, Cotistas, Crédito e Rateio)
+PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix, Cotistas, Input Livre)
 PARTE 6: Processamento e Conversão de Arquivos (PDF para Texto, Parser de Voltas, Base64 e Banco de Dados)
 PARTE 7: Renderização Dinâmica de Gráficos (Evolução de Ritmo e Posição Volta a Volta) e Relatórios
 PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado, Consistência Histórica e Laudo)
@@ -241,7 +241,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                         </div>
                     </div>
 
-                    <!-- 6. Resumo de Rateio, Devoluções e Redistribuição -->
+                    <!-- 6. Resumo de Rateio, Devoluções e Pagamentos -->
                     <div class="config-panel">
                         <div class="config-panel-title" style="color: var(--accent-cc);">6. Resumo de Cotas, Devoluções e Pagamentos</div>
                         
@@ -252,7 +252,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                                         <th>Cotista</th>
                                         <th>Papel</th>
                                         <th>Cota Base (R$)</th>
-                                        <th>Valor Pago (R$) (Caixa de Texto)</th>
+                                        <th>Valor Pago (R$) (Caixa de Texto Livre)</th>
                                         <th>Situação / Ação (Restituição ou Diferença)</th>
                                         <th style="text-align: center;">Status (Pago ✅)</th>
                                     </tr>
@@ -605,7 +605,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                 }
             });
 
-            // Captura valores digitados nas caixas de texto de cada cotista
+            // Captura valores digitados nas caixas de texto livres de cada cotista
             let inputsPago = document.querySelectorAll('.cc-input-pago');
             inputsPago.forEach(inp => {
                 let pName = inp.getAttribute('data-cotista');
@@ -652,7 +652,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             let numCotistas = cotistasArr.length;
             let cotaBaseOriginal = numCotistas > 0 ? (totalGlobalFinal / numCotistas) : 0;
 
-            // 1. Identifica quanto foi pago a maior (excedente/crédito) e quem está pendente
             let totalExcedente = 0;
             let cotistasPendentes = [];
 
@@ -668,7 +667,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                 }
             });
 
-            // 2. A cota base para quem ainda não pagou absorve o excedente proporcionalmente
             let cotaAjustadaPendentes = cotaBaseOriginal;
             if (cotistasPendentes.length > 0 && totalExcedente > 0) {
                 cotaAjustadaPendentes = cotaBaseOriginal + (totalExcedente / cotistasPendentes.length);
@@ -687,7 +685,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                     let isPago = compraAbertaDados.pagamentos[p] === true;
                     let valorPagoAtual = compraAbertaDados.valoresPagos[p] !== undefined ? compraAbertaDados.valoresPagos[p] : (isPago ? cotaBaseOriginal : 0);
 
-                    // Cota efetiva deste participante
                     let cotaEfetiva = isPago ? cotaBaseOriginal : cotaAjustadaPendentes;
                     if (isComprador) {
                         compraAbertaDados.pagamentos[p] = true;
@@ -713,7 +710,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                             <td>${papel}</td>
                             <td style="font-weight: 700; color: var(--accent-gold);">R$ ${cotaBaseOriginal.toFixed(2)}</td>
                             <td>
-                                <input type="text" class="config-input cc-input-pago" data-cotista="${escapeHtml(p)}" value="${valorPagoAtual > 0 ? valorPagoAtual.toFixed(2) : ''}" placeholder="0.00" oninput="atualizarCalculosCC()" style="width: 110px;">
+                                <input type="text" class="config-input cc-input-pago" data-cotista="${escapeHtml(p)}" value="${valorPagoAtual > 0 ? valorPagoAtual : ''}" placeholder="0.00" onchange="atualizarCalculosCC()" style="width: 110px;">
                             </td>
                             <td>${situacaoHtml}</td>
                             <td style="text-align: center;">
@@ -731,7 +728,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
         window.toggleCheckboxPagamento = function(nome, isChecked) {
             compraAbertaDados.pagamentos[nome] = isChecked;
             if (isChecked) {
-                // Se marcou como pago e o campo de valor estiver vazio ou zero, preenche automaticamente com a cota base
                 let somaPuraItens = 0;
                 compraAbertaDados.itens.forEach(i => { somaPuraItens += (i.valor * i.qtd); });
                 let totalTaxas = compraAbertaDados.frete + compraAbertaDados.imposto + compraAbertaDados.icms;
