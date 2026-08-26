@@ -1,13 +1,13 @@
 <!-- 
 ========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.56.0 - COMPRAS COLETIVAS + COTISTAS E COMPRADOR CORRIGIDO)
+ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.57.0 - COMPRAS COLETIVAS + ITENS SEPARADOS 3, 4 E 5)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
 PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas)
 PARTE 3: Estrutura Principal do Dashboard, Filtros de Baterias/Pilotos/Módulos e KPIs Globais
 PARTE 4: Inicialização do Firebase, Configuração de Cache, Regras de Alias e Ordenação
 PARTE 5: Módulo de Gerenciamento de Campeonatos (ZRound, Bancos Separados, Grids de Largada e Pontuação)
-PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix EMV, Rateio Rigoroso)
+PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix EMV, Seções 3, 4 e 5)
 PARTE 6: Processamento e Conversão de Arquivos (PDF para Texto, Parser de Voltas, Base64 e Banco de Dados)
 PARTE 7: Renderização Dinâmica de Gráficos (Evolução de Ritmo e Posição Volta a Volta) e Relatórios
 PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado, Consistência Histórica e Laudo)
@@ -204,26 +204,16 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                         </div>
                     </div>
 
-                    <!-- 3. Comprador, Cotistas e PIX -->
+                    <!-- 3. Comprador e Chave PIX -->
                     <div class="config-panel">
-                        <div class="config-panel-title" style="color: var(--accent-cc);">3. Comprador, Cotistas e Chave PIX</div>
+                        <div class="config-panel-title" style="color: var(--accent-cc);">3. Comprador e Chave PIX</div>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                            
-                            <div style="display: flex; flex-direction: column; gap: 12px;">
-                                <div>
-                                    <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Comprador (Responsável)</label>
-                                    <select id="cc-form-comprador" class="config-select" style="width: 100%; margin-top: 4px;" onchange="aoMudarComprador()">
-                                        <option value="">Selecione quem fará a compra...</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Cotistas (Dividem o Total)</label>
-                                    <div id="cc-form-participantes-container" style="background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 6px; padding: 10px; max-height: 150px; overflow-y: auto; margin-top: 4px; display: flex; flex-direction: column; gap: 6px;">
-                                        <!-- Checkboxes gerados via JS -->
-                                    </div>
-                                </div>
+                            <div>
+                                <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Comprador (Responsável)</label>
+                                <select id="cc-form-comprador" class="config-select" style="width: 100%; margin-top: 4px;" onchange="aoMudarComprador()">
+                                    <option value="">Selecione quem fará a compra...</option>
+                                </select>
                             </div>
-
                             <div style="display: flex; flex-direction: column; gap: 12px; background: rgba(42, 157, 143, 0.05); padding: 14px; border-radius: 8px; border: 1px dashed var(--accent-cc);">
                                 <div>
                                     <label style="font-size: 0.72rem; color: var(--accent-cc); font-weight: bold; text-transform: uppercase;">Chave PIX do Comprador</label>
@@ -234,13 +224,23 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                                     <span id="cc-pix-placeholder" style="font-size: 0.8rem; color: var(--text-muted); text-align: center;">Insira a chave PIX para gerar o QR Code compatível com apps bancários.</span>
                                 </div>
                             </div>
-
                         </div>
                     </div>
 
-                    <!-- 4. Resumo de Rateio e Gerenciamento de Pagamentos -->
+                    <!-- 4. Cotistas -->
                     <div class="config-panel">
-                        <div class="config-panel-title" style="color: var(--accent-cc);">4. Resumo de Cotas e Pagamentos</div>
+                        <div class="config-panel-title" style="color: var(--accent-cc);">4. Cotistas</div>
+                        <div>
+                            <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Selecione os Cotistas que Dividem o Total</label>
+                            <div id="cc-form-participantes-container" style="background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 6px; padding: 10px; max-height: 150px; overflow-y: auto; margin-top: 4px; display: flex; flex-direction: column; gap: 6px;">
+                                <!-- Checkboxes gerados via JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5. Resumo de Rateio e Gerenciamento de Pagamentos -->
+                    <div class="config-panel">
+                        <div class="config-panel-title" style="color: var(--accent-cc);">5. Resumo de Cotas e Pagamentos</div>
                         <div class="table-container">
                             <table>
                                 <thead>
@@ -493,8 +493,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
 
         window.aoMudarComprador = function() {
             let novo = document.getElementById('cc-form-comprador').value;
-            // Se for uma compra recém-carregada e o usuário selecionar o comprador pela primeira vez, 
-            // marcamos ele como cotista por padrão, permitindo alteração posterior livre.
             if (novo && compraAbertaDados.participantes[novo] === undefined && !compraAbertaDados._compradorInicializado) {
                 compraAbertaDados.participantes[novo] = true;
             }
@@ -600,7 +598,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             
             if(compraAbertaDados.itens.length === 0) tbodyItens.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Nenhum item inserido.</td></tr>`;
 
-            // ITEM 4: Apenas cotistas selecionados explicitamente. Sem duplicar e sem forçar comprador se desmarcado.
+            // ITEM 5: Resumo e Rateio
             let cotistasArr = Object.keys(compraAbertaDados.participantes || {}).filter(p => compraAbertaDados.participantes[p] === true);
             let numCotistas = cotistasArr.length;
             let valorPorCota = numCotistas > 0 ? (totalGlobalFinal / numCotistas) : 0;
@@ -609,7 +607,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             tbodyRateio.innerHTML = "";
             
             if (numCotistas === 0) {
-                tbodyRateio.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Nenhum cotista selecionado no Item 3. Marque ao menos um para gerar o rateio.</td></tr>`;
+                tbodyRateio.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Nenhum cotista selecionado no Item 4. Marque ao menos um para gerar o rateio.</td></tr>`;
             } else {
                 cotistasArr.forEach(p => {
                     let isComprador = (p === compraAbertaDados.comprador);
