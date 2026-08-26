@@ -1,13 +1,13 @@
 <!-- 
 ========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.60.0 - COMPRAS COLETIVAS + RATEIO RIGOROSO ITEM 5)
+ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.61.0 - COMPRAS COLETIVAS + SALDOS E REDISTRIBUIÇÃO)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
 PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas)
 PARTE 3: Estrutura Principal do Dashboard, Filtros de Baterias/Pilotos/Módulos e KPIs Globais
 PARTE 4: Inicialização do Firebase, Configuração de Cache, Regras de Alias e Ordenação
 PARTE 5: Módulo de Gerenciamento de Campeonatos (ZRound, Bancos Separados, Grids de Largada e Pontuação)
-PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix Individual, Rateio Estrito)
+PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix, Cotistas, Saldos e Redistribuição)
 PARTE 6: Processamento e Conversão de Arquivos (PDF para Texto, Parser de Voltas, Base64 e Banco de Dados)
 PARTE 7: Renderização Dinâmica de Gráficos (Evolução de Ritmo e Posição Volta a Volta) e Relatórios
 PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado, Consistência Histórica e Laudo)
@@ -241,17 +241,29 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                         </div>
                     </div>
 
-                    <!-- 6. Resumo de Rateio e Gerenciamento de Pagamentos -->
+                    <!-- 6. Resumo de Rateio, Saldos e Redistribuição -->
                     <div class="config-panel">
-                        <div class="config-panel-title" style="color: var(--accent-cc);">6. Resumo de Cotas e Pagamentos</div>
+                        <div class="config-panel-title" style="color: var(--accent-cc);">6. Resumo de Cotas, Saldos e Pagamentos</div>
+                        
+                        <!-- Opção de Redistribuição de Diferenças -->
+                        <div style="background: var(--bg-card); border: 1px solid var(--border-card); padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                            <label class="checkbox-item" style="margin: 0; font-weight: 600;">
+                                <input type="checkbox" id="cc-check-redistribuir" style="accent-color: var(--accent-cc); width: 16px; height: 16px;" onchange="atualizarCalculosCC()">
+                                🔄 Redistribuir automaticamente diferenças (valores a menos / déficit) entre os demais cotistas adimplentes
+                            </label>
+                            <span id="cc-info-deficit" style="font-size: 0.8rem; color: var(--accent-gold);">Déficit atual: R$ 0,00</span>
+                        </div>
+
                         <div class="table-container">
                             <table>
                                 <thead>
                                     <tr>
                                         <th>Cotista</th>
                                         <th>Papel</th>
-                                        <th>Valor da Cota (R$)</th>
-                                        <th style="text-align: center;">Status de Pagamento</th>
+                                        <th>Cota Base (R$)</th>
+                                        <th>Valor Pago (R$)</th>
+                                        <th>Saldo (Troco / Falta)</th>
+                                        <th style="text-align: center;">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody id="cc-tabela-rateio"></tbody>
@@ -372,7 +384,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             let nova = {
                 chave: key, nome: nome, frete: 0, imposto: 0, icms: 0, desconto: 0, outrosDescontos: 0,
                 itens: [{ imgUrl: "", nomeItem: "", link: "", valor: 0, qtd: 1 }],
-                comprador: "", chavePix: "", chavesPixPorComprador: {}, participantes: {}, pagamentos: {}, rastreio: ""
+                comprador: "", chavePix: "", chavesPixPorComprador: {}, participantes: {}, pagamentos: {}, valoresPagos: {}, redistribuirDiferenca: false, rastreio: ""
             };
 
             await db.ref(`comprasColetivas/${key}`).set(nova);
@@ -465,6 +477,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             if (!compraAbertaDados.itens) compraAbertaDados.itens = [];
             if (!compraAbertaDados.participantes) compraAbertaDados.participantes = {};
             if (!compraAbertaDados.pagamentos) compraAbertaDados.pagamentos = {};
+            if (!compraAbertaDados.valoresPagos) compraAbertaDados.valoresPagos = {};
             if (!compraAbertaDados.chavesPixPorComprador) compraAbertaDados.chavesPixPorComprador = {};
 
             document.getElementById('lista-compras-coletivas-view').style.display = 'none';
@@ -477,6 +490,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             document.getElementById('cc-form-imposto').value = compraAbertaDados.imposto || 0;
             document.getElementById('cc-form-icms').value = compraAbertaDados.icms || 0;
             document.getElementById('cc-form-outros-descontos').value = compraAbertaDados.outrosDescontos || 0;
+            document.getElementById('cc-check-redistribuir').checked = compraAbertaDados.redistribuirDiferenca === true;
 
             preencherSelectsCompradorEParticipantes();
             
@@ -563,6 +577,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             } else { 
                 delete compraAbertaDados.participantes[nome]; 
                 delete compraAbertaDados.pagamentos[nome]; 
+                delete compraAbertaDados.valoresPagos[nome];
             }
             atualizarCalculosCC();
         };
@@ -588,6 +603,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             compraAbertaDados.outrosDescontos = parseFloat(document.getElementById('cc-form-outros-descontos').value) || 0;
             compraAbertaDados.comprador = document.getElementById('cc-form-comprador').value;
             compraAbertaDados.chavePix = document.getElementById('cc-form-pix').value.trim();
+            compraAbertaDados.redistribuirDiferenca = document.getElementById('cc-check-redistribuir').checked;
 
             let rows = document.querySelectorAll('.cc-item-row');
             rows.forEach((r, idx) => {
@@ -598,6 +614,13 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                     compraAbertaDados.itens[idx].valor = parseFloat(r.querySelector('.cc-item-val').value) || 0;
                     compraAbertaDados.itens[idx].qtd = parseInt(r.querySelector('.cc-item-qtd').value) || 1;
                 }
+            });
+
+            // Captura valores pagos editados nas linhas da tabela (se já renderizada)
+            let inputsPago = document.querySelectorAll('.cc-input-pago');
+            inputsPago.forEach(inp => {
+                let pName = inp.getAttribute('data-cotista');
+                compraAbertaDados.valoresPagos[pName] = parseFloat(inp.value) || 0;
             });
 
             let somaPuraItens = 0;
@@ -634,46 +657,86 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             
             if(compraAbertaDados.itens.length === 0) tbodyItens.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Nenhum item inserido.</td></tr>`;
 
-            // ITEM 6: Filtro estrito baseado APENAS nos cotistas marcados com 'true' no Item 5
+            // ITEM 6: Cálculo de Rateio Base e Redistribuição de Diferenças
             let cotistasArr = pilotosDisponiveisGlobal.filter(p => compraAbertaDados.participantes && compraAbertaDados.participantes[p] === true);
             let numCotistas = cotistasArr.length;
-            let valorPorCota = numCotistas > 0 ? (totalGlobalFinal / numCotistas) : 0;
+            let cotaBaseOriginal = numCotistas > 0 ? (totalGlobalFinal / numCotistas) : 0;
+
+            let cotasFinais = {};
+            cotistasArr.forEach(p => { cotasFinais[p] = cotaBaseOriginal; });
+
+            // Se a redistribuição estiver ativa, calcula déficits e sobras e redistribui entre os demais
+            if (compraAbertaDados.redistribuirDiferenca && numCotistas > 1) {
+                let deficitTotal = 0;
+                let elegiveisParaReceber = [];
+
+                cotistasArr.forEach(p => {
+                    let pago = compraAbertaDados.valoresPagos[p] !== undefined ? compraAbertaDados.valoresPagos[p] : cotaBaseOriginal;
+                    let diff = pago - cotaBaseOriginal; // Positivo = pagou a mais (sobra), Negativo = pagou a menos (falta)
+                    if (diff < 0) {
+                        deficitTotal += Math.abs(diff);
+                        cotasFinais[p] = pago; // Quem pagou menos assume o que pagou
+                    } else if (diff > 0) {
+                        // Sobras podem abater o déficit ou ser tratadas como crédito individual. Aqui mantemos a cota original para quem pagou a mais, e o déficit dos inadimplentes é diluído.
+                        elegiveisParaReceber.push(p);
+                    }
+                });
+
+                // Redistribui o déficit entre os cotistas que não pagaram a menos
+                if (deficitTotal > 0 && elegiveisParaReceber.length > 0) {
+                    let adicionalPorPessoa = deficitTotal / elegiveisParaReceber.length;
+                    elegiveisParaReceber.forEach(p => {
+                        cotasFinais[p] = cotaBaseOriginal + adicionalPorPessoa;
+                    });
+                }
+                
+                document.getElementById('cc-info-deficit').innerText = `Déficit redistribuído: R$ ${deficitTotal.toFixed(2)}`;
+            } else {
+                document.getElementById('cc-info-deficit').innerText = `Déficit redistribuído: R$ 0,00`;
+            }
 
             let tbodyRateio = document.getElementById('cc-tabela-rateio');
             tbodyRateio.innerHTML = "";
             
             if (numCotistas === 0) {
-                tbodyRateio.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Nenhum cotista selecionado no Item 5. Marque ao menos um para gerar o rateio.</td></tr>`;
+                tbodyRateio.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Nenhum cotista selecionado no Item 5. Marque ao menos um para gerar o rateio.</td></tr>`;
             } else {
                 cotistasArr.forEach(p => {
                     let isComprador = (p === compraAbertaDados.comprador);
                     let papel = isComprador ? `<span style="color:var(--accent-cc); font-weight:bold;">Comprador & Cotista</span>` : `Cotista`;
+                    let cotaEfetiva = cotasFinais[p] || cotaBaseOriginal;
                     
-                    if (isComprador) compraAbertaDados.pagamentos[p] = true;
+                    let valorPagoAtual = compraAbertaDados.valoresPagos[p] !== undefined ? compraAbertaDados.valoresPagos[p] : cotaEfetiva;
+                    let diferenca = valorPagoAtual - cotaEfetiva; // Positivo = Troco/Crédito a devolver, Negativo = Falta complementar
                     
-                    let pago = compraAbertaDados.pagamentos[p] ? 'checked' : '';
-                    let pagoDisabled = isComprador ? 'disabled' : '';
+                    let saldoHtml = "";
+                    if (diferenca > 0.005) {
+                        saldoHtml = `<span style="color: var(--accent-green); font-weight: bold;">Troco/Crédito: +R$ ${diferenca.toFixed(2)}</span>`;
+                    } else if (diferenca < -0.005) {
+                        saldoHtml = `<span style="color: var(--accent-red); font-weight: bold;">Falta: -R$ ${Math.abs(diferenca).toFixed(2)}</span>`;
+                    } else {
+                        saldoHtml = `<span style="color: var(--text-muted);">Quitado exato</span>`;
+                    }
+
+                    let statusTexto = valorPagoAtual >= cotaEfetiva ? '<span style="color:var(--accent-green); font-weight:bold;">Pago ✅</span>' : '<span style="color:var(--accent-red); font-weight:bold;">Pendente ⏳</span>';
 
                     tbodyRateio.innerHTML += `
                         <tr>
                             <td><strong>${escapeHtml(p)}</strong></td>
                             <td>${papel}</td>
-                            <td style="color: var(--accent-gold); font-weight: 700;">R$ ${valorPorCota.toFixed(2)}</td>
-                            <td style="text-align: center;">
-                                <label class="checkbox-item" style="justify-content: center;">
-                                    <input type="checkbox" style="accent-color: var(--accent-green);" ${pago} ${pagoDisabled} onchange="marcarPagamento('${escapeHtml(p)}', this.checked)">
-                                    ${pago ? '<span style="color:var(--accent-green); font-weight:bold;">Pago ✅</span>' : '<span style="color:var(--accent-red); font-weight:bold;">Pendente ⏳</span>'}
-                                </label>
+                            <td>
+                                <div style="font-weight: 700; color: var(--accent-gold);">R$ ${cotaEfetiva.toFixed(2)}</div>
+                                ${cotaEfetiva !== cotaBaseOriginal ? `<div style="font-size:0.7rem; color:var(--text-muted);">(Base: R$ ${cotaBaseOriginal.toFixed(2)})</div>` : ''}
                             </td>
+                            <td>
+                                <input type="number" step="0.01" class="config-input cc-input-pago" data-cotista="${escapeHtml(p)}" value="${valorPagoAtual}" oninput="atualizarCalculosCC()" style="width: 100px;">
+                            </td>
+                            <td>${saldoHtml}</td>
+                            <td style="text-align: center;">${statusTexto}</td>
                         </tr>
                     `;
                 });
             }
-        };
-
-        window.marcarPagamento = function(nome, isChecked) {
-            compraAbertaDados.pagamentos[nome] = isChecked;
-            atualizarCalculosCC();
         };
 
         function gerarPayloadPixEMV(chaveRaw) {
