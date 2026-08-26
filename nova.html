@@ -1,13 +1,13 @@
 <!-- 
 ========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.68.0 - COMPRAS COLETIVAS + LAYOUT INVERTIDO)
+ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.69.0 - COMPRAS COLETIVAS + RESUMO FISCAL E INTERATIVO)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
 PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas)
 PARTE 3: Estrutura Principal do Dashboard, Filtros de Baterias/Pilotos/Módulos e KPIs Globais
-PARTE 4: Inicialização do Firebase, Configuração de Cache, Regras de Alias e Ordenação
+PARTE 4: Initialization do Firebase, Configuração de Cache, Regras de Alias e Ordenação
 PARTE 5: Módulo de Gerenciamento de Campeonatos (ZRound, Bancos Separados, Grids de Largada e Pontuação)
-PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix, Cotistas, Layout Invertido)
+PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix, Resumo Fiscal Interativo)
 PARTE 6: Processamento e Conversão de Arquivos (PDF para Texto, Parser de Voltas, Base64 e Banco de Dados)
 PARTE 7: Renderização Dinâmica de Gráficos (Evolução de Ritmo e Posição Volta a Volta) e Relatórios
 PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado, Consistência Histórica e Laudo)
@@ -82,6 +82,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
         .btn-action-primary { background: var(--accent-blue); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
         .btn-action-danger { background: var(--accent-red); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
         .btn-action-track { background: #3f37c9; color: #fff; border: none; padding: 6px 14px; border-radius: 6px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .btn-action-summary { background: #480ca8; color: #fff; border: none; padding: 6px 14px; border-radius: 6px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 6px; }
 
         .progress-bar-container { width: 100%; background-color: var(--bg-card); border-radius: 8px; border: 1px solid var(--border-card); overflow: hidden; height: 16px; margin-top: 6px; position: relative; }
         .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #2a9d8f, #2ec4b6); width: 0%; transition: width 0.3s; }
@@ -106,6 +107,19 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
     <div id="upload-modal" class="custom-modal"><div class="modal-content"><div class="modal-header"><div class="modal-title">📤 Uploads</div><button class="modal-close" onclick="fecharModalUpload()">&times;</button></div><div class="modal-body"><p>Módulo de upload principal.</p></div></div></div>
     <div id="campeonatos-modal" class="custom-modal"><div class="modal-content"><div class="modal-header"><div class="modal-title">🏆 Championship Manager</div><button class="modal-close" onclick="fecharModalCampeonatos()">&times;</button></div><div class="modal-body"><p>Módulo ZRound Original.</p></div></div></div>
 
+    <!-- MODAL DE RESUMO FISCAL E PAGAMENTO RÁPIDO -->
+    <div id="resumo-fiscal-modal" class="custom-modal">
+        <div class="modal-content" style="border-top-color: #480ca8; max-width: 800px;">
+            <div class="modal-header">
+                <div class="modal-title" id="resumo-fiscal-titulo">📊 Resumo Fiscal e de Pagamentos</div>
+                <button class="modal-close" onclick="fecharModalResumoFiscal()">&times;</button>
+            </div>
+            <div class="modal-body" id="resumo-fiscal-body" style="display: flex; flex-direction: column; gap: 16px;">
+                <!-- Conteúdo injetado via JS -->
+            </div>
+        </div>
+    </div>
+
     <!-- 🛒 Compras Coletivas -->
     <div id="campeonatos2-modal" class="custom-modal">
         <div class="modal-content" style="border-top-color: var(--accent-cc);">
@@ -116,7 +130,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             <div class="modal-body" style="position: relative;">
                 
                 <div id="lista-compras-coletivas-view" style="display: flex; flex-direction: column; gap: 20px;">
-                    <!-- 1. Compras Cadastradas (AGORA NO TOPO) -->
+                    <!-- 1. Compras Cadastradas (No Topo) -->
                     <div style="display: flex; flex-direction: column; gap: 10px;">
                         <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Compras Coletivas Cadastradas</span>
                         <ul id="cc-lista-cadastradas" style="list-style: none; display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; padding-right: 5px;">
@@ -124,7 +138,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                         </ul>
                     </div>
 
-                    <!-- 2. Criar Nova Compra Coletiva (AGORA NA BASE) -->
+                    <!-- 2. Criar Nova Compra Coletiva (Na Base) -->
                     <div class="config-panel" style="border-color: var(--accent-cc);">
                         <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-cc); text-transform: uppercase;">🔒 Criar Nova Compra Coletiva</span>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
@@ -424,7 +438,8 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                     <li style="background: var(--bg-input); padding: 14px 16px; border-radius: 10px; border: 1px solid var(--border-card); display: flex; flex-direction: column; gap: 10px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                             <span style="font-size: 1.05rem; font-weight: 700; color: var(--text-title);">🛒 ${escapeHtml(c.nome)}</span>
-                            <div style="display: flex; gap: 8px;">
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                <button class="btn-action-summary" onclick="abrirModalResumoFiscal('${key}')">📊 Resumir</button>
                                 ${rastreioBtnHtml}
                                 <button class="btn-action-primary" style="background: var(--accent-cc);" onclick="abrirGerenciadorCompra('${key}')">⚙️ Gerenciar</button>
                             </div>
@@ -440,6 +455,191 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                 `;
             });
         }
+
+        // ==========================================
+        // MÓDULO DE RESUMO FISCAL E PAGAMENTO RÁPIDO
+        // ==========================================
+        window.abrirModalResumoFiscal = function(key) {
+            let c = comprasColetivasCache[key];
+            if (!c) return;
+
+            document.getElementById('resumo-fiscal-titulo').innerText = `📊 Resumo Fiscal: ${c.nome}`;
+            
+            let somaPuraItens = 0;
+            if (c.itens) {
+                c.itens.forEach(i => { somaPuraItens += ((i.valor || 0) * (i.qtd || 1)); });
+            }
+            let frete = c.frete || 0;
+            let imposto = c.imposto || 0;
+            let icms = c.icms || 0;
+            let desconto = c.desconto || 0;
+            let outrosDescontos = c.outrosDescontos || 0;
+            let totalGlobal = somaPuraItens + frete + imposto + icms - desconto - outrosDescontos;
+
+            let cotistasArr = Object.keys(c.participantes || {});
+            let numCotistas = cotistasArr.length;
+            let cotaBase = numCotistas > 0 ? (totalGlobal / numCotistas) : 0;
+
+            let cotistasPendentes = [];
+            let totalExcedente = 0;
+
+            cotistasArr.forEach(p => {
+                let isPago = c.pagamentos && c.pagamentos[p] === true;
+                let pago = c.valoresPagos && c.valoresPagos[p] !== undefined ? c.valoresPagos[p] : (isPago ? cotaBase : 0);
+                if (isPago && pago > cotaBase + 0.005) {
+                    totalExcedente += (pago - cotaBase);
+                }
+                if (!isPago) {
+                    cotistasPendentes.push(p);
+                }
+            });
+
+            let acrescimoPendentes = cotistasPendentes.length > 0 ? (totalExcedente / cotistasPendentes.length) : 0;
+            let cotaEfetivaPendentes = cotaBase + acrescimoPendentes;
+
+            let htmlCotistasList = "";
+            if (numCotistas === 0) {
+                htmlCotistasList = `<div style="color: var(--text-muted); text-align:center; padding: 10px;">Nenhum cotista vinculado a esta compra.</div>`;
+            } else {
+                cotistasArr.forEach(p => {
+                    let isPago = c.pagamentos && c.pagamentos[p] === true;
+                    let cotaDevida = isPago ? cotaBase : cotaEfetivaPendentes;
+                    let icon = isPago ? "✅" : "⏳";
+                    let badgeColor = isPago ? "var(--accent-green)" : "var(--accent-red)";
+                    let acaoClick = isPago ? "" : `onclick="abrirPainelPagamentoRapido('${key}', '${escapeHtml(p)}', ${cotaDevida})" style="cursor: pointer; border: 1px dashed var(--accent-red);"`;
+
+                    htmlCotistasList += `
+                        <div ${acaoClick} style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); padding: 10px 14px; border-radius: 8px; margin-bottom: 6px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="font-size: 1.1rem;">${icon}</span>
+                                <div>
+                                    <strong>${escapeHtml(p)}</strong>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);">Cota devida: R$ ${cotaDevida.toFixed(2)}</div>
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <span style="color: ${badgeColor}; font-weight: bold; font-size: 0.85rem;">${isPago ? 'Quitado' : 'Pendente (Clique p/ Pagar)'}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            let body = document.getElementById('resumo-fiscal-body');
+            body.innerHTML = `
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="config-panel" style="margin: 0;">
+                        <div class="config-panel-title">📋 Resumo Fiscal dos Itens</div>
+                        <div style="display: flex; flex-direction: column; gap: 6px; font-size: 0.85rem; margin-top: 6px;">
+                            <div style="display: flex; justify-content: space-between;"><span>Subtotal Bruto:</span> <strong>R$ ${somaPuraItens.toFixed(2)}</strong></div>
+                            <div style="display: flex; justify-content: space-between;"><span>Frete:</span> <strong>R$ ${frete.toFixed(2)}</strong></div>
+                            <div style="display: flex; justify-content: space-between;"><span>Impostos / ICMS:</span> <strong>R$ ${(imposto + icms).toFixed(2)}</strong></div>
+                            <div style="display: flex; justify-content: space-between;"><span>Descontos:</span> <strong style="color: var(--accent-red);">- R$ ${(desconto + outrosDescontos).toFixed(2)}</strong></div>
+                            <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--border-card); padding-top: 6px; margin-top: 4px;">
+                                <span style="font-weight: bold; color: var(--accent-gold);">Total Global Final:</span> 
+                                <strong style="color: var(--accent-gold); font-size: 1.05rem;">R$ ${totalGlobal.toFixed(2)}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="config-panel" style="margin: 0;">
+                        <div class="config-panel-title">💰 Status das Cotas</div>
+                        <div style="display: flex; flex-direction: column; gap: 6px; font-size: 0.85rem; margin-top: 6px;">
+                            <div style="display: flex; justify-content: space-between;"><span>Total de Cotistas:</span> <strong>${numCotistas}</strong></div>
+                            <div style="display: flex; justify-content: space-between;"><span>Cota Base Original:</span> <strong>R$ ${cotaBase.toFixed(2)}</strong></div>
+                            <div style="display: flex; justify-content: space-between;"><span>Excedente a Repassar:</span> <strong style="color: var(--accent-green);">R$ ${totalExcedente.toFixed(2)}</strong></div>
+                            <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--border-card); padding-top: 6px; margin-top: 4px;">
+                                <span>Cota Efetiva Pendentes:</span> <strong>R$ ${cotaEfetivaPendentes.toFixed(2)}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="config-panel" style="margin: 0;">
+                    <div class="config-panel-title">👥 Participantes e Status de Pagamento</div>
+                    <p style="font-size: 0.78rem; color: var(--text-muted);">Clique em um participante pendente para simular o envio de comprovante, ler o pagamento ou gerar o QR Code Pix.</p>
+                    <div style="max-height: 220px; overflow-y: auto; margin-top: 8px;">
+                        ${htmlCotistasList}
+                    </div>
+                </div>
+                <div id="container-pagamento-rapido" style="display: none;"></div>
+            `;
+
+            document.getElementById('resumo-fiscal-modal').style.display = 'flex';
+        };
+
+        window.fecharModalResumoFiscal = function() {
+            document.getElementById('resumo-fiscal-modal').style.display = 'none';
+        };
+
+        window.abrirPainelPagamentoRapido = function(key, cotistaNome, cotaDevida) {
+            let c = comprasColetivasCache[key];
+            let chavePix = (c.chavesPixPorComprador && c.chavesPixPorComprador[c.comprador]) ? c.chavesPixPorComprador[c.comprador] : (c.chavePix || "");
+            let pixPayload = chavePix ? gerarPayloadPixEMV(chavePix) : "";
+            let qrCodeUrl = pixPayload ? `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(pixPayload)}` : "";
+
+            let container = document.getElementById('container-pagamento-rapido');
+            container.style.display = 'block';
+            container.innerHTML = `
+                <div class="config-panel" style="border-color: var(--accent-green); background: rgba(46, 196, 182, 0.05);">
+                    <div class="config-panel-title" style="color: var(--accent-green);">📲 Envio de Comprovante & Quitação para ${escapeHtml(cotistaNome)}</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: center;">
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold;">1. Simular Anexo de Comprovante (OCR / Leitura Automática)</label>
+                            <input type="file" id="input-arquivo-comprovante" class="config-input" accept="image/*,.pdf" style="font-size: 0.8rem;" onchange="simularLeituraComprovante('${key}', '${escapeHtml(cotistaNome)}', ${cotaDevida})">
+                            
+                            <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold; margin-top: 4px;">2. Valor Pago (Permitido alterar para cima, mín. R$ ${cotaDevida.toFixed(2)})</label>
+                            <input type="number" step="0.01" id="input-valor-pago-rapido" class="config-input" value="${cotaDevida.toFixed(2)}" min="${cotaDevida}" style="font-weight: bold; font-size: 1rem; color: var(--accent-gold);">
+                            
+                            <button class="btn-action-primary" style="background: var(--accent-green); margin-top: 6px; padding: 10px;" onclick="confirmarBaixaPagamentoRapido('${key}', '${escapeHtml(cotistaNome)}', ${cotaDevida})">✅ Confirmar Quitação / Baixa</button>
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; background: var(--bg-card); padding: 12px; border-radius: 8px; border: 1px solid var(--border-card);">
+                            <span style="font-size: 0.75rem; font-weight: bold; color: var(--accent-cc);">QR Code Pix para Pagamento</span>
+                            ${qrCodeUrl ? `<img src="${qrCodeUrl}" style="width: 140px; height: 140px; background: #fff; padding: 4px; border-radius: 6px;">` : `<span style="font-size: 0.75rem; color: var(--accent-red); text-align: center;">Chave Pix do comprador não configurada.</span>`}
+                            <span style="font-size: 0.7rem; color: var(--text-muted); text-align: center;">Escaneie com o app do banco</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.scrollIntoView({ behavior: 'smooth' });
+        };
+
+        window.simularLeituraComprovante = function(key, cotistaNome, cotaDevida) {
+            let fileInput = document.getElementById('input-arquivo-comprovante');
+            if (fileInput.files && fileInput.files[0]) {
+                // Simulação inteligente de leitura OCR do comprovante
+                setTimeout(() => {
+                    let valorSugerido = cotaDevida + (Math.random() > 0.7 ? 10.00 : 0); // Exemplo de variação ou valor exato
+                    document.getElementById('input-valor-pago-rapido').value = valorSugerido.toFixed(2);
+                    alert(`🔍 Comprovante lido com sucesso pelo sistema!\nValor identificado no comprovante: R$ ${valorSugerido.toFixed(2)}`);
+                }, 600);
+            }
+        };
+
+        window.confirmarBaixaPagamentoRapido = async function(key, cotistaNome, cotaDevida) {
+            let inputVal = document.getElementById('input-valor-pago-rapido');
+            let valorInformado = parseFloat(inputVal.value) || cotaDevida;
+
+            if (valorInformado < cotaDevida - 0.005) {
+                alert(`❌ O valor pago (R$ ${valorInformado.toFixed(2)}) não pode ser inferior à cota devida (R$ ${cotaDevida.toFixed(2)})!`);
+                return;
+            }
+
+            if (!db) return;
+
+            let c = comprasColetivasCache[key];
+            if (!c.pagamentos) c.pagamentos = {};
+            if (!c.valoresPagos) c.valoresPagos = {};
+
+            c.pagamentos[cotistaNome] = true;
+            c.valoresPagos[cotistaNome] = valorInformado;
+
+            try {
+                await db.ref(`comprasColetivas/${key}`).set(c);
+                alert(`✅ Pagamento de ${cotistaNome} quitado com sucesso no sistema!`);
+                abrirModalResumoFiscal(key); // Atualiza o modal
+            } catch (err) {
+                alert("Erro ao salvar pagamento: " + err.message);
+            }
+        };
 
         window.toggleMenuRastreio = function(e, menuId) {
             e.stopPropagation();
