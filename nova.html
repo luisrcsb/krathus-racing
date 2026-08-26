@@ -1,13 +1,13 @@
 <!-- 
 ========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.64.0 - COMPRAS COLETIVAS + INPUT LIVRE CORRIGIDO)
+ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.65.0 - COMPRAS COLETIVAS + REDISTRIBUIÇÃO SELETIVA)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
 PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas)
 PARTE 3: Estrutura Principal do Dashboard, Filtros de Baterias/Pilotos/Módulos e KPIs Globais
 PARTE 4: Inicialização do Firebase, Configuração de Cache, Regras de Alias e Ordenação
 PARTE 5: Módulo de Gerenciamento de Campeonatos (ZRound, Bancos Separados, Grids de Largada e Pontuação)
-PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix, Cotistas, Input Livre)
+PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix, Cotistas, Redistribuição Individual)
 PARTE 6: Processamento e Conversão de Arquivos (PDF para Texto, Parser de Voltas, Base64 e Banco de Dados)
 PARTE 7: Renderização Dinâmica de Gráficos (Evolução de Ritmo e Posição Volta a Volta) e Relatórios
 PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado, Consistência Histórica e Laudo)
@@ -375,7 +375,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             let nova = {
                 chave: key, nome: nome, frete: 0, imposto: 0, icms: 0, desconto: 0, outrosDescontos: 0,
                 itens: [{ imgUrl: "", nomeItem: "", link: "", valor: 0, qtd: 1 }],
-                comprador: "", chavePix: "", chavesPixPorComprador: {}, participantes: {}, pagamentos: {}, valoresPagos: {}, rastreio: ""
+                comprador: "", chavePix: "", chavesPixPorComprador: {}, participantes: {}, pagamentos: {}, valoresPagos: {}, redistribuirCotistas: {}, rastreio: ""
             };
 
             await db.ref(`comprasColetivas/${key}`).set(nova);
@@ -469,6 +469,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             if (!compraAbertaDados.participantes) compraAbertaDados.participantes = {};
             if (!compraAbertaDados.pagamentos) compraAbertaDados.pagamentos = {};
             if (!compraAbertaDados.valoresPagos) compraAbertaDados.valoresPagos = {};
+            if (!compraAbertaDados.redistribuirCotistas) compraAbertaDados.redistribuirCotistas = {};
             if (!compraAbertaDados.chavesPixPorComprador) compraAbertaDados.chavesPixPorComprador = {};
 
             document.getElementById('lista-compras-coletivas-view').style.display = 'none';
@@ -568,6 +569,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                 delete compraAbertaDados.participantes[nome]; 
                 delete compraAbertaDados.pagamentos[nome]; 
                 delete compraAbertaDados.valoresPagos[nome];
+                delete compraAbertaDados.redistribuirCotistas[nome];
             }
             atualizarCalculosCC();
         };
@@ -605,7 +607,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                 }
             });
 
-            // Captura valores digitados nas caixas de texto livres de cada cotista
             let inputsPago = document.querySelectorAll('.cc-input-pago');
             inputsPago.forEach(inp => {
                 let pName = inp.getAttribute('data-cotista');
@@ -647,29 +648,30 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             
             if(compraAbertaDados.itens.length === 0) tbodyItens.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Nenhum item inserido.</td></tr>`;
 
-            // ITEM 6: Lógica de Rateio, Excedente e Redistribuição entre Pendentes
+            // ITEM 6: Cálculo de Excedentes e Rateio Seletivo por Checkbox Individual
             let cotistasArr = pilotosDisponiveisGlobal.filter(p => compraAbertaDados.participantes && compraAbertaDados.participantes[p] === true);
             let numCotistas = cotistasArr.length;
             let cotaBaseOriginal = numCotistas > 0 ? (totalGlobalFinal / numCotistas) : 0;
 
             let totalExcedente = 0;
-            let cotistasPendentes = [];
-
             cotistasArr.forEach(p => {
                 let pago = compraAbertaDados.valoresPagos[p] !== undefined ? compraAbertaDados.valoresPagos[p] : 0;
                 let isPago = compraAbertaDados.pagamentos[p] === true;
-                
                 if (isPago && pago > cotaBaseOriginal + 0.005) {
                     totalExcedente += (pago - cotaBaseOriginal);
                 }
-                if (!isPago) {
-                    cotistasPendentes.push(p);
-                }
+            });
+
+            // Conta quantos cotistas pendentes estão com a caixa de redistribuição marcada
+            let cotistasParaRedistribuir = cotistasArr.filter(p => {
+                let isPago = compraAbertaDados.pagamentos[p] === true;
+                let marcadoRedist = compraAbertaDados.redistribuirCotistas[p] === true;
+                return !isPago && marcadoRedist;
             });
 
             let cotaAjustadaPendentes = cotaBaseOriginal;
-            if (cotistasPendentes.length > 0 && totalExcedente > 0) {
-                cotaAjustadaPendentes = cotaBaseOriginal + (totalExcedente / cotistasPendentes.length);
+            if (cotistasParaRedistribuir.length > 0 && totalExcedente > 0) {
+                cotaAjustadaPendentes = cotaBaseOriginal + (totalExcedente / cotistasParaRedistribuir.length);
             }
 
             let tbodyRateio = document.getElementById('cc-tabela-rateio');
@@ -685,7 +687,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                     let isPago = compraAbertaDados.pagamentos[p] === true;
                     let valorPagoAtual = compraAbertaDados.valoresPagos[p] !== undefined ? compraAbertaDados.valoresPagos[p] : (isPago ? cotaBaseOriginal : 0);
 
-                    let cotaEfetiva = isPago ? cotaBaseOriginal : cotaAjustadaPendentes;
+                    let cotaEfetiva = (isPago || !compraAbertaDados.redistribuirCotistas[p]) ? cotaBaseOriginal : cotaAjustadaPendentes;
                     if (isComprador) {
                         compraAbertaDados.pagamentos[p] = true;
                         cotaEfetiva = cotaBaseOriginal;
@@ -699,7 +701,16 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                     } else if (isPago) {
                         situacaoHtml = `<span style="color: var(--text-muted);">Quitado conforme cota base</span>`;
                     } else {
-                        situacaoHtml = `<span style="color: var(--accent-gold);">Pendente (Cota rateada: R$ ${cotaEfetiva.toFixed(2)})</span>`;
+                        let marcadoRedist = compraAbertaDados.redistribuirCotistas[p] === true;
+                        situacaoHtml = `
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                <span style="color: var(--accent-gold);">Pendente (Cota: R$ ${cotaEfetiva.toFixed(2)})</span>
+                                <label class="checkbox-item" style="font-size: 0.78rem; color: var(--text-muted); margin: 0;">
+                                    <input type="checkbox" style="accent-color: var(--accent-cc); width: 14px; height: 14px;" ${marcadoRedist ? 'checked' : ''} onchange="toggleRedistribuirCotista('${escapeHtml(p)}', this.checked)">
+                                    Incluir na redistribuição de cotas
+                                </label>
+                            </div>
+                        `;
                     }
 
                     let statusBadge = isPago ? '<span style="color:var(--accent-green); font-weight:bold;">Pago ✅</span>' : '<span style="color:var(--accent-red); font-weight:bold;">Pendente ⏳</span>';
@@ -739,8 +750,18 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                 if (!compraAbertaDados.valoresPagos[nome] || compraAbertaDados.valoresPagos[nome] === 0) {
                     compraAbertaDados.valoresPagos[nome] = cotaBaseOriginal;
                 }
+                delete compraAbertaDados.redistribuirCotistas[nome];
             } else {
                 compraAbertaDados.valoresPagos[nome] = 0;
+            }
+            atualizarCalculosCC();
+        };
+
+        window.toggleRedistribuirCotista = function(nome, isChecked) {
+            if (isChecked) {
+                compraAbertaDados.redistribuirCotistas[nome] = true;
+            } else {
+                delete compraAbertaDados.redistribuirCotistas[nome];
             }
             atualizarCalculosCC();
         };
