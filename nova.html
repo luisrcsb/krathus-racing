@@ -1,13 +1,13 @@
 <!-- 
 ========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.52.0 - COMPRAS COLETIVAS REFORMULADO + RASTREIO)
+ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.53.0 - COMPRAS COLETIVAS REFORMULADO + RASTREIO + DESCONTOS)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
 PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas)
 PARTE 3: Estrutura Principal do Dashboard, Filtros de Baterias/Pilotos/Módulos e KPIs Globais
 PARTE 4: Inicialização do Firebase, Configuração de Cache, Regras de Alias e Ordenação
 PARTE 5: Módulo de Gerenciamento de Campeonatos (ZRound, Bancos Separados, Grids de Largada e Pontuação)
-PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Tela Única, Rastreio, Impostos Proporcionais, Pix e Rateio)
+PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Tela Única, Rastreio, Subtotal Auto, Descontos, Pix e Rateio)
 PARTE 6: Processamento e Conversão de Arquivos (PDF para Texto, Parser de Voltas, Base64 e Banco de Dados)
 PARTE 7: Renderização Dinâmica de Gráficos (Evolução de Ritmo e Posição Volta a Volta) e Relatórios
 PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado, Consistência Histórica e Laudo)
@@ -84,6 +84,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
         .config-panel-title { font-size: 0.85rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid var(--border-card); padding-bottom: 8px; }
         
         .config-input, .config-select { background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-card); padding: 8px 12px; border-radius: 6px; flex: 1; font-size: 0.85rem; }
+        .config-input[readonly] { opacity: 0.7; cursor: not-allowed; }
 
         .btn-action-primary { background: var(--accent-blue); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
         .btn-action-danger { background: var(--accent-red); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
@@ -108,14 +109,12 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
 </head>
 <body>
 
-    <!-- [PARTE 2] Modais: Ficha Piloto, Upload, Championship Manager e Compras Coletivas -->
-    <!-- (Os modais de Piloto, Upload e ZRound original foram mantidos ocultos/resumidos aqui por brevidade de espaço, focaremos nas Compras Coletivas e Estrutura Principal) -->
-    
+    <!-- Modais: Ficha Piloto, Upload, Championship Manager (Ocultos no snippet para foco nas Compras Coletivas) -->
     <div id="upload-modal" class="custom-modal"><div class="modal-content"><div class="modal-header"><div class="modal-title">📤 Uploads</div><button class="modal-close" onclick="fecharModalUpload()">&times;</button></div><div class="modal-body"><p>Módulo de upload principal.</p></div></div></div>
     
     <div id="campeonatos-modal" class="custom-modal"><div class="modal-content"><div class="modal-header"><div class="modal-title">🏆 Championship Manager</div><button class="modal-close" onclick="fecharModalCampeonatos()">&times;</button></div><div class="modal-body"><p>Módulo ZRound Original.</p></div></div></div>
 
-    <!-- 🛒 Compras Coletivas (Tela Única, Rastreio, Pix, Rateio) -->
+    <!-- 🛒 Compras Coletivas -->
     <div id="campeonatos2-modal" class="custom-modal">
         <div class="modal-content" style="border-top-color: var(--accent-cc);">
             <div class="modal-header">
@@ -141,7 +140,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                     </div>
                 </div>
 
-                <!-- PAINEL ÚNICO DE GERENCIAMENTO (Substitui as antigas 5 abas) -->
+                <!-- PAINEL ÚNICO DE GERENCIAMENTO -->
                 <div id="painel-unica-compra-view" style="display: none; flex-direction: column; gap: 18px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-bottom: 2px solid var(--border-card); padding-bottom: 12px;">
                         <h3 id="cc-titulo-gerenciamento" style="font-size: 1.2rem; color: var(--accent-cc);">Cadastro de Compra Coletiva: --</h3>
@@ -163,6 +162,14 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                         </div>
                         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 8px;">
                             <div>
+                                <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Subtotal dos Itens (R$)</label>
+                                <input type="number" id="cc-form-subtotal" class="config-input" style="width: 100%; margin-top: 4px; background: var(--bg-body); font-weight: bold;" value="0" readonly title="Soma automática dos itens abaixo">
+                            </div>
+                            <div>
+                                <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Desconto (R$)</label>
+                                <input type="number" id="cc-form-desconto" class="config-input" style="width: 100%; margin-top: 4px;" value="0" step="0.01" oninput="atualizarCalculosCC()">
+                            </div>
+                            <div>
                                 <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Frete Total (R$)</label>
                                 <input type="number" id="cc-form-frete" class="config-input" style="width: 100%; margin-top: 4px;" value="0" step="0.01" oninput="atualizarCalculosCC()">
                             </div>
@@ -173,6 +180,10 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                             <div>
                                 <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">ICMS (R$)</label>
                                 <input type="number" id="cc-form-icms" class="config-input" style="width: 100%; margin-top: 4px;" value="0" step="0.01" oninput="atualizarCalculosCC()">
+                            </div>
+                            <div>
+                                <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Outros Descontos (R$)</label>
+                                <input type="number" id="cc-form-outros-descontos" class="config-input" style="width: 100%; margin-top: 4px;" value="0" step="0.01" oninput="atualizarCalculosCC()">
                             </div>
                         </div>
                     </div>
@@ -189,7 +200,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                                         <th>Link (URL)</th>
                                         <th style="width: 100px;">Valor (R$)</th>
                                         <th style="width: 70px;">Qtd</th>
-                                        <th style="width: 120px;">Subtotal (c/ Taxa)</th>
+                                        <th style="width: 120px;">Subtotal</th>
                                         <th style="text-align: right; width: 60px;">Ação</th>
                                     </tr>
                                 </thead>
@@ -206,7 +217,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                         <div class="config-panel-title" style="color: var(--accent-cc);">3. Comprador, Pagadores e Chave PIX</div>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                             
-                            <!-- Coluna Esquerda: Pessoas -->
                             <div style="display: flex; flex-direction: column; gap: 12px;">
                                 <div>
                                     <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Comprador (Responsável)</label>
@@ -222,7 +232,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                                 </div>
                             </div>
 
-                            <!-- Coluna Direita: PIX -->
                             <div style="display: flex; flex-direction: column; gap: 12px; background: rgba(42, 157, 143, 0.05); padding: 14px; border-radius: 8px; border: 1px dashed var(--accent-cc);">
                                 <div>
                                     <label style="font-size: 0.72rem; color: var(--accent-cc); font-weight: bold; text-transform: uppercase;">Chave PIX do Comprador</label>
@@ -266,7 +275,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
         </div>
     </div>
 
-    <!-- [PARTE 3] Estrutura Principal do Dashboard -->
+    <!-- Estrutura Principal do Dashboard -->
     <div class="dashboard-container">
         <header class="header">
             <div class="brand-title">
@@ -279,8 +288,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                 <button class="btn btn-compras-coletivas-trigger" onclick="abrirModalCampeonatos2()">🛒 Compras Coletivas</button>
             </div>
         </header>
-
-        <!-- Filtros, KPIs e Sessões mantidos iguais à versão 5.48.2 (Ocultados no snippet html base para focar no script principal) -->
         <div id="tab-telemetria" class="tab-content" style="min-height: 400px; padding: 20px; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-card); display: flex; align-items: center; justify-content: center;">
             <p style="color: var(--text-muted);">Painel Base Principal de Telemetria (Estrutura mantida em background).</p>
         </div>
@@ -304,7 +311,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
         let compraAbertaKey = null;
         let compraAbertaDados = null; 
         
-        // Simulação de banco de pilotos unificados para uso no select
         let pilotosDisponiveisGlobal = ["Edgard Camilo (DJ)", "Raphael Belowodski", "Matheus", "Luiz", "Otávio"];
 
         try {
@@ -320,15 +326,10 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                     comprasColetivasCache = snapshot.val() || {};
                     if(document.getElementById('campeonatos2-modal').style.display === 'flex') {
                         renderizarListaComprasColetivas();
-                        if (compraAbertaKey && comprasColetivasCache[compraAbertaKey]) {
-                            // Se estiver com a compra aberta e houver update no banco, não vamos forçar reload bruto para não perder dados digitados não salvos.
-                            // Mas mantemos a referência.
-                        }
                     }
                 });
             }
             
-            // Fecha menus de rastreio ao clicar fora
             document.addEventListener('click', function(e) {
                 if (!e.target.closest('.dropdown-menu') && !e.target.closest('.btn-action-track')) {
                     document.querySelectorAll('.dropdown-menu').forEach(m => m.style.display = 'none');
@@ -369,7 +370,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
 
             let key = "cc_" + Date.now();
             let nova = {
-                chave: key, nome: nome, frete: 0, imposto: 0, icms: 0,
+                chave: key, nome: nome, frete: 0, imposto: 0, icms: 0, desconto: 0, outrosDescontos: 0,
                 itens: [{ imgUrl: "", nomeItem: "", link: "", valor: 0, qtd: 1 }],
                 comprador: "", chavePix: "", participantes: {}, pagamentos: {}, rastreio: ""
             };
@@ -392,14 +393,12 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             keys.forEach(key => {
                 let c = comprasColetivasCache[key];
                 
-                // Progresso
                 let parts = Object.keys(c.participantes || {});
                 let totalParts = parts.length;
                 let pagos = 0;
                 parts.forEach(p => { if (c.pagamentos && c.pagamentos[p]) pagos++; });
                 let perc = totalParts > 0 ? (pagos / totalParts) * 100 : 0;
 
-                // Botão Rastreio Dinâmico
                 let rastreioBtnHtml = "";
                 if (!c.rastreio || c.rastreio.trim() === "") {
                     rastreioBtnHtml = `<button class="btn-action-track" style="background: rgba(63, 55, 201, 0.2); border: 1px dashed #3f37c9; color: #3f37c9;" onclick="addRastreio('${key}')">📦 Add Rastreio</button>`;
@@ -474,7 +473,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
         // -----------------------------------------------------------------------------
         window.abrirGerenciadorCompra = function(key) {
             compraAbertaKey = key;
-            // Clonamos profundamente para edição em memória até clicar em Salvar
             compraAbertaDados = JSON.parse(JSON.stringify(comprasColetivasCache[key]));
             if (!compraAbertaDados.itens) compraAbertaDados.itens = [];
             if (!compraAbertaDados.participantes) compraAbertaDados.participantes = {};
@@ -484,16 +482,17 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             document.getElementById('painel-unica-compra-view').style.display = 'flex';
             document.getElementById('cc-titulo-gerenciamento').innerText = `Cadastro de Compra Coletiva: ${compraAbertaDados.nome}`;
 
-            // Preenche Formulários
             document.getElementById('cc-form-nome').value = compraAbertaDados.nome || "";
+            document.getElementById('cc-form-desconto').value = compraAbertaDados.desconto || 0;
             document.getElementById('cc-form-frete').value = compraAbertaDados.frete || 0;
             document.getElementById('cc-form-imposto').value = compraAbertaDados.imposto || 0;
             document.getElementById('cc-form-icms').value = compraAbertaDados.icms || 0;
+            document.getElementById('cc-form-outros-descontos').value = compraAbertaDados.outrosDescontos || 0;
             document.getElementById('cc-form-pix').value = compraAbertaDados.chavePix || "";
 
             preencherSelectsCompradorEParticipantes();
             gerarQrCodePixCC();
-            atualizarCalculosCC(); // Renderiza itens e faz os cálculos
+            atualizarCalculosCC(); 
         };
 
         function preencherSelectsCompradorEParticipantes() {
@@ -518,7 +517,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                 let disabledStr = isComprador ? 'disabled' : '';
                 let labelExtra = isComprador ? ' (Comprador - Automático)' : '';
                 
-                // Força o comprador a estar nos participantes no objeto de dados
                 if (isComprador) { compraAbertaDados.participantes[p] = true; }
 
                 html += `
@@ -547,19 +545,20 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             atualizarCalculosCC();
         };
 
-        // Função Master: Lê inputs do DOM, calcula Rateio Proporcional e renderiza tabelas
         window.atualizarCalculosCC = function() {
             if (!compraAbertaDados) return;
 
-            // 1. Atualizar Objeto Dados com Inputs base
+            // 1. Lendo os inputs de configuração global
             compraAbertaDados.nome = document.getElementById('cc-form-nome').value.trim();
+            compraAbertaDados.desconto = parseFloat(document.getElementById('cc-form-desconto').value) || 0;
             compraAbertaDados.frete = parseFloat(document.getElementById('cc-form-frete').value) || 0;
             compraAbertaDados.imposto = parseFloat(document.getElementById('cc-form-imposto').value) || 0;
             compraAbertaDados.icms = parseFloat(document.getElementById('cc-form-icms').value) || 0;
+            compraAbertaDados.outrosDescontos = parseFloat(document.getElementById('cc-form-outros-descontos').value) || 0;
             compraAbertaDados.comprador = document.getElementById('cc-form-comprador').value;
             compraAbertaDados.chavePix = document.getElementById('cc-form-pix').value.trim();
 
-            // 2. Atualizar Valores dos Itens vindos do DOM (se existirem na tabela)
+            // 2. Lendo os valores dos itens da tabela
             let rows = document.querySelectorAll('.cc-item-row');
             rows.forEach((r, idx) => {
                 if(compraAbertaDados.itens[idx]) {
@@ -571,26 +570,24 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                 }
             });
 
-            // 3. Cálculos Globais
+            // 3. Cálculos do Subtotal
             let somaPuraItens = 0;
             compraAbertaDados.itens.forEach(i => { somaPuraItens += (i.valor * i.qtd); });
+            document.getElementById('cc-form-subtotal').value = somaPuraItens.toFixed(2);
             
+            // 4. Cálculo do Total Global (com descontos e taxas)
             let totalTaxas = compraAbertaDados.frete + compraAbertaDados.imposto + compraAbertaDados.icms;
-            let totalGlobalFinal = somaPuraItens + totalTaxas;
+            let totalDescontos = compraAbertaDados.desconto + compraAbertaDados.outrosDescontos;
+            let totalGlobalFinal = somaPuraItens + totalTaxas - totalDescontos;
+            
             document.getElementById('cc-form-total-global').innerText = `R$ ${totalGlobalFinal.toFixed(2)}`;
 
-            // Fator de Taxa Proporcional (Imposto se baseia no valor do item)
-            // Se somaPuraItens = 0, fator = 1 para evitar NaN.
-            let fatorTaxa = somaPuraItens > 0 ? (totalGlobalFinal / somaPuraItens) : 1;
-
-            // 4. Renderizar Tabela de Itens
+            // 5. Renderizar Lista de Itens (agora mostrando só o Subtotal puro do item)
             let tbodyItens = document.getElementById('cc-tabela-itens');
             tbodyItens.innerHTML = "";
             compraAbertaDados.itens.forEach((it, idx) => {
                 let subtotalPuro = it.valor * it.qtd;
-                let subtotalComImposto = subtotalPuro * fatorTaxa;
                 
-                // Tentativa de mostrar imagem
                 let imgBox = it.imgUrl ? `<img src="${it.imgUrl}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-card);">` : `<div style="width: 40px; height: 40px; background: var(--bg-input); border-radius: 4px; display:flex; align-items:center; justify-content:center; font-size:0.6rem; color:var(--text-muted); text-align:center; border: 1px dashed var(--border-card);">Sem Img</div>`;
 
                 tbodyItens.innerHTML += `
@@ -603,16 +600,17 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                         <td><input type="text" class="config-input cc-item-link" value="${escapeHtml(it.link)}" placeholder="https://..." oninput="atualizarCalculosCC()" style="width:100%;"></td>
                         <td><input type="number" step="0.01" class="config-input cc-item-val" value="${it.valor}" oninput="atualizarCalculosCC()" style="width:100%;"></td>
                         <td><input type="number" class="config-input cc-item-qtd" value="${it.qtd}" min="1" oninput="atualizarCalculosCC()" style="width:100%;"></td>
-                        <td style="font-weight:bold; color: var(--accent-gold);">R$ ${subtotalComImposto.toFixed(2)}</td>
+                        <td style="font-weight:bold; color: var(--accent-gold);">R$ ${subtotalPuro.toFixed(2)}</td>
                         <td style="text-align: right;"><button class="btn-text-action" style="color: var(--accent-red);" onclick="removerItemCC(${idx})">🗑️</button></td>
                     </tr>
                 `;
             });
+            
             if(compraAbertaDados.itens.length === 0) {
                 tbodyItens.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Nenhum item inserido.</td></tr>`;
             }
 
-            // 5. Cálculos de Rateio Equitativo (Total dividido por participantes confirmados)
+            // 6. Resumo e Rateio
             let participantesArr = Object.keys(compraAbertaDados.participantes);
             let numPart = participantesArr.length;
             let valorPorPessoa = numPart > 0 ? (totalGlobalFinal / numPart) : 0;
@@ -627,7 +625,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                     let isComprador = (p === compraAbertaDados.comprador);
                     let papel = isComprador ? `<span style="color:var(--accent-cc); font-weight:bold;">Comprador (Recebedor)</span>` : `Participante`;
                     
-                    // Força status Pago para o comprador
                     if (isComprador) compraAbertaDados.pagamentos[p] = true;
                     
                     let pago = compraAbertaDados.pagamentos[p] ? 'checked' : '';
@@ -661,7 +658,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             let placeEl = document.getElementById('cc-pix-placeholder');
             
             if (chave) {
-                // Utilizando API pública segura e leve para gerar QR Code visual (Tamanho ajustado e encoding da chave)
                 imgEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(chave)}`;
                 imgEl.style.display = 'block';
                 placeEl.style.display = 'none';
@@ -704,13 +700,11 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             }
         };
 
-        // Utility Function for Security
         function escapeHtml(text) {
             if (!text) return '';
             let map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
             return String(text).replace(/[&<>"']/g, m => map[m]);
         }
-
     </script>
 </body>
 </html>
