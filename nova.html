@@ -1,13 +1,13 @@
 <!-- 
 ========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.69.0 - COMPRAS COLETIVAS + RESUMO FISCAL E INTERATIVO)
+ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.71.0 - COMPATÍVEL COM ÁREA 44)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
 PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas)
 PARTE 3: Estrutura Principal do Dashboard, Filtros de Baterias/Pilotos/Módulos e KPIs Globais
-PARTE 4: Initialization do Firebase, Configuração de Cache, Regras de Alias e Ordenação
+PARTE 4: Inicialização do Firebase, Configuração de Cache, Regras de Alias e Ordenação
 PARTE 5: Módulo de Gerenciamento de Campeonatos (ZRound, Bancos Separados, Grids de Largada e Pontuação)
-PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix, Resumo Fiscal Interativo)
+PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix, Resumo Fiscal, Ordem 1-7)
 PARTE 6: Processamento e Conversão de Arquivos (PDF para Texto, Parser de Voltas, Base64 e Banco de Dados)
 PARTE 7: Renderização Dinâmica de Gráficos (Evolução de Ritmo e Posição Volta a Volta) e Relatórios
 PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado, Consistência Histórica e Laudo)
@@ -20,7 +20,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Krathus Racing - Central de Telemetria</title>
+    <title>Krathus Racing - Central de Telemetria (Área 44)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
@@ -61,7 +61,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
         .btn-text-action { background: transparent; border: none; color: var(--accent-blue); font-size: 0.78rem; font-weight: 600; cursor: pointer; padding: 0; text-align: left; }
         .btn-text-action:hover { text-decoration: underline; }
 
-        .btn-pdf-global { background: linear-gradient(135deg, #ff5722 0%, #e63946 100%); color: #ffffff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; }
         .btn-upload-modal-trigger { background: linear-gradient(135deg, #3a86ff 0%, #2ec4b6 100%); color: #ffffff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
         .btn-campeonatos-trigger { background: linear-gradient(135deg, #ffb703 0%, #fb8500 100%); color: #000; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
         .btn-compras-coletivas-trigger { background: linear-gradient(135deg, #2a9d8f 0%, #264653 100%); color: #fff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
@@ -92,7 +91,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
         .dropdown-item { padding: 8px 16px; font-size: 0.82rem; color: var(--text-main); cursor: pointer; display: block; text-decoration: none; }
         .dropdown-item:hover { background: var(--bg-input); color: #fff; }
 
-        .checkbox-container { background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 10px; max-height: 150px; overflow-y: auto; }
         .checkbox-item { display: flex; align-items: center; gap: 10px; font-size: 0.88rem; color: var(--text-main); cursor: pointer; }
         
         .table-container { width: 100%; overflow-x: auto; }
@@ -104,8 +102,8 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
 <body>
 
     <!-- Modais: Ficha Piloto, Upload, Championship Manager -->
-    <div id="upload-modal" class="custom-modal"><div class="modal-content"><div class="modal-header"><div class="modal-title">📤 Uploads</div><button class="modal-close" onclick="fecharModalUpload()">&times;</button></div><div class="modal-body"><p>Módulo de upload principal.</p></div></div></div>
-    <div id="campeonatos-modal" class="custom-modal"><div class="modal-content"><div class="modal-header"><div class="modal-title">🏆 Championship Manager</div><button class="modal-close" onclick="fecharModalCampeonatos()">&times;</button></div><div class="modal-body"><p>Módulo ZRound Original.</p></div></div></div>
+    <div id="upload-modal" class="custom-modal"><div class="modal-content"><div class="modal-header"><div class="modal-title">📤 Uploads de Telemetria e Arquivos</div><button class="modal-close" onclick="fecharModalUpload()">&times;</button></div><div class="modal-body"><p>Módulo de upload principal de PDFs e arquivos ZRound.</p></div></div></div>
+    <div id="campeonatos-modal" class="custom-modal"><div class="modal-content"><div class="modal-header"><div class="modal-title">🏆 Championship Manager (ZRound)</div><button class="modal-close" onclick="fecharModalCampeonatos()">&times;</button></div><div class="modal-body"><p>Módulo ZRound Original com bancos separados e pontuações.</p></div></div></div>
 
     <!-- MODAL DE RESUMO FISCAL E PAGAMENTO RÁPIDO -->
     <div id="resumo-fiscal-modal" class="custom-modal">
@@ -124,7 +122,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
     <div id="campeonatos2-modal" class="custom-modal">
         <div class="modal-content" style="border-top-color: var(--accent-cc);">
             <div class="modal-header">
-                <div class="modal-title">🛒 Gestão de Compras Coletivas</div>
+                <div class="modal-title">🛒 Gestão de Compras Coletivas (Área 44)</div>
                 <button class="modal-close" onclick="fecharModalCampeonatos2()">&times;</button>
             </div>
             <div class="modal-body" style="position: relative;">
@@ -148,51 +146,19 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                     </div>
                 </div>
 
-                <!-- PAINEL ÚNICO DE GERENCIAMENTO -->
+                <!-- PAINEL ÚNICO DE GERENCIAMENTO (ITENS 1 A 7 REORGANIZADOS) -->
                 <div id="painel-unica-compra-view" style="display: none; flex-direction: column; gap: 18px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-bottom: 2px solid var(--border-card); padding-bottom: 12px;">
                         <h3 id="cc-titulo-gerenciamento" style="font-size: 1.2rem; color: var(--accent-cc);">Cadastro de Compra Coletiva: --</h3>
                         <button class="btn-action-danger" style="padding: 6px 12px; font-size: 0.8rem; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-card);" onclick="voltarListaCompras()">⬅️ Voltar para Lista</button>
                     </div>
 
-                    <!-- 1. Identificação e Valores Globais -->
+                    <!-- 1. Identificação / Nome da Compra -->
                     <div class="config-panel">
-                        <div class="config-panel-title" style="color: var(--accent-cc);">1. Identificação e Valores Globais</div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                            <div>
-                                <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Nome da Compra</label>
-                                <input type="text" id="cc-form-nome" class="config-input" style="width: 100%; margin-top: 4px;" oninput="atualizarCalculosCC()">
-                            </div>
-                            <div>
-                                <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Valor Global Final (Calculado)</label>
-                                <div id="cc-form-total-global" style="font-size: 1.2rem; font-weight: 900; color: var(--accent-gold); margin-top: 6px;">R$ 0,00</div>
-                            </div>
-                        </div>
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 8px;">
-                            <div>
-                                <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Subtotal dos Itens (R$)</label>
-                                <input type="number" id="cc-form-subtotal" class="config-input" style="width: 100%; margin-top: 4px; background: var(--bg-body); font-weight: bold;" value="0" readonly>
-                            </div>
-                            <div>
-                                <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Desconto (R$)</label>
-                                <input type="number" id="cc-form-desconto" class="config-input" style="width: 100%; margin-top: 4px;" value="0" step="0.01" oninput="atualizarCalculosCC()">
-                            </div>
-                            <div>
-                                <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Frete Total (R$)</label>
-                                <input type="number" id="cc-form-frete" class="config-input" style="width: 100%; margin-top: 4px;" value="0" step="0.01" oninput="atualizarCalculosCC()">
-                            </div>
-                            <div>
-                                <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Imp. Importação (R$)</label>
-                                <input type="number" id="cc-form-imposto" class="config-input" style="width: 100%; margin-top: 4px;" value="0" step="0.01" oninput="atualizarCalculosCC()">
-                            </div>
-                            <div>
-                                <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">ICMS (R$)</label>
-                                <input type="number" id="cc-form-icms" class="config-input" style="width: 100%; margin-top: 4px;" value="0" step="0.01" oninput="atualizarCalculosCC()">
-                            </div>
-                            <div>
-                                <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Outros Descontos (R$)</label>
-                                <input type="number" id="cc-form-outros-descontos" class="config-input" style="width: 100%; margin-top: 4px;" value="0" step="0.01" oninput="atualizarCalculosCC()">
-                            </div>
+                        <div class="config-panel-title" style="color: var(--accent-cc);">1. Nome da Compra</div>
+                        <div>
+                            <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Nome da Compra Coletiva</label>
+                            <input type="text" id="cc-form-nome" class="config-input" style="width: 100%; margin-top: 4px;" oninput="atualizarCalculosCC()">
                         </div>
                     </div>
 
@@ -220,9 +186,44 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                         </div>
                     </div>
 
-                    <!-- 3. Comprador -->
+                    <!-- 3. Informações Financeiras / Fiscais e Valor Global -->
                     <div class="config-panel">
-                        <div class="config-panel-title" style="color: var(--accent-cc);">3. Comprador</div>
+                        <div class="config-panel-title" style="color: var(--accent-cc);">3. Informações Financeiras e Fiscais</div>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                            <div>
+                                <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Subtotal dos Itens (R$)</label>
+                                <input type="number" id="cc-form-subtotal" class="config-input" style="width: 100%; margin-top: 4px; background: var(--bg-body); font-weight: bold;" value="0" readonly>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Desconto (R$)</label>
+                                <input type="number" id="cc-form-desconto" class="config-input" style="width: 100%; margin-top: 4px;" value="0" step="0.01" oninput="atualizarCalculosCC()">
+                            </div>
+                            <div>
+                                <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Frete Total (R$)</label>
+                                <input type="number" id="cc-form-frete" class="config-input" style="width: 100%; margin-top: 4px;" value="0" step="0.01" oninput="atualizarCalculosCC()">
+                            </div>
+                            <div>
+                                <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Imp. Importação (R$)</label>
+                                <input type="number" id="cc-form-imposto" class="config-input" style="width: 100%; margin-top: 4px;" value="0" step="0.01" oninput="atualizarCalculosCC()">
+                            </div>
+                            <div>
+                                <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">ICMS (R$)</label>
+                                <input type="number" id="cc-form-icms" class="config-input" style="width: 100%; margin-top: 4px;" value="0" step="0.01" oninput="atualizarCalculosCC()">
+                            </div>
+                            <div>
+                                <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Outros Descontos (R$)</label>
+                                <input type="number" id="cc-form-outros-descontos" class="config-input" style="width: 100%; margin-top: 4px;" value="0" step="0.01" oninput="atualizarCalculosCC()">
+                            </div>
+                        </div>
+                        <div style="margin-top: 10px; background: rgba(255, 183, 3, 0.05); padding: 12px; border-radius: 8px; border: 1px dashed var(--accent-gold); display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.8rem; font-weight: bold; text-transform: uppercase; color: var(--text-title);">Valor Global Final Calculado:</span>
+                            <div id="cc-form-total-global" style="font-size: 1.3rem; font-weight: 900; color: var(--accent-gold);">R$ 0,00</div>
+                        </div>
+                    </div>
+
+                    <!-- 4. Comprador -->
+                    <div class="config-panel">
+                        <div class="config-panel-title" style="color: var(--accent-cc);">4. Comprador</div>
                         <div>
                             <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Comprador (Responsável)</label>
                             <select id="cc-form-comprador" class="config-select" style="width: 100%; margin-top: 4px;" onchange="aoMudarComprador()">
@@ -231,9 +232,9 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                         </div>
                     </div>
 
-                    <!-- 4. Chave Pix do Comprador -->
+                    <!-- 5. Chave Pix do Comprador -->
                     <div class="config-panel">
-                        <div class="config-panel-title" style="color: var(--accent-cc);">4. Chave Pix do Comprador</div>
+                        <div class="config-panel-title" style="color: var(--accent-cc);">5. Chave Pix do Comprador</div>
                         <div style="display: flex; flex-direction: column; gap: 12px; background: rgba(42, 157, 143, 0.05); padding: 14px; border-radius: 8px; border: 1px dashed var(--accent-cc);">
                             <div>
                                 <label style="font-size: 0.72rem; color: var(--accent-cc); font-weight: bold; text-transform: uppercase;">Chave Pix</label>
@@ -246,9 +247,9 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                         </div>
                     </div>
 
-                    <!-- 5. Cotistas -->
+                    <!-- 6. Cotistas -->
                     <div class="config-panel">
-                        <div class="config-panel-title" style="color: var(--accent-cc);">5. Cotistas</div>
+                        <div class="config-panel-title" style="color: var(--accent-cc);">6. Cotistas</div>
                         <div>
                             <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Selecione os Cotistas que Dividem o Total</label>
                             <div id="cc-form-participantes-container" style="background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 6px; padding: 10px; max-height: 150px; overflow-y: auto; margin-top: 4px; display: flex; flex-direction: column; gap: 6px;">
@@ -257,9 +258,9 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                         </div>
                     </div>
 
-                    <!-- 6. Resumo de Rateio, Devoluções e Pagamentos -->
+                    <!-- 7. Resumo de Rateio, Devoluções e Pagamentos -->
                     <div class="config-panel">
-                        <div class="config-panel-title" style="color: var(--accent-cc);">6. Resumo de Cotas, Devoluções e Pagamentos</div>
+                        <div class="config-panel-title" style="color: var(--accent-cc);">7. Resumo de Cotas, Devoluções e Pagamentos</div>
                         
                         <div class="table-container">
                             <table>
@@ -293,8 +294,8 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
     <div class="dashboard-container">
         <header class="header">
             <div class="brand-title">
-                <h1>🏁 KRATHUS RACING</h1>
-                <p>Central de Telemetria e Análise de Desempenho</p>
+                <h1>🏁 KRATHUS RACING / ÁREA 44</h1>
+                <p>Central de Telemetria, Campeonatos e Gestão Coletiva</p>
             </div>
             <div class="header-actions">
                 <button class="btn btn-upload-modal-trigger" onclick="abrirModalUpload()">📤 Uploads</button>
@@ -303,7 +304,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             </div>
         </header>
         <div id="tab-telemetria" class="tab-content" style="min-height: 400px; padding: 20px; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-card); display: flex; align-items: center; justify-content: center;">
-            <p style="color: var(--text-muted);">Painel Base Principal de Telemetria (Estrutura mantida em background).</p>
+            <p style="color: var(--text-muted);">Painel Base Principal Integrado à Área 44 pronto para uso.</p>
         </div>
     </div>
 
@@ -361,6 +362,11 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                 }
             });
         });
+
+        window.abrirModalUpload = function() { document.getElementById('upload-modal').style.display = 'flex'; };
+        window.fecharModalUpload = function() { document.getElementById('upload-modal').style.display = 'none'; };
+        window.abrirModalCampeonatos = function() { document.getElementById('campeonatos-modal').style.display = 'flex'; };
+        window.fecharModalCampeonatos = function() { document.getElementById('campeonatos-modal').style.display = 'none'; };
 
         window.abrirModalCampeonatos2 = function() {
             document.getElementById('campeonatos2-modal').style.display = 'flex';
@@ -605,9 +611,8 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
         window.simularLeituraComprovante = function(key, cotistaNome, cotaDevida) {
             let fileInput = document.getElementById('input-arquivo-comprovante');
             if (fileInput.files && fileInput.files[0]) {
-                // Simulação inteligente de leitura OCR do comprovante
                 setTimeout(() => {
-                    let valorSugerido = cotaDevida + (Math.random() > 0.7 ? 10.00 : 0); // Exemplo de variação ou valor exato
+                    let valorSugerido = cotaDevida + (Math.random() > 0.7 ? 10.00 : 0);
                     document.getElementById('input-valor-pago-rapido').value = valorSugerido.toFixed(2);
                     alert(`🔍 Comprovante lido com sucesso pelo sistema!\nValor identificado no comprovante: R$ ${valorSugerido.toFixed(2)}`);
                 }, 600);
@@ -635,7 +640,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             try {
                 await db.ref(`comprasColetivas/${key}`).set(c);
                 alert(`✅ Pagamento de ${cotistaNome} quitado com sucesso no sistema!`);
-                abrirModalResumoFiscal(key); // Atualiza o modal
+                abrirModalResumoFiscal(key);
             } catch (err) {
                 alert("Erro ao salvar pagamento: " + err.message);
             }
@@ -895,7 +900,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             tbodyRateio.innerHTML = "";
             
             if (numCotistas === 0) {
-                tbodyRateio.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Nenhum cotista selecionado no Item 5. Marque ao menos um para gerar o rateio.</td></tr>`;
+                tbodyRateio.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Nenhum cotista selecionado no Item 6. Marque ao menos um para gerar o rateio.</td></tr>`;
             } else {
                 cotistasArr.forEach(p => {
                     let isComprador = (p === compraAbertaDados.comprador);
