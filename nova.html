@@ -1,13 +1,13 @@
 <!-- 
 ========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.73.0 - CORREÇÃO DE DUPLICAÇÃO DE PILOTO - ÁREA 44)
+ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.74.0 - CORREÇÃO ESTRITA DE COTISTAS - ÁREA 44)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
 PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas)
 PARTE 3: Estrutura Principal do Dashboard, Filtros de Baterias/Pilotos/Módulos e KPIs Globais
 PARTE 4: Inicialização do Firebase, Configuração de Cache, Regras de Alias e Ordenação
 PARTE 5: Módulo de Gerenciamento de Campeonatos (ZRound, Bancos Separados, Grids de Largada e Pontuação)
-PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix, Resumo Fiscal Limpo)
+PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix, Resumo Fiscal Estrito)
 PARTE 6: Processamento e Conversão de Arquivos (PDF para Texto, Parser de Voltas, Base64 e Banco de Dados)
 PARTE 7: Renderização Dinâmica de Gráficos (Evolução de Ritmo e Posição Volta a Volta) e Relatórios
 PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado, Consistência Histórica e Laudo)
@@ -328,19 +328,16 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
         
         let pilotosDisponiveisGlobal = ["Rafael", "DJ", "Ronaldo", "Gustavo"];
 
-        // Função para limpar e normalizar lista de pilotos, eliminando variações e duplicidades (ex: "Rafael Belovotsky")
+        // Sanitização estrita para remover nomes duplicados/completos indesejados da lista geral de pilotos
         function sanitizarListaPilotos(listaBruta) {
             let unicosMap = {};
             listaBruta.forEach(nome => {
                 if (!nome) return;
                 let nomeClean = nome.trim();
                 let lower = nomeClean.toLowerCase();
-                
-                // Ignora variações longas/duplicadas indesejadas do primeiro nome se houver versão limpa
                 if (lower.includes("belovotsky") || lower.includes("silva belowodski")) {
-                    return; // Ignora o nome completo duplicado para manter apenas o nome limpo "Rafael"
+                    return; 
                 }
-                
                 unicosMap[nomeClean] = true;
             });
             let resultado = Object.keys(unicosMap);
@@ -502,7 +499,8 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             let outrosDescontos = c.outrosDescontos || 0;
             let totalGlobal = somaPuraItens + frete + imposto + icms - desconto - outrosDescontos;
 
-            let cotistasArr = Object.keys(c.participantes || {});
+            // Extração estrita baseada unicamente nas chaves marcadas no objeto participantes (Item 6)
+            let cotistasArr = Object.keys(c.participantes || {}).filter(p => c.participantes[p] === true);
             let numCotistas = cotistasArr.length;
             let cotaBase = numCotistas > 0 ? (totalGlobal / numCotistas) : 0;
 
@@ -580,7 +578,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                     </div>
                 </div>
                 <div class="config-panel" style="margin: 0;">
-                    <div class="config-panel-title">👥 Participantes e Status de Pagamento</div>
+                    <div class="config-panel-title">👥 Participantes e Status de Pagamento (Extraído do Item 6 e 7)</div>
                     <p style="font-size: 0.78rem; color: var(--text-muted);">Clique em um participante pendente para simular o envio de comprovante, ler o pagamento ou gerar o QR Code Pix.</p>
                     <div style="max-height: 220px; overflow-y: auto; margin-top: 8px;">
                         ${htmlCotistasList}
@@ -887,7 +885,8 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             
             if(compraAbertaDados.itens.length === 0) tbodyItens.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Nenhum item inserido.</td></tr>`;
 
-            let cotistasArr = pilotosDisponiveisGlobal.filter(p => compraAbertaDados.participantes && compraAbertaDados.participantes[p] === true);
+            // Extração estrita baseada unicamente nas chaves marcadas no objeto participantes (Item 6)
+            let cotistasArr = Object.keys(compraAbertaDados.participantes || {}).filter(p => compraAbertaDados.participantes[p] === true);
             let numCotistas = cotistasArr.length;
             let cotaBaseOriginal = numCotistas > 0 ? (totalGlobalFinal / numCotistas) : 0;
 
@@ -978,7 +977,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                 let totalTaxas = compraAbertaDados.frete + compraAbertaDados.imposto + compraAbertaDados.icms;
                 let totalDescontos = compraAbertaDados.desconto + compraAbertaDados.outrosDescontos;
                 let totalGlobalFinal = somaPuraItens + totalTaxas - totalDescontos;
-                let cotistasArr = pilotosDisponiveisGlobal.filter(p => compraAbertaDados.participantes && compraAbertaDados.participantes[p] === true);
+                let cotistasArr = Object.keys(compraAbertaDados.participantes || {}).filter(p => compraAbertaDados.participantes[p] === true);
                 let cotaBaseOriginal = cotistasArr.length > 0 ? (totalGlobalFinal / cotistasArr.length) : 0;
 
                 if (!compraAbertaDados.valoresPagos[nome] || compraAbertaDados.valoresPagos[nome] === 0) {
