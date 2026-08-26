@@ -1,13 +1,13 @@
 <!-- 
 ========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.89.0 - COPIAR PIX AO TOCAR NO QR CODE OU CHAVE)
+ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.90.0 - ÁREA A4 ESTENDIDA E SEM ROLAGEM)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
 PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas)
 PARTE 3: Estrutura Principal do Dashboard, Filtros de Baterias/Pilotos/Módulos e KPIs Globais
 PARTE 4: Inicialização do Firebase, Configuração de Cache, Regras de Alias e Ordenação
 PARTE 5: Módulo de Gerenciamento de Campeonatos (ZRound, Bancos Separados, Grids de Largada e Pontuação)
-PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Blocos Verticais, QR Code 200%, Copiar Chave ao Tocar)
+PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Blocos Verticais, QR Code 200%, Tabela A4 Estendida sem Scroll)
 PARTE 6: Processamento e Conversão de Arquivos (PDF para Texto, Parser de Voltas, Base64 e Banco de Dados)
 PARTE 7: Renderização Dinâmica de Gráficos (Evolução de Ritmo e Posição Volta a Volta) e Relatórios
 PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado, Consistência Histórica e Laudo)
@@ -66,7 +66,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
         .btn-compras-coletivas-trigger { background: linear-gradient(135deg, #2a9d8f 0%, #264653 100%); color: #fff; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; }
 
         .custom-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(13, 17, 26, 0.85); z-index: 10000; justify-content: center; align-items: center; padding: 16px; overflow-y: auto; }
-        .modal-content { background: var(--bg-card); border: 1px solid var(--border-card); border-top: 5px solid var(--accent-gold); border-radius: 12px; width: 100%; max-width: 900px; max-height: 92vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.6); margin: auto; }
+        .modal-content { background: var(--bg-card); border: 1px solid var(--border-card); border-top: 5px solid var(--accent-gold); border-radius: 12px; width: 100%; max-width: 900px; max-height: 94vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.6); margin: auto; }
         .modal-header { padding: 14px 20px; background: var(--bg-card-header); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-card); }
         .modal-title { font-size: 1.15rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 8px; }
         .modal-close { background: transparent; border: none; color: var(--text-muted); font-size: 1.3rem; cursor: pointer; font-weight: bold; }
@@ -93,12 +93,11 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
 
         .checkbox-item { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-main); cursor: pointer; }
         
-        .table-container { width: 100%; overflow-x: auto; max-height: 220px; }
+        .table-container { width: 100%; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
         th { background-color: var(--bg-card-header); color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; padding: 8px 12px; font-weight: 700; border-bottom: 1px solid var(--border-card); position: sticky; top: 0; z-index: 2; }
         td { padding: 8px 12px; border-bottom: 1px solid var(--border-card); vertical-align: middle; }
 
-        /* Estilo interativo para elementos Pix clicáveis */
         .pix-clickable { cursor: pointer; transition: transform 0.1s ease; }
         .pix-clickable:active { transform: scale(0.97); }
     </style>
@@ -225,10 +224,10 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                         </div>
                     </div>
 
-                    <!-- Bloco 4: Seleção de Cotistas, Rateio e Comprador -->
+                    <!-- Bloco 4: Seleção de Cotistas, Rateio e Comprador (Área A4 Estendida sem Rolagem Interna) -->
                     <div class="config-panel">
                         <div class="config-panel-title" style="color: var(--accent-cc);">4. Seleção de Cotistas, Rateio e Definição de Comprador</div>
-                        <div class="table-container" style="max-height: 160px;">
+                        <div class="table-container" style="max-height: none; overflow: visible;">
                             <table>
                                 <thead>
                                     <tr>
@@ -420,7 +419,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             navigator.clipboard.writeText(texto).then(() => {
                 alert(`✅ ${mensagemSucesso || "Chave Pix copiada com sucesso!"}\n\n"${texto}"`);
             }).catch(err => {
-                // Fallback seguro caso o navegador bloqueie o clipboard direto
                 let aux = document.createElement("input");
                 aux.setAttribute("value", texto);
                 document.body.appendChild(aux);
@@ -498,7 +496,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
         }
 
         // ==========================================
-        // MÓDULO DE RESUMO FISCAL E PAGAMENTO RÁPIDO (Blocos Sequenciais de Cima para Baixo)
+        // MÓDULO DE RESUMO FISCAL E PAGAMENTO RÁPIDO
         // ==========================================
         window.abrirModalResumoFiscal = function(key) {
             let c = comprasColetivasCache[key];
@@ -575,7 +573,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                 });
             }
 
-            // Rastreio
             let rastreioHtml = c.rastreio && c.rastreio.trim() !== "" ? 
                 `<div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem;">
                     <span>Código: <strong style="color: var(--accent-gold);">${escapeHtml(c.rastreio)}</strong></span>
@@ -583,7 +580,6 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                  </div>` : 
                 `<span style="color: var(--text-muted); font-size: 0.8rem;">Nenhum código de rastreio cadastrado.</span>`;
 
-            // QR Code Pix do Comprador Ampliado (280x280) com recurso de cópia ao toque
             let compradorNome = c.comprador || "";
             let chavePixComprador = (c.chavesPixPorComprador && compradorNome && c.chavesPixPorComprador[compradorNome]) ? c.chavesPixPorComprador[compradorNome] : (c.chavePix || "");
             let pixPayloadResumo = chavePixComprador ? gerarPayloadPixEMVPersonalizado(chavePixComprador, compradorNome) : "";
@@ -657,7 +653,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
                     </div>
                 </div>
 
-                <!-- Bloco 5: QR Code Pix do Comprador (Ampliado e Clicável) -->
+                <!-- Bloco 5: QR Code Pix do Comprador -->
                 <div class="config-panel" style="margin: 0;">
                     <div class="config-panel-title">5. QR Code Pix para Pagamento (Toque para Copiar)</div>
                     <div style="margin-top: 4px;">
