@@ -1,13 +1,13 @@
 <!-- 
 ========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.55.0 - COMPRAS COLETIVAS + RATEIO EXCLUSIVO DE COTISTAS)
+ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.56.0 - COMPRAS COLETIVAS + COTISTAS E COMPRADOR CORRIGIDO)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
 PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas)
 PARTE 3: Estrutura Principal do Dashboard, Filtros de Baterias/Pilotos/Módulos e KPIs Globais
 PARTE 4: Inicialização do Firebase, Configuração de Cache, Regras de Alias e Ordenação
 PARTE 5: Módulo de Gerenciamento de Campeonatos (ZRound, Bancos Separados, Grids de Largada e Pontuação)
-PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix EMV, Rateio sem Duplicar Comprador)
+PARTE 5.1: Módulo de Gerenciamento de Compras Coletivas (Rastreio, Subtotal, Descontos, Pix EMV, Rateio Rigoroso)
 PARTE 6: Processamento e Conversão de Arquivos (PDF para Texto, Parser de Voltas, Base64 e Banco de Dados)
 PARTE 7: Renderização Dinâmica de Gráficos (Evolução de Ritmo e Posição Volta a Volta) e Relatórios
 PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado, Consistência Histórica e Laudo)
@@ -493,10 +493,12 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
 
         window.aoMudarComprador = function() {
             let novo = document.getElementById('cc-form-comprador').value;
-            // Se o comprador for alterado, marcaremos ele por padrão apenas na primeira seleção caso esteja vazio
-            if (novo && compraAbertaDados.participantes[novo] === undefined) {
+            // Se for uma compra recém-carregada e o usuário selecionar o comprador pela primeira vez, 
+            // marcamos ele como cotista por padrão, permitindo alteração posterior livre.
+            if (novo && compraAbertaDados.participantes[novo] === undefined && !compraAbertaDados._compradorInicializado) {
                 compraAbertaDados.participantes[novo] = true;
             }
+            compraAbertaDados._compradorInicializado = true;
             atualizarChecksParticipantesCC();
             atualizarCalculosCC();
         };
@@ -522,8 +524,12 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
         };
 
         window.toggleParticipante = function(nome, isChecked) {
-            if (isChecked) { compraAbertaDados.participantes[nome] = true; } 
-            else { delete compraAbertaDados.participantes[nome]; delete compraAbertaDados.pagamentos[nome]; }
+            if (isChecked) { 
+                compraAbertaDados.participantes[nome] = true; 
+            } else { 
+                delete compraAbertaDados.participantes[nome]; 
+                delete compraAbertaDados.pagamentos[nome]; 
+            }
             atualizarCalculosCC();
         };
 
@@ -594,8 +600,8 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             
             if(compraAbertaDados.itens.length === 0) tbodyItens.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Nenhum item inserido.</td></tr>`;
 
-            // ITEM 4: Rateio calculado estritamente sobre os cotistas marcados no Item 3 (Comprador separado)
-            let cotistasArr = Object.keys(compraAbertaDados.participantes || {});
+            // ITEM 4: Apenas cotistas selecionados explicitamente. Sem duplicar e sem forçar comprador se desmarcado.
+            let cotistasArr = Object.keys(compraAbertaDados.participantes || {}).filter(p => compraAbertaDados.participantes[p] === true);
             let numCotistas = cotistasArr.length;
             let valorPorCota = numCotistas > 0 ? (totalGlobalFinal / numCotistas) : 0;
 
@@ -603,7 +609,7 @@ PARTE 9: Tabela Geral de Tempos, Sistema de Comentários, Reações e Curtidas
             tbodyRateio.innerHTML = "";
             
             if (numCotistas === 0) {
-                tbodyRateio.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Marque cotistas acima no Item 3 para gerar o rateio.</td></tr>`;
+                tbodyRateio.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Nenhum cotista selecionado no Item 3. Marque ao menos um para gerar o rateio.</td></tr>`;
             } else {
                 cotistasArr.forEach(p => {
                     let isComprador = (p === compraAbertaDados.comprador);
