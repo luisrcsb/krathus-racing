@@ -99,6 +99,8 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
         .btn-action-primary:hover { background: #2b6cb0; }
         .btn-action-danger { background: var(--accent-red); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
         .btn-action-danger:hover { background: #c53030; }
+        .btn-action-summary { background: #480ca8; color: #fff; border: none; padding: 5px 12px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .btn-action-track { background: #3f37c9; color: #fff; border: none; padding: 5px 12px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; cursor: pointer; display: flex; align-items: center; gap: 6px; text-decoration: none; }
 
         .zround-tabs-header { display: flex; gap: 6px; border-bottom: 2px solid var(--border-card); padding-bottom: 8px; flex-wrap: wrap; }
         .zround-tab-btn { background: var(--bg-card); border: 1px solid var(--border-card); color: var(--text-muted); padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 0.82rem; cursor: pointer; }
@@ -162,13 +164,23 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
         .pos-badge { background: var(--accent-gold); color: #000; font-weight: bold; font-size: 0.8rem; padding: 4px 8px; border-radius: 4px; display: inline-block; }
         .session-badge { background: #1d3557; color: var(--accent-blue); padding: 4px 10px; border-radius: 4px; font-size: 0.80rem; font-weight: 600; display: inline-block; }
         .text-green { color: var(--accent-green); font-weight: 700; }
-        .best-lap-badge { background: rgba(46, 196, 182, 0.2); color: var(--accent-green); border: 1px solid var(--accent-green); padding: 2px 6px; border-radius: 4px; font-weight: bold; }
 
         .footer-container { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px 24px; display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 10px; }
         .footer-meta-info { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 16px; font-size: 0.82rem; color: var(--text-muted); background: var(--bg-input); padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border-card); }
         .footer-logos { display: flex; align-items: center; justify-content: center; gap: 28px; }
         .footer-logo-img { height: 36px; width: auto; object-fit: contain; border-radius: 4px; padding: 3px 6px; background: #ffffff; }
         .footer-copyright { font-size: 0.85rem; color: var(--text-muted); text-align: center; border-top: 1px solid var(--border-card); padding-top: 12px; width: 100%; }
+
+        .progress-bar-container { width: 100%; background-color: var(--bg-card); border-radius: 6px; border: 1px solid var(--border-card); overflow: hidden; height: 14px; margin-top: 4px; position: relative; }
+        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #2a9d8f, #2ec4b6); width: 0%; transition: width 0.3s; }
+        .progress-bar-text { position: absolute; width: 100%; text-align: center; top: 0; font-size: 0.65rem; font-weight: 700; color: #fff; line-height: 14px; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
+
+        .dropdown-menu { display: none; position: absolute; background: var(--bg-card-header); border: 1px solid var(--border-card); border-radius: 8px; padding: 6px 0; min-width: 150px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 1000; }
+        .dropdown-item { padding: 8px 16px; font-size: 0.8rem; color: var(--text-main); cursor: pointer; display: block; text-decoration: none; }
+        .dropdown-item:hover { background: var(--bg-input); color: #fff; }
+
+        .pix-clickable { cursor: pointer; transition: transform 0.1s ease; }
+        .pix-clickable:active { transform: scale(0.97); }
 
         @media print {
             body, body * { color: #000000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -179,7 +191,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
 </head>
 <body>
 
-    <!-- Modais do Sistema -->
+    <!-- [PARTE 2] Modais do Sistema -->
     <div id="piloto-modal" class="custom-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -193,7 +205,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
     <div id="upload-modal" class="custom-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">📤 Central de Upload de Relatórios</div>
+                <div class="modal-title">📤 Central de Upload de Relatórios (Banco Principal)</div>
                 <button class="modal-close" onclick="fecharModalUpload()">&times;</button>
             </div>
             <div class="modal-body">
@@ -213,6 +225,10 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                         </div>
                     </div>
                 </div>
+                <div>
+                    <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Inspetor de Estrutura JSON</span>
+                    <pre id="upload-json-viewer">Selecione "Inspecionar" em um arquivo ao lado...</pre>
+                </div>
             </div>
         </div>
     </div>
@@ -224,28 +240,101 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                 <button class="modal-close" onclick="fecharModalCampeonatos()">&times;</button>
             </div>
             <div class="modal-body">
-                <div class="upload-box">
-                    <input type="text" id="input-nome-campeonato" class="config-input" placeholder="Nome do Campeonato">
-                    <button class="btn-action-primary" onclick="criarCampeonatoProtegido()">Criar Campeonato</button>
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <div class="upload-box">
+                        <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase;">🔒 Criar Novo Campeonato</span>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                            <input type="text" id="input-nome-campeonato" class="config-input" placeholder="Nome do Campeonato">
+                            <button class="btn-action-primary" onclick="criarCampeonatoProtegido()">Criar Campeonato</button>
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Campeonatos Cadastrados</span>
+                        <ul id="campeonatos-lista-modal" style="list-style: none; display: flex; flex-direction: column; gap: 10px; max-height: 220px; overflow-y: auto;">
+                            <li>Carregando campeonatos...</li>
+                        </ul>
+                    </div>
+                    <div id="container-zround-campeonato" style="display: none; flex-direction: column; gap: 15px; border-top: 2px solid var(--border-card); padding-top: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                            <h3 id="zround-camp-titulo-ativo" style="font-size: 1.1rem; color: var(--accent-gold);">Configurando: --</h3>
+                            <button class="btn-action-danger" style="padding: 4px 10px; font-size: 0.78rem;" onclick="fecharPainelZRoundCamp()">Fechar Painel</button>
+                        </div>
+                        <div class="zround-tabs-header">
+                            <button class="zround-tab-btn active" onclick="mudarAbaZRound(1)">📂 1. Visão Geral & Configs</button>
+                            <button class="zround-tab-btn" onclick="mudarAbaZRound(2)">🏎️ 2. Inclusão de Pilotos</button>
+                            <button class="zround-tab-btn" onclick="mudarAbaZRound(3)">📤 3. Gestão de Provas</button>
+                            <button class="zround-tab-btn" onclick="mudarAbaZRound(4)">🔄 4. Grid de Largada</button>
+                            <button class="zround-tab-btn" onclick="mudarAbaZRound(5)">📊 5. Classificação Geral</button>
+                        </div>
+                        <div id="zround-aba-1" class="zround-aba-content" style="display: flex; flex-direction: column; gap: 12px;">
+                            <div class="config-panel">
+                                <div class="config-panel-title">Parâmetros Gerais e Sistema de Pontuação</div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                    <div>
+                                        <label style="font-size: 0.75rem; color: var(--text-muted);">Número de Provas</label>
+                                        <input type="number" id="zround-num-provas" class="config-input" style="width:100%; margin-top:4px;">
+                                    </div>
+                                    <div>
+                                        <label style="font-size: 0.75rem; color: var(--text-muted);">Pilotos Máximos por Prova</label>
+                                        <input type="number" id="zround-pilotos-prova" class="config-input" style="width:100%; margin-top:4px;">
+                                    </div>
+                                </div>
+                                <div style="margin-top: 10px;">
+                                    <label style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Tabela de Pontuação</label>
+                                    <input type="text" id="zround-tabela-pontos-input" class="config-input" style="width:100%; margin-top:4px;" value="25, 18, 15, 12, 10, 8, 6, 4, 2, 1">
+                                </div>
+                                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px;">
+                                    <button class="btn-action-danger" onclick="excluirCampeonatoAtual()">🗑️ Excluir</button>
+                                    <button class="btn-action-primary" onclick="salvarAba1ConfigGeral()">Salvar</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="zround-aba-2" class="zround-aba-content" style="display: none; flex-direction: column; gap: 12px;">
+                            <div class="config-panel">
+                                <div class="config-panel-title">Pilotos</div>
+                                <select id="zround-select-piloto-geral" class="config-select"><option value="">Selecione...</option></select>
+                                <button class="btn-action-primary" onclick="importarPilotoBancoGeral()">Adicionar</button>
+                            </div>
+                        </div>
+                        <div id="zround-aba-3" class="zround-aba-content" style="display: none; flex-direction: column; gap: 12px;"></div>
+                        <div id="zround-aba-4" class="zround-aba-content" style="display: none; flex-direction: column; gap: 12px;"></div>
+                        <div id="zround-aba-5" class="zround-aba-content" style="display: none; flex-direction: column; gap: 12px;"></div>
+                    </div>
                 </div>
-                <ul id="campeonatos-lista-modal" style="list-style: none; display: flex; flex-direction: column; gap: 10px;"></ul>
             </div>
+        </div>
+    </div>
+
+    <div id="resumo-fiscal-modal" class="custom-modal" style="z-index: 11000;">
+        <div class="modal-content" style="border-top-color: #480ca8; max-width: 850px; height: auto;">
+            <div class="modal-header">
+                <div class="modal-title" id="resumo-fiscal-titulo">📊 Resumo Fiscal</div>
+                <button class="modal-close" onclick="fecharModalResumoFiscal()">&times;</button>
+            </div>
+            <div class="modal-body" id="resumo-fiscal-body" style="display: flex; flex-direction: column; gap: 14px; overflow: visible;"></div>
         </div>
     </div>
 
     <div id="campeonatos2-modal" class="custom-modal">
-        <div class="modal-content">
+        <div class="modal-content" style="border-top-color: var(--accent-cc); max-width: 1050px; height: auto;">
             <div class="modal-header">
-                <div class="modal-title">🛒 Compras Coletivas</div>
+                <div class="modal-title">🛒 Gestão de Compras Coletivas</div>
                 <button class="modal-close" onclick="fecharModalCampeonatos2()">&times;</button>
             </div>
-            <div class="modal-body">
-                <ul id="cc-lista-cadastradas" style="list-style: none;"></ul>
+            <div class="modal-body" style="position: relative; overflow: visible;">
+                <div id="lista-compras-coletivas-view" style="display: flex; flex-direction: column; gap: 16px;">
+                    <ul id="cc-lista-cadastradas" style="list-style: none; display: flex; flex-direction: column; gap: 10px;"></ul>
+                    <div class="config-panel" style="border-color: var(--accent-cc);">
+                        <input type="text" id="cc-input-nova-compra" class="config-input" placeholder="Nome da Compra">
+                        <button class="btn-action-primary" style="background: var(--accent-cc);" onclick="criarCompraColetiva()">Criar</button>
+                    </div>
+                </div>
+                <div id="painel-unica-compra-view" style="display: none; flex-direction: column; gap: 14px;"></div>
             </div>
         </div>
     </div>
 
-    <!-- Dashboard Principal -->
+    <!-- [PARTE 3] Dashboard Principal -->
     <div class="dashboard-container">
         <header class="header">
             <div class="brand-title">
@@ -254,9 +343,9 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             </div>
             <div class="header-actions">
                 <button class="btn btn-upload-modal-trigger" onclick="abrirModalUpload()">📤 Uploads</button>
-                <button class="btn btn-campeonatos-trigger" onclick="abrirModalCampeonatos()">🏆 Campeonatos</button>
-                <button class="btn btn-compras-coletivas-trigger" onclick="abrirModalCampeonatos2()">🛒 Compras</button>
-                <button class="btn btn-pdf-global" onclick="gerarRelatórioPDF()">📄 Relatório PDF</button>
+                <button class="btn btn-campeonatos-trigger" onclick="abrirModalCampeonatos()">🏆 Championship Manager</button>
+                <button class="btn btn-compras-coletivas-trigger" onclick="abrirModalCampeonatos2()">🛒 Compras Coletivas</button>
+                <button class="btn btn-pdf-global" onclick="gerarRelatórioPDF()">📄 Gerar relatório</button>
             </div>
         </header>
 
@@ -284,7 +373,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                     <div class="checkbox-container">
                         <label class="checkbox-item"><input type="checkbox" value="mod-grafico" class="filter-modulo" checked onchange="atualizarDashboard()"> 📈 Evolução de Ritmo</label>
                         <label class="checkbox-item"><input type="checkbox" value="mod-grafico-posicao" class="filter-modulo" checked onchange="atualizarDashboard()"> 📊 Posição Volta a Volta</label>
-                        <label class="checkbox-item"><input type="checkbox" value="mod-tabela-voltas" class="filter-modulo" checked onchange="atualizarDashboard()"> ⏱️ Tempos Volta a Volta</label>
                         <label class="checkbox-item"><input type="checkbox" value="mod-classificacao-analise" class="filter-modulo" checked onchange="atualizarDashboard()"> 📋 Laudo Técnico</label>
                         <label class="checkbox-item"><input type="checkbox" value="mod-comentarios" class="filter-modulo" checked onchange="atualizarDashboard()"> 💬 Comentários e Reações</label>
                     </div>
@@ -321,7 +409,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.48.4 (Gráficos e Tempos Volta a Volta Integrados)</strong></span>
+                <span>📌 Versão Atual: <strong>v5.48.3 (Gráfico Posição Volta a Volta Integrado)</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -349,9 +437,13 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
         let listaJsonsCache = [];
         let campeonatosCache = {};
         let comprasColetivasCache = {};
+        let compraAbertaKey = null;
+        let compraAbertaDados = null;
         let chartInstances = [];
         let pilotosMetadadosCache = {};
         let mesclagensCache = {};
+        let campeonatoAtivoKey = null;
+        let pilotosDisponiveisGlobal = ["Rafael", "DJ", "Ronaldo", "Gustavo"];
 
         try {
             firebase.initializeApp(firebaseConfig);
@@ -365,6 +457,20 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             "edgar": "Edgard Camilo (DJ)", "Edgar": "Edgard Camilo (DJ)",
             "Dj_Edgar": "Edgard Camilo (DJ)", "DJ": "Edgard Camilo (DJ)"
         };
+
+        function sanitizarListaPilotos(listaBruta) {
+            let unicosMap = {};
+            listaBruta.forEach(nome => {
+                if (!nome) return;
+                let nomeClean = nome.trim();
+                let lower = nomeClean.toLowerCase();
+                if (lower.includes("belovotsky") || lower.includes("silva belowodski")) return;
+                unicosMap[nomeClean] = true;
+            });
+            let resultado = Object.keys(unicosMap);
+            if (resultado.length === 0) resultado = ["Rafael", "DJ", "Ronaldo", "Gustavo"];
+            return resultado;
+        }
 
         function formatarNomeSessao(sessaoStr) {
             if (!sessaoStr) return "Bateria";
@@ -424,6 +530,13 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
 
         document.addEventListener("DOMContentLoaded", () => {
             if (db) {
+                db.ref('pilotos').on('value', snap => {
+                    if (snap.exists()) {
+                        let novaLista = [];
+                        snap.forEach(child => novaLista.push(child.val().nome || child.key));
+                        pilotosDisponiveisGlobal = sanitizarListaPilotos(novaLista);
+                    }
+                });
                 db.ref('pilotosMetadados').on('value', snapshot => {
                     pilotosMetadadosCache = snapshot.val() || {};
                     gerarFiltrosDinamicos();
@@ -434,6 +547,9 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                     mesclagensCache = Object.assign({}, ALIAS_EDGARD_DJ_DEFAULTS, servidorMesclagens);
                     gerarFiltrosDinamicos();
                     atualizarDashboard();
+                });
+                db.ref('campeonatos').on('value', snapshot => {
+                    campeonatosCache = snapshot.val() || {};
                 });
                 db.ref('baterias').on('value', snapshot => {
                     listaJsonsCache = [];
@@ -612,6 +728,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             if (event.target === document.getElementById('upload-modal')) document.getElementById('upload-modal').style.display = 'none';
             if (event.target === document.getElementById('campeonatos-modal')) document.getElementById('campeonatos-modal').style.display = 'none';
             if (event.target === document.getElementById('campeonatos2-modal')) document.getElementById('campeonatos2-modal').style.display = 'none';
+            if (event.target === document.getElementById('resumo-fiscal-modal')) document.getElementById('resumo-fiscal-modal').style.display = 'none';
         };
 
         function atualizarDashboard() {
@@ -677,7 +794,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
         }
 
         // ==========================================
-        // RENDERIZAÇÃO COMPLETA DAS SESSÕES & GRÁFICOS (COM TABELA DE TEMPOS VOLTA A VOLTA)
+        // RENDERIZAÇÃO COMPLETA DAS SESSÕES & GRÁFICOS (COM GRÁFICO DE POSIÇÃO VOLTA A VOLTA)
         // ==========================================
         function renderizarSessõesCompletas(dadosBase, bateriasSel, pilotosSel, modulosSel) {
             chartInstances.forEach(c => c.destroy());
@@ -714,7 +831,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                     </div>
                 `;
 
-                // 1. Gráfico de Evolução de Ritmo
+                // 1. Gráfico de Evolução de Ritmo (Lap Times)
                 if (modulosSel.includes('mod-grafico')) {
                     html += `<div class="card"><div class="card-header">Evolução de Ritmo (Lap Times)</div><div class="chart-container"><canvas id="chart-${bateriaKey}"></canvas></div></div>`;
                 }
@@ -724,17 +841,12 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                     html += `<div class="card"><div class="card-header">📊 Posição Volta a Volta</div><div class="chart-container"><canvas id="chart-pos-${bateriaKey}"></canvas></div></div>`;
                 }
 
-                // 3. Tabela de Tempos Volta a Volta (ADICIONADA / RESTAURADA)
-                if (modulosSel.includes('mod-tabela-voltas')) {
-                    html += `<div class="card"><div class="card-header">⏱️ Tempos Volta a Volta</div><div class="table-container"><table id="tabela-voltas-${bateriaKey}"></table></div></div>`;
-                }
-
-                // 4. Laudo Técnico / Classificação
+                // 3. Laudo Técnico / Classificação
                 if (modulosSel.includes('mod-classificacao-analise')) {
                     html += `<div class="card"><div class="card-header">📋 Laudo Técnico</div><div class="table-container"><table><thead><tr><th>POS</th><th>PILOTO</th><th>SESSÃO</th><th>VOLTAS</th><th>MELHOR</th><th>MÉDIA</th><th>DESVIO</th></tr></thead><tbody id="tabela-unificada-${bateriaKey}"></tbody></table></div></div>`;
                 }
 
-                // 5. Comentários
+                // 4. Seção de Comentários
                 if (modulosSel.includes('mod-comentarios')) {
                     html += `
                         <div class="comments-section">
@@ -814,49 +926,13 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                                 maintainAspectRatio: false,
                                 scales: {
                                     y: {
-                                        reverse: true, // 1º lugar no topo
+                                        reverse: true, // 1º lugar no topo do gráfico
                                         ticks: { stepSize: 1 },
                                         title: { display: true, text: 'Posição' }
                                     }
                                 }
                             }
                         }));
-                    }
-                }
-
-                // Renderização da Tabela Detalhada de Tempos Volta a Volta
-                if (modulosSel.includes('mod-tabela-voltas')) {
-                    let tableVoltasEl = document.getElementById(`tabela-voltas-${bateriaKey}`);
-                    if (tableVoltasEl) {
-                        let maxV = Math.max(...dadosSessao.map(d => d.laps.length));
-                        let ths = `<th>Piloto</th>`;
-                        for(let i=1; i<=maxV; i++) ths += `<th>V${i}</th>`;
-                        
-                        let trs = "";
-                        const posMap = mapaPosicoesChegada(dadosSessao).mapa;
-                        
-                        dadosSessao.forEach(d => {
-                            let melhorVoltaPiloto = Math.min(...(d.laps || [999]));
-                            let tds = `<td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(d.piloto)}')">${escapeHtml(d.piloto)}</a></strong></td>`;
-                            
-                            for(let i=0; i<maxV; i++) {
-                                let t = d.laps[i];
-                                if(t !== undefined && !isNaN(t)) {
-                                    let formatado = Number(t).toFixed(3);
-                                    let isBest = Math.abs(t - melhorVoltaPiloto) < 0.0001;
-                                    if(isBest) {
-                                        tds += `<td><span class="best-lap-badge">${formatado}</span></td>`;
-                                    } else {
-                                        tds += `<td>${formatado}</td>`;
-                                    }
-                                } else {
-                                    tds += `<td style="color: var(--text-muted);">-</td>`;
-                                }
-                            }
-                            trs += `<tr>${tds}</tr>`;
-                        });
-                        
-                        tableVoltasEl.innerHTML = `<thead><tr>${ths}</tr></thead><tbody>${trs}</tbody>`;
                     }
                 }
 
