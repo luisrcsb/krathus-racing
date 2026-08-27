@@ -1,13 +1,13 @@
 <!-- 
 ========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.48.2 - COM MÓDULO DE COMPRAS COLETIVAS)
+ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.48.2 - COM MÓDULO DE COMPRAS COLETIVAS VERTICAL)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
 PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas)
 PARTE 3: Estrutura Principal do Dashboard, Filtros de Baterias/Pilotos/Módulos e KPIs Globais
 PARTE 4: Inicialização do Firebase, Configuração de Cache, Regras de Alias e Ordenação
 PARTE 5: Módulo de Gerenciamento de Campeonatos (ZRound, Bancos Separados, Grids de Largada e Pontuação)
-PARTE 5.1: Módulo Integrado de Gestão de Compras Coletivas e Rateios (NOVO)
+PARTE 5.1: Módulo Integrado de Gestão de Compras Coletivas e Rateios (NOVO - Layout Empilhado)
 PARTE 6: Processamento e Conversão de Arquivos (PDF para Texto, Parser de Voltas, Base64 e Banco de Dados)
 PARTE 7: Renderização Dinâmica de Gráficos (Evolução de Ritmo e Posição Volta a Volta) e Relatórios
 PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado, Consistência Histórica e Laudo)
@@ -469,107 +469,105 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                         </div>
                     </div>
 
-                    <!-- Layout em Duas Colunas Adaptáveis -->
-                    <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+                    <!-- Layout Empilhado (Vertical em 1 Coluna) -->
+                    <div style="display: flex; flex-direction: column; gap: 20px;">
                         
-                        <!-- Coluna 1: Itens e Financeiro -->
-                        <div style="flex: 1 1 45%; min-width: 320px; display: flex; flex-direction: column; gap: 15px;">
-                            
-                            <div class="config-panel" style="border-color: #2a9d8f;">
-                                <div class="config-panel-title" style="color: #2a9d8f;">📦 Descrição e Itens da Compra</div>
-                                <div style="margin-bottom: 10px;">
-                                    <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold;">Renomear Título</label>
-                                    <input type="text" id="cc-edit-nome" class="config-input" style="width: 100%;" onchange="ccAtualizarNomeAtivo()">
-                                </div>
-                                <div class="table-container">
-                                    <table id="cc-tabela-itens">
-                                        <thead>
-                                            <tr>
-                                                <th>Item / Produto</th>
-                                                <th style="width: 80px;">Val. Unit (R$)</th>
-                                                <th style="width: 60px;">Qtd.</th>
-                                                <th style="width: 80px;">Total (R$)</th>
-                                                <th style="width: 40px; text-align:center;">Del</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <!-- Injetado via JS -->
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <button class="btn-text-action" style="color: #2a9d8f; margin-top: 5px; font-weight: bold;" onclick="ccAdicionarItem()">➕ Adicionar Produto</button>
+                        <!-- PARTE 1: Itens -->
+                        <div class="config-panel" style="border-color: #2a9d8f;">
+                            <div class="config-panel-title" style="color: #2a9d8f;">1. 📦 Descrição e Itens da Compra</div>
+                            <div style="margin-bottom: 10px;">
+                                <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold;">Renomear Título</label>
+                                <input type="text" id="cc-edit-nome" class="config-input" style="width: 100%;" onchange="ccAtualizarNomeAtivo()">
                             </div>
+                            <div class="table-container">
+                                <table id="cc-tabela-itens">
+                                    <thead>
+                                        <tr>
+                                            <th>Item / Produto</th>
+                                            <th style="width: 80px;">Val. Unit (R$)</th>
+                                            <th style="width: 60px;">Qtd.</th>
+                                            <th style="width: 80px;">Total (R$)</th>
+                                            <th style="width: 40px; text-align:center;">Del</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Injetado via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <button class="btn-text-action" style="color: #2a9d8f; margin-top: 5px; font-weight: bold;" onclick="ccAdicionarItem()">➕ Adicionar Produto</button>
+                        </div>
 
-                            <div class="config-panel">
-                                <div class="config-panel-title">💰 Quadro Financeiro & Acréscimos (R$)</div>
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                                    <div><label style="font-size: 0.70rem; color: var(--text-muted); font-weight: bold;">ICMS (+)</label><input type="number" id="cc-icms" class="config-input" style="width:100%" value="0" step="0.01" onchange="ccCalcularTotais()"></div>
-                                    <div><label style="font-size: 0.70rem; color: var(--text-muted); font-weight: bold;">IMPOSTO (+)</label><input type="number" id="cc-imposto" class="config-input" style="width:100%" value="0" step="0.01" onchange="ccCalcularTotais()"></div>
-                                    <div><label style="font-size: 0.70rem; color: var(--text-muted); font-weight: bold;">FRETE (+)</label><input type="number" id="cc-frete" class="config-input" style="width:100%" value="0" step="0.01" onchange="ccCalcularTotais()"></div>
-                                    <div><label style="font-size: 0.70rem; color: var(--text-muted); font-weight: bold;">TAXAS EXTRAS (+)</label><input type="number" id="cc-extras" class="config-input" style="width:100%" value="0" step="0.01" onchange="ccCalcularTotais()"></div>
-                                    <div style="grid-column: span 2;"><label style="font-size: 0.70rem; color: var(--accent-red); font-weight: bold;">DESCONTO APLICADO (-)</label><input type="number" id="cc-desconto" class="config-input" style="width:100%" value="0" step="0.01" onchange="ccCalcularTotais()"></div>
-                                </div>
-                                
-                                <div style="margin-top: 15px; padding: 15px; background: rgba(42, 157, 143, 0.1); border-radius: 8px; border: 1px solid #2a9d8f; text-align: center;">
-                                    <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Valor Global Final</span><br>
-                                    <span id="cc-valor-total" style="font-size: 2rem; font-weight: 900; color: #2a9d8f;">R$ 0,00</span>
-                                </div>
+                        <!-- PARTE 2: Financeiro -->
+                        <div class="config-panel">
+                            <div class="config-panel-title">2. 💰 Quadro Financeiro & Acréscimos (R$)</div>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px;">
+                                <div><label style="font-size: 0.70rem; color: var(--text-muted); font-weight: bold;">ICMS (+)</label><input type="number" id="cc-icms" class="config-input" style="width:100%" value="0" step="0.01" onchange="ccCalcularTotais()"></div>
+                                <div><label style="font-size: 0.70rem; color: var(--text-muted); font-weight: bold;">IMPOSTO (+)</label><input type="number" id="cc-imposto" class="config-input" style="width:100%" value="0" step="0.01" onchange="ccCalcularTotais()"></div>
+                                <div><label style="font-size: 0.70rem; color: var(--text-muted); font-weight: bold;">FRETE (+)</label><input type="number" id="cc-frete" class="config-input" style="width:100%" value="0" step="0.01" onchange="ccCalcularTotais()"></div>
+                                <div><label style="font-size: 0.70rem; color: var(--text-muted); font-weight: bold;">TAXAS EXTRAS (+)</label><input type="number" id="cc-extras" class="config-input" style="width:100%" value="0" step="0.01" onchange="ccCalcularTotais()"></div>
+                                <div style="grid-column: 1 / -1;"><label style="font-size: 0.70rem; color: var(--accent-red); font-weight: bold;">DESCONTO APLICADO (-)</label><input type="number" id="cc-desconto" class="config-input" style="width:100%" value="0" step="0.01" onchange="ccCalcularTotais()"></div>
+                            </div>
+                            
+                            <div style="margin-top: 15px; padding: 15px; background: rgba(42, 157, 143, 0.1); border-radius: 8px; border: 1px solid #2a9d8f; text-align: center;">
+                                <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Valor Global Final</span><br>
+                                <span id="cc-valor-total" style="font-size: 2rem; font-weight: 900; color: #2a9d8f;">R$ 0,00</span>
                             </div>
                         </div>
 
-                        <!-- Coluna 2: Rateio e Pagamento -->
-                        <div style="flex: 1 1 45%; min-width: 320px; display: flex; flex-direction: column; gap: 15px;">
-                            
-                            <div class="config-panel">
-                                <div class="config-panel-title">👥 Rateio Oficial entre Pilotos</div>
-                                <div class="table-container" style="max-height: 250px; overflow-y: auto;">
-                                    <table id="cc-tabela-rateio">
-                                        <thead>
-                                            <tr>
-                                                <th title="Marque para incluir no rateio" style="text-align:center;">Inc.</th>
-                                                <th>Piloto Participante</th>
-                                                <th title="Quem fez a compra oficial (Recebe os Pix)" style="text-align:center;">Comp.</th>
-                                                <th>Cota (R$)</th>
-                                                <th>Valor Pago (R$)</th>
-                                                <th>Diferença</th>
-                                                <th style="text-align:center;">Pago</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <!-- Injetado via JS dinamicamente com base nos pilotos do sistema -->
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 5px;">* A <strong>Cota (R$)</strong> é calculada dividindo automaticamente o Valor Global Final pela quantidade de pilotos marcados em "Inc". Caso o piloto pague a mais ou a menos, insira em <strong>Valor Pago</strong> para calcular a diferença.</p>
+                        <!-- PARTE 3: Rateio -->
+                        <div class="config-panel">
+                            <div class="config-panel-title">3. 👥 Rateio Oficial entre Pilotos</div>
+                            <div class="table-container" style="max-height: 350px; overflow-y: auto;">
+                                <table id="cc-tabela-rateio">
+                                    <thead>
+                                        <tr>
+                                            <th title="Marque para incluir no rateio" style="text-align:center;">Inc.</th>
+                                            <th>Piloto Participante</th>
+                                            <th title="Quem fez a compra oficial (Recebe os Pix)" style="text-align:center;">Comp.</th>
+                                            <th>Cota (R$)</th>
+                                            <th>Valor Pago (R$)</th>
+                                            <th>Diferença</th>
+                                            <th style="text-align:center;">Pago</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Injetado via JS dinamicamente com base nos pilotos do sistema -->
+                                    </tbody>
+                                </table>
                             </div>
-
-                            <div class="config-panel">
-                                <div class="config-panel-title">🚚 Código de Rastreio</div>
-                                <input type="text" id="cc-rastreio" class="config-input" style="width: 100%; font-weight: bold; letter-spacing: 1px; color: var(--accent-gold);" placeholder="Ex: NL123456789BR" onchange="ccAtualizarRastreio()">
-                            </div>
-
-                            <div class="config-panel">
-                                <div class="config-panel-title">💸 Recebimento / Pix do Comprador</div>
-                                <div style="display: flex; flex-direction: column; gap: 10px;">
-                                    <div>
-                                        <label style="font-size: 0.70rem; color: var(--text-muted); font-weight: bold;">Chave Pix (E-mail, CPF, Celular ou Aleatória)</label>
-                                        <input type="text" id="cc-pix" class="config-input" style="width: 100%;" placeholder="Insira a chave Pix..." oninput="ccAtualizarPix()">
-                                    </div>
-                                    <div style="display: flex; align-items: center; gap: 15px; margin-top: 10px;">
-                                        <img id="cc-qr-code" src="" alt="QR Code Pix" style="width: 120px; height: 120px; border-radius: 8px; display: none; cursor: pointer; border: 2px solid #2a9d8f;" onclick="ccCopiarPix('qr')" title="Clique para copiar a chave Pix">
-                                        <div style="flex: 1;">
-                                            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px;">O sistema gera um QR Code genérico de atalho com base na chave informada. Clique na chave abaixo ou na imagem para <strong>copiar automaticamente</strong>.</p>
-                                            <button id="cc-btn-copiar-pix" class="btn-action-primary" style="background: var(--bg-card); color: var(--accent-gold); border: 1px dashed var(--accent-gold); width: 100%; word-break: break-all; display: none;" onclick="ccCopiarPix('texto')"></button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
-                                <button class="btn-action-danger" onclick="excluirCompraAtivaColetiva()">🗑️ Excluir Compra Coletiva</button>
-                            </div>
-
+                            <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 5px;">* A <strong>Cota (R$)</strong> é calculada dividindo automaticamente o Valor Global Final pela quantidade de pilotos marcados em "Inc". Caso o piloto pague a mais ou a menos, insira em <strong>Valor Pago</strong> para calcular a diferença.</p>
                         </div>
+
+                        <!-- PARTE 4: Rastreio -->
+                        <div class="config-panel">
+                            <div class="config-panel-title">4. 🚚 Código de Rastreio</div>
+                            <input type="text" id="cc-rastreio" class="config-input" style="width: 100%; font-weight: bold; letter-spacing: 1px; color: var(--accent-gold);" placeholder="Ex: NL123456789BR" onchange="ccAtualizarRastreio()">
+                        </div>
+
+                        <!-- PARTE 5: Recebimento -->
+                        <div class="config-panel">
+                            <div class="config-panel-title">5. 💸 Recebimento / Pix do Comprador</div>
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+                                <div>
+                                    <label style="font-size: 0.70rem; color: var(--text-muted); font-weight: bold;">Chave Pix (E-mail, CPF, Celular ou Aleatória)</label>
+                                    <input type="text" id="cc-pix" class="config-input" style="width: 100%;" placeholder="Insira a chave Pix..." oninput="ccAtualizarPix()">
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 15px; margin-top: 10px;">
+                                    <img id="cc-qr-code" src="" alt="QR Code Pix" style="width: 120px; height: 120px; border-radius: 8px; display: none; cursor: pointer; border: 2px solid #2a9d8f;" onclick="ccCopiarPix('qr')" title="Clique para copiar a chave Pix">
+                                    <div style="flex: 1;">
+                                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px;">O sistema gera um QR Code genérico de atalho com base na chave informada. Clique na chave abaixo ou na imagem para <strong>copiar automaticamente</strong>.</p>
+                                        <button id="cc-btn-copiar-pix" class="btn-action-primary" style="background: var(--bg-card); color: var(--accent-gold); border: 1px dashed var(--accent-gold); width: 100%; max-width: 300px; word-break: break-all; display: none;" onclick="ccCopiarPix('texto')"></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- PARTE 6: Exclusão (Rodapé) -->
+                        <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+                            <button class="btn-action-danger" onclick="excluirCompraAtivaColetiva()">🗑️ Excluir Compra Coletiva</button>
+                        </div>
+
                     </div>
                 </div>
                 
