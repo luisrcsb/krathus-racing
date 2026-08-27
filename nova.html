@@ -68,8 +68,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
         
         .btn-share { background: rgba(58, 134, 255, 0.15); color: var(--accent-blue); border: 1px solid var(--accent-blue); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; }
         .btn-like { background: rgba(230, 57, 70, 0.15); color: var(--accent-red); border: 1px solid var(--accent-red); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; }
-        .btn-pdf-atalho { background: rgba(255, 183, 3, 0.15); color: var(--accent-gold); border: 1px solid var(--accent-gold); padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; }
-        .btn-pdf-atalho:hover { background: rgba(255, 183, 3, 0.25); }
 
         .piloto-link { color: var(--accent-blue); text-decoration: none; font-weight: 700; cursor: pointer; }
         .piloto-link:hover { color: var(--accent-gold); text-decoration: underline; }
@@ -91,14 +89,9 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
         .dossier-kpi-label { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
         .dossier-kpi-value { font-size: 1.25rem; font-weight: 700; color: var(--accent-gold); }
 
-        .config-box-trigger { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
-        .btn-config-open { background: var(--bg-input); border: 1px solid var(--border-card); color: var(--accent-gold); padding: 6px 14px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px; }
-        .btn-merge-open { background: var(--bg-input); border: 1px solid var(--border-card); color: var(--accent-green); padding: 6px 14px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px; }
-
         .config-panel { background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
         .config-panel-title { font-size: 0.82rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid var(--border-card); padding-bottom: 8px; }
         
-        .config-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         .config-input { background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-card); padding: 8px 12px; border-radius: 6px; flex: 1; font-size: 0.85rem; }
         .config-select { background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-card); padding: 8px 12px; border-radius: 6px; flex: 1; font-size: 0.85rem; }
 
@@ -139,11 +132,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
         .session-block-header { background: linear-gradient(135deg, var(--bg-card-header) 0%, var(--bg-card) 100%); border: 1px solid var(--border-card); border-left: 5px solid var(--accent-red); border-radius: 10px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; flex-wrap: wrap; gap: 10px; }
         .session-block-title { font-size: 1.15rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
         .session-block-meta { font-size: 0.85rem; color: var(--text-muted); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-        
-        .session-podium-tag { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.80rem; border: 1px solid; }
-        .podium-gold { background: rgba(255, 183, 3, 0.15); color: var(--accent-gold); border-color: var(--accent-gold); }
-        .podium-silver { background: rgba(192, 192, 192, 0.15); color: var(--accent-silver); border-color: var(--accent-silver); }
-        .podium-bronze { background: rgba(205, 127, 50, 0.15); color: var(--accent-bronze); border-color: var(--accent-bronze); }
 
         .session-blocks-container { display: flex; flex-direction: column; gap: 30px; }
         .session-block { display: flex; flex-direction: column; gap: 20px; background: rgba(21, 28, 40, 0.4); border: 1px solid var(--border-card); border-radius: 14px; padding: 20px; }
@@ -151,13 +139,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
         .card-header { display: flex; align-items: center; gap: 10px; font-size: 1rem; font-weight: 700; color: var(--text-title); margin-bottom: 16px; }
         .card-header::before { content: ''; width: 4px; height: 16px; background-color: var(--accent-red); border-radius: 2px; }
         .chart-container { position: relative; height: 280px; width: 100%; }
-
-        .position-analysis-container { margin-top: 20px; background: var(--bg-input); border-left: 4px solid var(--accent-gold); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-        .position-analysis-title { font-size: 0.85rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase; }
-        .position-log-list { display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; line-height: 1.5; max-height: 220px; overflow-y: auto; }
-        .position-log-item { background: rgba(21, 28, 40, 0.5); padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border-card); }
-        .tag-gain { color: var(--accent-green); font-weight: 700; }
-        .tag-loss { color: var(--accent-red); font-weight: 700; }
 
         .comments-section { margin-top: 15px; background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
         .comments-title { font-size: 0.85rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase; display: flex; align-items: center; gap: 6px; }
@@ -179,20 +160,10 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
         th { background-color: var(--bg-card-header); color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; padding: 12px 16px; font-weight: 700; border-bottom: 1px solid var(--border-card); }
         td { padding: 12px 16px; border-bottom: 1px solid var(--border-card); vertical-align: middle; }
         .main-row td { border-bottom: none !important; }
-        .sub-row td { padding: 0 16px 16px 16px !important; border-bottom: 1px solid var(--border-card) !important; }
 
         .pos-badge { background: var(--accent-gold); color: #000; font-weight: bold; font-size: 0.8rem; padding: 4px 8px; border-radius: 4px; display: inline-block; }
         .session-badge { background: #1d3557; color: var(--accent-blue); padding: 4px 10px; border-radius: 4px; font-size: 0.80rem; font-weight: 600; display: inline-block; }
         .text-green { color: var(--accent-green); font-weight: 700; }
-        
-        .analysis-subrow-box { background: rgba(28, 38, 59, 0.6); border-left: 4px solid var(--accent-blue); border-radius: 6px; padding: 16px 20px; font-size: 0.88rem; color: var(--text-main); line-height: 1.7; display: flex; flex-direction: column; gap: 12px; }
-        .analysis-section-block { display: flex; flex-direction: column; gap: 4px; background: rgba(13, 17, 26, 0.4); padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border-card); }
-        .analysis-section-title { color: var(--accent-gold); text-transform: uppercase; font-size: 0.78rem; font-weight: 700; display: flex; align-items: center; gap: 6px; }
-        .analysis-section-content { color: var(--text-main); font-size: 0.86rem; }
-        
-        .lap-cell-inline { display: inline-flex; align-items: baseline; gap: 6px; white-space: nowrap; }
-        .leader-badge { background: var(--accent-gold); color: #000; font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-left: 6px; display: inline-block; text-transform: uppercase; }
-        .lap-gap { color: var(--accent-gap); font-size: 0.8rem; font-weight: 600; margin-left: 4px; }
 
         .footer-container { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px 24px; display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 10px; }
         .footer-meta-info { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 16px; font-size: 0.82rem; color: var(--text-muted); background: var(--bg-input); padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border-card); }
@@ -220,8 +191,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
 </head>
 <body>
 
-    <!-- [PARTE 2] Modais do Sistema: Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas -->
-    <!-- 🏎️ Modal Ficha do Piloto -->
+    <!-- [PARTE 2] Modais do Sistema -->
     <div id="piloto-modal" class="custom-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -232,7 +202,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
         </div>
     </div>
 
-    <!-- 📤 Modal Central de Uploads (Banco Principal) -->
     <div id="upload-modal" class="custom-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -242,18 +211,15 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             <div class="modal-body">
                 <div class="upload-grid-manager">
                     <div class="upload-box">
-                        <p style="font-size: 0.85rem; color: var(--text-muted);">Selecione relatórios PDF ou HTML oficiais do ZRound. O sistema converte automaticamente, evita duplicidades e atualiza o painel principal.</p>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Selecione relatórios PDF ou HTML oficiais do ZRound.</p>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
                             <input type="file" id="input-pdf-upload" accept=".pdf,.html,.htm" multiple style="background: var(--bg-card); padding: 8px; border-radius: 6px; border: 1px solid var(--border-card); color: var(--text-main); flex: 1; font-size: 0.85rem;">
                             <button class="btn btn-upload-modal-trigger" onclick="processarUploadEEnviarNuvemPrincipal()">Converter e Enviar</button>
                         </div>
                     </div>
                     <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Arquivos Carregados (Banco Principal)</span>
-                        <ul id="upload-lista-historico">
-                            <li>Carregando arquivos...</li>
-                        </ul>
-                        <!-- Botão de Exclusão em Lote -->
+                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Arquivos Carregados</span>
+                        <ul id="upload-lista-historico"><li>Carregando arquivos...</li></ul>
                         <div style="display: flex; justify-content: flex-end; margin-top: 4px;">
                             <button class="btn-action-danger" style="padding: 6px 12px; font-size: 0.8rem;" onclick="excluirArquivosSelecionadosPrincipal()">🗑️ Excluir Selecionados</button>
                         </div>
@@ -261,13 +227,12 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                 </div>
                 <div>
                     <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Inspetor de Estrutura JSON</span>
-                    <pre id="upload-json-viewer">Selecione "Inspecionar" em um arquivo ao lado para visualizar os dados...</pre>
+                    <pre id="upload-json-viewer">Selecione "Inspecionar" em um arquivo ao lado...</pre>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 🏆 Championship Manager -->
     <div id="campeonatos-modal" class="custom-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -277,42 +242,36 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             <div class="modal-body">
                 <div style="display: flex; flex-direction: column; gap: 20px;">
                     <div class="upload-box">
-                        <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase;">🔒 Criar Novo Campeonato (Protegido por Senha Unificada)</span>
+                        <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase;">🔒 Criar Novo Campeonato</span>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-                            <input type="text" id="input-nome-campeonato" class="config-input" placeholder="Nome do Campeonato (Ex: Copa Krathus 2026)">
+                            <input type="text" id="input-nome-campeonato" class="config-input" placeholder="Nome do Campeonato">
                             <button class="btn-action-primary" onclick="criarCampeonatoProtegido()">Criar Campeonato</button>
                         </div>
                     </div>
-
                     <div style="display: flex; flex-direction: column; gap: 10px;">
                         <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Campeonatos Cadastrados</span>
                         <ul id="campeonatos-lista-modal" style="list-style: none; display: flex; flex-direction: column; gap: 10px; max-height: 220px; overflow-y: auto;">
                             <li>Carregando campeonatos...</li>
                         </ul>
                     </div>
-
-                    <!-- PAINEL ZROUND COM 5 ABAS PRINCIPAIS -->
                     <div id="container-zround-campeonato" style="display: none; flex-direction: column; gap: 15px; border-top: 2px solid var(--border-card); padding-top: 15px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                             <h3 id="zround-camp-titulo-ativo" style="font-size: 1.1rem; color: var(--accent-gold);">Configurando: --</h3>
                             <button class="btn-action-danger" style="padding: 4px 10px; font-size: 0.78rem;" onclick="fecharPainelZRoundCamp()">Fechar Painel</button>
                         </div>
-
                         <div class="zround-tabs-header">
                             <button class="zround-tab-btn active" onclick="mudarAbaZRound(1)">📂 1. Visão Geral & Configs</button>
                             <button class="zround-tab-btn" onclick="mudarAbaZRound(2)">🏎️ 2. Inclusão de Pilotos</button>
                             <button class="zround-tab-btn" onclick="mudarAbaZRound(3)">📤 3. Gestão de Provas</button>
                             <button class="zround-tab-btn" onclick="mudarAbaZRound(4)">🔄 4. Grid de Largada</button>
-                            <button class="zround-tab-btn" onclick="mudarAbaZRound(5)">📊 5. Classificação Geral do Campeonato</button>
+                            <button class="zround-tab-btn" onclick="mudarAbaZRound(5)">📊 5. Classificação Geral</button>
                         </div>
-
-                        <!-- ABA 1 -->
                         <div id="zround-aba-1" class="zround-aba-content" style="display: flex; flex-direction: column; gap: 12px;">
                             <div class="config-panel">
                                 <div class="config-panel-title">Parâmetros Gerais e Sistema de Pontuação</div>
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                                     <div>
-                                        <label style="font-size: 0.75rem; color: var(--text-muted);">Número de Provas Previstas</label>
+                                        <label style="font-size: 0.75rem; color: var(--text-muted);">Número de Provas</label>
                                         <input type="number" id="zround-num-provas" class="config-input" style="width:100%; margin-top:4px;">
                                     </div>
                                     <div>
@@ -321,136 +280,41 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                                     </div>
                                 </div>
                                 <div style="margin-top: 10px;">
-                                    <label style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Tabela de Pontuação (1º ao 10º)</label>
+                                    <label style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Tabela de Pontuação</label>
                                     <input type="text" id="zround-tabela-pontos-input" class="config-input" style="width:100%; margin-top:4px;" value="25, 18, 15, 12, 10, 8, 6, 4, 2, 1">
                                 </div>
-                                <div style="margin-top: 12px; background: rgba(58, 134, 255, 0.08); padding: 12px; border-radius: 8px; border: 1px solid var(--border-card);">
-                                    <label class="checkbox-item" style="font-weight: 600;">
-                                        <input type="checkbox" id="zround-usa-grid-treino" style="width: 18px; height: 18px;">
-                                        Formar grid a partir de treino (pega os 3 melhores tempos de cada piloto e descarta o pior)
-                                    </label>
-                                </div>
                                 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px;">
-                                    <button class="btn-action-danger" onclick="excluirCampeonatoAtual()">🗑️ Excluir Campeonato</button>
-                                    <button class="btn-action-primary" onclick="salvarAba1ConfigGeral()">Salvar Configurações</button>
+                                    <button class="btn-action-danger" onclick="excluirCampeonatoAtual()">🗑️ Excluir</button>
+                                    <button class="btn-action-primary" onclick="salvarAba1ConfigGeral()">Salvar</button>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- ABA 2 -->
                         <div id="zround-aba-2" class="zround-aba-content" style="display: none; flex-direction: column; gap: 12px;">
                             <div class="config-panel">
-                                <div class="config-panel-title">Inscrição Manual ou Importação de Pilotos do Banco Geral</div>
-                                <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-                                    <select id="zround-select-piloto-geral" class="config-select">
-                                        <option value="">Selecione um piloto já cadastrado no site...</option>
-                                    </select>
-                                    <button class="btn-action-primary" onclick="importarPilotoBancoGeral()">Adicionar do Banco Geral</button>
-                                </div>
-                                <div class="config-row" style="margin-top: 6px;">
-                                    <input type="text" id="zround-novo-piloto-manual" class="config-input" placeholder="Ou digite o nome de um novo piloto">
-                                    <button class="btn-action-primary" onclick="adicionarPilotoManualZRound()">Cadastrar Novo Piloto</button>
-                                </div>
-                                <div class="table-container" style="margin-top: 10px;">
-                                    <table>
-                                        <thead><tr><th>Piloto Inscrito no Campeonato</th><th style="text-align: right;">Ações</th></tr></thead>
-                                        <tbody id="zround-tabela-pilotos-inscritos">
-                                            <tr><td colspan="2" style="text-align: center; color: var(--text-muted);">Nenhum piloto inscrito.</td></tr>
-                                        </tbody>
-                                    </table>
-                                </div>
+                                <div class="config-panel-title">Pilotos</div>
+                                <select id="zround-select-piloto-geral" class="config-select"><option value="">Selecione...</option></select>
+                                <button class="btn-action-primary" onclick="importarPilotoBancoGeral()">Adicionar</button>
                             </div>
                         </div>
-
-                        <!-- ABA 3 -->
-                        <div id="zround-aba-3" class="zround-aba-content" style="display: none; flex-direction: column; gap: 12px;">
-                            <div class="upload-box">
-                                <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase;">📤 Upload e Seleção de Provas (Banco de Dados Separado)</span>
-                                <p style="font-size: 0.82rem; color: var(--text-muted);">Adicione novos arquivos de provas (PDF/HTML) ou importe relatórios salvos no banco principal para o banco dedicado deste campeonato.</p>
-                                <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 6px;">
-                                    <input type="file" id="zround-input-file-prova" accept=".pdf,.html,.htm" multiple style="background: var(--bg-card); padding: 8px; border-radius: 6px; border: 1px solid var(--border-card); color: var(--text-main); flex: 1; font-size: 0.85rem;">
-                                    <button class="btn btn-upload-modal-trigger" onclick="uploadProvasBancoSeparado()">Enviar Prova (Banco Separado)</button>
-                                </div>
-                            </div>
-
-                            <div class="upload-box" style="border-color: var(--accent-gold); background: rgba(255, 183, 3, 0.04);">
-                                <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase;">⏱️ Sessão de Treino Exclusiva para Grid (Regra: 3 Melhores Voltas, descarta a pior)</span>
-                                <p style="font-size: 0.82rem; color: var(--text-muted);">Envie um relatório de treino oficial para o cálculo automático do grid de largada inicial da primeira prova.</p>
-                                <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 6px;">
-                                    <input type="file" id="zround-input-file-treino-grid" accept=".pdf,.html,.htm" style="background: var(--bg-card); padding: 8px; border-radius: 6px; border: 1px solid var(--border-card); color: var(--text-main); flex: 1; font-size: 0.85rem;">
-                                    <button class="btn-action-primary" style="background: var(--accent-gold); color: #000; font-weight: 700;" onclick="processarTreinoParaGrid()">Processar Treino p/ Grid</button>
-                                </div>
-                                <div id="status-treino-grid-info" style="font-size: 0.8rem; color: var(--accent-green); margin-top: 4px;">Nenhum treino de grid processado.</div>
-                            </div>
-
-                            <div class="upload-box" style="border-style: solid; border-color: var(--border-card);">
-                                <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">📥 Importar Provas Existentes do Banco Principal do Site</span>
-                                <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 6px;">
-                                    <select id="zround-select-prova-banco-principal" class="config-select">
-                                        <option value="">Selecione uma prova do banco principal...</option>
-                                    </select>
-                                    <button class="btn-action-primary" onclick="importarProvaDoBancoPrincipalParaCampeonato()">Importar para o Banco Separado</button>
-                                </div>
-                            </div>
-                            <div style="display: flex; flex-direction: column; gap: 8px;">
-                                <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Provas Registradas no Banco Separado deste Campeonato</span>
-                                <ul id="zround-lista-provas-banco-separado" style="list-style: none; display: flex; flex-direction: column; gap: 6px; max-height: 180px; overflow-y: auto;">
-                                    <li>Nenhuma prova registrada no banco separado.</li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <!-- ABA 4 -->
-                        <div id="zround-aba-4" class="zround-aba-content" style="display: none; flex-direction: column; gap: 12px;">
-                            <div class="config-panel">
-                                <div class="config-panel-title">Formação dos Grids de Largada</div>
-                                <div style="margin-bottom: 6px;">
-                                    <label class="checkbox-item"><input type="checkbox" id="zround-inverter-segunda" onchange="atualizarInterfacePainelZRound()"> Inverter automaticamente a ordem da bateria seguinte com base no resultado da prova anterior</label>
-                                </div>
-                                <div id="container-todos-grids-gerados" style="display: flex; flex-direction: column; gap: 15px; margin-top: 10px;">
-                                    <div style="text-align: center; color: var(--text-muted);">Envie ou selecione provas no banco separado para gerar os grids.</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- ABA 5 -->
-                        <div id="zround-aba-5" class="zround-aba-content" style="display: none; flex-direction: column; gap: 12px;">
-                            <div class="config-panel">
-                                <div class="config-panel-title">Classificação Geral do Campeonato</div>
-                                <div class="table-container" style="margin-top: 6px;">
-                                    <table>
-                                        <thead><tr><th>Pos</th><th>Piloto</th><th style="text-align: right;">Pontos Totais</th></tr></thead>
-                                        <tbody id="zround-tabela-classificacao-geral">
-                                            <tr><td colspan="3" style="text-align: center; color: var(--text-muted);">Sem pontuação computada.</td></tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
-                                    <button class="btn-action-danger" style="background: linear-gradient(135deg, #2ec4b6 0%, #3a86ff 100%); color: #fff; font-weight: 700; padding: 12px 24px;" onclick="finalizarCampeonatoAtual()">🏁 Finalizar Campeonato</button>
-                                </div>
-                            </div>
-                        </div>
-
+                        <div id="zround-aba-3" class="zround-aba-content" style="display: none; flex-direction: column; gap: 12px;"></div>
+                        <div id="zround-aba-4" class="zround-aba-content" style="display: none; flex-direction: column; gap: 12px;"></div>
+                        <div id="zround-aba-5" class="zround-aba-content" style="display: none; flex-direction: column; gap: 12px;"></div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- MODAL DE RESUMO FISCAL E PAGAMENTO RÁPIDO (COMPRAS COLETIVAS) -->
     <div id="resumo-fiscal-modal" class="custom-modal" style="z-index: 11000;">
         <div class="modal-content" style="border-top-color: #480ca8; max-width: 850px; height: auto;">
             <div class="modal-header">
-                <div class="modal-title" id="resumo-fiscal-titulo">📊 Resumo Fiscal e de Pagamentos</div>
+                <div class="modal-title" id="resumo-fiscal-titulo">📊 Resumo Fiscal</div>
                 <button class="modal-close" onclick="fecharModalResumoFiscal()">&times;</button>
             </div>
-            <div class="modal-body" id="resumo-fiscal-body" style="display: flex; flex-direction: column; gap: 14px; overflow: visible;">
-                <!-- Conteúdo injetado via JS -->
-            </div>
+            <div class="modal-body" id="resumo-fiscal-body" style="display: flex; flex-direction: column; gap: 14px; overflow: visible;"></div>
         </div>
     </div>
 
-    <!-- 🛒 MODAL DE COMPRAS COLETIVAS -->
     <div id="campeonatos2-modal" class="custom-modal">
         <div class="modal-content" style="border-top-color: var(--accent-cc); max-width: 1050px; height: auto;">
             <div class="modal-header">
@@ -458,158 +322,19 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                 <button class="modal-close" onclick="fecharModalCampeonatos2()">&times;</button>
             </div>
             <div class="modal-body" style="position: relative; overflow: visible;">
-                
                 <div id="lista-compras-coletivas-view" style="display: flex; flex-direction: column; gap: 16px;">
-                    <!-- 1. Compras Cadastradas (No Topo) -->
-                    <div style="display: flex; flex-direction: column; gap: 8px;">
-                        <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Compras Coletivas Cadastradas</span>
-                        <ul id="cc-lista-cadastradas" style="list-style: none; display: flex; flex-direction: column; gap: 10px; overflow: visible; padding-right: 0;">
-                            <!-- Injetado via JS -->
-                        </ul>
-                    </div>
-
-                    <!-- 2. Criar Nova Compra Coletiva (Na Base) -->
+                    <ul id="cc-lista-cadastradas" style="list-style: none; display: flex; flex-direction: column; gap: 10px;"></ul>
                     <div class="config-panel" style="border-color: var(--accent-cc);">
-                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--accent-cc); text-transform: uppercase;">🔒 Criar Nova Compra Coletiva</span>
-                        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-                            <input type="text" id="cc-input-nova-compra" class="config-input" placeholder="Nome da Compra (Ex: Peças RC AliExpress)">
-                            <button class="btn-action-primary" style="background: var(--accent-cc);" onclick="criarCompraColetiva()">Criar Compra Coletiva</button>
-                        </div>
+                        <input type="text" id="cc-input-nova-compra" class="config-input" placeholder="Nome da Compra">
+                        <button class="btn-action-primary" style="background: var(--accent-cc);" onclick="criarCompraColetiva()">Criar</button>
                     </div>
                 </div>
-
-                <!-- PAINEL ÚNICO DE GERENCIAMENTO DE COMPRA COLETIVA -->
-                <div id="painel-unica-compra-view" style="display: none; flex-direction: column; gap: 14px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-bottom: 2px solid var(--border-card); padding-bottom: 10px;">
-                        <h3 id="cc-titulo-gerenciamento" style="font-size: 1.1rem; color: var(--accent-cc);">Cadastro de Compra Coletiva: --</h3>
-                        <button class="btn-action-danger" style="padding: 5px 10px; font-size: 0.78rem; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-card);" onclick="voltarListaCompras()">⬅️ Voltar para Lista</button>
-                    </div>
-
-                    <!-- Bloco 1: Nome da Compra -->
-                    <div class="config-panel">
-                        <div class="config-panel-title" style="color: var(--accent-cc);">1. Nome da Compra</div>
-                        <div>
-                            <label style="font-size: 0.7rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Nome da Compra Coletiva</label>
-                            <input type="text" id="cc-form-nome" class="config-input" style="width: 100%; margin-top: 2px;" oninput="atualizarCalculosCC()">
-                        </div>
-                    </div>
-
-                    <!-- Bloco 2: Itens da Compra -->
-                    <div class="config-panel">
-                        <div class="config-panel-title" style="color: var(--accent-cc);">2. Itens da Compra</div>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th style="width: 50px;">Img</th>
-                                        <th>Nome / Descrição</th>
-                                        <th>Link (URL)</th>
-                                        <th style="width: 90px;">Valor (R$)</th>
-                                        <th style="width: 60px;">Qtd</th>
-                                        <th style="width: 100px;">Subtotal</th>
-                                        <th style="text-align: right; width: 50px;">Ação</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="cc-tabela-itens"></tbody>
-                            </table>
-                        </div>
-                        <div style="display: flex; justify-content: flex-start; margin-top: 6px;">
-                            <button class="btn-action-primary" style="background: var(--accent-cc); padding: 5px 12px; font-size: 0.78rem;" onclick="adicionarItemCC()">➕ Adicionar Item</button>
-                        </div>
-                    </div>
-
-                    <!-- Bloco 3: Informações Financeiras e Fiscais -->
-                    <div class="config-panel">
-                        <div class="config-panel-title" style="color: var(--accent-cc);">3. Informações Financeiras e Fiscais</div>
-                        <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;">
-                            <div>
-                                <label style="font-size: 0.65rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Subtotal</label>
-                                <input type="number" id="cc-form-subtotal" class="config-input" style="width: 100%; margin-top: 2px; background: var(--bg-body); font-weight: bold;" value="0" readonly>
-                            </div>
-                            <div>
-                                <label style="font-size: 0.65rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Desconto</label>
-                                <input type="number" id="cc-form-desconto" class="config-input" style="width: 100%; margin-top: 2px;" value="0" step="0.01" oninput="atualizarCalculosCC()">
-                            </div>
-                            <div>
-                                <label style="font-size: 0.65rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Frete</label>
-                                <input type="number" id="cc-form-frete" class="config-input" style="width: 100%; margin-top: 2px;" value="0" step="0.01" oninput="atualizarCalculosCC()">
-                            </div>
-                            <div>
-                                <label style="font-size: 0.65rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Imposto</label>
-                                <input type="number" id="cc-form-imposto" class="config-input" style="width: 100%; margin-top: 2px;" value="0" step="0.01" oninput="atualizarCalculosCC()">
-                            </div>
-                            <div>
-                                <label style="font-size: 0.65rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">ICMS</label>
-                                <input type="number" id="cc-form-icms" class="config-input" style="width: 100%; margin-top: 2px;" value="0" step="0.01" oninput="atualizarCalculosCC()">
-                            </div>
-                            <div>
-                                <label style="font-size: 0.65rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Outros</label>
-                                <input type="number" id="cc-form-outros-descontos" class="config-input" style="width: 100%; margin-top: 2px;" value="0" step="0.01" oninput="atualizarCalculosCC()">
-                            </div>
-                        </div>
-                        <div style="margin-top: 6px; background: rgba(255, 183, 3, 0.05); padding: 8px 12px; border-radius: 6px; border: 1px dashed var(--accent-gold); display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 0.75rem; font-weight: bold; text-transform: uppercase; color: var(--text-title);">Valor Global Final Calculado:</span>
-                            <div id="cc-form-total-global" style="font-size: 1.15rem; font-weight: 900; color: var(--accent-gold);">R$ 0,00</div>
-                        </div>
-                    </div>
-
-                    <!-- Bloco 4: Seleção de Cotistas, Rateio e Comprador -->
-                    <div class="config-panel">
-                        <div class="config-panel-title" style="color: var(--accent-cc);">4. Seleção de Cotistas, Rateio e Definição de Comprador</div>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th style="width: 45px; text-align: center;">Ativo</th>
-                                        <th>Cotista</th>
-                                        <th style="width: 140px; text-align: center;">Comprador</th>
-                                        <th>Cota Base</th>
-                                        <th>Valor Pago</th>
-                                        <th>Situação</th>
-                                        <th style="text-align: center;">Status (Pago ✅)</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="cc-tabela-cotistas-rateio"></tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Bloco 5: Chave Pix do Comprador -->
-                    <div class="config-panel">
-                        <div class="config-panel-title" style="color: var(--accent-cc);">5. Chave Pix do Comprador (<span id="cc-label-nome-comprador">Nenhum</span>)</div>
-                        <div style="display: flex; flex-direction: column; gap: 8px; background: rgba(42, 157, 143, 0.05); padding: 10px; border-radius: 6px; border: 1px dashed var(--accent-cc);">
-                            <div>
-                                <label style="font-size: 0.7rem; color: var(--accent-cc); font-weight: bold; text-transform: uppercase;">Chave Pix (Valor livre digitado pelo pagador)</label>
-                                <input type="text" id="cc-form-pix" class="config-input" style="width: 100%; margin-top: 2px;" placeholder="Ex: CPF, Telefone (+55) ou E-mail" oninput="aoDigitarPix()">
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 12px; justify-content: center;">
-                                <img id="cc-pix-qrcode" class="pix-clickable" src="" alt="QR Code Pix" title="Toque para copiar a chave Pix" onclick="copiarChavePixAtual()" style="width: 120px; height: 120px; background: #fff; padding: 4px; border-radius: 6px; display: none;">
-                                <span id="cc-pix-placeholder" style="font-size: 0.75rem; color: var(--text-muted); text-align: center;">Insira a chave Pix para gerar o QR Code padrão.</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Bloco 6: Cadastro de Rastreio -->
-                    <div class="config-panel" style="border-color: #3f37c9;">
-                        <div class="config-panel-title" style="color: #3f37c9;">6. Cadastro de Rastreio do Pedido</div>
-                        <div>
-                            <label style="font-size: 0.7rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Código de Rastreio (Ex: NL123456789BR)</label>
-                            <input type="text" id="cc-form-rastreio" class="config-input" style="width: 100%; margin-top: 2px; font-weight: bold;" placeholder="Inserir código Correios / 17track" oninput="atualizarCalculosCC()">
-                        </div>
-                    </div>
-
-                    <!-- Ações Finais -->
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
-                        <button class="btn-action-danger" onclick="excluirCompraColetivaAberta()">🗑️ Excluir Compra Coletiva</button>
-                        <button class="btn-action-primary" style="background: var(--accent-cc); padding: 10px 20px; font-size: 0.9rem;" onclick="salvarCompraColetivaAberta()">💾 Salvar Tudo</button>
-                    </div>
-
-                </div>
+                <div id="painel-unica-compra-view" style="display: none; flex-direction: column; gap: 14px;"></div>
             </div>
         </div>
     </div>
 
-    <!-- [PARTE 3] Estrutura Principal do Dashboard: Cabeçalho do Site, Filtros Dinâmicos e Cartões de KPIs Globais -->
+    <!-- [PARTE 3] Dashboard Principal -->
     <div class="dashboard-container">
         <header class="header">
             <div class="brand-title">
@@ -624,73 +349,67 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             </div>
         </header>
 
-        <div id="tab-telemetria" class="tab-content">
-            <section class="filters-card">
-                <div class="filters-grid">
-                    <div class="filter-group">
-                        <div class="filter-group-header">
-                            <label class="group-title">SESSÕES / BATERIAS (Mais recentes no topo)</label>
-                            <button class="btn-text-action" onclick="limparSelecao('filter-bateria')">🗑️ Limpar</button>
-                        </div>
-                        <div class="checkbox-container" id="filtro-baterias-container"></div>
+        <section class="filters-card">
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <div class="filter-group-header">
+                        <label class="group-title">SESSÕES / BATERIAS</label>
+                        <button class="btn-text-action" onclick="limparSelecao('filter-bateria')">🗑️ Limpar</button>
                     </div>
-
-                    <div class="filter-group">
-                        <div class="filter-group-header">
-                            <label class="group-title">PILOTOS</label>
-                            <button class="btn-text-action" onclick="limparSelecao('filter-piloto')">🗑️ Limpar</button>
-                        </div>
-                        <div class="checkbox-container" id="filtro-pilotos-container"></div>
+                    <div class="checkbox-container" id="filtro-baterias-container"></div>
+                </div>
+                <div class="filter-group">
+                    <div class="filter-group-header">
+                        <label class="group-title">PILOTOS</label>
+                        <button class="btn-text-action" onclick="limparSelecao('filter-piloto')">🗑️ Limpar</button>
                     </div>
-
-                    <div class="filter-group">
-                        <div class="filter-group-header">
-                            <label class="group-title">MÓDULOS VISÍVEIS</label>
-                            <button class="btn-text-action" onclick="limparSelecao('filter-modulo')">🗑️ Limpar</button>
-                        </div>
-                        <div class="checkbox-container">
-                            <label class="checkbox-item"><input type="checkbox" value="mod-grafico" class="filter-modulo" checked onchange="atualizarDashboard()"> 📈 Evolução de Ritmo</label>
-                            <label class="checkbox-item"><input type="checkbox" value="mod-grafico-posicao" class="filter-modulo" checked onchange="atualizarDashboard()"> 📊 Posição Volta a Volta</label>
-                            <label class="checkbox-item"><input type="checkbox" value="mod-log-posicao" class="filter-modulo" checked onchange="atualizarDashboard()"> 📝 Relatório de Ultrapassagens</label>
-                            <label class="checkbox-item"><input type="checkbox" value="mod-classificacao-analise" class="filter-modulo" checked onchange="atualizarDashboard()"> 📋 Laudo Técnico</label>
-                            <label class="checkbox-item"><input type="checkbox" value="mod-tabela-geral" class="filter-modulo" checked onchange="atualizarDashboard()"> ⏱️ Tabela Geral com Gaps</label>
-                            <label class="checkbox-item"><input type="checkbox" value="mod-comentarios" class="filter-modulo" checked onchange="atualizarDashboard()"> 💬 Comentários e Reações</label>
-                        </div>
+                    <div class="checkbox-container" id="filtro-pilotos-container"></div>
+                </div>
+                <div class="filter-group">
+                    <div class="filter-group-header">
+                        <label class="group-title">MÓDULOS VISÍVEIS</label>
+                        <button class="btn-text-action" onclick="limparSelecao('filter-modulo')">🗑️ Limpar</button>
+                    </div>
+                    <div class="checkbox-container">
+                        <label class="checkbox-item"><input type="checkbox" value="mod-grafico" class="filter-modulo" checked onchange="atualizarDashboard()"> 📈 Evolução de Ritmo</label>
+                        <label class="checkbox-item"><input type="checkbox" value="mod-grafico-posicao" class="filter-modulo" checked onchange="atualizarDashboard()"> 📊 Posição Volta a Volta</label>
+                        <label class="checkbox-item"><input type="checkbox" value="mod-classificacao-analise" class="filter-modulo" checked onchange="atualizarDashboard()"> 📋 Laudo Técnico</label>
+                        <label class="checkbox-item"><input type="checkbox" value="mod-comentarios" class="filter-modulo" checked onchange="atualizarDashboard()"> 💬 Comentários e Reações</label>
                     </div>
                 </div>
-            </section>
+            </div>
+        </section>
 
-            <section class="kpi-grid">
-                <div class="kpi-card">
-                    <span class="kpi-label">Piloto com Mais Vitórias</span>
-                    <div class="kpi-value" id="kpi-vencedor">--</div>
-                    <span class="kpi-subtext" id="kpi-vencedor-sub">Aguardando dados</span>
-                </div>
-                <div class="kpi-card">
-                    <span class="kpi-label">Melhor Volta Geral</span>
-                    <div class="kpi-value green" id="kpi-melhor-volta">--</div>
-                    <div class="kpi-value" id="kpi-melhor-volta-vel" style="color: var(--accent-gold); margin-top: 2px;">--</div>
-                    <span class="kpi-subtext" id="kpi-melhor-volta-sub">--</span>
-                </div>
-                <div class="kpi-card">
-                    <span class="kpi-label">Voltas Válidas Analisadas</span>
-                    <div class="kpi-value" id="kpi-total-voltas">0</div>
-                    <span class="kpi-subtext">Total nas sessões marcadas</span>
-                </div>
-                <div class="kpi-card">
-                    <span class="kpi-label">Média Global do Grid</span>
-                    <div class="kpi-value" id="kpi-media-global">--</div>
-                    <div class="kpi-value" id="kpi-media-global-vel" style="color: var(--accent-gold); margin-top: 2px;">--</div>
-                    <span class="kpi-subtext">Média geral</span>
-                </div>
-            </section>
+        <section class="kpi-grid">
+            <div class="kpi-card">
+                <span class="kpi-label">Piloto com Mais Vitórias</span>
+                <div class="kpi-value" id="kpi-vencedor">--</div>
+                <span class="kpi-subtext" id="kpi-vencedor-sub">Aguardando dados</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-label">Melhor Volta Geral</span>
+                <div class="kpi-value green" id="kpi-melhor-volta">--</div>
+                <div class="kpi-value" id="kpi-melhor-volta-vel" style="color: var(--accent-gold); margin-top: 2px;">--</div>
+                <span class="kpi-subtext" id="kpi-melhor-volta-sub">--</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-label">Voltas Válidas Analisadas</span>
+                <div class="kpi-value" id="kpi-total-voltas">0</div>
+                <span class="kpi-subtext">Total nas sessões</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-label">Média Global do Grid</span>
+                <div class="kpi-value" id="kpi-media-global">--</div>
+                <div class="kpi-value" id="kpi-media-global-vel" style="color: var(--accent-gold); margin-top: 2px;">--</div>
+                <span class="kpi-subtext">Média geral</span>
+            </div>
+        </section>
 
-            <div id="sessions-container" class="session-blocks-container" style="margin-top: 20px;"></div>
-        </div>
+        <div id="sessions-container" class="session-blocks-container" style="margin-top: 20px;"></div>
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.48.2 (Consistência com Média Histórica Anterior + Compras Coletivas Unificadas)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.48.3 (Gráfico Posição Volta a Volta Integrado)</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -726,7 +445,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
         let campeonatoAtivoKey = null;
         let pilotosDisponiveisGlobal = ["Rafael", "DJ", "Ronaldo", "Gustavo"];
 
-        // [PARTE 4] Inicialização do Firebase, Sincronização de Dados, Gestão de Caches, Regras de Alias e Ordenação de Sessões
         try {
             firebase.initializeApp(firebaseConfig);
             db = firebase.database();
@@ -735,12 +453,9 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
         }
 
         const ALIAS_EDGARD_DJ_DEFAULTS = {
-            "edgard": "Edgard Camilo (DJ)",
-            "Edgard": "Edgard Camilo (DJ)",
-            "edgar": "Edgard Camilo (DJ)",
-            "Edgar": "Edgard Camilo (DJ)",
-            "Dj_Edgar": "Edgard Camilo (DJ)",
-            "DJ": "Edgard Camilo (DJ)"
+            "edgard": "Edgard Camilo (DJ)", "Edgard": "Edgard Camilo (DJ)",
+            "edgar": "Edgard Camilo (DJ)", "Edgar": "Edgard Camilo (DJ)",
+            "Dj_Edgar": "Edgard Camilo (DJ)", "DJ": "Edgard Camilo (DJ)"
         };
 
         function sanitizarListaPilotos(listaBruta) {
@@ -749,9 +464,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                 if (!nome) return;
                 let nomeClean = nome.trim();
                 let lower = nomeClean.toLowerCase();
-                if (lower.includes("belovotsky") || lower.includes("silva belowodski")) {
-                    return; 
-                }
+                if (lower.includes("belovotsky") || lower.includes("silva belowodski")) return;
                 unicosMap[nomeClean] = true;
             });
             let resultado = Object.keys(unicosMap);
@@ -792,27 +505,16 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
 
         function ordenarParticipantesBateria(participantesValidos) {
             if (!participantesValidos || participantesValidos.length === 0) return [];
-
-            const valorTempo = (l) => {
-                if (l && typeof l === 'object') return Number(l.tempo);
-                return Number(l);
-            };
-
-            const totalValido = (p) => (p.laps || [])
-                .map(valorTempo)
-                .filter(t => Number.isFinite(t) && t > 0)
-                .reduce((acc, t) => acc + t, 0);
+            const valorTempo = (l) => (l && typeof l === 'object') ? Number(l.tempo) : Number(l);
+            const totalValido = (p) => (p.laps || []).map(valorTempo).filter(t => Number.isFinite(t) && t > 0).reduce((acc, t) => acc + t, 0);
 
             return [...participantesValidos].sort((a, b) => {
                 const voltasA = (a.laps || []).map(valorTempo).filter(t => Number.isFinite(t) && t > 0).length;
                 const voltasB = (b.laps || []).map(valorTempo).filter(t => Number.isFinite(t) && t > 0).length;
-
                 if (voltasA !== voltasB) return voltasB - voltasA;
-
                 const tempoA = totalValido(a);
                 const tempoB = totalValido(b);
                 if (tempoA !== tempoB) return tempoA - tempoB;
-
                 const melhorA = Math.min(...((a.laps || []).map(valorTempo).filter(t => Number.isFinite(t) && t > 0)), Infinity);
                 const melhorB = Math.min(...((b.laps || []).map(valorTempo).filter(t => Number.isFinite(t) && t > 0)), Infinity);
                 return melhorA - melhorB;
@@ -822,9 +524,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
         function mapaPosicoesChegada(participantesValidos) {
             const ordenados = ordenarParticipantesBateria(participantesValidos);
             const mapa = {};
-            ordenados.forEach((p, idx) => {
-                mapa[p.piloto] = idx + 1;
-            });
+            ordenados.forEach((p, idx) => { mapa[p.piloto] = idx + 1; });
             return { ordenados, mapa };
         }
 
@@ -833,1550 +533,49 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                 db.ref('pilotos').on('value', snap => {
                     if (snap.exists()) {
                         let novaLista = [];
-                        snap.forEach(child => {
-                            let nome = child.val().nome || child.key;
-                            novaLista.push(nome);
-                        });
+                        snap.forEach(child => novaLista.push(child.val().nome || child.key));
                         pilotosDisponiveisGlobal = sanitizarListaPilotos(novaLista);
                     }
                 });
-
                 db.ref('pilotosMetadados').on('value', snapshot => {
                     pilotosMetadadosCache = snapshot.val() || {};
                     gerarFiltrosDinamicos();
                     atualizarDashboard();
-                    preencherSelectPilotosGerais();
                 });
-
                 db.ref('mesclagensPilotos').on('value', snapshot => {
                     let servidorMesclagens = snapshot.val() || {};
                     mesclagensCache = Object.assign({}, ALIAS_EDGARD_DJ_DEFAULTS, servidorMesclagens);
                     gerarFiltrosDinamicos();
                     atualizarDashboard();
                 });
-
                 db.ref('campeonatos').on('value', snapshot => {
                     campeonatosCache = snapshot.val() || {};
-                    renderizarListaCampeonatosModal();
-                    if (campeonatoAtivoKey && campeonatosCache[campeonatoAtivoKey]) {
-                        atualizarInterfacePainelZRound();
-                    }
                 });
-
-                db.ref('comprasColetivas').on('value', snapshot => {
-                    comprasColetivasCache = snapshot.val() || {};
-                    if(document.getElementById('campeonatos2-modal').style.display === 'flex') {
-                        renderizarListaComprasColetivas();
-                    }
-                });
-
                 db.ref('baterias').on('value', snapshot => {
                     listaJsonsCache = [];
                     snapshot.forEach(childSnapshot => {
                         let val = childSnapshot.val();
                         if (val && val.dados && val.dados.length > 0) {
-                            if (!val.historicoNomesOriginais) {
-                                val.historicoNomesOriginais = {};
-                            }
-                            listaJsonsCache.push({
-                                firebaseKey: childSnapshot.key,
-                                ...val
-                            });
+                            listaJsonsCache.push({ firebaseKey: childSnapshot.key, ...val });
                         }
                     });
-                    
                     listaJsonsCache.sort((a, b) => {
                         let nomeA = a.sessao || (a.dados && a.dados[0] ? a.dados[0].sessao : '') || '';
                         let nomeB = b.sessao || (b.dados && b.dados[0] ? b.dados[0].sessao : '') || '';
                         return extrairPesoOrdenacao(nomeB) - extrairPesoOrdenacao(nomeA);
                     });
-
                     gerarFiltrosDinamicos();
-                    atualizarListaUploadHistoricoPrincipal();
-                    preencherSelectProvasBancoPrincipal();
                     atualizarDashboard();
                 });
             }
-
-            document.addEventListener('click', function(e) {
-                if (!e.target.closest('.dropdown-menu') && !e.target.closest('.btn-action-track')) {
-                    document.querySelectorAll('.dropdown-menu').forEach(m => m.style.display = 'none');
-                }
-            });
         });
 
-        // ==========================================
-        // [PARTE 5.1] MÓDULO DE COMPRAS COLETIVAS (Unificado)
-        // ==========================================
         window.abrirModalUpload = function() { document.getElementById('upload-modal').style.display = 'flex'; };
         window.fecharModalUpload = function() { document.getElementById('upload-modal').style.display = 'none'; };
         window.abrirModalCampeonatos = function() { document.getElementById('campeonatos-modal').style.display = 'flex'; };
         window.fecharModalCampeonatos = function() { document.getElementById('campeonatos-modal').style.display = 'none'; };
-
-        window.abrirModalCampeonatos2 = function() {
-            document.getElementById('campeonatos2-modal').style.display = 'flex';
-            voltarListaCompras();
-        };
+        window.abrirModalCampeonatos2 = function() { document.getElementById('campeonatos2-modal').style.display = 'flex'; };
         window.fecharModalCampeonatos2 = function() { document.getElementById('campeonatos2-modal').style.display = 'none'; };
-
-        window.voltarListaCompras = function() {
-            compraAbertaKey = null;
-            compraAbertaDados = null;
-            document.getElementById('painel-unica-compra-view').style.display = 'none';
-            document.getElementById('lista-compras-coletivas-view').style.display = 'flex';
-            renderizarListaComprasColetivas();
-        };
-
-        window.criarCompraColetiva = async function() {
-            let senha = prompt("🔒 Digite a senha unificada de segurança para criar uma nova compra coletiva:");
-            if (senha === null) return;
-            if (senha !== SENHA_UNIFICADA) { alert("❌ Senha incorreta!"); return; }
-
-            let nome = document.getElementById('cc-input-nova-compra').value.trim();
-            if (!nome) { alert("Digite o nome da compra."); return; }
-            if (!db) return;
-
-            let key = "cc_" + Date.now();
-            let nova = {
-                chave: key, nome: nome, frete: 0, imposto: 0, icms: 0, desconto: 0, outrosDescontos: 0,
-                itens: [{ imgUrl: "", nomeItem: "", link: "", valor: 0, qtd: 1 }],
-                comprador: "", chavePix: "", chavesPixPorComprador: {}, participantes: {}, pagamentos: {}, valoresPagos: {}, rastreio: ""
-            };
-
-            await db.ref(`comprasColetivas/${key}`).set(nova);
-            document.getElementById('cc-input-nova-compra').value = "";
-            alert("Compra cadastrada! Clique em Gerenciar para adicionar os detalhes.");
-        };
-
-        window.copiarTextoParaClipboard = function(texto, mensagemSucesso) {
-            if (!texto) {
-                alert("❌ Nenhum texto/chave Pix disponível para copiar.");
-                return;
-            }
-            navigator.clipboard.writeText(texto).then(() => {
-                alert(`✅ ${mensagemSucesso || "Chave Pix copiada com sucesso!"}\n\n"${texto}"`);
-            }).catch(err => {
-                let aux = document.createElement("input");
-                aux.setAttribute("value", texto);
-                document.body.appendChild(aux);
-                aux.select();
-                document.execCommand("copy");
-                document.body.removeChild(aux);
-                alert(`✅ ${mensagemSucesso || "Chave Pix copiada!"}\n\n"${texto}"`);
-            });
-        };
-
-        window.copiarChavePixAtual = function() {
-            let chave = document.getElementById('cc-form-pix').value.trim();
-            copiarTextoParaClipboard(chave, "Chave Pix copiada para a área de transferência!");
-        };
-
-        window.copiarChavePixResumo = function(chave) {
-            copiarTextoParaClipboard(chave, "Chave Pix copiada com sucesso!");
-        };
-
-        function renderizarListaComprasColetivas() {
-            const ul = document.getElementById('cc-lista-cadastradas');
-            if(!ul) return;
-            ul.innerHTML = "";
-            let keys = Object.keys(comprasColetivasCache);
-            
-            if (keys.length === 0) {
-                ul.innerHTML = `<li style="color: var(--text-muted); text-align: center; padding: 6px;">Nenhuma compra coletiva cadastrada.</li>`;
-                return;
-            }
-
-            keys.forEach(key => {
-                let c = comprasColetivasCache[key];
-                
-                let parts = Object.keys(c.participantes || {}).filter(p => c.participantes[p] === true && !p.toLowerCase().includes("belovotsky"));
-                let totalParts = parts.length;
-                let pagos = 0;
-                parts.forEach(p => { if (c.pagamentos && c.pagamentos[p] === true) pagos++; });
-                let perc = totalParts > 0 ? (pagos / totalParts) * 100 : 0;
-
-                let rastreioBtnHtml = "";
-                if (!c.rastreio || c.rastreio.trim() === "") {
-                    rastreioBtnHtml = `<button class="btn-action-track" style="background: rgba(63, 55, 201, 0.2); border: 1px dashed #3f37c9; color: #3f37c9;" onclick="addRastreioRapido('${key}')">📦 Add Rastreio</button>`;
-                } else {
-                    rastreioBtnHtml = `
-                        <div style="position: relative; display: inline-block;">
-                            <button class="btn-action-track" onclick="toggleMenuRastreio(event, 'menu-track-${key}')">📦 Rastrear (${escapeHtml(c.rastreio)}) ▾</button>
-                            <div id="menu-track-${key}" class="dropdown-menu" style="right: 0; top: 100%; margin-top: 4px;">
-                                <a class="dropdown-item" href="https://t.17track.net/pt#nums=${c.rastreio}" target="_blank">🔍 Acompanhar (17track)</a>
-                                <div class="dropdown-item" onclick="editarRastreioRapido('${key}')">✏️ Editar Código</div>
-                                <div class="dropdown-item" onclick="excluirRastreioRapido('${key}')" style="color: var(--accent-red);">🗑️ Excluir Rastreio</div>
-                            </div>
-                        </div>
-                    `;
-                }
-
-                ul.innerHTML += `
-                    <li style="background: var(--bg-input); padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border-card); display: flex; flex-direction: column; gap: 8px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                            <span style="font-size: 1rem; font-weight: 700; color: var(--text-title);">🛒 ${escapeHtml(c.nome)}</span>
-                            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                                <button class="btn-action-summary" onclick="abrirModalResumoFiscal('${key}')">📊 Resumir</button>
-                                ${rastreioBtnHtml}
-                                <button class="btn-action-primary" style="background: var(--accent-cc);" onclick="abrirGerenciadorCompra('${key}')">⚙️ Gerenciar</button>
-                            </div>
-                        </div>
-                        <div>
-                            <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: bold;">STATUS DE PAGAMENTOS (${pagos}/${totalParts})</span>
-                            <div class="progress-bar-container">
-                                <div class="progress-bar-fill" style="width: ${perc}%;"></div>
-                                <div class="progress-bar-text">${Math.round(perc)}% Concluído</div>
-                            </div>
-                        </div>
-                    </li>
-                `;
-            });
-        }
-
-        window.abrirModalResumoFiscal = function(key) {
-            let c = comprasColetivasCache[key];
-            if (!c) return;
-
-            document.getElementById('resumo-fiscal-titulo').innerText = `📊 Resumo Fiscal: ${c.nome}`;
-            
-            let somaPuraItens = 0;
-            let itensHtmlList = "";
-            if (c.itens && c.itens.length > 0) {
-                c.itens.forEach(i => {
-                    somaPuraItens += ((i.valor || 0) * (i.qtd || 1));
-                    let imgBox = i.imgUrl ? 
-                        `<img src="${escapeHtml(i.imgUrl)}" style="width: 32px; height: 32px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-card);">` : 
-                        `<div style="width: 32px; height: 32px; background: var(--bg-card); border-radius: 4px; display:flex; align-items:center; justify-content:center; font-size:0.5rem; color:var(--text-muted); border: 1px dashed var(--border-card);">Sem Img</div>`;
-                    
-                    let nomeItemStr = i.nomeItem ? escapeHtml(i.nomeItem) : "Item sem descrição";
-                    let linkItemHtml = i.link ? `<a href="${escapeHtml(i.link)}" target="_blank" style="font-size:0.7rem; color:var(--accent-blue); text-decoration:none;">🔗 Acessar Link</a>` : "";
-
-                    itensHtmlList += `
-                        <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-card); padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-card); margin-bottom: 4px;">
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                ${imgBox}
-                                <div>
-                                    <div style="font-size: 0.8rem; font-weight: bold; color: var(--text-title);">${nomeItemStr}</div>
-                                    ${linkItemHtml}
-                                </div>
-                            </div>
-                            <div style="font-size: 0.8rem; font-weight: bold; color: var(--accent-gold); background: var(--bg-input); padding: 2px 8px; border-radius: 4px;">
-                                Qtd: ${i.qtd || 1}
-                            </div>
-                        </div>
-                    `;
-                });
-            } else {
-                itensHtmlList = `<div style="color: var(--text-muted); text-align:center; padding: 8px; font-size: 0.8rem;">Nenhum item cadastrado.</div>`;
-            }
-
-            let frete = c.frete || 0;
-            let imposto = c.imposto || 0;
-            let icms = c.icms || 0;
-            let desconto = c.desconto || 0;
-            let outrosDescontos = c.outrosDescontos || 0;
-            let totalGlobal = somaPuraItens + frete + imposto + icms - desconto - outrosDescontos;
-
-            let cotistasArr = Object.keys(c.participantes || {}).filter(p => c.participantes[p] === true && !p.toLowerCase().includes("belovotsky"));
-            let numCotistas = cotistasArr.length;
-            let cotaBase = numCotistas > 0 ? (totalGlobal / numCotistas) : 0;
-
-            let htmlCotistasList = "";
-            if (numCotistas === 0) {
-                htmlCotistasList = `<div style="color: var(--text-muted); text-align:center; padding: 8px;">Nenhum cotista vinculado a esta compra.</div>`;
-            } else {
-                cotistasArr.forEach(p => {
-                    let isPago = c.pagamentos && c.pagamentos[p] === true;
-                    let icon = isPago ? "✅" : "⏳";
-                    let badgeColor = isPago ? "var(--accent-green)" : "var(--accent-red)";
-                    let acaoClick = isPago ? "" : `onclick="abrirPainelPagamentoRapido('${key}', '${escapeHtml(p)}', ${cotaBase})" style="cursor: pointer; border: 1px dashed var(--accent-red);"`;
-
-                    htmlCotistasList += `
-                        <div ${acaoClick} style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); padding: 8px 12px; border-radius: 6px; margin-bottom: 4px;">
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <span style="font-size: 1rem;">${icon}</span>
-                                <div>
-                                    <strong style="font-size: 0.85rem;">${escapeHtml(p)}</strong>
-                                    <div style="font-size: 0.7rem; color: var(--text-muted);">Cota devida: R$ ${cotaBase.toFixed(2)}</div>
-                                </div>
-                            </div>
-                            <div style="text-align: right;">
-                                <span style="color: ${badgeColor}; font-weight: bold; font-size: 0.8rem;">${isPago ? 'Quitado' : 'Pendente (Clique p/ Pagar)'}</span>
-                            </div>
-                        </div>
-                    `;
-                });
-            }
-
-            let rastreioHtml = c.rastreio && c.rastreio.trim() !== "" ? 
-                `<div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem;">
-                    <span>Código: <strong style="color: var(--accent-gold);">${escapeHtml(c.rastreio)}</strong></span>
-                    <a href="https://t.17track.net/pt#nums=${c.rastreio}" target="_blank" class="btn-action-track" style="padding: 3px 8px; font-size: 0.72rem; text-decoration: none;">📦 Rastrear Correios / 17track</a>
-                 </div>` : 
-                `<span style="color: var(--text-muted); font-size: 0.8rem;">Nenhum código de rastreio cadastrado.</span>`;
-
-            let compradorNome = c.comprador || "";
-            let chavePixComprador = (c.chavesPixPorComprador && compradorNome && c.chavesPixPorComprador[compradorNome]) ? c.chavesPixPorComprador[compradorNome] : (c.chavePix || "");
-            let pixPayloadResumo = chavePixComprador ? gerarPayloadPixEMVPersonalizado(chavePixComprador, compradorNome) : "";
-            let qrCodeResumoUrl = pixPayloadResumo ? `https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(pixPayloadResumo)}` : "";
-
-            let pixResumoBoxHtml = "";
-            let chaveEscapada = escapeHtml(chavePixComprador);
-            if (compradorNome && chavePixComprador) {
-                pixResumoBoxHtml = `
-                    <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; background: var(--bg-card); padding: 14px; border-radius: 8px; border: 1px solid var(--border-card); text-align: center;">
-                        <img src="${qrCodeResumoUrl}" class="pix-clickable" title="Toque para copiar a Chave Pix" onclick="copiarChavePixResumo('${chaveEscapada}')" style="width: 280px; height: 280px; background: #fff; padding: 6px; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
-                        <div style="font-size: 0.82rem; display: flex; flex-direction: column; gap: 3px;">
-                            <span>Comprador Responsável: <strong style="color: var(--accent-gold);">${escapeHtml(compradorNome)}</strong></span>
-                            <span>Chave Pix: <strong class="pix-clickable" title="Toque para copiar" onclick="copiarChavePixResumo('${chaveEscapada}')" style="color: var(--accent-green); text-decoration: underline;">${chaveEscapada}</strong></span>
-                            <span style="color: var(--text-muted); font-size: 0.72rem;">💡 Toque no QR Code ou na chave Pix acima para copiá-la instantaneamente.</span>
-                        </div>
-                    </div>
-                `;
-            } else {
-                pixResumoBoxHtml = `<span style="color: var(--text-muted); font-size: 0.8rem;">Comprador ou Chave Pix não definidos para esta compra.</span>`;
-            }
-
-            let body = document.getElementById('resumo-fiscal-body');
-            body.innerHTML = `
-                <div class="config-panel" style="margin: 0;">
-                    <div class="config-panel-title">1. Resumo Fiscal dos Itens</div>
-                    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 6px;">
-                        <div>
-                            <span style="font-size: 0.72rem; font-weight: bold; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; display: block;">Itens da Compra Coletiva</span>
-                            <div style="overflow: visible;">${itensHtmlList}</div>
-                        </div>
-                        <div style="display: flex; flex-direction: column; gap: 4px; font-size: 0.82rem; background: var(--bg-card); padding: 10px; border-radius: 6px; border: 1px solid var(--border-card);">
-                            <div style="display: flex; justify-content: space-between;"><span>Subtotal Bruto:</span> <strong>R$ ${somaPuraItens.toFixed(2)}</strong></div>
-                            <div style="display: flex; justify-content: space-between;"><span>Frete:</span> <strong>R$ ${frete.toFixed(2)}</strong></div>
-                            <div style="display: flex; justify-content: space-between;"><span>Impostos / ICMS:</span> <strong>R$ ${(imposto + icms).toFixed(2)}</strong></div>
-                            <div style="display: flex; justify-content: space-between;"><span>Descontos:</span> <strong style="color: var(--accent-red);">- R$ ${(desconto + outrosDescontos).toFixed(2)}</strong></div>
-                            <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--border-card); padding-top: 4px; margin-top: 2px;">
-                                <span style="font-weight: bold; color: var(--accent-gold);">Total Global Final:</span> 
-                                <strong style="color: var(--accent-gold); font-size: 1rem;">R$ ${totalGlobal.toFixed(2)}</strong>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="config-panel" style="margin: 0;">
-                    <div class="config-panel-title">2. Status das Cotas</div>
-                    <div style="display: flex; flex-direction: column; gap: 4px; font-size: 0.82rem; margin-top: 4px;">
-                        <div style="display: flex; justify-content: space-between;"><span>Total de Cotistas Ativos:</span> <strong>${numCotistas}</strong></div>
-                        <div style="display: flex; justify-content: space-between;"><span>Cota Base Mínima por Cotista:</span> <strong style="color: var(--accent-gold);">R$ ${cotaBase.toFixed(2)}</strong></div>
-                    </div>
-                </div>
-
-                <div class="config-panel" style="margin: 0;">
-                    <div class="config-panel-title">3. Rastreio do Pedido</div>
-                    <div style="margin-top: 4px;">${rastreioHtml}</div>
-                </div>
-
-                <div class="config-panel" style="margin: 0;">
-                    <div class="config-panel-title">4. Participantes e Status de Pagamento</div>
-                    <p style="font-size: 0.72rem; color: var(--text-muted);">Clique em um participante pendente para visualizar as opções de quitação.</p>
-                    <div style="overflow: visible; margin-top: 6px;">${htmlCotistasList}</div>
-                </div>
-
-                <div class="config-panel" style="margin: 0;">
-                    <div class="config-panel-title">5. QR Code Pix para Pagamento (Toque para Copiar)</div>
-                    <div style="margin-top: 4px;">${pixResumoBoxHtml}</div>
-                </div>
-                
-                <div id="container-pagamento-rapido" style="display: none;"></div>
-            `;
-
-            document.getElementById('resumo-fiscal-modal').style.display = 'flex';
-        };
-
-        window.fecharModalResumoFiscal = function() {
-            document.getElementById('resumo-fiscal-modal').style.display = 'none';
-        };
-
-        window.abrirPainelPagamentoRapido = function(key, cotistaNome, cotaDevida) {
-            let c = comprasColetivasCache[key];
-            let chavePix = (c.chavesPixPorComprador && c.chavesPixPorComprador[c.comprador]) ? c.chavesPixPorComprador[c.comprador] : (c.chavePix || "");
-            let pixPayload = chavePix ? gerarPayloadPixEMVPersonalizado(chavePix, c.comprador || "Recebedor") : "";
-            let qrCodeUrl = pixPayload ? `https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(pixPayload)}` : "";
-            let chaveEscapada = escapeHtml(chavePix);
-
-            let container = document.getElementById('container-pagamento-rapido');
-            container.style.display = 'block';
-            container.innerHTML = `
-                <div class="config-panel" style="border-color: var(--accent-green); background: rgba(46, 196, 182, 0.05); margin-top: 4px;">
-                    <div class="config-panel-title" style="color: var(--accent-green);">📲 Envio de Comprovante & Quitação via Pix para ${escapeHtml(cotistaNome)}</div>
-                    <div style="display: flex; flex-direction: column; gap: 10px; align-items: center; text-align: center;">
-                        <div style="display: flex; flex-direction: column; gap: 6px; width: 100%;">
-                            <label style="font-size: 0.7rem; color: var(--text-muted); font-weight: bold;">1. Simular Anexo de Comprovante</label>
-                            <input type="file" id="input-arquivo-comprovante" class="config-input" accept="image/*,.pdf" style="font-size: 0.75rem;" onchange="simularLeituraComprovante('${key}', '${escapeHtml(cotistaNome)}', ${cotaDevida})">
-                            
-                            <label style="font-size: 0.7rem; color: var(--text-muted); font-weight: bold;">2. Valor Pago (Mín: R$ ${cotaDevida.toFixed(2)})</label>
-                            <input type="number" step="0.01" id="input-valor-pago-rapido" class="config-input" value="${cotaDevida.toFixed(2)}" min="${cotaDevida}" style="font-weight: bold; font-size: 0.9rem; color: var(--accent-gold); text-align: center;">
-                            
-                            <button class="btn-action-primary" style="background: var(--accent-green); padding: 8px;" onclick="confirmarBaixaPagamentoRapido('${key}', '${escapeHtml(cotistaNome)}', ${cotaDevida})">✅ Confirmar Quitação</button>
-                        </div>
-                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; background: var(--bg-card); padding: 12px; border-radius: 8px; border: 1px solid var(--border-card);">
-                            <span style="font-size: 0.75rem; font-weight: bold; color: var(--accent-cc);">QR Code Pix (Toque para Copiar Chave)</span>
-                            ${qrCodeUrl ? `<img src="${qrCodeUrl}" class="pix-clickable" title="Toque para copiar a chave Pix" onclick="copiarChavePixResumo('${chaveEscapada}')" style="width: 280px; height: 280px; background: #fff; padding: 6px; border-radius: 6px;">` : `<span style="font-size: 0.75rem; color: var(--accent-red);">Chave Pix não informada.</span>`}
-                        </div>
-                    </div>
-                </div>
-            `;
-            container.scrollIntoView({ behavior: 'smooth' });
-        };
-
-        window.simularLeituraComprovante = function(key, cotistaNome, cotaDevida) {
-            let fileInput = document.getElementById('input-arquivo-comprovante');
-            if (fileInput.files && fileInput.files[0]) {
-                setTimeout(() => {
-                    let valorSugerido = cotaDevida + (Math.random() > 0.7 ? 10.00 : 0);
-                    document.getElementById('input-valor-pago-rapido').value = valorSugerido.toFixed(2);
-                    alert(`🔍 Comprovante lido com sucesso!\nValor identificado: R$ ${valorSugerido.toFixed(2)}`);
-                }, 500);
-            }
-        };
-
-        window.confirmarBaixaPagamentoRapido = async function(key, cotistaNome, cotaDevida) {
-            let inputVal = document.getElementById('input-valor-pago-rapido');
-            let valorInformado = parseFloat(inputVal.value) || cotaDevida;
-
-            if (valorInformado < cotaDevida - 0.005) {
-                alert(`❌ O valor pago não pode ser inferior à cota base (R$ ${cotaDevida.toFixed(2)})!`);
-                return;
-            }
-
-            if (!db) return;
-
-            let c = comprasColetivasCache[key];
-            if (!c.pagamentos) c.pagamentos = {};
-            if (!c.valoresPagos) c.valoresPagos = {};
-
-            c.pagamentos[cotistaNome] = true;
-            c.valoresPagos[cotistaNome] = valorInformado;
-
-            try {
-                await db.ref(`comprasColetivas/${key}`).set(c);
-                alert(`✅ Pagamento de ${cotistaNome} quitado com sucesso!`);
-                abrirModalResumoFiscal(key);
-            } catch (err) {
-                alert("Erro ao salvar pagamento: " + err.message);
-            }
-        };
-
-        window.toggleMenuRastreio = function(e, menuId) {
-            e.stopPropagation();
-            let menu = document.getElementById(menuId);
-            let isDisplay = menu.style.display === 'block';
-            document.querySelectorAll('.dropdown-menu').forEach(m => m.style.display = 'none');
-            if (!isDisplay) menu.style.display = 'block';
-        };
-
-        window.addRastreioRapido = async function(key) {
-            let code = prompt("📦 Insira o código de rastreio (Ex: NL123456789BR):");
-            if (code && code.trim() !== "" && db) await db.ref(`comprasColetivas/${key}/rastreio`).set(code.trim());
-        };
-
-        window.editarRastreioRapido = async function(key) {
-            let c = comprasColetivasCache[key];
-            let code = prompt("✏️ Edite o código de rastreio:", c.rastreio || "");
-            if (code !== null && db) await db.ref(`comprasColetivas/${key}/rastreio`).set(code.trim());
-        };
-
-        window.excluirRastreioRapido = async function(key) {
-            if (confirm("Deseja remover o rastreio desta compra?") && db) await db.ref(`comprasColetivas/${key}/rastreio`).remove();
-        };
-
-        window.abrirGerenciadorCompra = function(key) {
-            compraAbertaKey = key;
-            compraAbertaDados = JSON.parse(JSON.stringify(comprasColetivasCache[key]));
-            if (!compraAbertaDados.itens) compraAbertaDados.itens = [];
-            if (!compraAbertaDados.participantes) compraAbertaDados.participantes = {};
-            if (!compraAbertaDados.pagamentos) compraAbertaDados.pagamentos = {};
-            if (!compraAbertaDados.valoresPagos) compraAbertaDados.valoresPagos = {};
-            if (!compraAbertaDados.chavesPixPorComprador) compraAbertaDados.chavesPixPorComprador = {};
-
-            Object.keys(compraAbertaDados.participantes).forEach(p => {
-                if (p.toLowerCase().includes("belovotsky") || p.toLowerCase().includes("silva belowodski")) {
-                    delete compraAbertaDados.participantes[p];
-                    delete compraAbertaDados.pagamentos[p];
-                    delete compraAbertaDados.valoresPagos[p];
-                }
-            });
-
-            document.getElementById('lista-compras-coletivas-view').style.display = 'none';
-            document.getElementById('painel-unica-compra-view').style.display = 'flex';
-            document.getElementById('cc-titulo-gerenciamento').innerText = `Cadastro de Compra Coletiva: ${compraAbertaDados.nome}`;
-
-            document.getElementById('cc-form-nome').value = compraAbertaDados.nome || "";
-            document.getElementById('cc-form-rastreio').value = compraAbertaDados.rastreio || "";
-            document.getElementById('cc-form-desconto').value = compraAbertaDados.desconto || 0;
-            document.getElementById('cc-form-frete').value = compraAbertaDados.frete || 0;
-            document.getElementById('cc-form-imposto').value = compraAbertaDados.imposto || 0;
-            document.getElementById('cc-form-icms').value = compraAbertaDados.icms || 0;
-            document.getElementById('cc-form-outros-descontos').value = compraAbertaDados.outrosDescontos || 0;
-
-            atualizarCalculosCC(); 
-        };
-
-        window.selecionarComprador = function(pName) {
-            let compradorAnterior = compraAbertaDados.comprador;
-            compraAbertaDados.comprador = pName;
-
-            if (compradorAnterior && compradorAnterior !== pName) {
-                if (compraAbertaDados.valoresPagos[compradorAnterior] === undefined) {
-                    delete compraAbertaDados.pagamentos[compradorAnterior];
-                }
-            }
-
-            if (pName) {
-                compraAbertaDados.participantes[pName] = true;
-                compraAbertaDados.pagamentos[pName] = true;
-            }
-
-            let inputPix = document.getElementById('cc-form-pix');
-            if (pName && compraAbertaDados.chavesPixPorComprador && compraAbertaDados.chavesPixPorComprador[pName]) {
-                inputPix.value = compraAbertaDados.chavesPixPorComprador[pName];
-            } else if (!pName) {
-                inputPix.value = "";
-            }
-
-            atualizarCalculosCC();
-        };
-
-        window.aoDigitarPix = function() {
-            let compradorAtual = compraAbertaDados.comprador;
-            let chave = document.getElementById('cc-form-pix').value.trim();
-            
-            compraAbertaDados.chavePix = chave;
-            if (compradorAtual) {
-                if (!compraAbertaDados.chavesPixPorComprador) compraAbertaDados.chavesPixPorComprador = {};
-                compraAbertaDados.chavesPixPorComprador[compradorAtual] = chave;
-            }
-            gerarQrCodePixCC();
-        };
-
-        window.adicionarItemCC = function() {
-            compraAbertaDados.itens.push({ imgUrl: "", nomeItem: "", link: "", valor: 0, qtd: 1 });
-            atualizarCalculosCC();
-        };
-
-        window.removerItemCC = function(idx) {
-            compraAbertaDados.itens.splice(idx, 1);
-            atualizarCalculosCC();
-        };
-
-        window.atualizarCalculosCC = function() {
-            if (!compraAbertaDados) return;
-
-            compraAbertaDados.nome = document.getElementById('cc-form-nome').value.trim();
-            compraAbertaDados.rastreio = document.getElementById('cc-form-rastreio').value.trim();
-            compraAbertaDados.desconto = parseFloat(document.getElementById('cc-form-desconto').value) || 0;
-            compraAbertaDados.frete = parseFloat(document.getElementById('cc-form-frete').value) || 0;
-            compraAbertaDados.imposto = parseFloat(document.getElementById('cc-form-imposto').value) || 0;
-            compraAbertaDados.icms = parseFloat(document.getElementById('cc-form-icms').value) || 0;
-            compraAbertaDados.outrosDescontos = parseFloat(document.getElementById('cc-form-outros-descontos').value) || 0;
-            compraAbertaDados.chavePix = document.getElementById('cc-form-pix').value.trim();
-
-            let rows = document.querySelectorAll('.cc-item-row');
-            rows.forEach((r, idx) => {
-                if(compraAbertaDados.itens[idx]) {
-                    compraAbertaDados.itens[idx].imgUrl = r.querySelector('.cc-item-imgurl').value;
-                    compraAbertaDados.itens[idx].nomeItem = r.querySelector('.cc-item-nome').value;
-                    compraAbertaDados.itens[idx].link = r.querySelector('.cc-item-link').value;
-                    compraAbertaDados.itens[idx].valor = parseFloat(r.querySelector('.cc-item-val').value) || 0;
-                    compraAbertaDados.itens[idx].qtd = parseInt(r.querySelector('.cc-item-qtd').value) || 1;
-                }
-            });
-
-            let checksParticipantes = document.querySelectorAll('.cc-check-participante');
-            checksParticipantes.forEach(chk => {
-                let pName = chk.getAttribute('data-piloto');
-                if (chk.checked) {
-                    compraAbertaDados.participantes[pName] = true;
-                } else {
-                    delete compraAbertaDados.participantes[pName];
-                    delete compraAbertaDados.pagamentos[pName];
-                    delete compraAbertaDados.valoresPagos[pName];
-                    if (compraAbertaDados.comprador === pName) {
-                        compraAbertaDados.comprador = "";
-                    }
-                }
-            });
-
-            let somaPuraItens = 0;
-            compraAbertaDados.itens.forEach(i => { somaPuraItens += (i.valor * i.qtd); });
-            document.getElementById('cc-form-subtotal').value = somaPuraItens.toFixed(2);
-            
-            let totalTaxas = compraAbertaDados.frete + compraAbertaDados.imposto + compraAbertaDados.icms;
-            let totalDescontos = compraAbertaDados.desconto + compraAbertaDados.outrosDescontos;
-            let totalGlobalFinal = somaPuraItens + totalTaxas - totalDescontos;
-            
-            document.getElementById('cc-form-total-global').innerText = `R$ ${totalGlobalFinal.toFixed(2)}`;
-
-            let tbodyItens = document.getElementById('cc-tabela-itens');
-            tbodyItens.innerHTML = "";
-            compraAbertaDados.itens.forEach((it, idx) => {
-                let subtotalPuro = it.valor * it.qtd;
-                let imgBox = it.imgUrl ? `<img src="${it.imgUrl}" style="width: 32px; height: 32px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-card);">` : `<div style="width: 32px; height: 32px; background: var(--bg-input); border-radius: 4px; display:flex; align-items:center; justify-content:center; font-size:0.5rem; color:var(--text-muted); text-align:center; border: 1px dashed var(--border-card);">Sem</div>`;
-
-                tbodyItens.innerHTML += `
-                    <tr class="cc-item-row">
-                        <td>${imgBox}</td>
-                        <td>
-                            <input type="text" class="config-input cc-item-nome" value="${escapeHtml(it.nomeItem)}" placeholder="Descrição" oninput="atualizarCalculosCC()" style="width:100%; margin-bottom:2px; font-size:0.78rem;">
-                            <input type="text" class="config-input cc-item-imgurl" value="${escapeHtml(it.imgUrl)}" placeholder="URL Imagem" oninput="atualizarCalculosCC()" style="width:100%; font-size: 0.7rem;">
-                        </td>
-                        <td><input type="text" class="config-input cc-item-link" value="${escapeHtml(it.link)}" placeholder="https://..." oninput="atualizarCalculosCC()" style="width:100%; font-size:0.78rem;"></td>
-                        <td><input type="number" step="0.01" class="config-input cc-item-val" value="${it.valor}" oninput="atualizarCalculosCC()" style="width:100%; font-size:0.78rem;"></td>
-                        <td><input type="number" class="config-input cc-item-qtd" value="${it.qtd}" min="1" oninput="atualizarCalculosCC()" style="width:100%; font-size:0.78rem;"></td>
-                        <td style="font-weight:bold; color: var(--accent-gold); font-size:0.8rem;">R$ ${subtotalPuro.toFixed(2)}</td>
-                        <td style="text-align: right;"><button class="btn-text-action" style="color: var(--accent-red);" onclick="removerItemCC(${idx})">🗑️</button></td>
-                    </tr>
-                `;
-            });
-            
-            if(compraAbertaDados.itens.length === 0) tbodyItens.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); font-size:0.8rem;">Nenhum item inserido.</td></tr>`;
-
-            let cotistasAtivosArr = pilotosDisponiveisGlobal.filter(p => compraAbertaDados.participantes && compraAbertaDados.participantes[p] === true);
-            let numCotistas = cotistasAtivosArr.length;
-            let cotaBaseOriginal = numCotistas > 0 ? (totalGlobalFinal / numCotistas) : 0;
-
-            let comprador = compraAbertaDados.comprador;
-            if (comprador && compraAbertaDados.participantes[comprador]) {
-                compraAbertaDados.pagamentos[comprador] = true;
-                if (compraAbertaDados.valoresPagos[comprador] === undefined || compraAbertaDados.valoresPagos[comprador] < cotaBaseOriginal) {
-                    compraAbertaDados.valoresPagos[comprador] = cotaBaseOriginal;
-                }
-            }
-
-            let inputsPago = document.querySelectorAll('.cc-input-pago');
-            inputsPago.forEach(inp => {
-                let pName = inp.getAttribute('data-cotista');
-                let val = parseFloat(inp.value.replace(',', '.')) || cotaBaseOriginal;
-                if (val < cotaBaseOriginal) val = cotaBaseOriginal;
-                compraAbertaDados.valoresPagos[pName] = val;
-            });
-
-            let tbodyTabelaUnificada = document.getElementById('cc-tabela-cotistas-rateio');
-            tbodyTabelaUnificada.innerHTML = "";
-
-            pilotosDisponiveisGlobal.forEach(p => {
-                let isChecked = compraAbertaDados.participantes && compraAbertaDados.participantes[p] === true;
-                let isComprador = (p === comprador);
-                
-                let radioCompradorHtml = `<span style="color: var(--text-muted); font-size: 0.7rem;">(Ative primeiro)</span>`;
-                if (isChecked) {
-                    let checkedAttr = isComprador ? 'checked' : '';
-                    radioCompradorHtml = `
-                        <label class="checkbox-item" style="justify-content: center; margin: 0; cursor: pointer;">
-                            <input type="radio" name="radio-comprador-grupo" style="accent-color: var(--accent-gold); width: 14px; height: 14px;" ${checkedAttr} onchange="selecionarComprador('${escapeHtml(p)}')">
-                            <span style="font-size: 0.72rem; font-weight: bold; color: ${isComprador ? 'var(--accent-gold)' : 'var(--text-main);'}">${isComprador ? 'Comprador' : 'Definir'}</span>
-                        </label>
-                    `;
-                }
-
-                let isPago = compraAbertaDados.pagamentos && compraAbertaDados.pagamentos[p] === true;
-                let valorPagoAtual = compraAbertaDados.valoresPagos && compraAbertaDados.valoresPagos[p] !== undefined ? compraAbertaDados.valoresPagos[p] : cotaBaseOriginal;
-                if (valorPagoAtual < cotaBaseOriginal) valorPagoAtual = cotaBaseOriginal;
-
-                let situacaoHtml = `<span style="color: var(--text-muted);">-</span>`;
-                let statusBadge = `<span style="color: var(--text-muted);">-</span>`;
-                let inputValorHtml = `<span style="color: var(--text-muted);">-</span>`;
-                let cotaDisplayHtml = `<span style="color: var(--text-muted);">-</span>`;
-
-                if (isChecked) {
-                    cotaDisplayHtml = `<strong style="color: var(--accent-gold);">R$ ${cotaBaseOriginal.toFixed(2)}</strong>`;
-                    inputValorHtml = `<input type="number" step="0.01" min="${cotaBaseOriginal.toFixed(2)}" class="config-input cc-input-pago" data-cotista="${escapeHtml(p)}" value="${valorPagoAtual.toFixed(2)}" onchange="atualizarCalculosCC()" style="width: 95px; font-size:0.8rem;" ${isComprador ? 'readonly' : ''}>`;
-                    
-                    let diff = valorPagoAtual - cotaBaseOriginal;
-                    if (isPago && diff > 0.005) {
-                        situacaoHtml = `<span style="color: var(--accent-green); font-weight: bold; font-size:0.72rem;">🔄 Restituir R$ ${diff.toFixed(2)}</span>`;
-                    } else if (isPago) {
-                        situacaoHtml = `<span style="color: var(--text-muted); font-size:0.72rem;">Quitado (Cota Base)</span>`;
-                    } else {
-                        situacaoHtml = `<span style="color: var(--accent-gold); font-size:0.72rem;">Pendente (Mín: R$ ${cotaBaseOriginal.toFixed(2)})</span>`;
-                    }
-
-                    let badgeText = isPago ? 'Pago ✅' : 'Pendente ⏳';
-                    let badgeColor = isPago ? 'var(--accent-green)' : 'var(--accent-red)';
-                    let disabledCheckbox = isComprador ? 'disabled title="O comprador já possui pagamento obrigatório quitado"' : '';
-                    
-                    statusBadge = `
-                        <label class="checkbox-item" style="justify-content: center; margin: 0;">
-                            <input type="checkbox" style="accent-color: var(--accent-green); width: 14px; height: 14px;" ${isPago ? 'checked' : ''} ${disabledCheckbox} onchange="toggleCheckboxPagamento('${escapeHtml(p)}', this.checked)">
-                            <span style="color: ${badgeColor}; font-weight: bold; font-size: 0.78rem;">${badgeText}</span>
-                        </label>
-                    `;
-                }
-
-                tbodyTabelaUnificada.innerHTML += `
-                    <tr>
-                        <td style="text-align: center;">
-                            <input type="checkbox" class="cc-check-participante" data-piloto="${escapeHtml(p)}" style="accent-color: var(--accent-cc); width: 16px; height: 16px; cursor: pointer;" ${isChecked ? 'checked' : ''} onchange="atualizarCalculosCC()">
-                        </td>
-                        <td><strong style="font-size:0.82rem;">${escapeHtml(p)}</strong></td>
-                        <td style="text-align: center;">${radioCompradorHtml}</td>
-                        <td>${cotaDisplayHtml}</td>
-                        <td>${inputValorHtml}</td>
-                        <td>${situacaoHtml}</td>
-                        <td style="text-align: center;">${statusBadge}</td>
-                    </tr>
-                `;
-            });
-
-            document.getElementById('cc-label-nome-comprador').innerText = comprador ? comprador : "Nenhum selecionado";
-            gerarQrCodePixCC();
-        };
-
-        window.toggleCheckboxPagamento = function(nome, isChecked) {
-            compraAbertaDados.pagamentos[nome] = isChecked;
-            if (isChecked) {
-                let somaPuraItens = 0;
-                compraAbertaDados.itens.forEach(i => { somaPuraItens += (i.valor * i.qtd); });
-                let totalTaxas = compraAbertaDados.frete + compraAbertaDados.imposto + compraAbertaDados.icms;
-                let totalDescontos = compraAbertaDados.desconto + compraAbertaDados.outrosDescontos;
-                let totalGlobalFinal = somaPuraItens + totalTaxas - totalDescontos;
-                let cotistasAtivosArr = pilotosDisponiveisGlobal.filter(p => compraAbertaDados.participantes && compraAbertaDados.participantes[p] === true);
-                let cotaBaseOriginal = cotistasAtivosArr.length > 0 ? (totalGlobalFinal / cotistasAtivosArr.length) : 0;
-
-                if (!compraAbertaDados.valoresPagos[nome] || compraAbertaDados.valoresPagos[nome] < cotaBaseOriginal) {
-                    compraAbertaDados.valoresPagos[nome] = cotaBaseOriginal;
-                }
-            }
-            atualizarCalculosCC();
-        };
-
-        function gerarPayloadPixEMVPersonalizado(chaveRaw, nomeRecebedor) {
-            let chave = chaveRaw.replace(/\s/g, '');
-            if (!chave) return "";
-            
-            let nome = nomeRecebedor || "Recebedor";
-            let cidade = "Brasil"; 
-            
-            if (chave.length === 11 && !chave.includes('@') && !isNaN(chave)) {
-                chave = "+55" + chave;
-            }
-
-            let payload_format = "000201";
-            let gui = "0014br.gov.bcb.pix";
-            let key_str = `01${chave.length.toString().padStart(2, '0')}${chave}`;
-            let merchant_account = `26${(gui.length + key_str.length).toString().padStart(2, '0')}${gui}${key_str}`;
-            let category_code = "52040000";
-            let currency = "5303986";
-            let country = "5802BR";
-            let merchant_name = `59${nome.length.toString().padStart(2, '0')}${nome}`;
-            let merchant_city = `60${cidade.length.toString().padStart(2, '0')}${cidade}`;
-            let additional_data = "62070503***";
-
-            let payload = `${payload_format}${merchant_account}${category_code}${currency}${country}${merchant_name}${merchant_city}${additional_data}6304`;
-
-            let crc = 0xFFFF;
-            for (let i = 0; i < payload.length; i++) {
-                crc ^= payload.charCodeAt(i) << 8;
-                for (let j = 0; j < 8; j++) {
-                    if ((crc & 0x8000) > 0) crc = (crc << 1) ^ 0x1021;
-                    else crc = crc << 1;
-                }
-            }
-            let crcHex = (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
-            return payload + crcHex;
-        }
-
-        window.gerarQrCodePixCC = function() {
-            let chave = document.getElementById('cc-form-pix').value.trim();
-            let imgEl = document.getElementById('cc-pix-qrcode');
-            let placeEl = document.getElementById('cc-pix-placeholder');
-            if(!imgEl || !placeEl) return;
-            
-            if (chave) {
-                let pixPayload = gerarPayloadPixEMVPersonalizado(chave, compraAbertaDados ? compraAbertaDados.comprador : "");
-                imgEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(pixPayload)}`;
-                imgEl.style.display = 'block';
-                placeEl.style.display = 'none';
-            } else {
-                imgEl.style.display = 'none';
-                placeEl.style.display = 'block';
-            }
-        };
-
-        window.salvarCompraColetivaAberta = async function() {
-            let senha = prompt("🔒 Digite a senha unificada de segurança para Salvar:");
-            if (senha === null) return;
-            if (senha !== SENHA_UNIFICADA) { alert("❌ Senha incorreta!"); return; }
-            if (!db || !compraAbertaKey) return;
-            try { await db.ref(`comprasColetivas/${compraAbertaKey}`).set(compraAbertaDados); alert("✅ Compra Coletiva salva com sucesso!"); voltarListaCompras(); }
-            catch (err) { alert("Erro ao salvar: " + err.message); }
-        };
-
-        window.excluirCompraColetivaAberta = async function() {
-            let senha = prompt("🔒 Digite a senha unificada de segurança para Excluir:");
-            if (senha === null) return;
-            if (senha !== SENHA_UNIFICADA) { alert("❌ Senha incorreta!"); return; }
-            if (!db || !compraAbertaKey) return;
-            if (confirm(`Tem certeza absoluta que deseja excluir a compra "${compraAbertaDados.nome}"?`)) {
-                try { await db.ref(`comprasColetivas/${compraAbertaKey}`).remove(); alert("🗑️ Compra Coletiva excluída."); voltarListaCompras(); }
-                catch (err) { alert("Erro ao excluir: " + err.message); }
-            }
-        };
-
-        // ==========================================
-        // [PARTE 5] MÓDULO DE CAMPEONATOS (ZRound)
-        // ==========================================
-        window.criarCampeonatoProtegido = async function() {
-            let senha = prompt("🔒 Digite a senha unificada de segurança para criar um novo campeonato:");
-            if (senha === null) return;
-            if (senha !== SENHA_UNIFICADA) { alert("❌ Senha incorreta!"); return; }
-
-            let nomeCamp = document.getElementById('input-nome-campeonato').value.trim();
-            if (!nomeCamp) { alert("Digite o nome do campeonato."); return; }
-            if (!db) return;
-
-            let campKey = "camp_" + nomeCamp.toLowerCase().replace(/[^a-z0-9]/g, "_");
-            let novoCamp = {
-                chave: campKey, nome: nomeCamp, status: "Em andamento",
-                configuracoes: { numeroProvas: 4, pilotosPorProva: 10, inverterSegundaBateria: true, usaGridTreino: false, pontuacaoTabela: [25, 18, 15, 12, 10, 8, 6, 4, 2, 1] },
-                pilotosInscritos: {}, bateriasBancoSeparado: {}, gridTreinoDados: null
-            };
-
-            await db.ref('campeonatos/' + campKey).set(novoCamp);
-            document.getElementById('input-nome-campeonato').value = "";
-            alert(`Campeonato "${nomeCamp}" criado com sucesso!`);
-            renderizarListaCampeonatosModal();
-        };
-
-        function renderizarListaCampeonatosModal() {
-            const ul = document.getElementById('campeonatos-lista-modal');
-            if (!ul) return;
-            ul.innerHTML = "";
-            let keys = Object.keys(campeonatosCache);
-            if (keys.length === 0) {
-                ul.innerHTML = `<li style="color: var(--text-muted); text-align: center; padding: 6px;">Nenhum campeonato cadastrado.</li>`;
-                return;
-            }
-
-            keys.forEach(key => {
-                let camp = campeonatosCache[key];
-                let statusCamp = camp.status || "Em andamento";
-                const li = document.createElement('li');
-                li.style.background = "var(--bg-input)";
-                li.style.padding = "12px 16px";
-                li.style.borderRadius = "8px";
-                li.style.border = "1px solid var(--border-card)";
-                li.style.display = "flex";
-                li.style.flexDirection = "column";
-                li.style.gap = "8px";
-
-                let topoHtml = `
-                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                        <div>
-                            <span style="font-size: 1rem; font-weight: 700; color: var(--text-title);">🏆 ${escapeHtml(camp.nome)}</span>
-                            <span style="font-size: 0.78rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-left: 8px; background: ${statusCamp === 'Finalizada' ? 'rgba(46,196,182,0.15); color: var(--accent-green);' : 'rgba(255,183,3,0.15); color: var(--accent-gold);'}">${statusCamp}</span>
-                        </div>
-                        <button class="btn-action-primary" style="padding: 5px 14px; font-size: 0.8rem;" onclick="selecionarCampeonatoZRound('${key}')">Gerenciar</button>
-                    </div>`;
-
-                let podiumHtml = "";
-                if (statusCamp === "Finalizada") {
-                    let ranking = calcularClassificacaoBancoSeparado(camp);
-                    let top3 = ranking.slice(0, 3);
-                    if (top3.length > 0) {
-                        let medals = [
-                            { color: "var(--accent-gold)", icon: "🏆", label: "1º" },
-                            { color: "var(--accent-silver)", icon: "🥈", label: "2º" },
-                            { color: "var(--accent-bronze)", icon: "🥉", label: "3º" }
-                        ];
-                        let badgesStr = top3.map((r, idx) => `
-                            <div style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; background: var(--bg-card); padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-card);">
-                                <span>${medals[idx].icon}</span>
-                                <strong style="color: ${medals[idx].color};">${medals[idx].label}</strong>
-                                <a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(r.piloto)}')">${escapeHtml(r.piloto)}</a>
-                                <span style="color: var(--accent-gold); font-size: 0.78rem;">(${r.pontos} pts)</span>
-                            </div>
-                        `).join('');
-                        podiumHtml = `<div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px;">${badgesStr}</div>`;
-                    }
-                }
-
-                li.innerHTML = topoHtml + podiumHtml;
-                ul.appendChild(li);
-            });
-        }
-
-        window.selecionarCampeonatoZRound = function(key) {
-            campeonatoAtivoKey = key;
-            let camp = campeonatosCache[key];
-            if (!camp) return;
-
-            document.getElementById('zround-camp-titulo-ativo').innerText = `Configurando: ${camp.nome}`;
-            document.getElementById('container-zround-campeonato').style.display = 'flex';
-
-            let conf = camp.configuracoes || { numeroProvas: 4, pilotosPorProva: 10, inverterSegundaBateria: true, usaGridTreino: false, pontuacaoTabela: [25, 18, 15, 12, 10, 8, 6, 4, 2, 1] };
-            document.getElementById('zround-num-provas').value = conf.numeroProvas;
-            document.getElementById('zround-pilotos-prova').value = conf.pilotosPorProva;
-            document.getElementById('zround-inverter-segunda').checked = conf.inverterSegundaBateria;
-            document.getElementById('zround-usa-grid-treino').checked = conf.usaGridTreino || false;
-            if (conf.pontuacaoTabela) {
-                document.getElementById('zround-tabela-pontos-input').value = conf.pontuacaoTabela.join(', ');
-            }
-
-            if (camp.gridTreinoDados) {
-                document.getElementById('status-treino-grid-info').innerText = `✅ Treino de grid carregado com ${camp.gridTreinoDados.length} pilotos processados.`;
-            } else {
-                document.getElementById('status-treino-grid-info').innerText = `Nenhum treino de grid processado.`;
-            }
-
-            atualizarInterfacePainelZRound();
-            mudarAbaZRound(1);
-        };
-
-        window.fecharPainelZRoundCamp = function() {
-            campeonatoAtivoKey = null;
-            document.getElementById('container-zround-campeonato').style.display = 'none';
-        };
-
-        window.mudarAbaZRound = function(numAba) {
-            document.querySelectorAll('#campeonatos-modal .zround-tab-btn').forEach((b, idx) => {
-                if (idx === numAba - 1) b.classList.add('active');
-                else b.classList.remove('active');
-            });
-            document.querySelectorAll('#campeonatos-modal .zround-aba-content').forEach((c, idx) => {
-                if (idx === numAba - 1) c.style.display = 'flex';
-                else c.style.display = 'none';
-            });
-        };
-
-        function preencherSelectPilotosGerais() {
-            let select = document.getElementById('zround-select-piloto-geral');
-            if (!select) return;
-            let dadosBase = obterTodosDadosConsolidados();
-            let pilotosSet = new Set();
-            dadosBase.forEach(d => { if(d.piloto) pilotosSet.add(d.piloto); });
-            Object.keys(pilotosMetadadosCache).forEach(p => pilotosSet.add(p));
-
-            let optionsHtml = `<option value="">Selecione um piloto já cadastrado no site...</option>`;
-            Array.from(pilotosSet).sort().forEach(p => {
-                let meta = pilotosMetadadosCache[p] || {};
-                let label = meta.apelido ? `${p} (${meta.apelido})` : p;
-                optionsHtml += `<option value="${escapeHtml(p)}">${escapeHtml(label)}</option>`;
-            });
-            select.innerHTML = optionsHtml;
-        }
-
-        function preencherSelectProvasBancoPrincipal() {
-            let select = document.getElementById('zround-select-prova-banco-principal');
-            if (!select) return;
-            let optionsHtml = `<option value="">Selecione uma prova do banco principal...</option>`;
-            listaJsonsCache.forEach(arq => {
-                let nomeExib = arq.sessao || (arq.dados && arq.dados[0] ? arq.dados[0].sessao : arq.bateriaKey);
-                optionsHtml += `<option value="${arq.firebaseKey}">${escapeHtml(formatarNomeSessao(nomeExib))}</option>`;
-            });
-            select.innerHTML = optionsHtml;
-        }
-
-        window.importarPilotoBancoGeral = async function() {
-            if (!campeonatoAtivoKey || !db) return;
-            let select = document.getElementById('zround-select-piloto-geral');
-            let nomeP = select.value;
-            if (!nomeP) { alert("Selecione um piloto do banco geral."); return; }
-            let pKey = "pil_" + nomeP.toLowerCase().replace(/[^a-z0-9]/g, "_") + "_" + Date.now();
-            try {
-                await db.ref(`campeonatos/${campeonatoAtivoKey}/pilotosInscritos/${pKey}`).set({ nome: nomeP });
-                alert(`Piloto "${nomeP}" importado com sucesso para o campeonato!`);
-                select.value = "";
-            } catch (err) { alert("Erro ao importar piloto: " + err.message); }
-        };
-
-        window.adicionarPilotoManualZRound = async function() {
-            if (!campeonatoAtivoKey || !db) return;
-            let nomeP = document.getElementById('zround-novo-piloto-manual').value.trim();
-            if (!nomeP) { alert("Digite o nome do piloto."); return; }
-            let pKey = "pil_" + nomeP.toLowerCase().replace(/[^a-z0-9]/g, "_") + "_" + Date.now();
-            try {
-                await db.ref(`campeonatos/${campeonatoAtivoKey}/pilotosInscritos/${pKey}`).set({ nome: nomeP });
-                document.getElementById('zround-novo-piloto-manual').value = "";
-                alert(`Piloto "${nomeP}" cadastrado com sucesso!`);
-            } catch (err) { alert("Erro ao cadastrar piloto: " + err.message); }
-        };
-
-        window.removerPilotoCampeonatoZRound = async function(pKey) {
-            if (!campeonatoAtivoKey || !db) return;
-            if (confirm("Deseja remover este piloto do campeonato?")) {
-                await db.ref(`campeonatos/${campeonatoAtivoKey}/pilotosInscritos/${pKey}`).remove();
-            }
-        };
-
-        window.salvarAba1ConfigGeral = async function() {
-            if (!campeonatoAtivoKey || !db) return;
-            let numProvas = parseInt(document.getElementById('zround-num-provas').value, 10) || 4;
-            let pilotosProva = parseInt(document.getElementById('zround-pilotos-prova').value, 10) || 10;
-            let inverter = document.getElementById('zround-inverter-segunda').checked;
-            let usaGridTreino = document.getElementById('zround-usa-grid-treino').checked;
-            let pontosStr = document.getElementById('zround-tabela-pontos-input').value;
-            let pontosArr = pontosStr.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
-
-            try {
-                await db.ref(`campeonatos/${campeonatoAtivoKey}/configuracoes`).set({
-                    numeroProvas: numProvas, pilotosPorProva: pilotosProva,
-                    inverterSegundaBateria: inverter, usaGridTreino: usaGridTreino,
-                    pontuacaoTabela: pontosArr.length > 0 ? pontosArr : [25, 18, 15, 12, 10, 8, 6, 4, 2, 1]
-                });
-                alert("Configurações gerais salvas com sucesso!");
-                atualizarInterfacePainelZRound();
-            } catch (err) { alert("Erro ao salvar: " + err.message); }
-        };
-
-        window.excluirCampeonatoAtual = async function() {
-            if (!campeonatoAtivoKey || !db) return;
-            let senha = prompt("🔒 Digite a senha unificada de segurança para EXCLUIR este campeonato:");
-            if (senha === null) return;
-            if (senha !== SENHA_UNIFICADA) { alert("❌ Senha incorreta!"); return; }
-
-            let camp = campeonatosCache[campeonatoAtivoKey];
-            let nomeCamp = camp ? camp.nome : "este campeonato";
-
-            if (confirm(`Tem certeza absoluta que deseja excluir o campeonato "${nomeCamp}"?`)) {
-                try {
-                    await db.ref(`campeonatos/${campeonatoAtivoKey}`).remove();
-                    alert("Campeonato excluído com sucesso!");
-                    fecharPainelZRoundCamp();
-                    renderizarListaCampeonatosModal();
-                } catch (err) { alert("Erro ao excluir: " + err.message); }
-            }
-        };
-
-        window.processarTreinoParaGrid = async function() {
-            if (!campeonatoAtivoKey || !db) return;
-            let inputEl = document.getElementById('zround-input-file-treino-grid');
-            if (!inputEl || !inputEl.files || inputEl.files.length === 0) { alert("Selecione um arquivo de treino."); return; }
-
-            let file = inputEl.files[0];
-            try {
-                let textoExtraido = "";
-                const extensao = file.name.split('.').pop().toLowerCase();
-                if (extensao === 'html' || extensao === 'htm') {
-                    const htmlText = await file.text();
-                    const parser = new DOMParser();
-                    textoExtraido = parser.parseFromString(htmlText, 'text/html').body.innerText;
-                } else {
-                    textoExtraido = await converterPdfParaTexto(file);
-                }
-
-                let dadosTreino = parsearTextoConvertido(textoExtraido, "Treino Grid", "treino_grid");
-                let rankingGridTreino = [];
-                dadosTreino.forEach(d => {
-                    let laps = (d.laps || []).filter(t => !isNaN(t) && t > 0).sort((a,b) => a - b);
-                    if (laps.length > 0) {
-                        let top3 = laps.slice(0, 3);
-                        let melhorTempoDefinitivo = top3[0];
-                        if (top3.length >= 3) {
-                            let tresMelhores = [...top3].sort((a,b) => a - b);
-                            tresMelhores.pop();
-                            melhorTempoDefinitivo = Math.min(...tresMelhores);
-                        } else if (top3.length === 2) {
-                            let tresMelhores = [...top3];
-                            tresMelhores.pop();
-                            melhorTempoDefinitivo = Math.min(...tresMelhores);
-                        }
-                        rankingGridTreino.push({ piloto: d.piloto, melhorTempo: melhorTempoDefinitivo });
-                    }
-                });
-
-                rankingGridTreino.sort((a, b) => a.melhorTempo - b.melhorTempo);
-                await db.ref(`campeonatos/${campeonatoAtivoKey}/gridTreinoDados`).set(rankingGridTreino);
-                document.getElementById('status-treino-grid-info').innerText = `✅ Treino processado! Grid inicial formado com ${rankingGridTreino.length} pilotos.`;
-                inputEl.value = "";
-                alert("Treino processado com sucesso para formação do grid!");
-                atualizarInterfacePainelZRound();
-            } catch (err) { alert("Erro ao processar treino: " + err.message); }
-        };
-
-        window.uploadProvasBancoSeparado = async function() {
-            if (!campeonatoAtivoKey || !db) return;
-            let inputEl = document.getElementById('zround-input-file-prova');
-            if (!inputEl || !inputEl.files || !inputEl.files.length) { alert("Selecione arquivos."); return; }
-
-            for (let file of inputEl.files) {
-                let nomeArq = file.name;
-                let sessaoNome = nomeArq.replace(/\.[^/.]+$/, "").trim();
-                let batKey = "bat_sep_" + sessaoNome.toLowerCase().replace(/[^a-z0-9]/g, "_") + "_" + Date.now();
-
-                try {
-                    let textoExtraido = "";
-                    const extensao = nomeArq.split('.').pop().toLowerCase();
-                    if (extensao === 'html' || extensao === 'htm') {
-                        const htmlText = await file.text();
-                        textoExtraido = new DOMParser().parseFromString(htmlText, 'text/html').body.innerText;
-                    } else {
-                        textoExtraido = await converterPdfParaTexto(file);
-                    }
-
-                    const dadosExtraidos = parsearTextoConvertido(textoExtraido, sessaoNome, batKey);
-                    if (!dadosExtraidos || dadosExtraidos.length === 0) throw new Error("Sem dados válidos.");
-
-                    let pdfBase64 = await arquivoParaBase64(file);
-                    let novoRegistro = { bateriaKey: batKey, sessao: sessaoNome, id: Date.now(), dados: dadosExtraidos, pdfBase64: pdfBase64, nomeArquivoOriginal: nomeArq };
-                    await db.ref(`campeonatos/${campeonatoAtivoKey}/bateriasBancoSeparado/${batKey}`).set(novoRegistro);
-                } catch (err) { alert("Erro em " + nomeArq + ": " + err.message); }
-            }
-            inputEl.value = "";
-            alert("Provas enviadas para o banco separado!");
-            atualizarInterfacePainelZRound();
-        };
-
-        window.importarProvaDoBancoPrincipalParaCampeonato = async function() {
-            if (!campeonatoAtivoKey || !db) return;
-            let select = document.getElementById('zround-select-prova-banco-principal');
-            let firebaseKey = select.value;
-            if (!firebaseKey) { alert("Selecione uma prova."); return; }
-
-            let provaObj = listaJsonsCache.find(item => item.firebaseKey === firebaseKey);
-            if (!provaObj) return;
-
-            let batKey = "bat_sep_imp_" + Date.now();
-            let registroCopia = { bateriaKey: batKey, sessao: provaObj.sessao || "Prova Importada", id: Date.now(), dados: provaObj.dados || [], pdfBase64: provaObj.pdfBase64 || "", nomeArquivoOriginal: provaObj.nomeArquivoOriginal || "relatorio.pdf" };
-
-            try {
-                await db.ref(`campeonatos/${campeonatoAtivoKey}/bateriasBancoSeparado/${batKey}`).set(registroCopia);
-                alert("Prova importada com sucesso!");
-                select.value = "";
-                atualizarInterfacePainelZRound();
-            } catch (err) { alert("Erro: " + err.message); }
-        };
-
-        window.excluirProvaBancoSeparado = async function(batKey) {
-            if (!campeonatoAtivoKey || !db) return;
-            if (confirm("Deseja excluir esta prova?")) {
-                await db.ref(`campeonatos/${campeonatoAtivoKey}/bateriasBancoSeparado/${batKey}`).remove();
-                atualizarInterfacePainelZRound();
-            }
-        };
-
-        window.finalizarCampeonatoAtual = async function() {
-            if (!campeonatoAtivoKey || !db) return;
-            if (confirm("Deseja finalizar este campeonato?")) {
-                await db.ref(`campeonatos/${campeonatoAtivoKey}/status`).set("Finalizada");
-                alert("Campeonato finalizado!");
-                fecharPainelZRoundCamp();
-                renderizarListaCampeonatosModal();
-            }
-        };
-
-        function atualizarInterfacePainelZRound() {
-            if (!campeonatoAtivoKey || !campeonatosCache[campeonatoAtivoKey]) return;
-            let camp = campeonatosCache[campeonatoAtivoKey];
-
-            let tbodyPilotos = document.getElementById('zround-tabela-pilotos-inscritos');
-            let pilotosInscritos = camp.pilotosInscritos || {};
-            let pKeys = Object.keys(pilotosInscritos);
-            if (pKeys.length === 0) {
-                tbodyPilotos.innerHTML = `<tr><td colspan="2" style="text-align: center; color: var(--text-muted);">Nenhum piloto inscrito.</td></tr>`;
-            } else {
-                tbodyPilotos.innerHTML = pKeys.map(pk => `
-                    <tr>
-                        <td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(pilotosInscritos[pk].nome)}')">${escapeHtml(pilotosInscritos[pk].nome)}</a></strong></td>
-                        <td style="text-align: right;"><button class="btn-text-action" style="color: var(--accent-red);" onclick="removerPilotoCampeonatoZRound('${pk}')">Remover</button></td>
-                    </tr>`).join('');
-            }
-
-            let ulProvas = document.getElementById('zround-lista-provas-banco-separado');
-            let provasSep = camp.bateriasBancoSeparado || {};
-            let provKeys = Object.keys(provasSep);
-            if (provKeys.length === 0) {
-                ulProvas.innerHTML = `<li>Nenhuma prova registrada.</li>`;
-            } else {
-                ulProvas.innerHTML = provKeys.map(pk => {
-                    let pObj = provasSep[pk];
-                    return `<li style="background: var(--bg-card); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-card); display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem;">
-                        <span>📄 <strong>${escapeHtml(pObj.sessao || pk)}</strong></span>
-                        <button class="btn-text-action" style="color: var(--accent-red);" onclick="excluirProvaBancoSeparado('${pk}')">Excluir</button>
-                    </li>`;
-                }).join('');
-            }
-
-            let containerGrids = document.getElementById('container-todos-grids-gerados');
-            let numProvasPrevistas = camp.configuracoes?.numeroProvas || 4;
-            let inverterAtivo = camp.configuracoes?.inverterSegundaBateria ?? true;
-            let usaGridTreino = camp.configuracoes?.usaGridTreino ?? false;
-
-            let gridBaseInicial = [];
-            if (usaGridTreino && camp.gridTreinoDados && camp.gridTreinoDados.length > 0) {
-                gridBaseInicial = camp.gridTreinoDados.map(d => d.piloto);
-            } else {
-                let inscritosArr = Object.values(pilotosInscritos).map(p => p.nome);
-                if (inscritosArr.length === 0 && provKeys.length > 0) {
-                    let primeiraP = provasSep[provKeys[0]];
-                    if (primeiraP && primeiraP.dados) inscritosArr = primeiraP.dados.filter(d => d.laps && d.laps.length > 0).map(d => d.piloto);
-                }
-                gridBaseInicial = inscritosArr;
-            }
-
-            let gridsHtml = '';
-            for (let g = 0; g < numProvasPrevistas; g++) {
-                let pilotoGridAtual = [];
-                let criterioTexto = "";
-                if (g === 0) {
-                    pilotoGridAtual = gridBaseInicial;
-                    criterioTexto = usaGridTreino ? "Gerado a partir do Treino" : "Ordem Padrão / Inscritos";
-                } else {
-                    let provaAnteriorKey = provKeys[g - 1];
-                    if (provaAnteriorKey && provasSep[provaAnteriorKey] && provasSep[provaAnteriorKey].dados) {
-                        let dadosAnt = [...provasSep[provaAnteriorKey].dados].filter(d => d.laps && d.laps.length > 0).sort((a, b) => {
-                            let posA = parseInt(String(a.pos).replace('º', '').trim(), 10) || 99;
-                            let posB = parseInt(String(b.pos).replace('º', '').trim(), 10) || 99;
-                            return posA - posB;
-                        });
-                        let ordemAnt = dadosAnt.map(d => d.piloto);
-                        pilotoGridAtual = inverterAtivo ? [...ordemAnt].reverse() : ordemAnt;
-                        criterioTexto = inverterAtivo ? `Invertido automaticamente com base na Prova ${g}` : `Ordem direta da Prova ${g}`;
-                    } else {
-                        pilotoGridAtual = gridBaseInicial;
-                        criterioTexto = `Aguardando resultado da Prova ${g}`;
-                    }
-                }
-
-                let linhasGridHtml = pilotoGridAtual.length === 0 ? `<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">Sem pilotos definidos.</td></tr>` :
-                    pilotoGridAtual.map((pName, idx) => `<tr><td><span class="pos-badge">${idx + 1}º</span></td><td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(pName)}')">${escapeHtml(pName)}</a></strong></td><td><span class="category-badge">${escapeHtml(criterioTexto)}</span></td></tr>`).join('');
-
-                gridsHtml += `<div class="card" style="padding: 14px; background: var(--bg-input);"><div class="card-header" style="margin-bottom: 10px;">🏁 Grid de Largada - Prova ${g + 1}</div><div class="table-container"><table><thead><tr><th>Pos</th><th>Piloto</th><th>Critério</th></tr></thead><tbody>${linhasGridHtml}</tbody></table></div></div>`;
-            }
-            containerGrids.innerHTML = gridsHtml;
-
-            let tbodyClass = document.getElementById('zround-tabela-classificacao-geral');
-            let ranking = calcularClassificacaoBancoSeparado(camp);
-            tbodyClass.innerHTML = ranking.length === 0 ? `<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">Sem pontuação computada.</td></tr>` :
-                ranking.map((r, idx) => `<tr><td><span class="pos-badge">${idx + 1}º</span></td><td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(r.piloto)}')">${escapeHtml(r.piloto)}</a></strong></td><td style="text-align: right; color: var(--accent-gold); font-weight: 700;">${r.pontos} pts</td></tr>`).join('');
-        }
-
-        function calcularClassificacaoBancoSeparado(camp) {
-            let provasSep = camp.bateriasBancoSeparado || {};
-            let conf = camp.configuracoes || {};
-            let tabelaPontosArr = conf.pontuacaoTabela || [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
-            let pilotoPontos = {};
-
-            Object.values(provasSep).forEach(arq => {
-                if (arq && arq.dados) {
-                    arq.dados.forEach(d => {
-                        if (!d.laps || d.laps.length === 0) return;
-                        let posNum = parseInt(String(d.pos).replace('º', '').trim(), 10);
-                        let pts = (posNum > 0 && posNum <= tabelaPontosArr.length) ? tabelaPontosArr[posNum - 1] : 0;
-                        if (pts > 0) {
-                            let pNome = d.piloto;
-                            let sKey = pNome.replace(/[.#$\/\[\]]/g, "_");
-                            if (mesclagensCache[sKey]) pNome = mesclagensCache[sKey];
-                            pilotoPontos[pNome] = (pilotoPontos[pNome] || 0) + pts;
-                        }
-                    });
-                }
-            });
-
-            let ranking = Object.keys(pilotoPontos).map(piloto => ({ piloto, pontos: pilotoPontos[piloto] }));
-            ranking.sort((a, b) => b.pontos - a.pontos);
-            return ranking;
-        }
-
-        // ==========================================
-        // [PARTE 6] PROCESSAMENTO DE ARQUIVOS E PARSER
-        // ==========================================
-        async function arquivoParaBase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = error => reject(error);
-            });
-        }
-
-        async function converterPdfParaTexto(arquivo) {
-            const arrayBuffer = await arquivo.arrayBuffer();
-            const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-            const pdfDoc = await loadingTask.promise;
-            let textoCompleto = "";
-
-            for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
-                const pagina = await pdfDoc.getPage(pageNum);
-                const tokenTextos = await pagina.getTextContent();
-                let linhasY = {};
-                tokenTextos.items.forEach(item => {
-                    let y = Math.round(item.transform[5] / 3) * 3;
-                    if (!linhasY[y]) linhasY[y] = [];
-                    linhasY[y].push({ x: item.transform[4], str: item.str });
-                });
-                Object.keys(linhasY).sort((a, b) => b - a).forEach(y => {
-                    let linhaStr = linhasY[y].sort((a, b) => a.x - b.x).map(i => i.str).join(" | ");
-                    textoCompleto += linhaStr + "\n";
-                });
-            }
-            return textoCompleto;
-        }
-
-        function parsearTextoConvertido(texto, sessaoNome, batKey) {
-            let pilotosMap = {};
-            let linhas = texto.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-            let ordemPilotos = [];
-            let capturandoResumo = false;
-            let capturandoVoltas = false;
-
-            linhas.forEach(linha => {
-                let linhaLimpa = linha.replace(/\|/g, ' ').trim();
-                let partes = linhaLimpa.split(/\s+/).filter(Boolean);
-                if (partes.length === 0) return;
-
-                let linhaLower = linhaLimpa.toLowerCase();
-                if (linhaLower.startsWith("top ") || linhaLower.includes("top 10")) {
-                    capturandoResumo = false; capturandoVoltas = false; return;
-                }
-                if ((linhaLimpa.includes("Piloto") || linhaLimpa.includes("Pos")) && (linhaLimpa.includes("Voltas") || linhaLimpa.includes("Tempo"))) {
-                    capturandoResumo = true; capturandoVoltas = false; return;
-                }
-                if (linhaLower.includes("volta por piloto") || linhaLower.includes("lap by lap") || (partes[0] === "Num." && capturandoResumo)) {
-                    capturandoResumo = false; capturandoVoltas = true; return;
-                }
-
-                if (capturandoResumo) {
-                    let posDetectada = null, startIndex = 0;
-                    if (/^\d{1,2}º?$/.test(partes[0])) {
-                        posDetectada = partes[0].includes('º') ? partes[0] : partes[0] + 'º';
-                        startIndex = /^\d+$/.test(partes[1]) ? 2 : 1;
-                    } else if (partes.length >= 2 && /^\d+$/.test(partes[0]) && /^\d{1,2}º?$/.test(partes[1])) {
-                        posDetectada = partes[1].includes('º') ? partes[1] : partes[1] + 'º'; startIndex = 2;
-                    } else {
-                        posDetectada = (ordemPilotos.length + 1) + 'º'; startIndex = 0;
-                    }
-
-                    let nomePartes = [];
-                    for (let i = startIndex; i < partes.length; i++) {
-                        let p = partes[i];
-                        if (/^\d+$/.test(p) && i > startIndex + 1) break;
-                        if (/^\d+[:.,]\d+/.test(p)) break;
-                        if (p === 'º' || p === '°') continue;
-                        nomePartes.push(p);
-                    }
-
-                    if (nomePartes.length > 0) {
-                        let pilotoNome = nomePartes.join(' ').replace(/\s+\d+$/, '').trim();
-                        if (pilotoNome && !pilotosMap[pilotoNome]) {
-                            pilotosMap[pilotoNome] = { pos: posDetectada, piloto: pilotoNome, bateriaKey: batKey, sessao: sessaoNome, laps: [] };
-                            ordemPilotos.push(pilotoNome);
-                        }
-                    }
-                }
-
-                if (capturandoVoltas && (/^\d+$/.test(partes[0]) || /^\d+[º°]?$/.test(partes[0]))) {
-                    let numVolta = parseInt(partes[0].replace(/[º°]/g, ''), 10);
-                    if (isNaN(numVolta)) return;
-                    let temposLinha = [];
-                    for (let i = 1; i < partes.length; i++) {
-                        let token = partes[i].split('-')[0].trim().replace(/[^\d:,.]/g, '');
-                        if (token && /\d+[,.]\d+/.test(token)) {
-                            let tempoNum = token.includes(':') ? (parseInt(token.split(':')[0], 10) * 60) + parseFloat(token.split(':')[1].replace(',', '.')) : parseFloat(token.replace(',', '.'));
-                            if (!isNaN(tempoNum) && tempoNum > 0) temposLinha.push(parseFloat(tempoNum.toFixed(3)));
-                        }
-                    }
-                    temposLinha.forEach((tempoVal, idx) => {
-                        if (ordemPilotos[idx]) {
-                            let pName = ordemPilotos[idx];
-                            if (!pilotosMap[pName].laps) pilotosMap[pName].laps = [];
-                            pilotosMap[pName].laps[numVolta - 1] = tempoVal;
-                        }
-                    });
-                }
-            });
-
-            let resultadoFinal = [];
-            Object.keys(pilotosMap).forEach(pName => {
-                let pObj = pilotosMap[pName];
-                pObj.laps = (pObj.laps || []).filter(t => t !== undefined && !isNaN(t));
-                if (pObj.laps.length > 0) {
-                    let melhor = Math.min(...pObj.laps);
-                    let media = pObj.laps.reduce((a, b) => a + b, 0) / pObj.laps.length;
-                    let desvio = Math.sqrt(pObj.laps.reduce((sum, t) => sum + Math.pow(t - media, 2), 0) / pObj.laps.length);
-                    pObj.melhorVoltaVal = parseFloat(melhor.toFixed(3));
-                    pObj.melhorVoltaTxt = melhor.toFixed(3).replace('.', ',') + 's';
-                    pObj.mediaVal = parseFloat(media.toFixed(3));
-                    pObj.mediaTxt = media.toFixed(3).replace('.', ',') + 's';
-                    pObj.desvioVal = parseFloat(desvio.toFixed(3));
-                    pObj.desvio = `±${desvio.toFixed(3).replace('.', ',')}s`;
-                    pObj.voltasTotais = pObj.laps.length;
-                    resultadoFinal.push(pObj);
-                }
-            });
-            return resultadoFinal;
-        }
-
-        window.processarUploadEEnviarNuvemPrincipal = async function() {
-            let inputEl = document.getElementById('input-pdf-upload');
-            if (!inputEl || !inputEl.files || inputEl.files.length === 0) { alert("Selecione arquivos."); return; }
-            if (!db) return;
-
-            for (let file of inputEl.files) {
-                let nomeArq = file.name;
-                let sessaoNome = nomeArq.replace(/\.[^/.]+$/, "").trim();
-                let batKey = "bat_" + sessaoNome.toLowerCase().replace(/[^a-z0-9]/g, "_") + "_" + Date.now();
-
-                try {
-                    let textoExtraido = "";
-                    const extensao = nomeArq.split('.').pop().toLowerCase();
-                    if (extensao === 'html' || extensao === 'htm') {
-                        textoExtraido = new DOMParser().parseFromString(await file.text(), 'text/html').body.innerText;
-                    } else {
-                        textoExtraido = await converterPdfParaTexto(file);
-                    }
-
-                    const dadosExtraidos = parsearTextoConvertido(textoExtraido, sessaoNome, batKey);
-                    if (!dadosExtraidos || dadosExtraidos.length === 0) throw new Error("Sem dados válidos.");
-
-                    let pdfBase64 = await arquivoParaBase64(file);
-                    let novoRegistro = { bateriaKey: batKey, sessao: sessaoNome, id: Date.now(), dados: dadosExtraidos, pdfBase64: pdfBase64, nomeArquivoOriginal: nomeArq };
-                    await db.ref('baterias/' + batKey).set(novoRegistro);
-                } catch (err) { alert("Erro em " + nomeArq + ": " + err.message); }
-            }
-            inputEl.value = "";
-            alert("Arquivos enviados com sucesso!");
-            fecharModalUpload();
-        };
-
-        function atualizarListaUploadHistoricoPrincipal() {
-            const ul = document.getElementById('upload-lista-historico');
-            if (!ul) return;
-            ul.innerHTML = "";
-            if (!listaJsonsCache || listaJsonsCache.length === 0) {
-                ul.innerHTML = `<li style="color: var(--text-muted); text-align: center; padding: 6px;">Nenhum arquivo na nuvem principal.</li>`;
-                return;
-            }
-            listaJsonsCache.forEach((item, index) => {
-                let nomeExibicao = item.sessao || `ID ${item.id}`;
-                const li = document.createElement('li');
-                li.innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
-                        <input type="checkbox" class="checkbox-excluir-lote-principal" value="${item.firebaseKey}" style="accent-color: var(--accent-red); width: 16px; height: 16px; cursor: pointer;">
-                        <span>📄 <strong>${escapeHtml(nomeExibicao)}</strong></span>
-                    </div>
-                    <button class="btn-text-action" onclick="inspecionarJsonUploadPrincipal(${index})">Inspecionar</button>
-                `;
-                ul.appendChild(li);
-            });
-        }
-
-        window.excluirArquivosSelecionadosPrincipal = async function() {
-            let checkboxes = document.querySelectorAll('.checkbox-excluir-lote-principal:checked');
-            if (checkboxes.length === 0) { alert("Selecione pelo menos um arquivo."); return; }
-            if (!db) return;
-            if (confirm(`Deseja excluir ${checkboxes.length} arquivo(s)?`)) {
-                try {
-                    await Promise.all(Array.from(checkboxes).map(cb => db.ref('baterias/' + cb.value).remove()));
-                    alert("Excluídos com sucesso!");
-                } catch (err) { alert("Erro: " + err.message); }
-            }
-        };
-
-        window.inspecionarJsonUploadPrincipal = function(index) {
-            const item = listaJsonsCache[index];
-            if (item) document.getElementById('upload-json-viewer').textContent = JSON.stringify(item, null, 4);
-        };
-
-        function obterTodosDadosConsolidados() {
-            let consolidado = [];
-            if (listaJsonsCache && Array.isArray(listaJsonsCache)) {
-                listaJsonsCache.forEach(arq => {
-                    if (arq.dados && Array.isArray(arq.dados)) {
-                        arq.dados.forEach(d => {
-                            if (!d.laps || d.laps.length === 0) return;
-                            let pilotoReal = d.piloto;
-                            let safeNomeKey = pilotoReal.replace(/[.#$\/\[\]]/g, "_");
-                            if (mesclagensCache[safeNomeKey]) pilotoReal = mesclagensCache[safeNomeKey];
-
-                            let meta = pilotosMetadadosCache[pilotoReal] || {};
-                            consolidado.push({
-                                ...d, piloto: pilotoReal, pilotoOriginal: d.piloto, bateriaKey: arq.firebaseKey,
-                                pilotoExibicao: meta.apelido ? `${pilotoReal} (${meta.apelido})` : pilotoReal
-                            });
-                        });
-                    }
-                });
-            }
-            return consolidado;
-        }
-
-        function gerarFiltrosDinamicos() {
-            const batContainer = document.getElementById('filtro-baterias-container');
-            const pilContainer = document.getElementById('filtro-pilotos-container');
-            if (!batContainer || !pilContainer) return;
-
-            const pilotosSet = new Set();
-            listaJsonsCache.forEach(arq => {
-                if (arq.dados) {
-                    arq.dados.forEach(d => {
-                        if (d.piloto && d.laps && d.laps.length > 0) {
-                            let pReal = d.piloto;
-                            let safeKey = pReal.replace(/[.#$\/\[\]]/g, "_");
-                            if (mesclagensCache[safeKey]) pReal = mesclagensCache[safeKey];
-                            pilotosSet.add(pReal);
-                        }
-                    });
-                }
-            });
-            Object.keys(pilotosMetadadosCache).forEach(p => pilotosSet.add(mesclagensCache[p.replace(/[.#$\/\[\]]/g, "_")] || p));
-
-            let batSelAnt = Array.from(document.querySelectorAll('.filter-bateria:checked')).map(cb => cb.value);
-            let pilSelAnt = Array.from(document.querySelectorAll('.filter-piloto:checked')).map(cb => cb.value);
-            let primeiraBat = batSelAnt.length === 0, primeiraPil = pilSelAnt.length === 0;
-
-            batContainer.innerHTML = listaJsonsCache.map(arq => {
-                let key = arq.firebaseKey;
-                let marcado = (primeiraBat || batSelAnt.includes(key)) ? 'checked' : '';
-                return `<label class="checkbox-item"><input type="checkbox" value="${key}" class="filter-bateria" ${marcado} onchange="atualizarDashboard()"> ${escapeHtml(formatarNomeSessao(arq.sessao || key))}</label>`;
-            }).join('');
-
-            pilContainer.innerHTML = Array.from(pilotosSet).filter(p => !mesclagensCache[p.replace(/[.#$\/\[\]]/g, "_")]).sort().map(piloto => {
-                let meta = pilotosMetadadosCache[piloto] || {};
-                let marcado = (primeiraPil || pilSelAnt.includes(piloto)) ? 'checked' : '';
-                return `<label class="checkbox-item"><input type="checkbox" value="${escapeHtml(piloto)}" class="filter-piloto" ${marcado} onchange="atualizarDashboard()"> ${escapeHtml(meta.apelido ? `${piloto} (${meta.apelido})` : piloto)}</label>`;
-            }).join('');
-        }
-
-        window.limparSelecao = function(classeFiltro) {
-            document.querySelectorAll(`.${classeFiltro}`).forEach(cb => cb.checked = false);
-            atualizarDashboard();
-        };
-
-        // ==========================================
-        // [PARTE 7, 8, 9] DASHBOARD, GRÁFICOS E LAUDOS
-        // ==========================================
-        window.abrirDossiePiloto = function(nomePiloto) {
-            const modal = document.getElementById('piloto-modal');
-            let meta = pilotosMetadadosCache[nomePiloto] || {};
-            document.getElementById('modal-piloto-nome').innerHTML = `🏎️ Ficha do Piloto: <span style="color: var(--accent-gold);">${escapeHtml(meta.apelido ? `${nomePiloto} (${meta.apelido})` : nomePiloto)}</span>`;
-            
-            let dadosBase = obterTodosDadosConsolidados();
-            let participacoes = dadosBase.filter(d => d.piloto === nomePiloto && d.laps && d.laps.length > 0);
-            let bodyEl = document.getElementById('modal-piloto-corpo');
-
-            if (participacoes.length === 0) {
-                bodyEl.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted);">Sem dados.</div>`;
-                modal.style.display = 'flex'; return;
-            }
-
-            let melhorVoltaP = Math.min(...participacoes.map(p => p.melhorVoltaVal || 999));
-            let tabelaHtml = participacoes.map(p => `<tr><td><span class="session-badge">${formatarNomeSessao(p.sessao)}</span></td><td><span class="pos-badge">${p.pos}</span></td><td class="text-green">${p.melhorVoltaTxt || '--'}</td></tr>`).join('');
-
-            bodyEl.innerHTML = `
-                <div class="dossier-grid">
-                    <div class="dossier-kpi"><span class="dossier-kpi-label">Sessões</span><span class="dossier-kpi-value">${participacoes.length}</span></div>
-                    <div class="dossier-kpi"><span class="dossier-kpi-label">Melhor Pessoal</span><span class="dossier-kpi-value">${melhorVoltaP < 999 ? melhorVoltaP.toFixed(3) + 's' : '--'}</span></div>
-                </div>
-                <div class="card" style="padding: 14px;"><div class="card-header" style="margin-bottom: 10px;">📜 Histórico de Baterias</div><div class="table-container"><table><thead><tr><th>Sessão</th><th>Pos</th><th>Melhor Volta</th></tr></thead><tbody>${tabelaHtml}</tbody></table></div></div>`;
-            modal.style.display = 'flex';
-        };
-
-        window.fecharDossiePiloto = function() { document.getElementById('piloto-modal').style.display = 'none'; };
-
-        window.onclick = function(event) {
-            if (event.target === document.getElementById('piloto-modal')) document.getElementById('piloto-modal').style.display = 'none';
-            if (event.target === document.getElementById('upload-modal')) document.getElementById('upload-modal').style.display = 'none';
-            if (event.target === document.getElementById('campeonatos-modal')) document.getElementById('campeonatos-modal').style.display = 'none';
-            if (event.target === document.getElementById('campeonatos2-modal')) document.getElementById('campeonatos2-modal').style.display = 'none';
-            if (event.target === document.getElementById('resumo-fiscal-modal')) document.getElementById('resumo-fiscal-modal').style.display = 'none';
-        };
 
         window.curtirSessao = function(bateriaKey) {
             if (!db) return;
@@ -2434,30 +633,109 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             let dadosBateria = todosDados.filter(d => d.bateriaKey === bateriaKey && d.laps && d.laps.length > 0);
             let ordenados = ordenarParticipantesBateria(dadosBateria);
             let linkPainel = window.location.href.split('#')[0];
-
             if (ordenados.length === 0) { alert("Não há dados válidos."); return; }
-
-            let textoPilotos = ordenados.map((p, idx) => `*${idx + 1}º Lugar: ${p.piloto}* — ${p.voltasTotais} voltas. Melhor volta: ${p.melhorVoltaTxt}.`).join('\n');
-            let txt = `🏁 *KRATHUS RACING - TELEMETRIA* 🏁\n🗓️ Sessão: *${nomeSessao}*\n\n${textoPilotos}\n\nConfira no painel: ${linkPainel}`;
-
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(txt).then(() => alert("📋 Relatório copiado para a área de transferência!")).catch(() => fallbackCopiarTexto(txt));
-            } else { fallbackCopiarTexto(txt); }
+            let textoPilotos = ordenados.map((p, idx) => `*${idx + 1}º Lugar: ${p.piloto}* — ${p.voltasTotais} voltas. Melhor: ${p.melhorVoltaTxt}.`).join('\n');
+            let txt = `🏁 *KRATHUS RACING - TELEMETRIA* 🏁\n🗓️ Sessão: *${nomeSessao}*\n\n${textoPilotos}\n\nConfira: ${linkPainel}`;
+            navigator.clipboard.writeText(txt).then(() => alert("📋 Relatório copiado!")).catch(() => {});
         };
 
-        function fallbackCopiarTexto(texto) {
-            const area = document.createElement('textarea');
-            area.value = texto; area.style.position = 'fixed'; area.style.opacity = '0';
-            document.body.appendChild(area); area.focus(); area.select();
-            try { document.execCommand('copy'); alert("📋 Relatório copiado!"); } finally { document.body.removeChild(area); }
+        function obterTodosDadosConsolidados() {
+            let consolidado = [];
+            if (listaJsonsCache && Array.isArray(listaJsonsCache)) {
+                listaJsonsCache.forEach(arq => {
+                    if (arq.dados && Array.isArray(arq.dados)) {
+                        arq.dados.forEach(d => {
+                            if (!d.laps || d.laps.length === 0) return;
+                            let pilotoReal = d.piloto;
+                            let safeNomeKey = pilotoReal.replace(/[.#$\/\[\]]/g, "_");
+                            if (mesclagensCache[safeNomeKey]) pilotoReal = mesclagensCache[safeNomeKey];
+                            let meta = pilotosMetadadosCache[pilotoReal] || {};
+                            consolidado.push({
+                                ...d, piloto: pilotoReal, pilotoOriginal: d.piloto, bateriaKey: arq.firebaseKey,
+                                pilotoExibicao: meta.apelido ? `${pilotoReal} (${meta.apelido})` : pilotoReal
+                            });
+                        });
+                    }
+                });
+            }
+            return consolidado;
         }
+
+        function gerarFiltrosDinamicos() {
+            const batContainer = document.getElementById('filtro-baterias-container');
+            const pilContainer = document.getElementById('filtro-pilotos-container');
+            if (!batContainer || !pilContainer) return;
+
+            const pilotosSet = new Set();
+            listaJsonsCache.forEach(arq => {
+                if (arq.dados) {
+                    arq.dados.forEach(d => {
+                        if (d.piloto && d.laps && d.laps.length > 0) {
+                            let pReal = d.piloto;
+                            let safeKey = pReal.replace(/[.#$\/\[\]]/g, "_");
+                            if (mesclagensCache[safeKey]) pReal = mesclagensCache[safeKey];
+                            pilotosSet.add(pReal);
+                        }
+                    });
+                }
+            });
+
+            let batSelAnt = Array.from(document.querySelectorAll('.filter-bateria:checked')).map(cb => cb.value);
+            let pilSelAnt = Array.from(document.querySelectorAll('.filter-piloto:checked')).map(cb => cb.value);
+            let primeiraBat = batSelAnt.length === 0, primeiraPil = pilSelAnt.length === 0;
+
+            batContainer.innerHTML = listaJsonsCache.map(arq => {
+                let key = arq.firebaseKey;
+                let marcado = (primeiraBat || batSelAnt.includes(key)) ? 'checked' : '';
+                return `<label class="checkbox-item"><input type="checkbox" value="${key}" class="filter-bateria" ${marcado} onchange="atualizarDashboard()"> ${escapeHtml(formatarNomeSessao(arq.sessao || key))}</label>`;
+            }).join('');
+
+            pilContainer.innerHTML = Array.from(pilotosSet).filter(p => !mesclagensCache[p.replace(/[.#$\/\[\]]/g, "_")]).sort().map(piloto => {
+                let meta = pilotosMetadadosCache[piloto] || {};
+                let marcado = (primeiraPil || pilSelAnt.includes(piloto)) ? 'checked' : '';
+                return `<label class="checkbox-item"><input type="checkbox" value="${escapeHtml(piloto)}" class="filter-piloto" ${marcado} onchange="atualizarDashboard()"> ${escapeHtml(meta.apelido ? `${piloto} (${meta.apelido})` : piloto)}</label>`;
+            }).join('');
+        }
+
+        window.limparSelecao = function(classeFiltro) {
+            document.querySelectorAll(`.${classeFiltro}`).forEach(cb => cb.checked = false);
+            atualizarDashboard();
+        };
+
+        window.abrirDossiePiloto = function(nomePiloto) {
+            const modal = document.getElementById('piloto-modal');
+            let meta = pilotosMetadadosCache[nomePiloto] || {};
+            document.getElementById('modal-piloto-nome').innerHTML = `🏎️ Ficha do Piloto: <span style="color: var(--accent-gold);">${escapeHtml(meta.apelido ? `${nomePiloto} (${meta.apelido})` : nomePiloto)}</span>`;
+            let dadosBase = obterTodosDadosConsolidados();
+            let participacoes = dadosBase.filter(d => d.piloto === nomePiloto && d.laps && d.laps.length > 0);
+            let bodyEl = document.getElementById('modal-piloto-corpo');
+            if (participacoes.length === 0) { bodyEl.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted);">Sem dados.</div>`; modal.style.display = 'flex'; return; }
+            let melhorVoltaP = Math.min(...participacoes.map(p => p.melhorVoltaVal || 999));
+            let tabelaHtml = participacoes.map(p => `<tr><td><span class="session-badge">${formatarNomeSessao(p.sessao)}</span></td><td><span class="pos-badge">${p.pos}</span></td><td class="text-green">${p.melhorVoltaTxt || '--'}</td></tr>`).join('');
+            bodyEl.innerHTML = `
+                <div class="dossier-grid">
+                    <div class="dossier-kpi"><span class="dossier-kpi-label">Sessões</span><span class="dossier-kpi-value">${participacoes.length}</span></div>
+                    <div class="dossier-kpi"><span class="dossier-kpi-label">Melhor Pessoal</span><span class="dossier-kpi-value">${melhorVoltaP < 999 ? melhorVoltaP.toFixed(3) + 's' : '--'}</span></div>
+                </div>
+                <div class="card" style="padding: 14px;"><div class="card-header" style="margin-bottom: 10px;">📜 Histórico</div><div class="table-container"><table><thead><tr><th>Sessão</th><th>Pos</th><th>Melhor Volta</th></tr></thead><tbody>${tabelaHtml}</tbody></table></div></div>`;
+            modal.style.display = 'flex';
+        };
+
+        window.fecharDossiePiloto = function() { document.getElementById('piloto-modal').style.display = 'none'; };
+
+        window.onclick = function(event) {
+            if (event.target === document.getElementById('piloto-modal')) document.getElementById('piloto-modal').style.display = 'none';
+            if (event.target === document.getElementById('upload-modal')) document.getElementById('upload-modal').style.display = 'none';
+            if (event.target === document.getElementById('campeonatos-modal')) document.getElementById('campeonatos-modal').style.display = 'none';
+            if (event.target === document.getElementById('campeonatos2-modal')) document.getElementById('campeonatos2-modal').style.display = 'none';
+            if (event.target === document.getElementById('resumo-fiscal-modal')) document.getElementById('resumo-fiscal-modal').style.display = 'none';
+        };
 
         function atualizarDashboard() {
             let dadosBase = obterTodosDadosConsolidados();
             const bateriasSel = Array.from(document.querySelectorAll('.filter-bateria:checked')).map(cb => cb.value);
             const pilotosSel = Array.from(document.querySelectorAll('.filter-piloto:checked')).map(cb => cb.value);
             const modulosSel = Array.from(document.querySelectorAll('.filter-modulo:checked')).map(cb => cb.value);
-
             const dadosFiltrados = dadosBase.filter(item => bateriasSel.includes(item.bateriaKey) && (pilotosSel.length === 0 || pilotosSel.includes(item.piloto)));
 
             if (listaJsonsCache.length > 0) {
@@ -2474,7 +752,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
 
                 let maisVitorioso = "--", maxV = -1;
                 for (let [p, v] of Object.entries(vencedorContadorGlobal)) { if (v > maxV) { maxV = v; maisVitorioso = p; } }
-                
                 document.getElementById('kpi-vencedor').innerHTML = maisVitorioso !== "--" ? `<a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(maisVitorioso)}')">${escapeHtml(maisVitorioso)}</a>` : "Nenhum";
                 document.getElementById('kpi-vencedor-sub').innerText = maxV > 0 ? `${maxV} vitória(s)` : "Sem vitórias";
 
@@ -2516,6 +793,9 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             renderizarSessõesCompletas(dadosBase, bateriasSel, pilotosSel, modulosSel);
         }
 
+        // ==========================================
+        // RENDERIZAÇÃO COMPLETA DAS SESSÕES & GRÁFICOS (COM GRÁFICO DE POSIÇÃO VOLTA A VOLTA)
+        // ==========================================
         function renderizarSessõesCompletas(dadosBase, bateriasSel, pilotosSel, modulosSel) {
             chartInstances.forEach(c => c.destroy());
             chartInstances = [];
@@ -2551,10 +831,33 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                     </div>
                 `;
 
-                if (modulosSel.includes('mod-grafico')) html += `<div class="card"><div class="card-header">Evolução de Ritmo (Lap Times)</div><div class="chart-container"><canvas id="chart-${bateriaKey}"></canvas></div></div>`;
-                if (modulosSel.includes('mod-classificacao-analise')) html += `<div class="card"><div class="card-header">📋 Laudo Técnico</div><div class="table-container"><table><thead><tr><th>POS</th><th>PILOTO</th><th>SESSÃO</th><th>VOLTAS</th><th>MELHOR</th><th>MÉDIA</th><th>DESVIO</th></tr></thead><tbody id="tabela-unificada-${bateriaKey}"></tbody></table></div></div>`;
+                // 1. Gráfico de Evolução de Ritmo (Lap Times)
+                if (modulosSel.includes('mod-grafico')) {
+                    html += `<div class="card"><div class="card-header">Evolução de Ritmo (Lap Times)</div><div class="chart-container"><canvas id="chart-${bateriaKey}"></canvas></div></div>`;
+                }
+
+                // 2. Gráfico de Posição Volta a Volta
+                if (modulosSel.includes('mod-grafico-posicao')) {
+                    html += `<div class="card"><div class="card-header">📊 Posição Volta a Volta</div><div class="chart-container"><canvas id="chart-pos-${bateriaKey}"></canvas></div></div>`;
+                }
+
+                // 3. Laudo Técnico / Classificação
+                if (modulosSel.includes('mod-classificacao-analise')) {
+                    html += `<div class="card"><div class="card-header">📋 Laudo Técnico</div><div class="table-container"><table><thead><tr><th>POS</th><th>PILOTO</th><th>SESSÃO</th><th>VOLTAS</th><th>MELHOR</th><th>MÉDIA</th><th>DESVIO</th></tr></thead><tbody id="tabela-unificada-${bateriaKey}"></tbody></table></div></div>`;
+                }
+
+                // 4. Seção de Comentários
                 if (modulosSel.includes('mod-comentarios')) {
-                    html += `<div class="comments-section"><div class="comments-title">💬 Comentários</div><div class="comments-list" id="comments-list-${safeKey}"></div><div class="comment-form"><input type="text" id="comment-name-${safeKey}" class="comment-input-name" placeholder="Seu Nome"><input type="text" id="comment-text-${safeKey}" class="comment-input-text" placeholder="Comentário..." onkeypress="if(event.key === 'Enter') enviarComentario('${bateriaKey}')"><button class="btn-comment" onclick="enviarComentario('${bateriaKey}')">Enviar</button></div></div>`;
+                    html += `
+                        <div class="comments-section">
+                            <div class="comments-title">💬 Comentários</div>
+                            <div class="comments-list" id="comments-list-${safeKey}"></div>
+                            <div class="comment-form">
+                                <input type="text" id="comment-name-${safeKey}" class="comment-input-name" placeholder="Seu Nome">
+                                <input type="text" id="comment-text-${safeKey}" class="comment-input-text" placeholder="Comentário..." onkeypress="if(event.key === 'Enter') enviarComentario('${bateriaKey}')">
+                                <button class="btn-comment" onclick="enviarComentario('${bateriaKey}')">Enviar</button>
+                            </div>
+                        </div>`;
                 }
 
                 sessionBlock.innerHTML = html;
@@ -2563,6 +866,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                 escutarCurtidas(bateriaKey);
                 if (modulosSel.includes('mod-comentarios')) escutarComentarios(bateriaKey);
 
+                // Renderização do Gráfico de Ritmo
                 if (modulosSel.includes('mod-grafico')) {
                     let canvasEl = document.getElementById(`chart-${bateriaKey}`);
                     if (canvasEl) {
@@ -2575,6 +879,64 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                     }
                 }
 
+                // Renderização do Gráfico de Posição Volta a Volta
+                if (modulosSel.includes('mod-grafico-posicao')) {
+                    let canvasPosEl = document.getElementById(`chart-pos-${bateriaKey}`);
+                    if (canvasPosEl) {
+                        let maxV = Math.max(...dadosSessao.map(d => d.laps.length));
+                        let labels = Array.from({length: maxV}, (_, i) => `V${i+1}`);
+                        
+                        let datasetsPos = dadosSessao.map((d, idx) => {
+                            let posicoesPorVolta = [];
+                            for(let i=0; i<maxV; i++) {
+                                let ativosNaVolta = dadosSessao.map(piloto => {
+                                    let s = 0;
+                                    let completou = true;
+                                    for(let j=0; j<=i; j++) {
+                                        if(piloto.laps[j] !== undefined) s += piloto.laps[j];
+                                        else { completou = false; break; }
+                                    }
+                                    return { piloto: piloto.piloto, tempoAcumulado: completou ? s : 999999, voltasCompletas: j };
+                                });
+
+                                ativosNaVolta.sort((a,b) => {
+                                    if(a.voltasCompletas !== b.voltasCompletas) return b.voltasCompletas - a.voltasCompletas;
+                                    return a.tempoAcumulado - b.tempoAcumulado;
+                                });
+
+                                let pos = ativosNaVolta.findIndex(p => p.piloto === d.piloto) + 1;
+                                posicoesPorVolta.push(pos > 0 && d.laps[i] !== undefined ? pos : null);
+                            }
+
+                            return {
+                                label: d.piloto,
+                                data: posicoesPorVolta,
+                                borderColor: ["#2ec4b6", "#ffb703", "#e63946", "#3a86ff"][idx % 4],
+                                borderWidth: 2,
+                                tension: 0.1,
+                                spanGaps: true
+                            };
+                        });
+
+                        chartInstances.push(new Chart(canvasPosEl.getContext('2d'), {
+                            type: 'line',
+                            data: { labels, datasets: datasetsPos },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                scales: {
+                                    y: {
+                                        reverse: true, // 1º lugar no topo do gráfico
+                                        ticks: { stepSize: 1 },
+                                        title: { display: true, text: 'Posição' }
+                                    }
+                                }
+                            }
+                        }));
+                    }
+                }
+
+                // Renderização do Laudo Técnico
                 if (modulosSel.includes('mod-classificacao-analise')) {
                     let tbodyCons = document.getElementById(`tabela-unificada-${bateriaKey}`);
                     if (tbodyCons) {
