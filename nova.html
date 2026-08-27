@@ -114,6 +114,8 @@
                 <p>Central de Telemetria e Compras Coletivas</p>
             </div>
             <div class="header-actions">
+                <button class="btn btn-upload-modal-trigger" onclick="abrirModalUpload()">📤 Uploads</button>
+                <button class="btn btn-campeonatos-trigger" onclick="abrirModalCampeonatos()">🏆 Championship Manager</button>
                 <button class="btn btn-compras-coletivas-trigger" onclick="abrirModalComprasIframe()">🛒 Compras Coletivas</button>
                 <button class="btn btn-pdf-global" onclick="gerarRelatórioPDF()">📄 Gerar Relatório</button>
             </div>
@@ -182,7 +184,7 @@
     </div>
 
     <script>
-        // Funções para Controle do Modal de Compras Coletivas por Iframe
+        // Funções de Controle do Modal via Iframe para Compras Coletivas
         function abrirModalComprasIframe() {
             document.getElementById('modal-compras-iframe').style.display = 'flex';
         }
