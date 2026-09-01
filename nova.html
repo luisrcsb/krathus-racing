@@ -602,6 +602,7 @@
                             <label class="checkbox-item"><input type="checkbox" value="mod-log-posicao" class="filter-modulo" checked onchange="atualizarDashboard()"> 📝 Relatório de Ultrapassagens</label>
                             <label class="checkbox-item"><input type="checkbox" value="mod-classificacao-analise" class="filter-modulo" checked onchange="atualizarDashboard()"> 📋 Laudo Técnico</label>
                             <label class="checkbox-item"><input type="checkbox" value="mod-tabela-geral" class="filter-modulo" checked onchange="atualizarDashboard()"> ⏱️ Tabela Geral com Gaps</label>
+                            <label class="checkbox-item"><input type="checkbox" value="mod-replay" class="filter-modulo" checked onchange="atualizarDashboard()"> 🎬 Replay Animado da Corrida</label>
                             <label class="checkbox-item"><input type="checkbox" value="mod-comentarios" class="filter-modulo" checked onchange="atualizarDashboard()"> 💬 Comentários e Reações</label>
                         </div>
                     </div>
@@ -638,7 +639,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.49.0 (Compras Verticais & Chassi)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.50.0 (Replay Animado & Chassi)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -674,6 +675,7 @@
         let pilotosMetadadosCache = {};
         let mesclagensCache = {};
         let campeonatoAtivoKey = null;
+        let replayStates = {};
 
         try {
             firebase.initializeApp(firebaseConfig);
@@ -2360,6 +2362,123 @@
             return String(text).replace(/[&<>"']/g, m => map[m]);
         }
 
+        window.iniciarReplay = function(bateriaKey) {
+            let dadosSessao = obterTodosDadosConsolidados().filter(d => d.bateriaKey === bateriaKey && d.laps && d.laps.length > 0);
+            if (dadosSessao.length === 0) return;
+
+            let canvas = document.getElementById(`canvas-replay-${bateriaKey}`);
+            if (!canvas) return;
+            let ctx = canvas.getContext('2d');
+
+            if (replayStates[bateriaKey] && replayStates[bateriaKey].animId) {
+                cancelAnimationFrame(replayStates[bateriaKey].animId);
+            }
+
+            let pilotosReplay = dadosSessao.map((d, idx) => {
+                let acumulado = 0;
+                let temposAcumulados = (d.laps || []).map(l => {
+                    let t = typeof l === 'object' ? l.tempo : l;
+                    acumulado += t;
+                    return acumulado;
+                });
+                let meta = pilotosMetadadosCache[d.piloto] || {};
+                
+                let carroImgObj = null;
+                if (meta.imagemCarro) {
+                    carroImgObj = new Image();
+                    carroImgObj.src = meta.imagemCarro;
+                }
+
+                return {
+                    nome: meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto,
+                    tempos: temposAcumulados,
+                    cor: ["#2ec4b6", "#ffb703", "#e63946", "#3a86ff", "#ff006e", "#8338ec"][idx % 6],
+                    carroImg: carroImgObj
+                };
+            });
+
+            let tempoMaximoCorrida = Math.max(...pilotosReplay.map(p => p.tempos[p.tempos.length - 1]));
+            let tempoAtual = 0;
+            let velocidadeSimulacao = 1.5;
+            let ultimoTimestamp = performance.now();
+
+            function animar(timestamp) {
+                let delta = (timestamp - ultimoTimestamp) / 1000;
+                ultimoTimestamp = timestamp;
+                tempoAtual += delta * velocidadeSimulacao;
+
+                if (tempoAtual > tempoMaximoCorrida) {
+                    tempoAtual = tempoMaximoCorrida;
+                }
+
+                let lblTempo = document.getElementById(`replay-tempo-${bateriaKey}`);
+                if (lblTempo) lblTempo.innerText = `Tempo: ${tempoAtual.toFixed(1)}s / ${tempoMaximoCorrida.toFixed(1)}s`;
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                let alturaPista = canvas.height / pilotosReplay.length;
+                pilotosReplay.forEach((p, index) => {
+                    let y = index * alturaPista + (alturaPista / 2);
+
+                    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(90, y);
+                    ctx.lineTo(canvas.width - 50, y);
+                    ctx.stroke();
+
+                    let voltasCompletas = 0;
+                    for (let v = 0; v < p.tempos.length; v++) {
+                        let tempoVoltaFim = p.tempos[v];
+                        let tempoVoltaInicio = v === 0 ? 0 : p.tempos[v - 1];
+
+                        if (tempoAtual >= tempoVoltaFim) {
+                            voltasCompletas = v + 1;
+                        } else if (tempoAtual > tempoVoltaInicio && tempoAtual < tempoVoltaFim) {
+                            let progressoVolta = (tempoAtual - tempoVoltaInicio) / (tempoVoltaFim - tempoVoltaInicio);
+                            voltasCompletas = v + progressoVolta;
+                            break;
+                        }
+                    }
+
+                    let totalVoltasCorrida = p.tempos.length;
+                    let larguraUtil = canvas.width - 150;
+                    let xCarro = 90 + (Math.min(voltasCompletas, totalVoltasCorrida) / totalVoltasCorrida) * larguraUtil;
+
+                    if (p.carroImg && p.carroImg.complete && p.carroImg.naturalWidth !== 0) {
+                        ctx.drawImage(p.carroImg, xCarro - 18, y - 10, 36, 16);
+                    } else {
+                        ctx.fillStyle = p.cor;
+                        ctx.beginPath();
+                        ctx.roundRect(xCarro - 12, y - 8, 24, 16, 4);
+                        ctx.fill();
+                    }
+
+                    ctx.fillStyle = '#d0d7e3';
+                    ctx.font = 'bold 12px Segoe UI';
+                    ctx.fillText(p.nome, 10, y + 4);
+
+                    ctx.fillStyle = '#8492a6';
+                    ctx.font = '11px Segoe UI';
+                    ctx.fillText(`${Math.min(Math.floor(voltasCompletas) + 1, totalVoltasCorrida)}/${totalVoltasCorrida}v`, canvas.width - 42, y + 4);
+                });
+
+                if (tempoAtual < tempoMaximoCorrida) {
+                    replayStates[bateriaKey].animId = requestAnimationFrame(animar);
+                }
+            }
+
+            replayStates[bateriaKey] = {
+                animId: requestAnimationFrame((ts) => { ultimoTimestamp = ts; animar(ts); })
+            };
+        };
+
+        window.pausarReplay = function(bateriaKey) {
+            if (replayStates[bateriaKey] && replayStates[bateriaKey].animId) {
+                cancelAnimationFrame(replayStates[bateriaKey].animId);
+            }
+        };
+
         function gerarTextoCompartilhamento(piloto, posicao, dadosBateria) {
             let nome = piloto.nome || piloto.piloto || "Piloto";
             let voltas = Number(piloto.voltas || 0);
@@ -2623,6 +2742,20 @@
                 if (modulosSel.includes('mod-log-posicao')) html += `<div class="card"><div class="card-header">📝 Relatório Detalhado de Ultrapassagens</div><div class="position-analysis-container" style="margin-top:0;"><div class="position-analysis-title">Histórico Volta a Volta</div><div class="position-log-list" id="pos-logs-${bateriaKey}"></div></div></div>`;
                 if (modulosSel.includes('mod-classificacao-analise')) html += `<div class="card"><div class="card-header">📋 Laudo Técnico do Chefe de Equipe</div><div class="table-container"><table><thead><tr><th>POS</th><th>PILOTO</th><th>SESSÃO</th><th>VOLTAS</th><th>MELHOR</th><th>VEL. ESCALA (1/28)</th><th>MÉDIA</th><th>DESVIO</th></tr></thead><tbody id="tabela-unificada-${bateriaKey}"></tbody></table></div></div>`;
                 if (modulosSel.includes('mod-tabela-geral')) html += `<div class="card"><div class="card-header">⏱️ Tabela Geral Volta a Volta (com Gaps e Voltas Atrás)</div><div class="table-container"><table><thead><tr id="head-lapbyLap-${bateriaKey}"><th>VOLTA</th></tr></thead><tbody id="body-lapbyLap-${bateriaKey}"></tbody></table></div></div>`;
+                if (modulosSel.includes('mod-replay')) {
+                    html += `
+                        <div class="card">
+                            <div class="card-header">🎬 Replay Animado da Corrida</div>
+                            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                                <button class="btn-action-primary" onclick="iniciarReplay('${bateriaKey}')">▶️ Play / Reiniciar</button>
+                                <button class="btn-action-danger" onclick="pausarReplay('${bateriaKey}')">⏸️ Pausar</button>
+                                <span id="replay-tempo-${bateriaKey}" style="font-size: 0.85rem; color: var(--text-muted);">Tempo: 0.0s</span>
+                            </div>
+                            <div style="position: relative; background: var(--bg-body); border-radius: 8px; border: 1px solid var(--border-card); padding: 10px; overflow: hidden;">
+                                <canvas id="canvas-replay-${bateriaKey}" width="1000" height="200" style="width: 100%; height: auto; display: block;"></canvas>
+                            </div>
+                        </div>`;
+                }
                 if (modulosSel.includes('mod-comentarios')) {
                     html += `
                         <div class="comments-section">
