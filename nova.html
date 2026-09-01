@@ -1,20 +1,3 @@
-<!-- 
-========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.49.0 - COMPRAS VERTICAIS & SELEÇÃO DE CHASSI)
-========================================================================================================================
-PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
-PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas)
-PARTE 3: Estrutura Principal do Dashboard, Filtros de Baterias/Pilotos/Módulos e KPIs Globais
-PARTE 4: Inicialização do Firebase, Configuração de Cache, Regras de Alias e Ordenação
-PARTE 5: Módulo de Gerenciamento de Campeonatos (ZRound, Bancos Separados, Grids de Largada e Pontuação)
-PARTE 5.1: Módulo Integrado de Gestão de Compras Coletivas e Rateios (Layout Empilhado)
-PARTE 6: Processamento e Conversão de Arquivos (PDF para Texto, Parser de Voltas, Base64 e Banco de Dados)
-PARTE 7: Renderização Dinâmica de Gráficos (Evolução de Ritmo e Posição Volta a Volta) e Relatórios
-PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado, Consistência Histórica e Laudo)
-PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentários, Reações e Curtidas
-========================================================================================================================
--->
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -683,7 +666,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
         let listaJsonsCache = [];
         let campeonatosCache = {};
         
-        // Cache e State do Novo Módulo de Compras Coletivas
         let comprasColetivasCache = {}; 
         let ccAtivaKey = null;
         let ccAtiva = null;
@@ -693,7 +675,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
         let mesclagensCache = {};
         let campeonatoAtivoKey = null;
 
-        // [PARTE 4] Inicialização do Firebase
         try {
             firebase.initializeApp(firebaseConfig);
             db = firebase.database();
@@ -706,7 +687,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             "Edgard": "Edgard Camilo (DJ)",
             "edgar": "Edgard Camilo (DJ)",
             "Edgar": "Edgard Camilo (DJ)",
-            "Dj_Edgar": "Edgard Camilo (DJ)",
             "Dj_Edgar": "Edgard Camilo (DJ)",
             "DJ": "Edgard Camilo (DJ)"
         };
@@ -797,15 +777,10 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                     }
                 });
 
-                // Escuta das Compras Coletivas (Novo Módulo 5.1)
                 db.ref('comprasColetivas').on('value', snapshot => {
                     comprasColetivasCache = snapshot.val() || {};
                     if(document.getElementById('compras-coletivas-modal').style.display === 'flex') {
                         renderizarListaComprasColetivas();
-                        // Se estivermos editando uma compra ativa, recarrega
-                        if (ccAtivaKey && comprasColetivasCache[ccAtivaKey]) {
-                            // Cuidado para não sobrescrever edições não salvas do usuário, então atualizamos apenas a lista se ele estiver na view list.
-                        }
                     }
                 });
 
@@ -833,7 +808,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             }
         });
 
-        // [PARTE 5] Módulo de Gerenciamento de Campeonatos (ZRound)
         window.abrirModalUpload = function() { document.getElementById('upload-modal').style.display = 'flex'; };
         window.fecharModalUpload = function() { document.getElementById('upload-modal').style.display = 'none'; };
 
@@ -1335,11 +1309,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             return ranking;
         }
 
-
-        // =======================================================================================
-        // [PARTE 5.1] NOVO MÓDULO INTEGRADO DE GESTÃO DE COMPRAS COLETIVAS E RATEIOS
-        // =======================================================================================
-        
         window.abrirModalComprasColetivas = function() {
             document.getElementById('compras-coletivas-modal').style.display = 'flex';
             voltarListaComprasColetivas();
@@ -1373,7 +1342,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                 itens: [],
                 icms: 0, imposto: 0, frete: 0, desconto: 0, extras: 0, totalGlobal: 0,
                 rastreio: "", chavePix: "",
-                participantes: {} // Mapeia o nome do piloto ao objeto: { incluido: boolean, comprador: boolean, valorPago: number, statusPago: boolean }
+                participantes: {} 
             };
 
             await db.ref('comprasColetivas/' + key).set(novaCC);
@@ -1395,7 +1364,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
 
             keys.forEach(key => {
                 let cc = comprasColetivasCache[key];
-                // Calcula qtd participantes e pagantes
                 let participativos = Object.values(cc.participantes || {}).filter(p => p.incluido);
                 let numParticipantes = participativos.length;
                 let numPagos = participativos.filter(p => p.statusPago).length;
@@ -1434,7 +1402,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
 
         window.abrirGerenciadorCompraColetiva = function(key) {
             ccAtivaKey = key;
-            // Clonamos para edição em memória até o momento de salvar.
             ccAtiva = JSON.parse(JSON.stringify(comprasColetivasCache[key]));
             if (!ccAtiva.itens) ccAtiva.itens = [];
             if (!ccAtiva.participantes) ccAtiva.participantes = {};
@@ -1444,7 +1411,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             document.getElementById('cc-manage-title').innerText = `Compra: ${ccAtiva.nome}`;
             document.getElementById('cc-edit-nome').value = ccAtiva.nome;
 
-            // Preenche dados financeiros
             document.getElementById('cc-icms').value = ccAtiva.icms || 0;
             document.getElementById('cc-imposto').value = ccAtiva.imposto || 0;
             document.getElementById('cc-frete').value = ccAtiva.frete || 0;
@@ -1456,7 +1422,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
 
             ccAtualizarPix();
             ccRenderItens();
-            ccCalcularTotais(false); // Atualiza e depois renderiza rateio
+            ccCalcularTotais(false);
         };
 
         window.ccAtualizarNomeAtivo = function() {
@@ -1554,7 +1520,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             
             let pilotosArray = obterListaPilotosGeraisSistema();
             
-            // Garante que o piloto sempre exite no objeto da CC ativa
             pilotosArray.forEach(pNome => {
                 if (!ccAtiva.participantes[pNome]) {
                     ccAtiva.participantes[pNome] = { incluido: false, comprador: false, valorPago: null, statusPago: false };
@@ -1564,7 +1529,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             let numParticipantes = Object.values(ccAtiva.participantes).filter(p => p.incluido).length;
             let cotaBase = numParticipantes > 0 ? (ccAtiva.totalGlobal / numParticipantes) : 0;
 
-            // Ordenar: primeiro os incluídos, depois ordem alfabética.
             let renderList = pilotosArray.map(p => ({ nome: p, obj: ccAtiva.participantes[p] }))
                                          .sort((a,b) => (a.obj.incluido === b.obj.incluido) ? a.nome.localeCompare(b.nome) : (a.obj.incluido ? -1 : 1));
 
@@ -1572,14 +1536,11 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                 let pNome = item.nome;
                 let p = item.obj;
                 
-                // Lógica Inteligente para o "Valor Pago": 
-                // Se ele está incluso e ainda não tem valor atribuído (é nulo), mostramos na interface a Cota Base como default.
-                // Não gravamos no objeto como 'valorPago' real até que seja salvo ou editado, permitindo recalcular dinamicamente.
                 let valorExibidoDisplay = (p.incluido && (p.valorPago === null || p.valorPago === undefined)) ? cotaBase : (p.valorPago || 0);
 
                 let diferenca = p.incluido ? (valorExibidoDisplay - cotaBase) : 0;
                 let corDiferenca = diferenca > 0.01 ? 'var(--accent-green)' : (diferenca < -0.01 ? 'var(--accent-red)' : 'var(--text-muted)');
-                let displayDif = diferenca > 0.01 ? `+ R$ ${diferenca.toFixed(2)}` : (diferenca < -0.01 ? `- R$ ${Math.abs(diferenca).toFixed(2)}` : `R$ 0.00`);
+                let displayDif = diferenca > 0.01 ? `+ R$ ${diferenca.toFixed(2)}` : (diferenca < -0.01 ? `- R$ ${Math.abs(diferenca.toFixed(2))}` : `R$ 0.00`);
 
                 html += `
                     <tr style="background: ${p.incluido ? 'rgba(42, 157, 143, 0.05)' : 'transparent'};">
@@ -1610,19 +1571,17 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                 if (!isChecked) {
                     ccAtiva.participantes[pNome].comprador = false;
                     ccAtiva.participantes[pNome].statusPago = false;
-                    ccAtiva.participantes[pNome].valorPago = null; // Reseta customização
+                    ccAtiva.participantes[pNome].valorPago = null;
                 }
-                ccRenderRateio(); // Re-calcula e re-renderiza tudo
+                ccRenderRateio();
             }
         };
 
         window.ccSetComprador = function(pNome) {
             if (ccAtiva) {
-                // Reseta os outros
                 Object.keys(ccAtiva.participantes).forEach(k => ccAtiva.participantes[k].comprador = false);
                 if (ccAtiva.participantes[pNome]) {
                     ccAtiva.participantes[pNome].comprador = true;
-                    // Comprador "paga" pra ele mesmo implicitamente, mas deixamos o usuário decidir o checkbox "Pago".
                 }
                 ccRenderRateio();
             }
@@ -1640,7 +1599,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
         window.ccToggleStatusPago = function(pNome, isChecked) {
             if (ccAtiva && ccAtiva.participantes[pNome]) {
                 ccAtiva.participantes[pNome].statusPago = isChecked;
-                ccRenderRateio(); // Apenas atualiza a UI local
+                ccRenderRateio();
             }
         };
 
@@ -1682,7 +1641,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             if (senha !== SENHA_UNIFICADA) { alert("❌ Senha incorreta!"); return; }
 
             try {
-                // Antes de salvar, garantimos que os nulos da UI virem números reais baseados na cota do momento se estavam vazios.
                 let numParticipantes = Object.values(ccAtiva.participantes).filter(p => p.incluido).length;
                 let cotaBase = numParticipantes > 0 ? (ccAtiva.totalGlobal / numParticipantes) : 0;
                 
@@ -1719,7 +1677,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             }
         };
 
-        // [PARTE 6] Processamento e Conversão de Arquivos (PDF)
         async function arquivoParaBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -2147,7 +2104,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                 `;
             }
 
-            // Lógica de exibição do carro na Ficha
             let carroSelecionado = meta.carro || "Nenhum";
             let carroImg = meta.imagemCarro || "";
             let carroHtml = "";
@@ -2263,7 +2219,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             let apelidoAtual = meta.apelido || '';
             let carroAtual = meta.carro || 'Nenhum';
 
-            // Lista de Carros Disponíveis
             const opcoesCarros = [
                 { nome: 'Nenhum', img: '' },
                 { nome: 'Porshe K969', img: 'porshe.png' },
@@ -2307,7 +2262,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             let novoNome = document.getElementById('input-novo-nome').value.trim();
             let novoApelido = document.getElementById('input-apelido').value.trim();
             
-            // Pega o valor selecionado do carro (separando nome e imagem via split)
             let carroVal = document.getElementById('input-carro').value;
             let [novoCarroNome, novoCarroImg] = carroVal.split('|');
 
@@ -2406,7 +2360,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             return String(text).replace(/[&<>"']/g, m => map[m]);
         }
 
-        // Compartilhamento
         function gerarTextoCompartilhamento(piloto, posicao, dadosBateria) {
             let nome = piloto.nome || piloto.piloto || "Piloto";
             let voltas = Number(piloto.voltas || 0);
@@ -2532,7 +2485,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             try { document.execCommand('copy'); alert("📋 Relatório completo copiado!"); } finally { document.body.removeChild(area); }
         }
 
-        // [PARTE 7] Renderização Dinâmica de Gráficos e Laudo
         function atualizarDashboard() {
             let dadosBase = obterTodosDadosConsolidados();
             const bateriasSel = Array.from(document.querySelectorAll('.filter-bateria:checked')).map(cb => cb.value);
@@ -2698,8 +2650,34 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                     if (canvasEl) {
                         let labels = Array.from({length: maxV}, (_, i) => `V${i+1}`);
                         let datasets = dadosSessao.map((d, idx) => {
-                            let meta = pilotosMetadadosCache[d.piloto] || {}; let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
-                            return { label: nomeExib, data: (d.laps || []).map(l => typeof l === 'object' ? l.tempo : l), borderColor: paleta[idx % paleta.length], backgroundColor: paleta[idx % paleta.length], borderWidth: 2, tension: 0.2 };
+                            let meta = pilotosMetadadosCache[d.piloto] || {}; 
+                            let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
+                            
+                            let carroImgObj = null;
+                            if (meta.imagemCarro) {
+                                carroImgObj = new Image();
+                                carroImgObj.src = meta.imagemCarro;
+                                carroImgObj.width = 36;
+                                carroImgObj.height = 16;
+                            }
+                            let voltasDestePiloto = d.laps ? d.laps.length : 0;
+
+                            return { 
+                                label: nomeExib, 
+                                data: (d.laps || []).map(l => typeof l === 'object' ? l.tempo : l), 
+                                borderColor: paleta[idx % paleta.length], 
+                                backgroundColor: paleta[idx % paleta.length], 
+                                borderWidth: 2, 
+                                tension: 0.2,
+                                pointRadius: (ctx) => {
+                                    if (ctx.dataIndex === voltasDestePiloto - 1 && carroImgObj) return 18;
+                                    return 3;
+                                },
+                                pointStyle: (ctx) => {
+                                    if (ctx.dataIndex === voltasDestePiloto - 1 && carroImgObj) return carroImgObj;
+                                    return 'circle';
+                                }
+                            };
                         });
                         chartInstances.push(new Chart(canvasEl.getContext('2d'), { type: 'line', data: { labels, datasets }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#8492a6' } } } } }));
                     }
@@ -2726,11 +2704,45 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                     if (canvasPosEl) {
                         let labelsPos = Array.from({length: maxVPos}, (_, i) => `Volta ${i+1}`);
                         let datasetsPos = dadosSessao.map((d, idx) => {
-                            let meta = pilotosMetadadosCache[d.piloto] || {}; let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
-                            let dadosPiloto = matrizPos[d.piloto] || []; let voltasPiloto = d.laps ? d.laps.length : maxVPos;
+                            let meta = pilotosMetadadosCache[d.piloto] || {}; 
+                            let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
+                            let dadosPiloto = matrizPos[d.piloto] || []; 
+                            let voltasPiloto = d.laps ? d.laps.length : maxVPos;
                             let pontosGrafico = labelsPos.map((_, i) => (i < voltasPiloto ? dadosPiloto[i] : null));
                             let corPiloto = paleta[idx % paleta.length];
-                            return { label: nomeExib, data: pontosGrafico, borderColor: corPiloto, backgroundColor: corPiloto, borderWidth: 3, tension: 0.1, spanGaps: false, pointRadius: (ctx) => (ctx.dataIndex === voltasPiloto - 1 && voltasPiloto < maxVPos) ? 8 : 3, pointStyle: (ctx) => (ctx.dataIndex === voltasPiloto - 1 && voltasPiloto < maxVPos) ? 'crossRot' : 'circle', pointBackgroundColor: (ctx) => (ctx.dataIndex === voltasPiloto - 1 && voltasPiloto < maxVPos) ? '#ff0000' : corPiloto };
+                            
+                            let carroImgObj = null;
+                            if (meta.imagemCarro) {
+                                carroImgObj = new Image();
+                                carroImgObj.src = meta.imagemCarro;
+                                carroImgObj.width = 36;
+                                carroImgObj.height = 16;
+                            }
+
+                            return { 
+                                label: nomeExib, 
+                                data: pontosGrafico, 
+                                borderColor: corPiloto, 
+                                backgroundColor: corPiloto, 
+                                borderWidth: 3, 
+                                tension: 0.1, 
+                                spanGaps: false, 
+                                pointRadius: (ctx) => {
+                                    if (ctx.dataIndex === voltasPiloto - 1) {
+                                        if (carroImgObj) return 18;
+                                        return (voltasPiloto < maxVPos) ? 8 : 6;
+                                    }
+                                    return 3;
+                                }, 
+                                pointStyle: (ctx) => {
+                                    if (ctx.dataIndex === voltasPiloto - 1) {
+                                        if (carroImgObj) return carroImgObj;
+                                        return (voltasPiloto < maxVPos) ? 'crossRot' : 'circle';
+                                    }
+                                    return 'circle';
+                                }, 
+                                pointBackgroundColor: (ctx) => (ctx.dataIndex === voltasPiloto - 1 && voltasPiloto < maxVPos && !carroImgObj) ? '#ff0000' : corPiloto 
+                            };
                         });
                         chartInstances.push(new Chart(canvasPosEl.getContext('2d'), { type: 'line', data: { labels: labelsPos, datasets: datasetsPos }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { reverse: true, min: 1, max: todosBat.length + 0.5, ticks: { stepSize: 1, color: '#8492a6' }, grid: { color: 'rgba(255,255,255,0.05)' } }, x: { ticks: { color: '#8492a6' }, grid: { color: 'rgba(255,255,255,0.05)' } } }, plugins: { legend: { labels: { color: '#8492a6' } } } } }));
                     }
@@ -2771,7 +2783,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                             todosBat.forEach(d => { let arr = matrizPos[d.piloto] || []; if (arr[v-1]) posNaVoltaAnt[arr[v-1]] = d.piloto; if (arr[v]) posNaVoltaAtual[arr[v]] = d.piloto; });
                             todosBat.forEach(d => {
                                 let arr = matrizPos[d.piloto] || []; let pAnt = arr[v-1], pAtu = arr[v];
-                                if (pAnt && pAtu && pAnt !== pAtu) {
+                                if (pAnt && pAtu && pAtu !== pAtu) {
                                     let oponente = posNaVoltaAnt[pAtu];
                                     if (oponente && oponente !== d.piloto) {
                                         historicoConfrontosPiloto[d.piloto].push({ volta: v + 1, tipo: 'ganho', oponente, de: pAnt, para: pAtu });
