@@ -1,13 +1,13 @@
 <!-- 
 ========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.48.2 - COM MÓDULO DE COMPRAS COLETIVAS VERTICAL)
+ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.49.0 - COMPRAS VERTICAIS & SELEÇÃO DE CHASSI)
 ========================================================================================================================
 PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
 PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas)
 PARTE 3: Estrutura Principal do Dashboard, Filtros de Baterias/Pilotos/Módulos e KPIs Globais
 PARTE 4: Inicialização do Firebase, Configuração de Cache, Regras de Alias e Ordenação
 PARTE 5: Módulo de Gerenciamento de Campeonatos (ZRound, Bancos Separados, Grids de Largada e Pontuação)
-PARTE 5.1: Módulo Integrado de Gestão de Compras Coletivas e Rateios (NOVO - Layout Empilhado)
+PARTE 5.1: Módulo Integrado de Gestão de Compras Coletivas e Rateios (Layout Empilhado)
 PARTE 6: Processamento e Conversão de Arquivos (PDF para Texto, Parser de Voltas, Base64 e Banco de Dados)
 PARTE 7: Renderização Dinâmica de Gráficos (Evolução de Ritmo e Posição Volta a Volta) e Relatórios
 PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado, Consistência Histórica e Laudo)
@@ -21,8 +21,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Krathus Racing - Central de Telemetria</title>
-    <script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=Euw-DHLgOJmK9GodP9_WPfF_pHw_-MNmQBxfRWA1Jbwm4Alel8HHekxvTtepbOL3ZdzPNw-bQjkigV7WPGt2etLcYqUBu9_kDchNIh_EgcMZxmogpyM_qO8EjSkCIFPB83vIy8BXVeb68fb3vSQozwBdYoW-CcIat8cpM3Or5ayfmeg91lgJgeMNxVc8IEOprUjA9iBDCRYzSTKRmam68CI07ulLmIURb9M59KdMj5We-yXf90PpwWsdXb5C0ZDPOnHq0k6PuA08fn_GPplPmOxTf-cFu4Mt16S-Nmc1oeglHHdsoU-YFG5iDSn0WBF6iAOYZxoSdbHF5_464nOQEA" charset="UTF-8"></script>
-    <link rel="stylesheet" crossorigin="anonymous" href="https://gc.kis.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css?attr=aHR0cHM6Ly9jaGF0Z3B0LmNvbS9iYWNrZW5kLWFwaS9lc3R1YXJ5L2NvbnRlbnQ_aWQ9ZmlsZV8wMDAwMDAwMGQxNzg4MjBlYWMyOWYxYmMzMzQzOGNiMCZmbj1pbmRleF9rcmF0aHVzX2xhdWRvX3RlY25pY28uaHRtbCZjZD1hdHRhY2htZW50JnRzPTQ5NjU3MiZwPWZzJmNpZD0xJnNpZz04YzYxZTVlZmE0ZGVmMWZjMjU2OWJlMTEzZjRjMDJmNzZkMzc2ZTIzOGM5NjNlOTc1YTExNGE0OTEzMjhlMDE4JnY9MA"/>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
@@ -586,7 +584,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             <div class="header-actions">
                 <button class="btn btn-upload-modal-trigger" onclick="abrirModalUpload()">📤 Uploads</button>
                 <button class="btn btn-campeonatos-trigger" onclick="abrirModalCampeonatos()">🏆 Championship Manager</button>
-                <!-- Botão aciona a nova central de Compras Coletivas -->
                 <button class="btn btn-compras-coletivas-trigger" onclick="abrirModalComprasColetivas()">🛒 Compras Coletivas</button>
                 <button class="btn btn-pdf-global" onclick="gerarRelatórioPDF()">📄 Gerar relatório</button>
             </div>
@@ -658,7 +655,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.48.2 (Consistência e Compras Coletivas Integradas)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.49.0 (Compras Verticais & Chassi)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -2150,7 +2147,23 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                 `;
             }
 
+            // Lógica de exibição do carro na Ficha
+            let carroSelecionado = meta.carro || "Nenhum";
+            let carroImg = meta.imagemCarro || "";
+            let carroHtml = "";
+            if (carroSelecionado !== "Nenhum" && carroImg) {
+                carroHtml = `
+                    <div style="display: flex; align-items: center; gap: 15px; background: rgba(58, 134, 255, 0.05); padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border-card); margin-bottom: 5px;">
+                        <img src="${carroImg}" alt="${carroSelecionado}" style="width: 70px; height: auto; object-fit: contain; border-radius: 4px;" onerror="this.style.display='none'">
+                        <div>
+                            <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: bold;">Chassi / Bolha</span><br>
+                            <span style="font-size: 1.1rem; color: var(--text-main); font-weight: bold;">🚗 ${escapeHtml(carroSelecionado)}</span>
+                        </div>
+                    </div>`;
+            }
+
             bodyEl.innerHTML = `
+                ${carroHtml}
                 <div class="dossier-grid">
                     <div class="dossier-kpi"><span class="dossier-kpi-label">Sessões</span><span class="dossier-kpi-value">${totalCorridas}</span></div>
                     <div class="dossier-kpi"><span class="dossier-kpi-label">Vitórias</span><span class="dossier-kpi-value">${vitorias}</span></div>
@@ -2248,17 +2261,42 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
 
             let meta = pilotosMetadadosCache[nomePiloto] || {};
             let apelidoAtual = meta.apelido || '';
+            let carroAtual = meta.carro || 'Nenhum';
+
+            // Lista de Carros Disponíveis
+            const opcoesCarros = [
+                { nome: 'Nenhum', img: '' },
+                { nome: 'Porshe K969', img: 'porshe.png' },
+                { nome: 'Fiesta K989', img: 'fiesta.png' },
+                { nome: 'Pickup 284131', img: 'pickup.png' },
+                { nome: 'Fiesta c/ Rack 284010', img: 'fiestarack.png' }
+            ];
+
+            let selectHtml = `<select id="input-carro" class="config-select" style="flex: 1;">`;
+            opcoesCarros.forEach(c => {
+                let selected = (carroAtual === c.nome) ? 'selected' : '';
+                selectHtml += `<option value="${c.nome}|${c.img}" ${selected}>${c.nome}</option>`;
+            });
+            selectHtml += `</select>`;
 
             let containerConfig = document.getElementById('container-config-protegido');
             containerConfig.innerHTML = `
                 <div class="config-panel">
                     <div class="config-panel-title">🛡️ Painel de Configurações Avançadas do Piloto</div>
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                        <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Renomear / Apelido do Piloto</label>
-                        <div class="config-row">
-                            <input type="text" id="input-novo-nome" class="config-input" value="${escapeHtml(nomePiloto)}">
-                            <input type="text" id="input-apelido" class="config-input" placeholder="Apelido" value="${escapeHtml(apelidoAtual)}">
-                            <button class="btn-action-primary" onclick="salvarMetadadosPiloto('${escapeHtml(nomePiloto)}', event)">Salvar Dados</button>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <div>
+                            <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Renomear / Apelido do Piloto</label>
+                            <div class="config-row" style="margin-top: 4px;">
+                                <input type="text" id="input-novo-nome" class="config-input" value="${escapeHtml(nomePiloto)}">
+                                <input type="text" id="input-apelido" class="config-input" placeholder="Apelido" value="${escapeHtml(apelidoAtual)}">
+                            </div>
+                        </div>
+                        <div>
+                            <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Modelo / Bolha do Carro</label>
+                            <div class="config-row" style="margin-top: 4px;">
+                                ${selectHtml}
+                                <button class="btn-action-primary" onclick="salvarMetadadosPiloto('${escapeHtml(nomePiloto)}', event)">💾 Salvar Dados</button>
+                            </div>
                         </div>
                     </div>
                 </div>`;
@@ -2268,11 +2306,21 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             if (event) event.preventDefault();
             let novoNome = document.getElementById('input-novo-nome').value.trim();
             let novoApelido = document.getElementById('input-apelido').value.trim();
+            
+            // Pega o valor selecionado do carro (separando nome e imagem via split)
+            let carroVal = document.getElementById('input-carro').value;
+            let [novoCarroNome, novoCarroImg] = carroVal.split('|');
+
             if (!novoNome) return;
             if (!db) { alert("Erro: Firebase desconectado."); return; }
 
             try {
-                await db.ref(`pilotosMetadados/${novoNome}`).set({ apelido: novoApelido });
+                await db.ref(`pilotosMetadados/${novoNome}`).set({ 
+                    apelido: novoApelido,
+                    carro: novoCarroNome,
+                    imagemCarro: novoCarroImg
+                });
+                
                 if (novoNome !== nomeAtual) {
                     await db.ref(`pilotosMetadados/${nomeAtual}`).remove();
                     let safeOldKey = nomeAtual.replace(/[.#$\/\[\]]/g, "_");
