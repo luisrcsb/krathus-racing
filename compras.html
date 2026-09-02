@@ -44,6 +44,7 @@
         .btn-action-danger { background: var(--accent-red); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
         .btn-action-summary { background: #480ca8; color: #fff; border: none; padding: 5px 12px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; cursor: pointer; }
         .btn-action-track { background: #3f37c9; color: #fff; border: none; padding: 5px 12px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; cursor: pointer; text-decoration: none; display: inline-block; }
+        .btn-action-pix { background: var(--accent-green); color: #0d111a; border: none; padding: 4px 10px; border-radius: 4px; font-weight: 700; font-size: 0.75rem; cursor: pointer; }
 
         .custom-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -88,14 +89,14 @@
         </div>
     </div>
 
-    <!-- MODAL DE RESUMO FISCAL E PAGAMENTO RÁPIDO -->
+    <!-- MODAL DE RESUMO FISCAL E PAGAMENTO RÁPIDO (COMPLETO) -->
     <div id="resumo-fiscal-modal" class="custom-modal" style="z-index: 11000;">
-        <div class="modal-content" style="border-top-color: #480ca8; max-width: 850px; height: auto;">
-            <div class="modal-header">
-                <div class="modal-title" id="resumo-fiscal-titulo">📊 Resumo Fiscal e de Pagamentos</div>
+        <div class="modal-content" style="border-top-color: #480ca8; max-width: 900px;">
+            <div class="modal-header" style="background: #2b1b4e;">
+                <div class="modal-title" id="resumo-fiscal-titulo">📊 Resumo Fiscal, Financeiro e Pagamentos</div>
                 <button class="modal-close" onclick="fecharModalResumoFiscal()">&times;</button>
             </div>
-            <div class="modal-body" id="resumo-fiscal-body" style="display: flex; flex-direction: column; gap: 14px; overflow: visible;"></div>
+            <div class="modal-body" id="resumo-fiscal-body" style="display: flex; flex-direction: column; gap: 20px;"></div>
         </div>
     </div>
 
@@ -264,7 +265,6 @@
 
         document.addEventListener("DOMContentLoaded", () => {
             if (db) {
-                // Escuta os pilotos da Krathus Racing
                 db.ref('pilotos').on('value', snap => {
                     let novaLista = [];
                     if (snap.exists()) {
@@ -280,7 +280,6 @@
                     if (compraAbertaDados) atualizarCalculosCC();
                 });
 
-                // Escuta as compras coletivas
                 db.ref('comprasColetivas').on('value', snapshot => {
                     comprasColetivasCache = snapshot.val() || {};
                     renderizarListaComprasColetivas();
@@ -344,9 +343,10 @@
                 parts.forEach(p => { if (c.pagamentos && c.pagamentos[p] === true) pagos++; });
                 let perc = totalParts > 0 ? (pagos / totalParts) * 100 : 0;
 
-                let rastreioHtml = (!c.rastreio || c.rastreio.trim() === "") ? 
+                let rastreioCode = c.rastreio ? c.rastreio.trim() : "";
+                let rastreioHtml = (!rastreioCode) ? 
                     `<button class="btn-action-track" style="background: rgba(63, 55, 201, 0.2); border: 1px dashed #3f37c9; color: #3f37c9;" onclick="addRastreioRapido('${key}')">📦 Add Rastreio</button>` :
-                    `<button class="btn-action-track" onclick="window.open('https://t.17track.net/pt#nums=${c.rastreio}', '_blank')">📦 Rastreio: ${escapeHtml(c.rastreio)}</button>`;
+                    `<button class="btn-action-track" onclick="window.open('https://rastreamento.correios.com.br/app/index.php?objeto=${encodeURIComponent(rastreioCode)}', '_blank')">📦 Rastreio: ${escapeHtml(rastreioCode)}</button>`;
 
                 ul.innerHTML += `
                     <li style="background: var(--bg-input); padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border-card); display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px;">
@@ -375,7 +375,6 @@
             if (!compraAbertaDados.pagamentos) compraAbertaDados.pagamentos = {};
             if (!compraAbertaDados.valoresManuais) compraAbertaDados.valoresManuais = {};
 
-            // Garante que todos os pilotos da base global constem na lista se não existirem
             pilotosBaseGlobal.forEach(p => {
                 if (compraAbertaDados.participantes[p] === undefined) {
                     compraAbertaDados.participantes[p] = true;
@@ -504,7 +503,6 @@
             let participantesLista = Object.keys(compraAbertaDados.participantes);
             let ativosArr = participantesLista.filter(p => compraAbertaDados.participantes[p] === true);
 
-            // Renderizar tabela de itens
             let tbodyItens = document.getElementById('cc-tabela-itens');
             tbodyItens.innerHTML = "";
             compraAbertaDados.itens.forEach((it, idx) => {
@@ -527,7 +525,6 @@
                 `;
             });
 
-            // Cálculo dos valores base por participante
             let valorBasePilotos = {};
             participantesLista.forEach(p => valorBasePilotos[p] = 0);
 
@@ -629,6 +626,218 @@
             }
         };
 
+        // Modal de Resumo Fiscal e Financeiro Completo
+        window.abrirModalResumoFiscal = function(key) {
+            let c = comprasColetivasCache[key];
+            if (!c) return;
+            document.getElementById('resumo-fiscal-titulo').innerText = `📊 Resumo: ${c.nome}`;
+
+            let subtotalItens = 0;
+            let itensHtml = "";
+            let itensArr = c.itens || [];
+            itensArr.forEach((it, i) => {
+                let sub = (it.valor || 0) * (it.qtd || 1);
+                subtotalItens += sub;
+                itensHtml += `
+                    <tr>
+                        <td>#${i+1}</td>
+                        <td>${escapeHtml(it.nomeItem || 'Item sem nome')}</td>
+                        <td>${it.qtd || 1}</td>
+                        <td>R$ ${(it.valor || 0).toFixed(2)}</td>
+                        <td style="font-weight: bold; color: var(--accent-gold);">R$ ${sub.toFixed(2)}</td>
+                        <td>${escapeHtml(it.atribuidoA || 'Não atribuído')}</td>
+                    </tr>
+                `;
+            });
+
+            let frete = c.frete || 0;
+            let imposto = c.imposto || 0;
+            let icms = c.icms || 0;
+            let desconto = c.desconto || 0;
+            let outros = c.outrosDescontos || 0;
+            let totalGlobal = subtotalItens + frete + imposto + icms - desconto - outros;
+
+            // Calcular rateio para o resumo financeiro
+            let participantes = c.participantes || {};
+            let ativos = Object.keys(participantes).filter(p => participantes[p] === true);
+            let pagamentos = c.pagamentos || {};
+            let valoresManuais = c.valoresManuais || {};
+
+            let valorBasePilotos = {};
+            ativos.forEach(p => valorBasePilotos[p] = 0);
+
+            itensArr.forEach(it => {
+                let sub = (it.valor || 0) * (it.qtd || 1);
+                if (it.atribuidoA === "TODOS") {
+                    if (ativos.length > 0) {
+                        let parte = sub / ativos.length;
+                        ativos.forEach(p => { if(valorBasePilotos[p] !== undefined) valorBasePilotos[p] += parte; });
+                    }
+                } else if (it.atribuidoA && valorBasePilotos[it.atribuidoA] !== undefined) {
+                    valorBasePilotos[it.atribuidoA] += sub;
+                }
+            });
+
+            let totalManual = 0;
+            ativos.forEach(p => {
+                if (valoresManuais[p] !== undefined) totalManual += valoresManuais[p];
+            });
+
+            let resto = totalGlobal - totalManual;
+            let semManual = ativos.filter(p => valoresManuais[p] === undefined);
+            let totalBaseSemManual = 0;
+            semManual.forEach(p => totalBaseSemManual += (valorBasePilotos[p] || 0));
+
+            let financeiroHtml = "";
+            let comprador = c.comprador || "Não definido";
+            let chavePix = c.chavePix || "";
+
+            ativos.forEach(p => {
+                let isPago = pagamentos[p] === true;
+                let devido = 0;
+                if (valoresManuais[p] !== undefined) {
+                    devido = valoresManuais[p];
+                } else {
+                    let peso = totalBaseSemManual > 0 ? ((valorBasePilotos[p] || 0) / totalBaseSemManual) : (1 / (semManual.length || 1));
+                    devido = resto * peso;
+                }
+
+                let statusBadge = isPago ? 
+                    `<span style="color: var(--accent-green); font-weight: bold;">✅ Quitado</span>` : 
+                    `<span style="color: var(--accent-gold); font-weight: bold;">⏳ Pendente</span>`;
+
+                let pixBtnOrInfo = "";
+                if (!isPago) {
+                    if (chavePix) {
+                        pixBtnOrInfo = `<button class="btn-action-pix" onclick="abrirModalPixEspecifico('${escapeHtml(p)}', ${devido.toFixed(2)}, '${escapeHtml(chavePix)}')">💳 Ver Pix / QR</button>`;
+                    } else {
+                        pixBtnOrInfo = `<span style="font-size: 0.7rem; color: var(--accent-red);">Pix não cadastrado</span>`;
+                    }
+                } else {
+                    pixBtnOrInfo = `-`;
+                }
+
+                financeiroHtml += `
+                    <tr>
+                        <td><strong>${escapeHtml(p)}</strong> ${p === comprador ? '👑 (Comprador)' : ''}</td>
+                        <td style="font-weight: bold; color: var(--accent-gold);">R$ ${devido.toFixed(2)}</td>
+                        <td>${statusBadge}</td>
+                        <td style="text-align: center;">${pixBtnOrInfo}</td>
+                    </tr>
+                `;
+            });
+
+            let rastreioCode = c.rastreio ? c.rastreio.trim() : "";
+            let rastreioSecao = rastreioCode ? 
+                `<div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-card); padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-card);">
+                    <span>📦 Código de Rastreio: <strong>${escapeHtml(rastreioCode)}</strong></span>
+                    <button class="btn-action-track" onclick="window.open('https://rastreamento.correios.com.br/app/index.php?objeto=${encodeURIComponent(rastreioCode)}', '_blank')">🔍 Rastrear nos Correios</button>
+                 </div>` :
+                `<div style="font-size: 0.8rem; color: var(--text-muted);">📦 Nenhum código de rastreio cadastrado para esta compra.</div>`;
+
+            document.getElementById('resumo-fiscal-body').innerHTML = `
+                <div class="config-panel">
+                    <div class="config-panel-title">📦 Rastreamento da Encomenda</div>
+                    ${rastreioSecao}
+                </div>
+
+                <div class="config-panel">
+                    <div class="config-panel-title">🛒 Relação de Itens da Compra</div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Descrição</th>
+                                    <th>Qtd</th>
+                                    <th>Valor Unit.</th>
+                                    <th>Subtotal</th>
+                                    <th>Atribuído a</th>
+                                </tr>
+                            </thead>
+                            <tbody>${itensHtml}</tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="config-panel">
+                    <div class="config-panel-title">💰 Resumo Fiscal, Taxas e Total Global</div>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; font-size: 0.85rem;">
+                        <div>Subtotal dos Itens: <strong>R$ ${subtotalItens.toFixed(2)}</strong></div>
+                        <div>Frete: <strong>R$ ${frete.toFixed(2)}</strong></div>
+                        <div>Impostos / ICMS: <strong>R$ ${(imposto + icms).toFixed(2)}</strong></div>
+                        <div>Descontos / Outros: <strong>- R$ ${(desconto + outros).toFixed(2)}</strong></div>
+                        <div style="grid-column: span 2; font-size: 1.1rem; color: var(--accent-gold); font-weight: 900; text-align: right;">VALOR GLOBAL FINAL: R$ ${totalGlobal.toFixed(2)}</div>
+                    </div>
+                </div>
+
+                <div class="config-panel">
+                    <div class="config-panel-title">👥 Situação Financeira dos Participantes (Comprador: ${escapeHtml(comprador)})</div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Participante</th>
+                                    <th>Valor Devido</th>
+                                    <th>Situação</th>
+                                    <th style="text-align: center;">Pagamento / Pix</th>
+                                </tr>
+                            </thead>
+                            <tbody>${financeiroHtml}</tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('resumo-fiscal-modal').style.display = 'flex';
+        };
+
+        window.fecharModalResumoFiscal = function() {
+            document.getElementById('resumo-fiscal-modal').style.display = 'none';
+        };
+
+        // Modal auxiliar para exibir QR Code Pix específico para pagamento do participante pendente
+        window.abrirModalPixEspecifico = function(nomePiloto, valorDevido, chavePix) {
+            let modalId = 'modal-pix-especifico';
+            let old = document.getElementById(modalId);
+            if (old) old.remove();
+
+            let qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(chavePix)}`;
+
+            let modalDiv = document.createElement('div');
+            modalDiv.id = modalId;
+            modalDiv.className = 'custom-modal';
+            modalDiv.style.zIndex = '12000';
+            modalDiv.style.display = 'flex';
+            modalDiv.innerHTML = `
+                <div class="modal-content" style="max-width: 420px; border-top-color: var(--accent-green);">
+                    <div class="modal-header" style="background: var(--bg-card-header);">
+                        <div class="modal-title">💳 Pix para ${escapeHtml(nomePiloto)}</div>
+                        <button class="modal-close" onclick="document.getElementById('${modalId}').remove()">&times;</button>
+                    </div>
+                    <div class="modal-body" style="text-align: center; gap: 14px;">
+                        <p style="font-size: 0.85rem; color: var(--text-main);">Valor a pagar: <strong style="color: var(--accent-gold); font-size: 1.1rem;">R$ ${Number(valorDevido).toFixed(2)}</strong></p>
+                        <p style="font-size: 0.78rem; color: var(--text-muted);">Chave Pix do Comprador:</p>
+                        <input type="text" class="config-input" value="${escapeHtml(chavePix)}" readonly style="text-align: center; font-weight: bold; cursor: pointer;" onclick="navigator.clipboard.writeText('${escapeHtml(chavePix)}'); alert('Chave Pix copiada!');" title="Clique para copiar">
+                        <div style="background: #fff; padding: 10px; border-radius: 8px; display: inline-block; margin: 0 auto;">
+                            <img src="${qrUrl}" alt="QR Code Pix" style="width: 160px; height: 160px; display: block;">
+                        </div>
+                        <p style="font-size: 0.7rem; color: var(--text-muted);">Escaneie o QR Code com o aplicativo do seu banco para pagar.</p>
+                        <button class="btn-action-primary" style="background: var(--accent-green); color: #0d111a;" onclick="document.getElementById('${modalId}').remove()">Fechar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modalDiv);
+        };
+
+        window.addRastreioRapido = async function(key) {
+            let code = prompt("📦 Digite o código de rastreio dos Correios:");
+            if (code && db) {
+                await db.ref(`comprasColetivas/${key}/rastreio`).set(code.trim());
+                alert("✅ Rastreio salvo!");
+            }
+        };
+
         window.salvarCompraColetivaAberta = async function() {
             let senha = prompt("🔒 Senha de segurança para salvar:");
             if (senha !== SENHA_UNIFICADA) { alert("❌ Incorreta!"); return; }
@@ -647,19 +856,6 @@
                 alert("🗑️ Excluída.");
                 voltarListaCompras();
             }
-        };
-
-        window.abrirModalResumoFiscal = function(key) {
-            let c = comprasColetivasCache[key];
-            if (!c) return;
-            document.getElementById('resumo-fiscal-titulo').innerText = `📊 Resumo: ${c.nome}`;
-            document.getElementById('resumo-fiscal-body').innerHTML = `<div class="config-panel"><p>Resumo detalhado da compra coletiva <strong>${escapeHtml(c.nome)}</strong> carregado com sucesso.</p></div>`;
-            document.getElementById('resumo-fiscal-modal').style.display = 'flex';
-        };
-        window.fecharModalResumoFiscal = function() { document.getElementById('resumo-fiscal-modal').style.display = 'none'; };
-        window.addRastreioRapido = async function(key) {
-            let code = prompt("📦 Código de rastreio:");
-            if (code && db) await db.ref(`comprasColetivas/${key}/rastreio`).set(code.trim());
         };
 
         function escapeHtml(text) {
