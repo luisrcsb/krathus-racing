@@ -211,14 +211,14 @@
 
     <!-- 👥 Modal de Seleção de Piloto para Ficha/Edição -->
     <div id="selecao-piloto-modal" class="custom-modal">
-        <div class="modal-content" style="max-width: 550px;">
+        <div class="modal-content" style="max-width: 600px;">
             <div class="modal-header">
-                <div class="modal-title">👥 Selecionar Piloto</div>
+                <div class="modal-title">👥 Gerenciamento de Pilotos</div>
                 <button class="modal-close" onclick="fecharModalSelecaoPiloto()">&times;</button>
             </div>
             <div class="modal-body">
-                <p style="font-size: 0.85rem; color: var(--text-muted);">Clique em um piloto abaixo para abrir sua ficha técnica e opções de edição:</p>
-                <div id="lista-seletor-pilotos" style="display: flex; flex-direction: column; gap: 8px; max-height: 350px; overflow-y: auto;">
+                <p style="font-size: 0.85rem; color: var(--text-muted);">Clique em um piloto para abrir sua ficha técnica e opções de edição, ou utilize o botão de exclusão rápida:</p>
+                <div id="lista-seletor-pilotos" style="display: flex; flex-direction: column; gap: 8px; max-height: 380px; overflow-y: auto;">
                     <!-- Preenchido dinamicamente -->
                 </div>
             </div>
@@ -573,7 +573,7 @@
     </div>
 
 
-    <!-- [PARTE 3] Estrutura Principal do Dashboard: Cabeçalho do Site, Filtros Dinâmicos e Cartões de KPIs Globais -->
+    <!-- [PARTE 3] Estrutura Principal du Dashboard -->
     <div class="dashboard-container">
         <header class="header">
             <div class="brand-title">
@@ -601,7 +601,7 @@
 
                     <div class="filter-group">
                         <div class="filter-group-header">
-                            <label class="group-title" style="cursor: pointer; color: var(--accent-blue);" onclick="abrirModalSelecaoPiloto()" title="Clique para ver a ficha e editar pilotos">PILOTOS ⚙️</label>
+                            <label class="group-title" style="cursor: pointer; color: var(--accent-blue);" onclick="abrirModalSelecaoPiloto()" title="Clique para gerenciar e excluir pilotos">PILOTOS ⚙️</label>
                             <button class="btn-text-action" onclick="limparSelecao('filter-piloto')">🗑️ Limpar</button>
                         </div>
                         <div class="checkbox-container" id="filtro-pilotos-container"></div>
@@ -655,7 +655,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.52.0 (Modal Pilotos Clicável & Edição)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.53.0 (Exclusão de Pilotos Integrada)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -837,7 +837,7 @@
         };
         window.fecharModalCampeonatos = function() { document.getElementById('campeonatos-modal').style.display = 'none'; };
 
-        // 👥 Funções do Modal de Seleção de Pilotos
+        // 👥 Funções do Modal de Seleção e Gestão de Pilotos
         window.abrirModalSelecaoPiloto = function() {
             const modal = document.getElementById('selecao-piloto-modal');
             const listaEl = document.getElementById('lista-seletor-pilotos');
@@ -856,9 +856,14 @@
                     let label = meta.apelido ? `${p} (${meta.apelido})` : p;
                     let carroInfo = meta.carro && meta.carro !== 'Nenhum' ? ` 🚗 ${meta.carro}` : '';
                     return `
-                        <div style="background: var(--bg-input); padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-card); display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="selecionarPilotoParaDossie('${escapeHtml(p)}')">
-                            <span style="font-weight: bold; color: var(--text-title);">${escapeHtml(label)}<span style="font-size: 0.78rem; color: var(--accent-gold); font-weight: normal;">${escapeHtml(carroInfo)}</span></span>
-                            <span class="btn-text-action">Ver Ficha & Editar ➡️</span>
+                        <div style="background: var(--bg-input); padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-card); display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                            <span style="font-weight: bold; color: var(--text-title); cursor: pointer; flex: 1;" onclick="selecionarPilotoParaDossie('${escapeHtml(p)}')">
+                                ${escapeHtml(label)}<span style="font-size: 0.78rem; color: var(--accent-gold); font-weight: normal;">${escapeHtml(carroInfo)}</span>
+                            </span>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <button class="btn-text-action" onclick="selecionarPilotoParaDossie('${escapeHtml(p)}')">Editar / Ficha</button>
+                                <button class="btn-action-danger" style="padding: 4px 8px; font-size: 0.75rem;" onclick="excluirPilotoSistema('${escapeHtml(p)}')">🗑️ Excluir</button>
+                            </div>
                         </div>
                     `;
                 }).join('');
@@ -873,6 +878,33 @@
         window.selecionarPilotoParaDossie = function(nomePiloto) {
             fecharModalSelecaoPiloto();
             abrirDossiePiloto(nomePiloto);
+        };
+
+        window.excluirPilotoSistema = async function(nomePiloto) {
+            let senha = prompt(`🔒 Digite a senha unificada de segurança para EXCLUIR o piloto "${nomePiloto}" do sistema:`);
+            if (senha === null) return;
+            if (senha !== SENHA_UNIFICADA) { alert("❌ Senha incorreta!"); return; }
+            if (!db) { alert("Erro: Firebase desconectado."); return; }
+
+            if (confirm(`Tem certeza absoluta que deseja excluir o piloto "${nomePiloto}"? Isso removerá os metadados e configurações associadas a ele no sistema.`)) {
+                try {
+                    let updates = {};
+                    updates[`pilotosMetadados/${nomePiloto}`] = null;
+                    
+                    // Remove mesclagens associadas se houver
+                    Object.keys(mesclagensCache).forEach(origKey => {
+                        if (mesclagensCache[origKey] === nomePiloto) {
+                            updates[`mesclagensPilotos/${origKey}`] = null;
+                        }
+                    });
+
+                    await db.ref().update(updates);
+                    alert(`Piloto "${nomePiloto}" excluído com sucesso!`);
+                    abrirModalSelecaoPiloto(); // Atualiza a lista no modal
+                } catch (err) {
+                    alert("Erro ao excluir piloto: " + err.message);
+                }
+            }
         };
 
         window.criarCampeonatoProtegido = async function() {
@@ -2119,6 +2151,7 @@
                     <div class="config-box-trigger">
                         <button class="btn-merge-open" onclick="abrirPainelMesclagem('${escapeHtml(nomePiloto)}')">🔀 Mesclar Outro Piloto Aqui</button>
                         <button class="btn-config-open" onclick="solicitarSenhaConfiguracao('${escapeHtml(nomePiloto)}')">⚙️ Configurações Protegidas</button>
+                        <button class="btn-action-danger" style="padding: 6px 14px; font-size: 0.82rem;" onclick="excluirPilotoSistema('${escapeHtml(nomePiloto)}')">🗑️ Excluir Piloto</button>
                     </div>
                     <div id="container-config-protegido"></div>
                     <div id="container-mesclagem-protegido"></div>
@@ -2191,6 +2224,7 @@
                 <div class="config-box-trigger">
                     <button class="btn-merge-open" onclick="abrirPainelMesclagem('${escapeHtml(nomePiloto)}')">🔀 Mesclar Outro Piloto Aqui</button>
                     <button class="btn-config-open" onclick="solicitarSenhaConfiguracao('${escapeHtml(nomePiloto)}')">⚙️ Configurações Protegidas</button>
+                    <button class="btn-action-danger" style="padding: 6px 14px; font-size: 0.82rem;" onclick="excluirPilotoSistema('${escapeHtml(nomePiloto)}')">🗑️ Excluir Piloto</button>
                 </div>
                 <div id="container-config-protegido"></div>
                 <div id="container-mesclagem-protegido"></div>
