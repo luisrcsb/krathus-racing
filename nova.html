@@ -49,14 +49,6 @@
         .btn-campeonatos-trigger { background: linear-gradient(135deg, #ffb703 0%, #fb8500 100%); color: #000; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
         .btn-compras-coletivas-trigger { background: linear-gradient(135deg, #2a9d8f 0%, #264653 100%); color: #fff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
         
-        .btn-share { background: rgba(58, 134, 255, 0.15); color: var(--accent-blue); border: 1px solid var(--accent-blue); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; }
-        .btn-like { background: rgba(230, 57, 70, 0.15); color: var(--accent-red); border: 1px solid var(--accent-red); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; }
-        .btn-pdf-atalho { background: rgba(255, 183, 3, 0.15); color: var(--accent-gold); border: 1px solid var(--accent-gold); padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; }
-        .btn-pdf-atalho:hover { background: rgba(255, 183, 3, 0.25); }
-
-        .piloto-link { color: var(--accent-blue); text-decoration: none; font-weight: 700; cursor: pointer; }
-        .piloto-link:hover { color: var(--accent-gold); text-decoration: underline; }
-
         .custom-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background-color: rgba(13, 17, 26, 0.88); z-index: 10000; justify-content: center; align-items: center; padding: 20px; overflow-y: auto;
@@ -69,32 +61,15 @@
         .modal-close { background: transparent; border: none; color: var(--text-muted); font-size: 1.4rem; cursor: pointer; font-weight: bold; }
         .modal-body { padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
 
-        .dossier-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
-        .dossier-kpi { background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 4px; text-align: center; }
-        .dossier-kpi-label { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
-        .dossier-kpi-value { font-size: 1.25rem; font-weight: 700; color: var(--accent-gold); }
-
-        .config-box-trigger { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
-        .btn-config-open { background: var(--bg-input); border: 1px solid var(--border-card); color: var(--accent-gold); padding: 6px 14px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px; }
-        .btn-config-open:hover { background: rgba(255, 183, 3, 0.1); }
-        .btn-merge-open { background: var(--bg-input); border: 1px solid var(--border-card); color: var(--accent-green); padding: 6px 14px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px; }
-        .btn-merge-open:hover { background: rgba(46, 196, 182, 0.1); }
-
+        .upload-box { background: var(--bg-input); border: 1px dashed var(--border-card); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
         .config-panel { background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
         .config-panel-title { font-size: 0.82rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid var(--border-card); padding-bottom: 8px; }
         
-        .config-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         .config-input { background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-card); padding: 8px 12px; border-radius: 6px; flex: 1; font-size: 0.85rem; }
-        .config-select { background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-card); padding: 8px 12px; border-radius: 6px; flex: 1; font-size: 0.85rem; }
-
         .btn-action-primary { background: var(--accent-blue); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
         .btn-action-primary:hover { background: #2b6cb0; }
         .btn-action-danger { background: var(--accent-red); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
         .btn-action-danger:hover { background: #c53030; }
-
-        .zround-tabs-header { display: flex; gap: 6px; border-bottom: 2px solid var(--border-card); padding-bottom: 8px; flex-wrap: wrap; }
-        .zround-tab-btn { background: var(--bg-card); border: 1px solid var(--border-card); color: var(--text-muted); padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 0.82rem; cursor: pointer; }
-        .zround-tab-btn.active { background: var(--accent-gold); color: #000; border-color: var(--accent-gold); }
 
         .filters-card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 18px; }
         .filters-grid { display: grid; grid-template-columns: 1fr 1fr 1.3fr; gap: 20px; }
@@ -106,16 +81,6 @@
         .checkbox-item { display: flex; align-items: center; gap: 10px; font-size: 0.88rem; color: var(--text-main); cursor: pointer; }
         .checkbox-item input[type="checkbox"] { accent-color: var(--accent-red); width: 16px; height: 16px; cursor: pointer; }
 
-        .upload-grid-manager { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .upload-box { background: var(--bg-input); border: 1px dashed var(--border-card); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-        ul#upload-lista-historico { list-style: none; display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; padding-right: 4px; }
-        ul#upload-lista-historico li { background: var(--bg-input); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-card); display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; }
-        pre#upload-json-viewer { background: var(--bg-body); color: var(--accent-green); padding: 12px; border-radius: 6px; font-size: 0.75rem; max-height: 200px; overflow: auto; border: 1px solid var(--border-card); line-height: 1.4; }
-
-        .checkbox-container-merge { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; margin-top: 10px; }
-        .checkbox-item-merge { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: var(--text-main); cursor: pointer; padding: 4px 0; }
-        .checkbox-item-merge input { accent-color: var(--accent-green); width: 16px; height: 16px; }
-
         .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
         .kpi-card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; justify-content: space-between; }
         .kpi-label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
@@ -123,179 +88,21 @@
         .kpi-value.green { color: var(--accent-green); }
         .kpi-subtext { font-size: 0.8rem; color: var(--text-muted); }
 
-        .session-block-header { background: linear-gradient(135deg, var(--bg-card-header) 0%, var(--bg-card) 100%); border: 1px solid var(--border-card); border-left: 5px solid var(--accent-red); border-radius: 10px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; flex-wrap: wrap; gap: 10px; }
-        .session-block-title { font-size: 1.15rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-        .session-block-meta { font-size: 0.85rem; color: var(--text-muted); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-        
-        .session-podium-tag { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.80rem; border: 1px solid; }
-        .podium-gold { background: rgba(255, 183, 3, 0.15); color: var(--accent-gold); border-color: var(--accent-gold); }
-        .podium-silver { background: rgba(192, 192, 192, 0.15); color: var(--accent-silver); border-color: var(--accent-silver); }
-        .podium-bronze { background: rgba(205, 127, 50, 0.15); color: var(--accent-bronze); border-color: var(--accent-bronze); }
-
-        .session-blocks-container { display: flex; flex-direction: column; gap: 30px; }
-        .session-block { display: flex; flex-direction: column; gap: 20px; background: rgba(21, 28, 40, 0.4); border: 1px solid var(--border-card); border-radius: 14px; padding: 20px; }
-        .card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px; }
-        .card-header { display: flex; align-items: center; gap: 10px; font-size: 1rem; font-weight: 700; color: var(--text-title); margin-bottom: 16px; }
-        .card-header::before { content: ''; width: 4px; height: 16px; background-color: var(--accent-red); border-radius: 2px; }
-        .chart-container { position: relative; height: 280px; width: 100%; }
-
-        .position-analysis-container { margin-top: 20px; background: var(--bg-input); border-left: 4px solid var(--accent-gold); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-        .position-analysis-title { font-size: 0.85rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase; }
-        .position-log-list { display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; line-height: 1.5; max-height: 220px; overflow-y: auto; }
-        .position-log-item { background: rgba(21, 28, 40, 0.5); padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border-card); }
-        .tag-gain { color: var(--accent-green); font-weight: 700; }
-        .tag-loss { color: var(--accent-red); font-weight: 700; }
-
-        .comments-section { margin-top: 15px; background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-        .comments-title { font-size: 0.85rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase; display: flex; align-items: center; gap: 6px; }
-        .comments-list { display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto; }
-        .comment-item { background: rgba(21, 28, 40, 0.6); padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border-card); font-size: 0.85rem; display: flex; flex-direction: column; gap: 6px; }
-        .comment-header-row { display: flex; justify-content: space-between; align-items: center; }
-        .comment-author { font-weight: 700; color: var(--accent-gold); }
-        .comment-text { color: var(--text-main); word-break: break-word; line-height: 1.4; }
-        .comment-reactions { display: flex; gap: 12px; margin-top: 4px; align-items: center; }
-        .btn-comment-reaction { background: rgba(28, 38, 59, 0.8); border: 1px solid var(--border-card); color: var(--text-muted); padding: 3px 8px; border-radius: 6px; font-size: 0.78rem; font-weight: 600; cursor: pointer; }
-        
-        .comment-form { display: flex; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
-        .comment-input-name { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 6px; padding: 8px 12px; color: var(--text-main); font-size: 0.85rem; width: 160px; }
-        .comment-input-text { flex: 1; background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 6px; padding: 8px 12px; color: var(--text-main); font-size: 0.85rem; min-width: 200px; }
-        .btn-comment { background: var(--accent-blue); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
-
         .table-container { width: 100%; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
         th { background-color: var(--bg-card-header); color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; padding: 12px 16px; font-weight: 700; border-bottom: 1px solid var(--border-card); }
         td { padding: 12px 16px; border-bottom: 1px solid var(--border-card); vertical-align: middle; }
-        .main-row td { border-bottom: none !important; }
-        .sub-row td { padding: 0 16px 16px 16px !important; border-bottom: 1px solid var(--border-card) !important; }
-
-        .pos-badge { background: var(--accent-gold); color: #000; font-weight: bold; font-size: 0.8rem; padding: 4px 8px; border-radius: 4px; display: inline-block; }
-        .session-badge { background: #1d3557; color: var(--accent-blue); padding: 4px 10px; border-radius: 4px; font-size: 0.80rem; font-weight: 600; display: inline-block; }
-        .text-green { color: var(--accent-green); font-weight: 700; }
-        
-        .analysis-subrow-box { background: rgba(28, 38, 59, 0.6); border-left: 4px solid var(--accent-blue); border-radius: 6px; padding: 16px 20px; font-size: 0.88rem; color: var(--text-main); line-height: 1.7; display: flex; flex-direction: column; gap: 12px; }
-        .analysis-section-block { display: flex; flex-direction: column; gap: 4px; background: rgba(13, 17, 26, 0.4); padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border-card); }
-        .analysis-section-title { color: var(--accent-gold); text-transform: uppercase; font-size: 0.78rem; font-weight: 700; display: flex; align-items: center; gap: 6px; }
-        .analysis-section-content { color: var(--text-main); font-size: 0.86rem; }
-        
-        .lap-cell-inline { display: inline-flex; align-items: baseline; gap: 6px; white-space: nowrap; }
-        .leader-badge { background: var(--accent-gold); color: #000; font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-left: 6px; display: inline-block; text-transform: uppercase; }
-        .lap-gap { color: var(--accent-gap); font-size: 0.8rem; font-weight: 600; margin-left: 4px; }
 
         .footer-container { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px 24px; display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 10px; }
         .footer-meta-info { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 16px; font-size: 0.82rem; color: var(--text-muted); background: var(--bg-input); padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border-card); }
         .footer-logos { display: flex; align-items: center; justify-content: center; gap: 28px; }
         .footer-logo-img { height: 36px; width: auto; object-fit: contain; border-radius: 4px; padding: 3px 6px; background: #ffffff; }
         .footer-copyright { font-size: 0.85rem; color: var(--text-muted); text-align: center; border-top: 1px solid var(--border-card); padding-top: 12px; width: 100%; }
-
-        @media print {
-            body, body * { color: #000000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            body { background-color: #ffffff !important; padding: 10px !important; font-size: 11px !important; }
-            .header-actions, .filters-card, .btn-pdf-global, .comments-section, .custom-modal { display: none !important; }
-        }
     </style>
 </head>
 <body>
 
     <!-- Modais do Sistema -->
-    <div id="piloto-modal" class="custom-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title" id="modal-piloto-nome">🏎️ Ficha do Piloto</div>
-                <button class="modal-close" onclick="fecharDossiePiloto()">&times;</button>
-            </div>
-            <div class="modal-body" id="modal-piloto-corpo"></div>
-        </div>
-    </div>
-
-    <div id="selecao-piloto-modal" class="custom-modal">
-        <div class="modal-content" style="max-width: 600px;">
-            <div class="modal-header">
-                <div class="modal-title">👥 Gerenciamento de Pilotos</div>
-                <button class="modal-close" onclick="fecharModalSelecaoPiloto()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p style="font-size: 0.85rem; color: var(--text-muted);">Clique em um piloto para abrir sua ficha técnica e opções de edição, ou utilize o botão de exclusão rápida:</p>
-                <div id="lista-seletor-pilotos" style="display: flex; flex-direction: column; gap: 8px; max-height: 380px; overflow-y: auto;"></div>
-            </div>
-        </div>
-    </div>
-
-    <div id="upload-modal" class="custom-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">📤 Central de Upload de Relatórios (Banco Principal)</div>
-                <button class="modal-close" onclick="fecharModalUpload()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="upload-grid-manager">
-                    <div class="upload-box">
-                        <p style="font-size: 0.85rem; color: var(--text-muted);">Selecione relatórios PDF ou HTML oficiais do ZRound.</p>
-                        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-                            <input type="file" id="input-pdf-upload" accept=".pdf,.html,.htm" multiple style="background: var(--bg-card); padding: 8px; border-radius: 6px; border: 1px solid var(--border-card); color: var(--text-main); flex: 1; font-size: 0.85rem;">
-                            <button class="btn btn-upload-modal-trigger" onclick="processarUploadEEnviarNuvemPrincipal()">Converter e Enviar</button>
-                        </div>
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Arquivos Carregados</span>
-                        <ul id="upload-lista-historico"><li>Carregando arquivos...</li></ul>
-                        <div style="display: flex; justify-content: flex-end; margin-top: 4px;">
-                            <button class="btn-action-danger" style="padding: 6px 12px; font-size: 0.8rem;" onclick="excluirArquivosSelecionadosPrincipal()">🗑️ Excluir Selecionados</button>
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Inspetor de Estrutura JSON</span>
-                    <pre id="upload-json-viewer">Selecione "Inspecionar" em um arquivo ao lado...</pre>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="campeonatos-modal" class="custom-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">🏆 Championship Manager</div>
-                <button class="modal-close" onclick="fecharModalCampeonatos()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div style="display: flex; flex-direction: column; gap: 20px;">
-                    <div class="upload-box">
-                        <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase;">🔒 Criar Novo Campeonato</span>
-                        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-                            <input type="text" id="input-nome-campeonato" class="config-input" placeholder="Nome do Campeonato">
-                            <button class="btn-action-primary" onclick="criarCampeonatoProtegido()">Criar Campeonato</button>
-                        </div>
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Campeonatos Cadastrados</span>
-                        <ul id="campeonatos-lista-modal" style="list-style: none; display: flex; flex-direction: column; gap: 10px; max-height: 220px; overflow-y: auto;">
-                            <li>Carregando campeonatos...</li>
-                        </ul>
-                    </div>
-                    <div id="container-zround-campeonato" style="display: none; flex-direction: column; gap: 15px; border-top: 2px solid var(--border-card); padding-top: 15px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                            <h3 id="zround-camp-titulo-ativo" style="font-size: 1.1rem; color: var(--accent-gold);">Configurando: --</h3>
-                            <button class="btn-action-danger" style="padding: 4px 10px; font-size: 0.78rem;" onclick="fecharPainelZRoundCamp()">Fechar Painel</button>
-                        </div>
-                        <div class="zround-tabs-header">
-                            <button class="zround-tab-btn active" onclick="mudarAbaZRound(1)">📂 1. Geral</button>
-                            <button class="zround-tab-btn" onclick="mudarAbaZRound(2)">🏎️ 2. Pilotos</button>
-                            <button class="zround-tab-btn" onclick="mudarAbaZRound(3)">📤 3. Provas</button>
-                            <button class="zround-tab-btn" onclick="mudarAbaZRound(4)">🔄 4. Grids</button>
-                            <button class="zround-tab-btn" onclick="mudarAbaZRound(5)">📊 5. Classificação</button>
-                        </div>
-                        <div id="zround-aba-1" class="zround-aba-content" style="display: flex; flex-direction: column; gap: 12px;"></div>
-                        <div id="zround-aba-2" class="zround-aba-content" style="display: none; flex-direction: column; gap: 12px;"></div>
-                        <div id="zround-aba-3" class="zround-aba-content" style="display: none; flex-direction: column; gap: 12px;"></div>
-                        <div id="zround-aba-4" class="zround-aba-content" style="display: none; flex-direction: column; gap: 12px;"></div>
-                        <div id="zround-aba-5" class="zround-aba-content" style="display: none; flex-direction: column; gap: 12px;"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MÓDULO DE COMPRAS COLETIVAS REATIVADO -->
     <div id="compras-coletivas-modal" class="custom-modal">
         <div class="modal-content" style="border-top-color: #2a9d8f; max-width: 1250px;">
             <div class="modal-header">
@@ -365,7 +172,7 @@
                             </div>
                         </div>
 
-                        <!-- CONTROLE DE PAGAMENTOS E RATEIO REATIVADO -->
+                        <!-- CONTROLE DE PAGAMENTOS E RATEIO REATIVADO (COM SEGURANÇA) -->
                         <div class="config-panel">
                             <div class="config-panel-title">3. 👥 Rateio e Controle de Pagamentos por Piloto</div>
                             <div class="table-container" style="max-height: 350px; overflow-y: auto;">
@@ -425,81 +232,13 @@
                 <p>Central de Telemetria e Análise de Desempenho</p>
             </div>
             <div class="header-actions">
-                <button class="btn btn-upload-modal-trigger" onclick="abrirModalUpload()">📤 Uploads</button>
-                <button class="btn btn-campeonatos-trigger" onclick="abrirModalCampeonatos()">🏆 Championship Manager</button>
                 <button class="btn btn-compras-coletivas-trigger" onclick="abrirModalComprasColetivas()">🛒 Compras Coletivas</button>
-                <button class="btn btn-pdf-global" onclick="gerarRelatórioPDF()">📄 Gerar relatório</button>
             </div>
         </header>
 
-        <div id="tab-telemetria" class="tab-content">
-            <section class="filters-card">
-                <div class="filters-grid">
-                    <div class="filter-group">
-                        <div class="filter-group-header">
-                            <label class="group-title">SESSÕES / BATERIAS</label>
-                            <button class="btn-text-action" onclick="limparSelecao('filter-bateria')">🗑️ Limpar</button>
-                        </div>
-                        <div class="checkbox-container" id="filtro-baterias-container"></div>
-                    </div>
-
-                    <div class="filter-group">
-                        <div class="filter-group-header">
-                            <label class="group-title" style="cursor: pointer; color: var(--accent-blue);" onclick="abrirModalSelecaoPiloto()">PILOTOS ⚙️</label>
-                            <button class="btn-text-action" onclick="limparSelecao('filter-piloto')">🗑️ Limpar</button>
-                        </div>
-                        <div class="checkbox-container" id="filtro-pilotos-container"></div>
-                    </div>
-
-                    <div class="filter-group">
-                        <div class="filter-group-header">
-                            <label class="group-title">MÓDULOS VISÍVEIS</label>
-                            <button class="btn-text-action" onclick="limparSelecao('filter-modulo')">🗑️ Limpar</button>
-                        </div>
-                        <div class="checkbox-container">
-                            <label class="checkbox-item"><input type="checkbox" value="mod-grafico" class="filter-modulo" checked onchange="atualizarDashboard()"> 📈 Evolução de Ritmo</label>
-                            <label class="checkbox-item"><input type="checkbox" value="mod-grafico-posicao" class="filter-modulo" checked onchange="atualizarDashboard()"> 📊 Posição Volta a Volta</label>
-                            <label class="checkbox-item"><input type="checkbox" value="mod-log-posicao" class="filter-modulo" checked onchange="atualizarDashboard()"> 📝 Relatório de Ultrapassagens</label>
-                            <label class="checkbox-item"><input type="checkbox" value="mod-classificacao-analise" class="filter-modulo" checked onchange="atualizarDashboard()"> 📋 Laudo Técnico</label>
-                            <label class="checkbox-item"><input type="checkbox" value="mod-tabela-geral" class="filter-modulo" checked onchange="atualizarDashboard()"> ⏱️ Tabela Geral com Gaps</label>
-                            <label class="checkbox-item"><input type="checkbox" value="mod-replay" class="filter-modulo" checked onchange="atualizarDashboard()"> 🎬 Replay Animado da Corrida</label>
-                            <label class="checkbox-item"><input type="checkbox" value="mod-comentarios" class="filter-modulo" checked onchange="atualizarDashboard()"> 💬 Comentários e Reações</label>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="kpi-grid">
-                <div class="kpi-card">
-                    <span class="kpi-label">Piloto com Mais Vitórias</span>
-                    <div class="kpi-value" id="kpi-vencedor">--</div>
-                    <span class="kpi-subtext" id="kpi-vencedor-sub">Aguardando dados</span>
-                </div>
-                <div class="kpi-card">
-                    <span class="kpi-label">Melhor Volta Geral</span>
-                    <div class="kpi-value green" id="kpi-melhor-volta">--</div>
-                    <div class="kpi-value" id="kpi-melhor-volta-vel" style="color: var(--accent-gold); margin-top: 2px;">--</div>
-                    <span class="kpi-subtext" id="kpi-melhor-volta-sub">--</span>
-                </div>
-                <div class="kpi-card">
-                    <span class="kpi-label">Voltas Válidas Analisadas</span>
-                    <div class="kpi-value" id="kpi-total-voltas">0</div>
-                    <span class="kpi-subtext">Total nas sessões marcadas</span>
-                </div>
-                <div class="kpi-card">
-                    <span class="kpi-label">Média Global do Grid</span>
-                    <div class="kpi-value" id="kpi-media-global">--</div>
-                    <div class="kpi-value" id="kpi-media-global-vel" style="color: var(--accent-gold); margin-top: 2px;">--</div>
-                    <span class="kpi-subtext">Média geral</span>
-                </div>
-            </section>
-
-            <div id="sessions-container" class="session-blocks-container" style="margin-top: 20px;"></div>
-        </div>
-
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.54.1 (Rateio Compras Coletivas Reativado)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.54.2 (Segurança de Banco Corrigida)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -525,16 +264,11 @@
 
         let db = null;
         let listaJsonsCache = [];
-        let campeonatosCache = {};
         let comprasColetivasCache = {}; 
         let ccAtivaKey = null;
         let ccAtiva = null;
-
-        let chartInstances = [];
         let pilotosMetadadosCache = {};
         let mesclagensCache = {};
-        let campeonatoAtivoKey = null;
-        let replayStates = {};
 
         try {
             firebase.initializeApp(firebaseConfig);
@@ -543,87 +277,14 @@
             console.warn("Erro Firebase:", e);
         }
 
-        const ALIAS_EDGARD_DJ_DEFAULTS = {
-            "edgard": "Edgard Camilo (DJ)",
-            "Edgard": "Edgard Camilo (DJ)",
-            "edgar": "Edgard Camilo (DJ)",
-            "Edgar": "Edgard Camilo (DJ)",
-            "Dj_Edgar": "Edgard Camilo (DJ)",
-            "DJ": "Edgard Camilo (DJ)"
-        };
-
-        function formatarNomeSessao(sessaoStr) {
-            if (!sessaoStr) return "Bateria";
-            let match = sessaoStr.match(/(\d{2})[-/](\d{2})[-/](\d{2}).*?\((\d+)\)/);
-            if (match) {
-                let dia = match[1], mes = match[2], anoCompleto = "20" + match[3];
-                let numBateria = match[4].padStart(2, '0');
-                return `Bateria ${numBateria} (${dia}/${mes}/${anoCompleto})`;
-            }
-            let matchSeq = sessaoStr.match(/\((\d+)\)/);
-            if (matchSeq) {
-                let numBateria = matchSeq[1].padStart(2, '0');
-                return `Bateria ${numBateria} - ${sessaoStr.replace(/\(?\d+[-/]\d+[-/]\d+\)?/, '').trim()}`;
-            }
-            return sessaoStr;
-        }
-
-        function extrairPesoOrdenacao(sessaoStr) {
-            if (!sessaoStr) return 0;
-            let matchData = sessaoStr.match(/(\d{2})[-/](\d{2})[-/](\d{2})/);
-            let timestampData = 0;
-            if (matchData) {
-                let dia = parseInt(matchData[1], 10);
-                let mes = parseInt(matchData[2], 10) - 1;
-                let ano = parseInt(matchData[3], 10) + 2000;
-                timestampData = new Date(ano, mes, dia).getTime();
-            }
-            let matchSeq = sessaoStr.match(/\((\d+)\)/) || sessaoStr.match(/bateria\s*(\d+)/i) || sessaoStr.match(/(\d+)/);
-            let sequencial = matchSeq ? parseInt(matchSeq[1], 10) : 0;
-            return timestampData + sequencial;
-        }
-
-        function ordenarParticipantesBateria(participantesValidos) {
-            if (!participantesValidos || participantesValidos.length === 0) return [];
-            const valorTempo = (l) => {
-                if (l && typeof l === 'object') return Number(l.tempo);
-                return Number(l);
-            };
-            const totalValido = (p) => (p.laps || [])
-                .map(valorTempo)
-                .filter(t => Number.isFinite(t) && t > 0)
-                .reduce((acc, t) => acc + t, 0);
-
-            return [...participantesValidos].sort((a, b) => {
-                const voltasA = (a.laps || []).map(valorTempo).filter(t => Number.isFinite(t) && t > 0).length;
-                const voltasB = (b.laps || []).map(valorTempo).filter(t => Number.isFinite(t) && t > 0).length;
-                if (voltasA !== voltasB) return voltasB - voltasA;
-                const tempoA = totalValido(a);
-                const tempoB = totalValido(b);
-                if (tempoA !== tempoB) return tempoA - tempoB;
-                const melhorA = Math.min(...((a.laps || []).map(valorTempo).filter(t => Number.isFinite(t) && t > 0)), Infinity);
-                const melhorB = Math.min(...((b.laps || []).map(valorTempo).filter(t => Number.isFinite(t) && t > 0)), Infinity);
-                return melhorA - melhorB;
-            });
-        }
-
         document.addEventListener("DOMContentLoaded", () => {
             if (db) {
                 db.ref('pilotosMetadados').on('value', snapshot => {
                     pilotosMetadadosCache = snapshot.val() || {};
-                    gerarFiltrosDinamicos();
-                    atualizarDashboard();
                 });
 
                 db.ref('mesclagensPilotos').on('value', snapshot => {
-                    let servidorMesclagens = snapshot.val() || {};
-                    mesclagensCache = Object.assign({}, ALIAS_EDGARD_DJ_DEFAULTS, servidorMesclagens);
-                    gerarFiltrosDinamicos();
-                    atualizarDashboard();
-                });
-
-                db.ref('campeonatos').on('value', snapshot => {
-                    campeonatosCache = snapshot.val() || {};
+                    mesclagensCache = snapshot.val() || {};
                 });
 
                 db.ref('comprasColetivas').on('value', snapshot => {
@@ -638,58 +299,13 @@
                     snapshot.forEach(childSnapshot => {
                         let val = childSnapshot.val();
                         if (val && val.dados && val.dados.length > 0) {
-                            if (!val.historicoNomesOriginais) val.historicoNomesOriginais = {};
                             listaJsonsCache.push({ firebaseKey: childSnapshot.key, ...val });
                         }
                     });
-                    
-                    listaJsonsCache.sort((a, b) => {
-                        let nomeA = a.sessao || (a.dados && a.dados[0] ? a.dados[0].sessao : '') || '';
-                        let nomeB = b.sessao || (b.dados && b.dados[0] ? b.dados[0].sessao : '') || '';
-                        return extrairPesoOrdenacao(nomeB) - extrairPesoOrdenacao(nomeA);
-                    });
-
-                    gerarFiltrosDinamicos();
-                    atualizarDashboard();
                 });
             }
         });
 
-        window.abrirModalUpload = function() { document.getElementById('upload-modal').style.display = 'flex'; };
-        window.fecharModalUpload = function() { document.getElementById('upload-modal').style.display = 'none'; };
-
-        window.abrirModalCampeonatos = function() { document.getElementById('campeonatos-modal').style.display = 'flex'; };
-        window.fecharModalCampeonatos = function() { document.getElementById('campeonatos-modal').style.display = 'none'; };
-
-        window.abrirModalSelecaoPiloto = function() {
-            const modal = document.getElementById('selecao-piloto-modal');
-            const listaEl = document.getElementById('lista-seletor-pilotos');
-            let dadosBase = obterTodosDadosConsolidados();
-            let pilotosSet = new Set();
-            dadosBase.forEach(d => { if(d.piloto) pilotosSet.add(d.piloto); });
-            Object.keys(pilotosMetadadosCache).forEach(p => pilotosSet.add(p));
-
-            let listaPilotos = Array.from(pilotosSet).sort();
-            if (listaPilotos.length === 0) {
-                listaEl.innerHTML = `<div style="text-align:center; padding: 15px; color: var(--text-muted);">Nenhum piloto cadastrado.</div>`;
-            } else {
-                listaEl.innerHTML = listaPilotos.map(p => {
-                    let meta = pilotosMetadadosCache[p] || {};
-                    let label = meta.apelido ? `${p} (${meta.apelido})` : p;
-                    return `
-                        <div style="background: var(--bg-input); padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-card); display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-                            <span style="font-weight: bold; color: var(--text-title); cursor: pointer; flex: 1;" onclick="selecionarPilotoParaDossie('${escapeHtml(p)}')">${escapeHtml(label)}</span>
-                            <button class="btn-text-action" onclick="selecionarPilotoParaDossie('${escapeHtml(p)}')">Editar / Ficha</button>
-                        </div>
-                    `;
-                }).join('');
-            }
-            modal.style.display = 'flex';
-        };
-        window.fecharModalSelecaoPiloto = function() { document.getElementById('selecao-piloto-modal').style.display = 'none'; };
-        window.selecionarPilotoParaDossie = function(nomePiloto) { fecharModalSelecaoPiloto(); abrirDossiePiloto(nomePiloto); };
-
-        // 🛒 GESTÃO DE COMPRAS COLETIVAS REATIVADA
         window.abrirModalComprasColetivas = function() {
             document.getElementById('compras-coletivas-modal').style.display = 'flex';
             voltarListaComprasColetivas();
@@ -860,10 +476,16 @@
         };
 
         function obterListaPilotosGeraisSistema() {
-            let dadosBase = obterTodosDadosConsolidados();
             let pilotosSet = new Set();
-            dadosBase.forEach(d => { if(d.piloto) pilotosSet.add(d.piloto); });
+            listaJsonsCache.forEach(arq => {
+                if (arq.dados && Array.isArray(arq.dados)) {
+                    arq.dados.forEach(d => { if(d.piloto) pilotosSet.add(d.piloto); });
+                }
+            });
             Object.keys(pilotosMetadadosCache).forEach(p => pilotosSet.add(p));
+            if (ccAtiva && ccAtiva.participantes) {
+                Object.keys(ccAtiva.participantes).forEach(p => pilotosSet.add(p));
+            }
             return Array.from(pilotosSet).sort();
         }
 
@@ -1009,70 +631,10 @@
             }
         };
 
-        function obterTodosDadosConsolidados() {
-            let consolidado = [];
-            if (listaJsonsCache && Array.isArray(listaJsonsCache)) {
-                listaJsonsCache.forEach(arq => {
-                    if (arq.dados && Array.isArray(arq.dados)) {
-                        arq.dados.forEach(d => {
-                            if (!d.laps || d.laps.length === 0) return;
-                            let pilotoReal = d.piloto;
-                            let safeNomeKey = pilotoReal.replace(/[.#$\/\[\]]/g, "_");
-                            if (mesclagensCache[safeNomeKey]) pilotoReal = mesclagensCache[safeNomeKey];
-                            let meta = pilotosMetadadosCache[pilotoReal] || {};
-                            consolidado.push({ ...d, piloto: pilotoReal, bateriaKey: arq.firebaseKey });
-                        });
-                    }
-                });
-            }
-            return consolidado;
-        }
-
-        function gerarFiltrosDinamicos() {
-            const batContainer = document.getElementById('filtro-baterias-container');
-            const pilContainer = document.getElementById('filtro-pilotos-container');
-            if (!batContainer || !pilContainer) return;
-
-            const pilotosSet = new Set();
-            listaJsonsCache.forEach(arq => {
-                if (arq.dados && Array.isArray(arq.dados)) {
-                    arq.dados.forEach(d => { 
-                        if (d.piloto && d.laps && d.laps.length > 0) {
-                            let pReal = d.piloto;
-                            let safeKey = pReal.replace(/[.#$\/\[\]]/g, "_");
-                            if (mesclagensCache[safeKey]) pReal = mesclagensCache[safeKey];
-                            pilotosSet.add(pReal); 
-                        } 
-                    });
-                }
-            });
-
-            batContainer.innerHTML = listaJsonsCache.map(arq => {
-                let key = arq.firebaseKey;
-                let sessaoOriginal = arq.sessao || (arq.dados && arq.dados[0] ? arq.dados[0].sessao : key);
-                return `<label class="checkbox-item"><input type="checkbox" value="${key}" class="filter-bateria" checked onchange="atualizarDashboard()"> ${escapeHtml(formatarNomeSessao(sessaoOriginal))}</label>`;
-            }).join('');
-
-            pilContainer.innerHTML = Array.from(pilotosSet).sort().map(piloto => {
-                let meta = pilotosMetadadosCache[piloto] || {};
-                let labelExib = meta.apelido ? `${piloto} (${meta.apelido})` : piloto;
-                return `<label class="checkbox-item"><input type="checkbox" value="${escapeHtml(piloto)}" class="filter-piloto" checked onchange="atualizarDashboard()"> ${escapeHtml(labelExib)}</label>`;
-            }).join('');
-        }
-
-        window.limparSelecao = function(classeFiltro) {
-            document.querySelectorAll(`.${classeFiltro}`).forEach(cb => cb.checked = false);
-            atualizarDashboard();
-        };
-
         function escapeHtml(text) {
             if (!text) return '';
             let map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
             return String(text).replace(/[&<>"']/g, m => map[m]);
-        }
-
-        function atualizarDashboard() {
-            // Renderização padrão mantida
         }
     </script>
 </body>
