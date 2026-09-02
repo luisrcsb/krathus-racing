@@ -137,7 +137,7 @@
                         <input type="text" id="cc-form-nome" class="config-input" style="width: 100%;" oninput="atualizarCalculosCC()">
                     </div>
 
-                    <!-- Bloco 2: Itens e Atribuição aos Pilotos (ou Todos) -->
+                    <!-- Bloco 2: Itens e Atribuição aos Pilotos -->
                     <div class="config-panel">
                         <div class="config-panel-title">2. Itens da Compra e Atribuição (Individual ou Todos)</div>
                         <div class="table-container">
@@ -183,10 +183,14 @@
                         </div>
                     </div>
 
-                    <!-- Bloco 4: Cotistas, Rateio Dinâmico e Edição Manual -->
+                    <!-- Bloco 4: Gestão de Participantes, Rateio e Edição Manual -->
                     <div class="config-panel">
-                        <div class="config-panel-title">4. Seleção de Cotistas, Rateio Automático e Edição Manual</div>
-                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 6px;">💡 Dica: Ao marcar/desmarcar cotistas, os valores se redistribuem automaticamente. Se desejar, digite diretamente no campo "Valor Personalizado (Manual)" para fixar a cota daquele participante; o restante será rateado proporcionalmente entre os demais.</p>
+                        <div class="config-panel-title">4. Gestão de Participantes, Rateio e Edição Manual</div>
+                        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 8px;">
+                            <input type="text" id="cc-input-novo-participante" class="config-input" placeholder="Adicionar novo participante (Ex: Carlos)" style="max-width: 280px;">
+                            <button type="button" class="btn-action-primary" style="background: var(--accent-cc); padding: 8px 14px;" onclick="adicionarParticipanteManual()">➕ Adicionar Participante</button>
+                        </div>
+                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 6px;">💡 Dica: Marque ou desmarque os ativos. Você também pode digitar um valor personalizado/manual para fixar a cota de alguém; o restante será rateado automaticamente.</p>
                         <div class="table-container">
                             <table>
                                 <thead>
@@ -194,13 +198,13 @@
                                         <th style="width: 45px; text-align: center;">Ativo</th>
                                         <th>Piloto / Cotista</th>
                                         <th style="width: 140px; text-align: center;">Comprador</th>
-                                        <th>Itens / Divisão</th>
                                         <th>Valor Base Itens</th>
                                         <th>Valor Personalizado (Manual)</th>
                                         <th>Taxas/Frete Proporcional</th>
                                         <th>Valor Total Devido</th>
                                         <th>Situação</th>
                                         <th style="text-align: center;">Status (Pago)</th>
+                                        <th style="text-align: center; width: 60px;">Ação</th>
                                     </tr>
                                 </thead>
                                 <tbody id="cc-tabela-cotistas-rateio"></tbody>
@@ -249,7 +253,7 @@
         let comprasColetivasCache = {};
         let compraAbertaKey = null;
         let compraAbertaDados = null;
-        let pilotosDisponiveisGlobal = [];
+        let pilotosBaseGlobal = ["Rafael", "DJ", "Ronaldo", "Gustavo"];
 
         try {
             firebase.initializeApp(firebaseConfig);
@@ -269,9 +273,8 @@
                             if (pNome && !novaLista.includes(pNome)) novaLista.push(pNome);
                         });
                     }
-                    pilotosDisponiveisGlobal = novaLista.sort();
-                    if (pilotosDisponiveisGlobal.length === 0) {
-                        pilotosDisponiveisGlobal = ["Rafael", "DJ", "Ronaldo", "Gustavo"];
+                    if (novaLista.length > 0) {
+                        pilotosBaseGlobal = novaLista.sort();
                     }
                     if (compraAbertaDados) atualizarCalculosCC();
                 });
@@ -281,7 +284,6 @@
                     renderizarListaComprasColetivas();
                 });
             } else {
-                pilotosDisponiveisGlobal = ["Rafael", "DJ", "Ronaldo", "Gustavo"];
                 renderizarListaComprasColetivas();
             }
         });
@@ -309,11 +311,11 @@
 
             let key = "cc_" + Date.now();
             let participantesIniciais = {};
-            pilotosDisponiveisGlobal.forEach(p => participantesIniciais[p] = true);
+            pilotosBaseGlobal.forEach(p => participantesIniciais[p] = true);
 
             let nova = {
                 chave: key, nome: nome, frete: 0, imposto: 0, icms: 0, desconto: 0, outrosDescontos: 0,
-                itens: [{ imgUrl: "", nomeItem: "", link: "", valor: 0, qtd: 1, atribuidoA: pilotosDisponiveisGlobal[0] || "" }],
+                itens: [{ imgUrl: "", nomeItem: "", link: "", valor: 0, qtd: 1, atribuidoA: pilotosBaseGlobal[0] || "" }],
                 comprador: "", chavePix: "", participantes: participantesIniciais, pagamentos: {}, valoresManuais: {}, rastreio: ""
             };
             await db.ref(`comprasColetivas/${key}`).set(nova);
@@ -371,6 +373,13 @@
             if (!compraAbertaDados.pagamentos) compraAbertaDados.pagamentos = {};
             if (!compraAbertaDados.valoresManuais) compraAbertaDados.valoresManuais = {};
 
+            // Garante que todos os pilotos da base global constem na lista de participantes desta compra se estiver vazia
+            pilotosBaseGlobal.forEach(p => {
+                if (compraAbertaDados.participantes[p] === undefined) {
+                    compraAbertaDados.participantes[p] = true;
+                }
+            });
+
             document.getElementById('lista-compras-coletivas-view').style.display = 'none';
             document.getElementById('painel-unica-compra-view').style.display = 'flex';
             document.getElementById('cc-titulo-gerenciamento').innerText = `Gerenciando: ${compraAbertaDados.nome}`;
@@ -384,25 +393,38 @@
             document.getElementById('cc-form-outros-descontos').value = compraAbertaDados.outrosDescontos || 0;
             document.getElementById('cc-form-pix').value = compraAbertaDados.chavePix || "";
 
-            let ativosIniciais = pilotosDisponiveisGlobal.filter(p => compraAbertaDados.participantes[p] === true);
-            if (ativosIniciais.length === 0 && pilotosDisponiveisGlobal.length > 0) {
-                pilotosDisponiveisGlobal.forEach(p => compraAbertaDados.participantes[p] = true);
-                ativosIniciais = [...pilotosDisponiveisGlobal];
-            }
-
-            if (compraAbertaDados.itens.length === ativosIniciais.length) {
-                compraAbertaDados.itens.forEach((it, idx) => {
-                    if (!it.atribuidoA || it.atribuidoA === "") {
-                        it.atribuidoA = ativosIniciais[idx % ativosIniciais.length];
-                    }
-                });
-            }
-
             atualizarCalculosCC();
         };
 
+        window.adicionarParticipanteManual = function() {
+            let input = document.getElementById('cc-input-novo-participante');
+            let nomeNovo = input.value.trim();
+            if (!nomeNovo) { alert("Digite o nome do participante."); return; }
+            if (compraAbertaDados.participantes[nomeNovo] !== undefined) { alert("Este participante já está na lista."); return; }
+
+            compraAbertaDados.participantes[nomeNovo] = true;
+            input.value = "";
+            atualizarCalculosCC();
+        };
+
+        window.removerParticipanteDaCompra = function(pName) {
+            if (confirm(`Deseja remover ${pName} desta compra coletiva?`)) {
+                delete compraAbertaDados.participantes[pName];
+                delete compraAbertaDados.pagamentos[pName];
+                delete compraAbertaDados.valoresManuais[pName];
+                if (compraAbertaDados.comprador === pName) compraAbertaDados.comprador = "";
+                
+                // Atualiza itens que estavam atribuídos a ele para vazio ou TODOS
+                compraAbertaDados.itens.forEach(it => {
+                    if (it.atribuidoA === pName) it.atribuidoA = "";
+                });
+                atualizarCalculosCC();
+            }
+        };
+
         window.adicionarItemCC = function() {
-            compraAbertaDados.itens.push({ imgUrl: "", nomeItem: "", link: "", valor: 0, qtd: 1, atribuidoA: pilotosDisponiveisGlobal[0] || "" });
+            let listaParticipantesAtuais = Object.keys(compraAbertaDados.participantes);
+            compraAbertaDados.itens.push({ imgUrl: "", nomeItem: "", link: "", valor: 0, qtd: 1, atribuidoA: listaParticipantesAtuais[0] || "" });
             atualizarCalculosCC();
         };
         window.removerItemCC = function(idx) {
@@ -478,14 +500,15 @@
                 divAviso.style.display = 'none';
             }
 
-            let ativosArr = pilotosDisponiveisGlobal.filter(p => compraAbertaDados.participantes && compraAbertaDados.participantes[p] === true);
+            let participantesLista = Object.keys(compraAbertaDados.participantes);
+            let ativosArr = participantesList.filter(p => compraAbertaDados.participantes[p] === true);
 
-            // Renderizar tabela de itens com a opção "TODOS"
+            // Renderizar tabela de itens
             let tbodyItens = document.getElementById('cc-tabela-itens');
             tbodyItens.innerHTML = "";
             compraAbertaDados.itens.forEach((it, idx) => {
                 let optionsPilotos = `<option value="">-- Selecione --</option><option value="TODOS" ${it.atribuidoA === 'TODOS' ? 'selected' : ''}>👥 Todos (Dividir entre todos)</option>`;
-                pilotosDisponiveisGlobal.forEach(p => {
+                participantesLista.forEach(p => {
                     optionsPilotos += `<option value="${escapeHtml(p)}" ${it.atribuidoA === p ? 'selected' : ''}>${escapeHtml(p)}</option>`;
                 });
 
@@ -503,16 +526,16 @@
                 `;
             });
 
-            // Cálculo dos valores base por piloto (considerando divisão se "TODOS")
+            // Cálculo dos valores base por participante
             let valorBasePilotos = {};
-            ativosArr.forEach(p => valorBasePilotos[p] = 0);
+            participantesLista.forEach(p => valorBasePilotos[p] = 0);
 
             compraAbertaDados.itens.forEach(it => {
                 let subtotalItem = it.valor * it.qtd;
                 if (it.atribuidoA === "TODOS") {
                     if (ativosArr.length > 0) {
                         let partePorPessoa = subtotalItem / ativosArr.length;
-                        ativosArr.forEach(p => valorBasePilotos[p] += partePorPessoa);
+                        ativosArr.forEach(p => { if(valorBasePilotos[p] !== undefined) valorBasePilotos[p] += partePorPessoa; });
                     }
                 } else if (it.atribuidoA && valorBasePilotos[it.atribuidoA] !== undefined) {
                     valorBasePilotos[it.atribuidoA] += subtotalItem;
@@ -530,14 +553,14 @@
             let cotistasSemManual = ativosArr.filter(p => !compraAbertaDados.valoresManuais || compraAbertaDados.valoresManuais[p] === undefined);
 
             let totalBaseSemManual = 0;
-            cotistasSemManual.forEach(p => totalBaseSemManual += valorBasePilotos[p]);
+            cotistasSemManual.forEach(p => totalBaseSemManual += (valorBasePilotos[p] || 0));
 
             let totalTaxas = compraAbertaDados.frete + compraAbertaDados.imposto + compraAbertaDados.icms - compraAbertaDados.desconto - compraAbertaDados.outrosDescontos;
 
             let tbodyTabelaUnificada = document.getElementById('cc-tabela-cotistas-rateio');
             tbodyTabelaUnificada.innerHTML = "";
 
-            pilotosDisponiveisGlobal.forEach(p => {
+            participantesLista.forEach(p => {
                 let isChecked = compraAbertaDados.participantes && compraAbertaDados.participantes[p] === true;
                 let isComprador = (p === compraAbertaDados.comprador);
                 let isPago = compraAbertaDados.pagamentos && compraAbertaDados.pagamentos[p] === true;
@@ -562,13 +585,13 @@
                         <td style="text-align: center;"><input type="checkbox" class="cc-check-participante" data-piloto="${escapeHtml(p)}" ${isChecked ? 'checked' : ''} onchange="atualizarCalculosCC()"></td>
                         <td><strong>${escapeHtml(p)}</strong></td>
                         <td style="text-align: center;"><input type="radio" name="radio-comprador" ${isComprador ? 'checked' : ''} ${!isChecked ? 'disabled' : ''} onchange="selecionarComprador('${escapeHtml(p)}')"></td>
-                        <td>${isChecked ? (valorItensPiloto > 0 ? 'R$ ' + valorItensPiloto.toFixed(2) : '0,00') : '-'}</td>
                         <td>${isChecked ? 'R$ ' + valorItensPiloto.toFixed(2) : '-'}</td>
                         <td>${isChecked ? '<input type="number" step="0.01" class="config-input cc-input-manual" data-piloto="' + escapeHtml(p) + '" value="' + valManualAtual + '" placeholder="Auto" style="width:100px;" oninput="atualizarCalculosCC()">' : '-'}</td>
                         <td>${isChecked ? 'R$ ' + proporcaoTaxas.toFixed(2) : '-'}</td>
                         <td style="font-weight: bold; color: var(--accent-gold);">${isChecked ? 'R$ ' + valorTotalDevidoPiloto.toFixed(2) : '-'}</td>
                         <td>${isChecked ? (isPago ? 'Quitado' : 'Pendente') : '-'}</td>
                         <td style="text-align: center;"><input type="checkbox" ${isPago ? 'checked' : ''} ${!isChecked ? 'disabled' : ''} onchange="togglePagamento('${escapeHtml(p)}', this.checked)"></td>
+                        <td style="text-align: center;"><button type="button" class="btn-action-danger" style="padding: 3px 6px; font-size: 0.7rem;" onclick="removerParticipanteDaCompra('${escapeHtml(p)}')">🗑️</button></td>
                     </tr>
                 `;
             });
