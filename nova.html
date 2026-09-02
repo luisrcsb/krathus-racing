@@ -639,7 +639,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.50.0 (Replay Animado & Chassi)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.51.0 (Replay Proporcional & Velocidade)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -2397,9 +2397,10 @@
                 };
             });
 
+            let maxVoltasGeral = Math.max(...pilotosReplay.map(p => p.tempos.length));
             let tempoMaximoCorrida = Math.max(...pilotosReplay.map(p => p.tempos[p.tempos.length - 1]));
             let tempoAtual = 0;
-            let velocidadeSimulacao = 1.5;
+            let velocidadeSimulacao = replayStates[bateriaKey]?.velocidade || 1.5;
             let ultimoTimestamp = performance.now();
 
             function animar(timestamp) {
@@ -2441,9 +2442,10 @@
                         }
                     }
 
-                    let totalVoltasCorrida = p.tempos.length;
+                    let totalVoltasPiloto = p.tempos.length;
                     let larguraUtil = canvas.width - 150;
-                    let xCarro = 90 + (Math.min(voltasCompletas, totalVoltasCorrida) / totalVoltasCorrida) * larguraUtil;
+                    // Escala proporcional real: 100% da pista corresponde ao piloto com mais voltas da bateria
+                    let xCarro = 90 + (Math.min(voltasCompletas, maxVoltasGeral) / maxVoltasGeral) * larguraUtil;
 
                     if (p.carroImg && p.carroImg.complete && p.carroImg.naturalWidth !== 0) {
                         ctx.drawImage(p.carroImg, xCarro - 18, y - 10, 36, 16);
@@ -2460,7 +2462,7 @@
 
                     ctx.fillStyle = '#8492a6';
                     ctx.font = '11px Segoe UI';
-                    ctx.fillText(`${Math.min(Math.floor(voltasCompletas) + 1, totalVoltasCorrida)}/${totalVoltasCorrida}v`, canvas.width - 42, y + 4);
+                    ctx.fillText(`${Math.min(Math.floor(voltasCompletas) + 1, totalVoltasPiloto)}/${totalVoltasPiloto}v`, canvas.width - 42, y + 4);
                 });
 
                 if (tempoAtual < tempoMaximoCorrida) {
@@ -2469,6 +2471,7 @@
             }
 
             replayStates[bateriaKey] = {
+                ...replayStates[bateriaKey],
                 animId: requestAnimationFrame((ts) => { ultimoTimestamp = ts; animar(ts); })
             };
         };
@@ -2479,7 +2482,28 @@
             }
         };
 
-        function gerarTextoCompartilhamento(piloto, posicao, dadosBateria) {
+        window.mudarVelocidadeReplay = function(bateriaKey, novaVel) {
+            if (!replayStates[bateriaKey]) replayStates[bateriaKey] = {};
+            replayStates[bateriaKey].velocidade = parseFloat(novaVel);
+
+            // Atualiza destaque visual dos botões de velocidade
+            let containerBotoes = document.getElementById(`replay-vel-btns-${bateriaKey}`);
+            if (containerBotoes) {
+                Array.from(containerBotoes.children).forEach(btn => {
+                    if (btn.getAttribute('data-vel') == novaVel) {
+                        btn.style.background = 'var(--accent-gold)';
+                        btn.style.color = '#000';
+                        btn.style.fontWeight = 'bold';
+                    } else {
+                        btn.style.background = 'var(--bg-input)';
+                        btn.style.color = 'var(--text-main)';
+                        btn.style.fontWeight = 'normal';
+                    }
+                });
+            }
+        };
+
+        window.gerarTextoCompartilhamento = function(piloto, posicao, dadosBateria) {
             let nome = piloto.nome || piloto.piloto || "Piloto";
             let voltas = Number(piloto.voltas || 0);
             let melhor = Number(piloto.melhorVolta);
@@ -2746,10 +2770,20 @@
                     html += `
                         <div class="card">
                             <div class="card-header">🎬 Replay Animado da Corrida</div>
-                            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
-                                <button class="btn-action-primary" onclick="iniciarReplay('${bateriaKey}')">▶️ Play / Reiniciar</button>
-                                <button class="btn-action-danger" onclick="pausarReplay('${bateriaKey}')">⏸️ Pausar</button>
-                                <span id="replay-tempo-${bateriaKey}" style="font-size: 0.85rem; color: var(--text-muted);">Tempo: 0.0s</span>
+                            <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;">
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="btn-action-primary" onclick="iniciarReplay('${bateriaKey}')">▶️ Play / Reiniciar</button>
+                                    <button class="btn-action-danger" onclick="pausarReplay('${bateriaKey}')">⏸️ Pausar</button>
+                                </div>
+                                <div id="replay-vel-btns-${bateriaKey}" style="display: flex; gap: 5px; align-items: center;">
+                                    <span style="font-size: 0.8rem; color: var(--text-muted); margin-right: 4px;">Velocidade:</span>
+                                    <button class="config-input" data-vel="1" style="padding: 4px 8px; cursor: pointer;" onclick="mudarVelocidadeReplay('${bateriaKey}', 1)">1x</button>
+                                    <button class="config-input" data-vel="1.5" style="padding: 4px 8px; cursor: pointer; background: var(--accent-gold); color: #000; font-weight: bold;" onclick="mudarVelocidadeReplay('${bateriaKey}', 1.5)">1.5x</button>
+                                    <button class="config-input" data-vel="2" style="padding: 4px 8px; cursor: pointer;" onclick="mudarVelocidadeReplay('${bateriaKey}', 2)">2x</button>
+                                    <button class="config-input" data-vel="4" style="padding: 4px 8px; cursor: pointer;" onclick="mudarVelocidadeReplay('${bateriaKey}', 4)">4x</button>
+                                    <button class="config-input" data-vel="8" style="padding: 4px 8px; cursor: pointer;" onclick="mudarVelocidadeReplay('${bateriaKey}', 8)">8x</button>
+                                </div>
+                                <span id="replay-tempo-${bateriaKey}" style="font-size: 0.85rem; color: var(--text-muted); margin-left: auto;">Tempo: 0.0s</span>
                             </div>
                             <div style="position: relative; background: var(--bg-body); border-radius: 8px; border: 1px solid var(--border-card); padding: 10px; overflow: hidden;">
                                 <canvas id="canvas-replay-${bateriaKey}" width="1000" height="200" style="width: 100%; height: auto; display: block;"></canvas>
