@@ -209,6 +209,22 @@
         </div>
     </div>
 
+    <!-- 👥 Modal de Seleção de Piloto para Ficha/Edição -->
+    <div id="selecao-piloto-modal" class="custom-modal">
+        <div class="modal-content" style="max-width: 550px;">
+            <div class="modal-header">
+                <div class="modal-title">👥 Selecionar Piloto</div>
+                <button class="modal-close" onclick="fecharModalSelecaoPiloto()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 0.85rem; color: var(--text-muted);">Clique em um piloto abaixo para abrir sua ficha técnica e opções de edição:</p>
+                <div id="lista-seletor-pilotos" style="display: flex; flex-direction: column; gap: 8px; max-height: 350px; overflow-y: auto;">
+                    <!-- Preenchido dinamicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 📤 Modal Central de Uploads -->
     <div id="upload-modal" class="custom-modal">
         <div class="modal-content">
@@ -585,7 +601,7 @@
 
                     <div class="filter-group">
                         <div class="filter-group-header">
-                            <label class="group-title">PILOTOS</label>
+                            <label class="group-title" style="cursor: pointer; color: var(--accent-blue);" onclick="abrirModalSelecaoPiloto()" title="Clique para ver a ficha e editar pilotos">PILOTOS ⚙️</label>
                             <button class="btn-text-action" onclick="limparSelecao('filter-piloto')">🗑️ Limpar</button>
                         </div>
                         <div class="checkbox-container" id="filtro-pilotos-container"></div>
@@ -639,7 +655,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.51.0 (Replay Proporcional & Velocidade)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.52.0 (Modal Pilotos Clicável & Edição)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -820,6 +836,44 @@
             preencherSelectProvasBancoPrincipal();
         };
         window.fecharModalCampeonatos = function() { document.getElementById('campeonatos-modal').style.display = 'none'; };
+
+        // 👥 Funções do Modal de Seleção de Pilotos
+        window.abrirModalSelecaoPiloto = function() {
+            const modal = document.getElementById('selecao-piloto-modal');
+            const listaEl = document.getElementById('lista-seletor-pilotos');
+            
+            let dadosBase = obterTodosDadosConsolidados();
+            let pilotosSet = new Set();
+            dadosBase.forEach(d => { if(d.piloto) pilotosSet.add(d.piloto); });
+            Object.keys(pilotosMetadadosCache).forEach(p => pilotosSet.add(p));
+
+            let listaPilotos = Array.from(pilotosSet).sort();
+            if (listaPilotos.length === 0) {
+                listaEl.innerHTML = `<div style="text-align:center; padding: 15px; color: var(--text-muted);">Nenhum piloto cadastrado ou encontrado nas sessões.</div>`;
+            } else {
+                listaEl.innerHTML = listaPilotos.map(p => {
+                    let meta = pilotosMetadadosCache[p] || {};
+                    let label = meta.apelido ? `${p} (${meta.apelido})` : p;
+                    let carroInfo = meta.carro && meta.carro !== 'Nenhum' ? ` 🚗 ${meta.carro}` : '';
+                    return `
+                        <div style="background: var(--bg-input); padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-card); display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="selecionarPilotoParaDossie('${escapeHtml(p)}')">
+                            <span style="font-weight: bold; color: var(--text-title);">${escapeHtml(label)}<span style="font-size: 0.78rem; color: var(--accent-gold); font-weight: normal;">${escapeHtml(carroInfo)}</span></span>
+                            <span class="btn-text-action">Ver Ficha & Editar ➡️</span>
+                        </div>
+                    `;
+                }).join('');
+            }
+            modal.style.display = 'flex';
+        };
+
+        window.fecharModalSelecaoPiloto = function() {
+            document.getElementById('selecao-piloto-modal').style.display = 'none';
+        };
+
+        window.selecionarPilotoParaDossie = function(nomePiloto) {
+            fecharModalSelecaoPiloto();
+            abrirDossiePiloto(nomePiloto);
+        };
 
         window.criarCampeonatoProtegido = async function() {
             let senha = prompt("🔒 Digite a senha unificada de segurança para criar um novo campeonato:");
@@ -2061,7 +2115,14 @@
             let bodyEl = document.getElementById('modal-piloto-corpo');
 
             if (participacoes.length === 0) {
-                bodyEl.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted);">Sem dados.</div>`;
+                bodyEl.innerHTML = `
+                    <div class="config-box-trigger">
+                        <button class="btn-merge-open" onclick="abrirPainelMesclagem('${escapeHtml(nomePiloto)}')">🔀 Mesclar Outro Piloto Aqui</button>
+                        <button class="btn-config-open" onclick="solicitarSenhaConfiguracao('${escapeHtml(nomePiloto)}')">⚙️ Configurações Protegidas</button>
+                    </div>
+                    <div id="container-config-protegido"></div>
+                    <div id="container-mesclagem-protegido"></div>
+                    <div style="text-align:center; padding: 20px; color: var(--text-muted);">Sem participações registradas.</div>`;
                 modal.style.display = 'flex';
                 return;
             }
@@ -2291,6 +2352,7 @@
 
         window.onclick = function(event) {
             if (event.target === document.getElementById('piloto-modal')) document.getElementById('piloto-modal').style.display = 'none';
+            if (event.target === document.getElementById('selecao-piloto-modal')) document.getElementById('selecao-piloto-modal').style.display = 'none';
             if (event.target === document.getElementById('upload-modal')) document.getElementById('upload-modal').style.display = 'none';
             if (event.target === document.getElementById('campeonatos-modal')) document.getElementById('campeonatos-modal').style.display = 'none';
             if (event.target === document.getElementById('compras-coletivas-modal')) document.getElementById('compras-coletivas-modal').style.display = 'none';
@@ -2444,7 +2506,6 @@
 
                     let totalVoltasPiloto = p.tempos.length;
                     let larguraUtil = canvas.width - 150;
-                    // Escala proporcional real: 100% da pista corresponde ao piloto com mais voltas da bateria
                     let xCarro = 90 + (Math.min(voltasCompletas, maxVoltasGeral) / maxVoltasGeral) * larguraUtil;
 
                     if (p.carroImg && p.carroImg.complete && p.carroImg.naturalWidth !== 0) {
@@ -2486,7 +2547,6 @@
             if (!replayStates[bateriaKey]) replayStates[bateriaKey] = {};
             replayStates[bateriaKey].velocidade = parseFloat(novaVel);
 
-            // Atualiza destaque visual dos botões de velocidade
             let containerBotoes = document.getElementById(`replay-vel-btns-${bateriaKey}`);
             if (containerBotoes) {
                 Array.from(containerBotoes.children).forEach(btn => {
