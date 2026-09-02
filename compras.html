@@ -170,13 +170,13 @@
                     </div>
 
                     <div class="config-panel">
-                        <div class="config-panel-title">4. Seleção de Cotistas, Rateio e Comprador</div>
+                        <div class="config-panel-title">4. Seleção de Cotistas (Pilotos Krathus Racing), Rateio e Comprador</div>
                         <div class="table-container">
                             <table>
                                 <thead>
                                     <tr>
                                         <th style="width: 45px; text-align: center;">Ativo</th>
-                                        <th>Cotista</th>
+                                        <th>Piloto / Cotista</th>
                                         <th style="width: 140px; text-align: center;">Comprador</th>
                                         <th>Cota Base</th>
                                         <th>Valor Pago</th>
@@ -227,7 +227,7 @@
         let comprasColetivasCache = {};
         let compraAbertaKey = null;
         let compraAbertaDados = null;
-        let pilotosDisponiveisGlobal = ["Rafael", "DJ", "Ronaldo", "Gustavo"];
+        let pilotosDisponiveisGlobal = [];
 
         try {
             firebase.initializeApp(firebaseConfig);
@@ -238,16 +238,27 @@
 
         document.addEventListener("DOMContentLoaded", () => {
             if (db) {
+                // Escuta em tempo real os pilotos cadastrados na Krathus Racing
                 db.ref('pilotos').on('value', snap => {
+                    let novaLista = [];
                     if (snap.exists()) {
-                        let novaLista = [];
-                        snap.forEach(child => novaLista.push(child.val().nome || child.key));
-                        pilotosDisponiveisGlobal = novaLista;
+                        snap.forEach(child => {
+                            let pData = child.val();
+                            let pNome = typeof pData === 'string' ? pData : (pData.nome || child.key);
+                            if (pNome && !novaLista.includes(pNome)) novaLista.push(pNome);
+                        });
+                    }
+                    pilotosDisponiveisGlobal = novaLista.sort();
+                    
+                    // Se houver uma compra aberta no momento, atualiza a tabela de cotistas dinamicamente
+                    if (compraAbertaDados) {
+                        atualizarCalculosCC();
                     }
                 });
+
                 db.ref('comprasColetivas').on('value', snapshot => {
                     comprasColetivasCache = snapshot.val() || {};
-                    if(document.getElementById('campeonatos2-modal').style.display === 'flex') {
+                    if(document.getElementById('campeonatos2-modal').style.display === 'flex' && !compraAbertaKey) {
                         renderizarListaComprasColetivas();
                     }
                 });
@@ -421,23 +432,27 @@
             let tbodyTabelaUnificada = document.getElementById('cc-tabela-cotistas-rateio');
             tbodyTabelaUnificada.innerHTML = "";
 
-            pilotosDisponiveisGlobal.forEach(p => {
-                let isChecked = compraAbertaDados.participantes && compraAbertaDados.participantes[p] === true;
-                let isComprador = (p === compraAbertaDados.comprador);
-                let isPago = compraAbertaDados.pagamentos && compraAbertaDados.pagamentos[p] === true;
+            if (pilotosDisponiveisGlobal.length === 0) {
+                tbodyTabelaUnificada.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 12px;">Nenhum piloto cadastrado na base da Krathus Racing.</td></tr>`;
+            } else {
+                pilotosDisponiveisGlobal.forEach(p => {
+                    let isChecked = compraAbertaDados.participantes && compraAbertaDados.participantes[p] === true;
+                    let isComprador = (p === compraAbertaDados.comprador);
+                    let isPago = compraAbertaDados.pagamentos && compraAbertaDados.pagamentos[p] === true;
 
-                tbodyTabelaUnificada.innerHTML += `
-                    <tr>
-                        <td style="text-align: center;"><input type="checkbox" class="cc-check-participante" data-piloto="${escapeHtml(p)}" ${isChecked ? 'checked' : ''} onchange="atualizarCalculosCC()"></td>
-                        <td><strong>${escapeHtml(p)}</strong></td>
-                        <td style="text-align: center;"><input type="radio" name="radio-comprador" ${isComprador ? 'checked' : ''} ${!isChecked ? 'disabled' : ''} onchange="selecionarComprador('${escapeHtml(p)}')"></td>
-                        <td>${isChecked ? 'R$ ' + cotaBaseOriginal.toFixed(2) : '-'}</td>
-                        <td>${isChecked ? '<input type="number" step="0.01" class="config-input" style="width:90px;" value="' + (cotaBaseOriginal.toFixed(2)) + '" readonly>' : '-'}</td>
-                        <td>${isChecked ? (isPago ? 'Quitado' : 'Pendente') : '-'}</td>
-                        <td style="text-align: center;"><input type="checkbox" ${isPago ? 'checked' : ''} ${!isChecked ? 'disabled' : ''} onchange="togglePagamento('${escapeHtml(p)}', this.checked)"></td>
-                    </tr>
-                `;
-            });
+                    tbodyTabelaUnificada.innerHTML += `
+                        <tr>
+                            <td style="text-align: center;"><input type="checkbox" class="cc-check-participante" data-piloto="${escapeHtml(p)}" ${isChecked ? 'checked' : ''} onchange="atualizarCalculosCC()"></td>
+                            <td><strong>${escapeHtml(p)}</strong></td>
+                            <td style="text-align: center;"><input type="radio" name="radio-comprador" ${isComprador ? 'checked' : ''} ${!isChecked ? 'disabled' : ''} onchange="selecionarComprador('${escapeHtml(p)}')"></td>
+                            <td>${isChecked ? 'R$ ' + cotaBaseOriginal.toFixed(2) : '-'}</td>
+                            <td>${isChecked ? '<input type="number" step="0.01" class="config-input" style="width:90px;" value="' + (cotaBaseOriginal.toFixed(2)) + '" readonly>' : '-'}</td>
+                            <td>${isChecked ? (isPago ? 'Quitado' : 'Pendente') : '-'}</td>
+                            <td style="text-align: center;"><input type="checkbox" ${isPago ? 'checked' : ''} ${!isChecked ? 'disabled' : ''} onchange="togglePagamento('${escapeHtml(p)}', this.checked)"></td>
+                        </tr>
+                    `;
+                });
+            }
             document.getElementById('cc-label-nome-comprador').innerText = compraAbertaDados.comprador || "Nenhum";
             gerarQrCodePixCC();
         };
