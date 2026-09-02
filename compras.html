@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Krathus Racing - Gestão de Compras Coletivas</title>
-    <!-- Firebase SDK Compat -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
     <style>
@@ -89,7 +88,6 @@
         </div>
     </div>
 
-    <!-- MODAL DE RESUMO FISCAL E PAGAMENTO RÁPIDO (COMPLETO) -->
     <div id="resumo-fiscal-modal" class="custom-modal" style="z-index: 11000;">
         <div class="modal-content" style="border-top-color: #480ca8; max-width: 900px;">
             <div class="modal-header" style="background: #2b1b4e;">
@@ -100,7 +98,6 @@
         </div>
     </div>
 
-    <!-- MODAL PRINCIPAL DE COMPRAS COLETIVAS -->
     <div id="campeonatos2-modal" class="custom-modal" style="display: flex;">
         <div class="modal-content">
             <div class="modal-header">
@@ -109,7 +106,6 @@
             </div>
             <div class="modal-body">
                 
-                <!-- Visão 1: Lista de Compras -->
                 <div id="lista-compras-coletivas-view" style="display: flex; flex-direction: column; gap: 16px;">
                     <div style="display: flex; flex-direction: column; gap: 8px;">
                         <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Compras Coletivas Cadastradas</span>
@@ -125,20 +121,17 @@
                     </div>
                 </div>
 
-                <!-- Visão 2: Painel de Gerenciamento da Compra Específica -->
                 <div id="painel-unica-compra-view" style="display: none; flex-direction: column; gap: 14px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-bottom: 2px solid var(--border-card); padding-bottom: 10px;">
                         <h3 id="cc-titulo-gerenciamento" style="font-size: 1.1rem; color: var(--accent-cc);">Cadastro: --</h3>
                         <button class="btn-action-danger" style="background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-card);" onclick="voltarListaCompras()">⬅️ Voltar para Lista</button>
                     </div>
 
-                    <!-- Bloco 1: Nome -->
                     <div class="config-panel">
                         <div class="config-panel-title">1. Nome da Compra</div>
                         <input type="text" id="cc-form-nome" class="config-input" style="width: 100%;" oninput="atualizarCalculosCC()">
                     </div>
 
-                    <!-- Bloco 2: Itens e Atribuição -->
                     <div class="config-panel">
                         <div class="config-panel-title">2. Itens da Compra e Atribuição (Individual ou Todos)</div>
                         <div class="table-container">
@@ -160,14 +153,12 @@
                         </div>
                         <button class="btn-action-primary" style="background: var(--accent-cc); width: max-content;" onclick="adicionarItemCC()">➕ Adicionar Item</button>
                         
-                        <!-- Aviso de Itens Não Atribuídos -->
                         <div id="cc-aviso-nao-atribuidos" style="display: none; background: rgba(230, 57, 70, 0.1); border: 1px dashed var(--accent-red); padding: 10px; border-radius: 6px; margin-top: 8px;">
                             <span style="font-size: 0.78rem; font-weight: bold; color: var(--accent-red);">⚠️ Itens pendentes de atribuição ou extras detectados. Atribua-os abaixo para regularizar o rateio:</span>
                             <div id="cc-lista-nao-atribuidos" style="margin-top: 6px; font-size: 0.8rem; color: var(--text-main);"></div>
                         </div>
                     </div>
 
-                    <!-- Bloco 3: Financeiro / Fiscal -->
                     <div class="config-panel">
                         <div class="config-panel-title">3. Informações Financeiras e Fiscais</div>
                         <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;">
@@ -184,7 +175,6 @@
                         </div>
                     </div>
 
-                    <!-- Bloco 4: Gestão de Participantes, Rateio e Edição Manual -->
                     <div class="config-panel">
                         <div class="config-panel-title">4. Gestão de Participantes (Krathus Racing), Rateio e Edição Manual</div>
                         <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 8px;">
@@ -213,7 +203,6 @@
                         </div>
                     </div>
 
-                    <!-- Bloco 5: Pix -->
                     <div class="config-panel">
                         <div class="config-panel-title">5. Chave Pix do Comprador (<span id="cc-label-nome-comprador">Nenhum</span>)</div>
                         <input type="text" id="cc-form-pix" class="config-input" style="width: 100%;" placeholder="CPF, Telefone ou E-mail" oninput="aoDigitarPix()">
@@ -223,7 +212,6 @@
                         </div>
                     </div>
 
-                    <!-- Bloco 6: Rastreio -->
                     <div class="config-panel" style="border-color: #3f37c9;">
                         <div class="config-panel-title" style="color: #3f37c9;">6. Código de Rastreio</div>
                         <input type="text" id="cc-form-rastreio" class="config-input" style="width: 100%; font-weight: bold;" placeholder="Ex: NL123456789BR" oninput="atualizarCalculosCC()">
@@ -239,7 +227,6 @@
         </div>
     </div>
 
-    <!-- Script de Gestão das Compras Coletivas -->
     <script>
         const SENHA_UNIFICADA = "1234";
         
@@ -613,34 +600,42 @@
             gerarQrCodePixCC();
         };
 
-        // Função oficial para gerar o Pix Payload (BR Code EMV) com CRC16
+        // Algoritmo Oficial rigoroso do Banco Central (BR Code / EMVCo) com CRC16-CCITT corrigido
         function gerarPayloadPixBRCode(chave, nomeRecebedor, cidade, valor) {
-            function f(id, val) {
+            function formatEmv(id, val) {
                 let s = String(val);
                 return id + String(s.length).padStart(2, '0') + s;
             }
 
-            let gui = f("00", "br.gov.bcb.pix") + f("01", chave);
-            let merchantAccount = f("26", gui);
-            let valStr = Number(valor).toFixed(2);
+            let nomeLimpo = (nomeRecebedor || "Krathus Racing").substring(0, 25).trim();
+            let cidadeLimpa = (cidade || "Maceio").substring(0, 15).trim();
+            let chaveLimpa = String(chave).trim();
+
+            let gui = formatEmv("00", "br.gov.bcb.pix") + formatEmv("01", chaveLimpa);
+            let merchantAccount = formatEmv("26", gui);
+            
+            let valStr = (valor !== undefined && valor !== null && Number(valor) > 0) ? Number(valor).toFixed(2) : "";
+            let field54 = valStr ? formatEmv("54", valStr) : "";
+            let field62 = formatEmv("62", formatEmv("05", "***"));
 
             let payloadSemCrc = (
-                f("00", "01") +
+                formatEmv("00", "01") +
                 merchantAccount +
-                f("52", "0000") +
-                f("53", "986") +
-                f("54", valStr) +
-                f("58", "BR") +
-                f("59", (nomeRecebedor || "Krathus Racing").substring(0, 25)) +
-                f("60", (cidade || "Maceio").substring(0, 15)) +
-                f("62", f("05", "***")) +
+                formatEmv("52", "0000") +
+                formatEmv("53", "986") +
+                field54 +
+                formatEmv("58", "BR") +
+                formatEmv("59", nomeLimpo) +
+                formatEmv("60", cidadeLimpa) +
+                field62 +
                 "6304"
             );
 
-            // Cálculo CRC16-CCITT para Pix
+            // CRC16-CCITT (Polinômio 0x1021, Início 0xFFFF)
             let crc = 0xFFFF;
             for (let i = 0; i < payloadSemCrc.length; i++) {
-                crc ^= (payloadSemCrc.charCodeAt(i) << 8);
+                let b = payloadSemCrc.charCodeAt(i) & 0xFF;
+                crc ^= (b << 8);
                 for (let j = 0; j < 8; j++) {
                     if (crc & 0x8000) {
                         crc = ((crc << 1) ^ 0x1021) & 0xFFFF;
@@ -668,7 +663,7 @@
             }
         };
 
-        // Modal de Resumo Fiscal e Financeiro Completo com BR Code Pix Oficial
+        // Modal de Resumo Fiscal e Financeiro com Pix específico para cada devedor com o valor exato
         window.abrirModalResumoFiscal = function(key) {
             let c = comprasColetivasCache[key];
             if (!c) return;
@@ -750,7 +745,7 @@
                 let pixBtnOrInfo = "";
                 if (!isPago) {
                     if (chavePix) {
-                        pixBtnOrInfo = `<button class="btn-action-pix" onclick="abrirModalPixEspecifico('${escapeHtml(p)}', ${devido.toFixed(2)}, '${escapeHtml(chavePix)}')">💳 Ver Pix / QR</button>`;
+                        pixBtnOrInfo = `<button class="btn-action-pix" onclick="abrirModalPixEspecifico('${escapeHtml(p)}', ${devido.toFixed(2)}, '${escapeHtml(chavePix)}')">💳 Ver Pix (R$ ${devido.toFixed(2)})</button>`;
                     } else {
                         pixBtnOrInfo = `<span style="font-size: 0.7rem; color: var(--accent-red);">Pix não cadastrado</span>`;
                     }
@@ -821,7 +816,7 @@
                                     <th>Participante</th>
                                     <th>Valor Devido</th>
                                     <th>Situação</th>
-                                    <th style="text-align: center;">Pagamento / Pix</th>
+                                    <th style="text-align: center;">Pagamento / Pix com Valor Exato</th>
                                 </tr>
                             </thead>
                             <tbody>${financeiroHtml}</tbody>
@@ -837,7 +832,7 @@
             document.getElementById('resumo-fiscal-modal').style.display = 'none';
         };
 
-        // Modal para QR Code Pix do Participante com Valor Exato (BR Code Oficial)
+        // Modal do QR Code específico do devedor com o valor exato no padrão BR Code/EMV
         window.abrirModalPixEspecifico = function(nomePiloto, valorDevido, chavePix) {
             let modalId = 'modal-pix-especifico';
             let old = document.getElementById(modalId);
@@ -858,13 +853,13 @@
                         <button class="modal-close" onclick="document.getElementById('${modalId}').remove()">&times;</button>
                     </div>
                     <div class="modal-body" style="text-align: center; gap: 14px;">
-                        <p style="font-size: 0.85rem; color: var(--text-main);">Valor exato: <strong style="color: var(--accent-gold); font-size: 1.1rem;">R$ ${Number(valorDevido).toFixed(2)}</strong></p>
+                        <p style="font-size: 0.85rem; color: var(--text-main);">Valor exato da cota: <strong style="color: var(--accent-gold); font-size: 1.15rem;">R$ ${Number(valorDevido).toFixed(2)}</strong></p>
                         <p style="font-size: 0.78rem; color: var(--text-muted);">Chave Pix do Comprador:</p>
                         <input type="text" class="config-input" value="${escapeHtml(chavePix)}" readonly style="text-align: center; font-weight: bold; cursor: pointer;" onclick="navigator.clipboard.writeText('${escapeHtml(chavePix)}'); alert('Chave Pix copiada!');" title="Clique para copiar">
                         <div style="background: #fff; padding: 10px; border-radius: 8px; display: inline-block; margin: 0 auto;">
-                            <img src="${qrUrl}" alt="QR Code Pix" style="width: 160px; height: 160px; display: block;">
+                            <img src="${qrUrl}" alt="QR Code Pix com Valor" style="width: 160px; height: 160px; display: block;">
                         </div>
-                        <p style="font-size: 0.7rem; color: var(--text-muted);">Escaneie o QR Code com o aplicativo do seu banco (já com o valor preenchido).</p>
+                        <p style="font-size: 0.7rem; color: var(--text-muted);">Escaneie com o app do banco. O valor de R$ ${Number(valorDevido).toFixed(2)} já virá preenchido automaticamente.</p>
                         <button class="btn-action-primary" style="background: var(--accent-green); color: #0d111a;" onclick="document.getElementById('${modalId}').remove()">Fechar</button>
                     </div>
                 </div>
