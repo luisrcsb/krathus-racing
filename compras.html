@@ -612,12 +612,54 @@
             compraAbertaDados.chavePix = document.getElementById('cc-form-pix').value.trim();
             gerarQrCodePixCC();
         };
+
+        // Função oficial para gerar o Pix Payload (BR Code EMV) com CRC16
+        function gerarPayloadPixBRCode(chave, nomeRecebedor, cidade, valor) {
+            function f(id, val) {
+                let s = String(val);
+                return id + String(s.length).padStart(2, '0') + s;
+            }
+
+            let gui = f("00", "br.gov.bcb.pix") + f("01", chave);
+            let merchantAccount = f("26", gui);
+            let valStr = Number(valor).toFixed(2);
+
+            let payloadSemCrc = (
+                f("00", "01") +
+                merchantAccount +
+                f("52", "0000") +
+                f("53", "986") +
+                f("54", valStr) +
+                f("58", "BR") +
+                f("59", (nomeRecebedor || "Krathus Racing").substring(0, 25)) +
+                f("60", (cidade || "Maceio").substring(0, 15)) +
+                f("62", f("05", "***")) +
+                "6304"
+            );
+
+            // Cálculo CRC16-CCITT para Pix
+            let crc = 0xFFFF;
+            for (let i = 0; i < payloadSemCrc.length; i++) {
+                crc ^= (payloadSemCrc.charCodeAt(i) << 8);
+                for (let j = 0; j < 8; j++) {
+                    if (crc & 0x8000) {
+                        crc = ((crc << 1) ^ 0x1021) & 0xFFFF;
+                    } else {
+                        crc = (crc << 1) & 0xFFFF;
+                    }
+                }
+            }
+            let crcHex = crc.toString(16).toUpperCase().padStart(4, '0');
+            return payloadSemCrc + crcHex;
+        }
+
         window.gerarQrCodePixCC = function() {
             let chave = document.getElementById('cc-form-pix').value.trim();
             let imgEl = document.getElementById('cc-pix-qrcode');
             let placeEl = document.getElementById('cc-pix-placeholder');
             if (chave) {
-                imgEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(chave)}`;
+                let payloadPix = gerarPayloadPixBRCode(chave, "Krathus Racing", "Maceio", 0);
+                imgEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(payloadPix)}`;
                 imgEl.style.display = 'block';
                 placeEl.style.display = 'none';
             } else {
@@ -626,7 +668,7 @@
             }
         };
 
-        // Modal de Resumo Fiscal e Financeiro Completo
+        // Modal de Resumo Fiscal e Financeiro Completo com BR Code Pix Oficial
         window.abrirModalResumoFiscal = function(key) {
             let c = comprasColetivasCache[key];
             if (!c) return;
@@ -657,7 +699,6 @@
             let outros = c.outrosDescontos || 0;
             let totalGlobal = subtotalItens + frete + imposto + icms - desconto - outros;
 
-            // Calcular rateio para o resumo financeiro
             let participantes = c.participantes || {};
             let ativos = Object.keys(participantes).filter(p => participantes[p] === true);
             let pagamentos = c.pagamentos || {};
@@ -796,13 +837,14 @@
             document.getElementById('resumo-fiscal-modal').style.display = 'none';
         };
 
-        // Modal auxiliar para exibir QR Code Pix específico para pagamento do participante pendente
+        // Modal para QR Code Pix do Participante com Valor Exato (BR Code Oficial)
         window.abrirModalPixEspecifico = function(nomePiloto, valorDevido, chavePix) {
             let modalId = 'modal-pix-especifico';
             let old = document.getElementById(modalId);
             if (old) old.remove();
 
-            let qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(chavePix)}`;
+            let payloadBrCode = gerarPayloadPixBRCode(chavePix, "Krathus Racing", "Maceio", valorDevido);
+            let qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(payloadBrCode)}`;
 
             let modalDiv = document.createElement('div');
             modalDiv.id = modalId;
@@ -812,17 +854,17 @@
             modalDiv.innerHTML = `
                 <div class="modal-content" style="max-width: 420px; border-top-color: var(--accent-green);">
                     <div class="modal-header" style="background: var(--bg-card-header);">
-                        <div class="modal-title">💳 Pix para ${escapeHtml(nomePiloto)}</div>
+                        <div class="modal-title">💳 Pix Oficial para ${escapeHtml(nomePiloto)}</div>
                         <button class="modal-close" onclick="document.getElementById('${modalId}').remove()">&times;</button>
                     </div>
                     <div class="modal-body" style="text-align: center; gap: 14px;">
-                        <p style="font-size: 0.85rem; color: var(--text-main);">Valor a pagar: <strong style="color: var(--accent-gold); font-size: 1.1rem;">R$ ${Number(valorDevido).toFixed(2)}</strong></p>
+                        <p style="font-size: 0.85rem; color: var(--text-main);">Valor exato: <strong style="color: var(--accent-gold); font-size: 1.1rem;">R$ ${Number(valorDevido).toFixed(2)}</strong></p>
                         <p style="font-size: 0.78rem; color: var(--text-muted);">Chave Pix do Comprador:</p>
                         <input type="text" class="config-input" value="${escapeHtml(chavePix)}" readonly style="text-align: center; font-weight: bold; cursor: pointer;" onclick="navigator.clipboard.writeText('${escapeHtml(chavePix)}'); alert('Chave Pix copiada!');" title="Clique para copiar">
                         <div style="background: #fff; padding: 10px; border-radius: 8px; display: inline-block; margin: 0 auto;">
                             <img src="${qrUrl}" alt="QR Code Pix" style="width: 160px; height: 160px; display: block;">
                         </div>
-                        <p style="font-size: 0.7rem; color: var(--text-muted);">Escaneie o QR Code com o aplicativo do seu banco para pagar.</p>
+                        <p style="font-size: 0.7rem; color: var(--text-muted);">Escaneie o QR Code com o aplicativo do seu banco (já com o valor preenchido).</p>
                         <button class="btn-action-primary" style="background: var(--accent-green); color: #0d111a;" onclick="document.getElementById('${modalId}').remove()">Fechar</button>
                     </div>
                 </div>
