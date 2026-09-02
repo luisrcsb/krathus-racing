@@ -137,7 +137,7 @@
                         <input type="text" id="cc-form-nome" class="config-input" style="width: 100%;" oninput="atualizarCalculosCC()">
                     </div>
 
-                    <!-- Bloco 2: Itens e Atribuição aos Pilotos -->
+                    <!-- Bloco 2: Itens e Atribuição -->
                     <div class="config-panel">
                         <div class="config-panel-title">2. Itens da Compra e Atribuição (Individual ou Todos)</div>
                         <div class="table-container">
@@ -150,7 +150,7 @@
                                         <th style="width: 80px;">Valor (R$)</th>
                                         <th style="width: 60px;">Qtd</th>
                                         <th style="width: 90px;">Subtotal</th>
-                                        <th style="width: 170px;">Atribuído a:</th>
+                                        <th style="width: 190px;">Atribuído a:</th>
                                         <th style="text-align: right; width: 50px;">Ação</th>
                                     </tr>
                                 </thead>
@@ -159,7 +159,7 @@
                         </div>
                         <button class="btn-action-primary" style="background: var(--accent-cc); width: max-content;" onclick="adicionarItemCC()">➕ Adicionar Item</button>
                         
-                        <!-- Aviso de Itens Extras / Não Atribuídos -->
+                        <!-- Aviso de Itens Não Atribuídos -->
                         <div id="cc-aviso-nao-atribuidos" style="display: none; background: rgba(230, 57, 70, 0.1); border: 1px dashed var(--accent-red); padding: 10px; border-radius: 6px; margin-top: 8px;">
                             <span style="font-size: 0.78rem; font-weight: bold; color: var(--accent-red);">⚠️ Itens pendentes de atribuição ou extras detectados. Atribua-os abaixo para regularizar o rateio:</span>
                             <div id="cc-lista-nao-atribuidos" style="margin-top: 6px; font-size: 0.8rem; color: var(--text-main);"></div>
@@ -185,12 +185,12 @@
 
                     <!-- Bloco 4: Gestão de Participantes, Rateio e Edição Manual -->
                     <div class="config-panel">
-                        <div class="config-panel-title">4. Gestão de Participantes, Rateio e Edição Manual</div>
+                        <div class="config-panel-title">4. Gestão de Participantes (Krathus Racing), Rateio e Edição Manual</div>
                         <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 8px;">
                             <input type="text" id="cc-input-novo-participante" class="config-input" placeholder="Adicionar novo participante (Ex: Carlos)" style="max-width: 280px;">
                             <button type="button" class="btn-action-primary" style="background: var(--accent-cc); padding: 8px 14px;" onclick="adicionarParticipanteManual()">➕ Adicionar Participante</button>
                         </div>
-                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 6px;">💡 Dica: Marque ou desmarque os ativos. Você também pode digitar um valor personalizado/manual para fixar a cota de alguém; o restante será rateado automaticamente.</p>
+                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 6px;">💡 Dica: Os participantes são sincronizados com a Krathus Racing. Marque ou desmarque os ativos para redistribuir o rateio automaticamente. Digite no campo "Valor Personalizado" se quiser fixar um valor específico para alguém.</p>
                         <div class="table-container">
                             <table>
                                 <thead>
@@ -264,6 +264,7 @@
 
         document.addEventListener("DOMContentLoaded", () => {
             if (db) {
+                // Escuta os pilotos da Krathus Racing
                 db.ref('pilotos').on('value', snap => {
                     let novaLista = [];
                     if (snap.exists()) {
@@ -279,6 +280,7 @@
                     if (compraAbertaDados) atualizarCalculosCC();
                 });
 
+                // Escuta as compras coletivas
                 db.ref('comprasColetivas').on('value', snapshot => {
                     comprasColetivasCache = snapshot.val() || {};
                     renderizarListaComprasColetivas();
@@ -373,7 +375,7 @@
             if (!compraAbertaDados.pagamentos) compraAbertaDados.pagamentos = {};
             if (!compraAbertaDados.valoresManuais) compraAbertaDados.valoresManuais = {};
 
-            // Garante que todos os pilotos da base global constem na lista de participantes desta compra se estiver vazia
+            // Garante que todos os pilotos da base global constem na lista se não existirem
             pilotosBaseGlobal.forEach(p => {
                 if (compraAbertaDados.participantes[p] === undefined) {
                     compraAbertaDados.participantes[p] = true;
@@ -414,7 +416,6 @@
                 delete compraAbertaDados.valoresManuais[pName];
                 if (compraAbertaDados.comprador === pName) compraAbertaDados.comprador = "";
                 
-                // Atualiza itens que estavam atribuídos a ele para vazio ou TODOS
                 compraAbertaDados.itens.forEach(it => {
                     if (it.atribuidoA === pName) it.atribuidoA = "";
                 });
@@ -501,7 +502,7 @@
             }
 
             let participantesLista = Object.keys(compraAbertaDados.participantes);
-            let ativosArr = participantesList.filter(p => compraAbertaDados.participantes[p] === true);
+            let ativosArr = participantesLista.filter(p => compraAbertaDados.participantes[p] === true);
 
             // Renderizar tabela de itens
             let tbodyItens = document.getElementById('cc-tabela-itens');
@@ -521,7 +522,7 @@
                         <td><input type="number" class="config-input cc-item-qtd" value="${it.qtd}" style="width:100%; font-size:0.78rem;" oninput="atualizarCalculosCC()"></td>
                         <td style="font-weight:bold; color: var(--accent-gold);">R$ ${(it.valor * it.qtd).toFixed(2)}</td>
                         <td><select class="config-input cc-item-atribuido" style="width:100%; font-size:0.78rem;" onchange="atualizarCalculosCC()">${optionsPilotos}</select></td>
-                        <td style="text-align: right;"><button class="btn-action-danger" style="padding: 3px 6px; font-size: 0.7rem;" onclick="removerItemCC(${idx})">🗑️</button></td>
+                        <td style="text-align: right;"><button type="button" class="btn-action-danger" style="padding: 3px 6px; font-size: 0.7rem;" onclick="removerItemCC(${idx})">🗑️</button></td>
                     </tr>
                 `;
             });
