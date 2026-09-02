@@ -655,7 +655,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.53.0 (Exclusão de Pilotos Integrada)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.54.0 (KPI de Melhor Volta com Bateria)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -891,7 +891,6 @@
                     let updates = {};
                     updates[`pilotosMetadados/${nomePiloto}`] = null;
                     
-                    // Remove mesclagens associadas se houver
                     Object.keys(mesclagensCache).forEach(origKey => {
                         if (mesclagensCache[origKey] === nomePiloto) {
                             updates[`mesclagensPilotos/${origKey}`] = null;
@@ -900,7 +899,7 @@
 
                     await db.ref().update(updates);
                     alert(`Piloto "${nomePiloto}" excluído com sucesso!`);
-                    abrirModalSelecaoPiloto(); // Atualiza a lista no modal
+                    abrirModalSelecaoPiloto();
                 } catch (err) {
                     alert("Erro ao excluir piloto: " + err.message);
                 }
@@ -2063,7 +2062,7 @@
                             if (mesclagensCache[safeNomeKey]) pilotoReal = mesclagensCache[safeNomeKey];
                             let metaKey = pilotoReal;
                             let meta = pilotosMetadadosCache[metaKey] || {};
-                            consolidado.push({ ...d, piloto: pilotoReal, pilotoOriginal: d.piloto, bateriaKey: arq.firebaseKey, pilotoExibicao: meta.apelido ? `${pilotoReal} (${meta.apelido})` : pilotoReal, apelido: meta.apelido || '' });
+                            consolidado.push({ ...d, piloto: pilotoReal, pilotoOriginal: d.piloto, bateriaKey: arq.firebaseKey, bateriaNomeOriginal: arq.sessao || "Bateria", pilotoExibicao: meta.apelido ? `${pilotoReal} (${meta.apelido})` : pilotoReal, apelido: meta.apelido || '' });
                         });
                     }
                 });
@@ -2755,12 +2754,18 @@
                 document.getElementById('kpi-vencedor').innerHTML = maisVitorioso !== "--" && maxV > 0 ? `<a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(maisVitorioso)}')">${escapeHtml(nomeVencExib)}</a>` : "Nenhum";
                 document.getElementById('kpi-vencedor-sub').innerText = maxV > 0 ? `${maxV} vitória(s) absoluta(s)` : "Sem vitórias";
 
-                let melhorVoltaObj = null, melhorVoltaValGeral = 999999, melhorVoltaNum = 0;
+                let melhorVoltaObj = null, melhorVoltaValGeral = 999999, melhorVoltaNum = 0, nomeSessaoRecorde = "";
                 dadosFiltrados.forEach(item => {
                     if (item.laps) {
                         item.laps.forEach((l, idx) => {
                             let t = typeof l === 'object' ? l.tempo : l;
-                            if (t && t < melhorVoltaValGeral) { melhorVoltaValGeral = t; melhorVoltaObj = item; melhorVoltaNum = idx + 1; }
+                            if (t && t < melhorVoltaValGeral) { 
+                                melhorVoltaValGeral = t; 
+                                melhorVoltaObj = item; 
+                                melhorVoltaNum = idx + 1;
+                                let objSessao = listaJsonsCache.find(arq => arq.firebaseKey === item.bateriaKey);
+                                nomeSessaoRecorde = objSessao ? formatarNomeSessao(objSessao.sessao || item.bateriaKey) : "Bateria";
+                            }
                         });
                     }
                 });
@@ -2771,7 +2776,7 @@
                     let velEscala = (26 / melhorVoltaValGeral) * 3.6 * 28;
                     document.getElementById('kpi-melhor-volta').innerText = `${melhorVoltaValGeral.toFixed(3)}s`;
                     document.getElementById('kpi-melhor-volta-vel').innerText = `${velEscala.toFixed(1)} km/h`;
-                    document.getElementById('kpi-melhor-volta-sub').innerHTML = `<a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(melhorVoltaObj.piloto)}')">${escapeHtml(nomeMelhorExib)}</a> (Volta ${melhorVoltaNum})`;
+                    document.getElementById('kpi-melhor-volta-sub').innerHTML = `<a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(melhorVoltaObj.piloto)}')">${escapeHtml(nomeMelhorExib)}</a> (Volta ${melhorVoltaNum} em ${escapeHtml(nomeSessaoRecorde)})`;
                 }
 
                 let totalV = dadosFiltrados.reduce((acc, item) => acc + (item.laps ? item.laps.length : 0), 0);
