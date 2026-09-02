@@ -161,7 +161,7 @@
                         
                         <!-- Aviso de Itens Extras / Não Atribuídos -->
                         <div id="cc-aviso-nao-atribuidos" style="display: none; background: rgba(230, 57, 70, 0.1); border: 1px dashed var(--accent-red); padding: 10px; border-radius: 6px; margin-top: 8px;">
-                            <span style="font-size: 0.78rem; font-weight: bold; color: var(--accent-red);">⚠️ Itens pendentes de atribuição ou extras detectados. Certifique-se de atribuir todos os itens abaixo a um piloto para cálculo correto:</span>
+                            <span style="font-size: 0.78rem; font-weight: bold; color: var(--accent-red);">⚠️ Itens pendentes de atribuição ou extras detectados. Atribua-os abaixo para regularizar o rateio:</span>
                             <div id="cc-lista-nao-atribuidos" style="margin-top: 6px; font-size: 0.8rem; color: var(--text-main);"></div>
                         </div>
                     </div>
@@ -183,9 +183,10 @@
                         </div>
                     </div>
 
-                    <!-- Bloco 4: Cotistas e Rateio Proporcional por Itens -->
+                    <!-- Bloco 4: Cotistas, Rateio Flexível e Edição Manual -->
                     <div class="config-panel">
-                        <div class="config-panel-title">4. Seleção de Cotistas, Rateio por Itens e Comprador</div>
+                        <div class="config-panel-title">4. Seleção de Cotistas, Rateio e Edição Manual de Valores</div>
+                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 6px;">💡 Dica: Você pode digitar diretamente na coluna "Valor Personalizado" para ajustar manualmente a cota de um participante. O restante será redistribuído automaticamente entre os demais.</p>
                         <div class="table-container">
                             <table>
                                 <thead>
@@ -193,8 +194,9 @@
                                         <th style="width: 45px; text-align: center;">Ativo</th>
                                         <th>Piloto / Cotista</th>
                                         <th style="width: 140px; text-align: center;">Comprador</th>
-                                        <th>Itens Atribuídos</th>
-                                        <th>Valor dos Seus Itens</th>
+                                        <th>Itens Automáticos</th>
+                                        <th>Valor Base Itens</th>
+                                        <th>Valor Personalizado (Manual)</th>
                                         <th>Taxas/Frete Proporcional</th>
                                         <th>Valor Total Devido</th>
                                         <th>Situação</th>
@@ -258,7 +260,6 @@
 
         document.addEventListener("DOMContentLoaded", () => {
             if (db) {
-                // Carrega pilotos em tempo real
                 db.ref('pilotos').on('value', snap => {
                     let novaLista = [];
                     if (snap.exists()) {
@@ -270,12 +271,11 @@
                     }
                     pilotosDisponiveisGlobal = novaLista.sort();
                     if (pilotosDisponiveisGlobal.length === 0) {
-                        pilotosDisponiveisGlobal = ["Rafael", "DJ", "Ronaldo", "Gustavo"]; // Fallback padrão se vazio
+                        pilotosDisponiveisGlobal = ["Rafael", "DJ", "Ronaldo", "Gustavo"];
                     }
                     if (compraAbertaDados) atualizarCalculosCC();
                 });
 
-                // Carrega compras coletivas em tempo real
                 db.ref('comprasColetivas').on('value', snapshot => {
                     comprasColetivasCache = snapshot.val() || {};
                     renderizarListaComprasColetivas();
@@ -314,7 +314,7 @@
             let nova = {
                 chave: key, nome: nome, frete: 0, imposto: 0, icms: 0, desconto: 0, outrosDescontos: 0,
                 itens: [{ imgUrl: "", nomeItem: "", link: "", valor: 0, qtd: 1, atribuidoA: pilotosDisponiveisGlobal[0] || "" }],
-                comprador: "", chavePix: "", participantes: participantesIniciais, pagamentos: {}, valoresPagos: {}, rastreio: ""
+                comprador: "", chavePix: "", participantes: participantesIniciais, pagamentos: {}, valoresManuais: {}, rastreio: ""
             };
             await db.ref(`comprasColetivas/${key}`).set(nova);
             document.getElementById('cc-input-nova-compra').value = "";
@@ -369,7 +369,7 @@
             if (!compraAbertaDados.itens) compraAbertaDados.itens = [];
             if (!compraAbertaDados.participantes) compraAbertaDados.participantes = {};
             if (!compraAbertaDados.pagamentos) compraAbertaDados.pagamentos = {};
-            if (!compraAbertaDados.valoresPagos) compraAbertaDados.valoresPagos = {};
+            if (!compraAbertaDados.valoresManuais) compraAbertaDados.valoresManuais = {};
 
             document.getElementById('lista-compras-coletivas-view').style.display = 'none';
             document.getElementById('painel-unica-compra-view').style.display = 'flex';
@@ -439,8 +439,19 @@
                 else {
                     delete compraAbertaDados.participantes[pName];
                     delete compraAbertaDados.pagamentos[pName];
-                    delete compraAbertaDados.valoresPagos[pName];
+                    delete compraAbertaDados.valoresManuais[pName];
                     if (compraAbertaDados.comprador === pName) compraAbertaDados.comprador = "";
+                }
+            });
+
+            // Capturar inputs de valores manuais alterados pelo usuário
+            document.querySelectorAll('.cc-input-manual').forEach(inp => {
+                let pName = inp.getAttribute('data-piloto');
+                let valManual = inp.value.trim();
+                if (valManual === "") {
+                    delete compraAbertaDados.valoresManuais[pName];
+                } else {
+                    compraAbertaDados.valoresManuais[pName] = parseFloat(valManual) || 0;
                 }
             });
 
@@ -470,6 +481,7 @@
 
             let ativosArr = pilotosDisponiveisGlobal.filter(p => compraAbertaDados.participantes && compraAbertaDados.participantes[p] === true);
 
+            // Renderizar tabela de itens
             let tbodyItens = document.getElementById('cc-tabela-itens');
             tbodyItens.innerHTML = "";
             compraAbertaDados.itens.forEach((it, idx) => {
@@ -492,6 +504,26 @@
                 `;
             });
 
+            // Lógica de Distribuição Automática vs Manual Restante
+            let totalManualInformado = 0;
+            let cotistasManuaisCount = 0;
+            ativosArr.forEach(p => {
+                if (compraAbertaDados.valoresManuais && compraAbertaDados.valoresManuais[p] !== undefined) {
+                    totalManualInformado += compraAbertaDados.valoresManuais[p];
+                    cotistasManuaisCount++;
+                }
+            });
+
+            let restoParaDistribuir = totalGlobalFinal - totalManualInformado;
+            let cotistasSemManual = ativosArr.filter(p => !compraAbertaDados.valoresManuais || compraAbertaDados.valoresManuais[p] === undefined);
+
+            let totalBaseItensSemManual = 0;
+            cotistasSemManual.forEach(p => {
+                compraAbertaDados.itens.forEach(it => {
+                    if (it.atribuidoA === p) totalBaseItensSemManual += (it.valor * it.qtd);
+                });
+            });
+
             let totalTaxas = compraAbertaDados.frete + compraAbertaDados.imposto + compraAbertaDados.icms - compraAbertaDados.desconto - compraAbertaDados.outrosDescontos;
 
             let tbodyTabelaUnificada = document.getElementById('cc-tabela-cotistas-rateio');
@@ -511,8 +543,20 @@
                     }
                 });
 
-                let proporcaoTaxas = (somaPuraItens > 0 && isChecked) ? (valorItensPiloto / somaPuraItens) * totalTaxas : 0;
-                let valorTotalDevidoPiloto = valorItensPiloto + proporcaoTaxas;
+                let valorTotalDevidoPiloto = 0;
+                let proporcaoTaxas = 0;
+                let valManualAtual = (compraAbertaDados.valoresManuais && compraAbertaDados.valoresManuais[p] !== undefined) ? compraAbertaDados.valoresManuais[p] : "";
+
+                if (isChecked) {
+                    if (compraAbertaDados.valoresManuais && compraAbertaDados.valoresManuais[p] !== undefined) {
+                        valorTotalDevidoPiloto = compraAbertaDados.valoresManuais[p];
+                    } else {
+                        // Se não tem valor manual, recebe proporcional do resto baseado em seus itens base
+                        let pesoPiloto = totalBaseItensSemManual > 0 ? (valorItensPiloto / totalBaseItensSemManual) : (1 / (cotistasSemManual.length || 1));
+                        valorTotalDevidoPiloto = restoParaDistribuir * pesoPiloto;
+                    }
+                    proporcaoTaxas = (somaPuraItens > 0) ? (valorItensPiloto / somaPuraItens) * totalTaxas : 0;
+                }
 
                 tbodyTabelaUnificada.innerHTML += `
                     <tr>
@@ -521,6 +565,7 @@
                         <td style="text-align: center;"><input type="radio" name="radio-comprador" ${isComprador ? 'checked' : ''} ${!isChecked ? 'disabled' : ''} onchange="selecionarComprador('${escapeHtml(p)}')"></td>
                         <td>${isChecked ? qtdItensPiloto + ' item(ns)' : '-'}</td>
                         <td>${isChecked ? 'R$ ' + valorItensPiloto.toFixed(2) : '-'}</td>
+                        <td>${isChecked ? '<input type="number" step="0.01" class="config-input cc-input-manual" data-piloto="' + escapeHtml(p) + '" value="' + valManualAtual + '" placeholder="Auto" style="width:100px;" oninput="atualizarCalculosCC()">' : '-'}</td>
                         <td>${isChecked ? 'R$ ' + proporcaoTaxas.toFixed(2) : '-'}</td>
                         <td style="font-weight: bold; color: var(--accent-gold);">${isChecked ? 'R$ ' + valorTotalDevidoPiloto.toFixed(2) : '-'}</td>
                         <td>${isChecked ? (isPago ? 'Quitado' : 'Pendente') : '-'}</td>
