@@ -467,7 +467,6 @@
                 }
             });
 
-            // Capturar links de recibos preenchidos
             document.querySelectorAll('.cc-input-recibo').forEach(inp => {
                 let pName = inp.getAttribute('data-piloto');
                 let linkRecibo = inp.value.trim();
@@ -608,15 +607,16 @@
             gerarQrCodePixCC();
         };
 
-        // Algoritmo Oficial do Banco Central (BR Code / EMVCo) com CRC16-CCITT
+        // Algoritmo Oficial Rigoroso do Banco Central (BR Code / EMVCo) com CRC16-CCITT Corrigido
         function gerarPayloadPixBRCode(chave, nomeRecebedor, cidade, valor) {
             function formatEmv(id, val) {
                 let s = String(val);
                 return id + String(s.length).padStart(2, '0') + s;
             }
 
-            let nomeLimpo = (nomeRecebedor || "Krathus Racing").substring(0, 25).trim();
-            let cidadeLimpa = (cidade || "Maceio").substring(0, 15).trim();
+            // Normalização estrita exigida pelos bancos (sem acentos e caracteres especiais críticos)
+            let nomeLimpo = (nomeRecebedor || "KRATHUS RACING").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 25).trim();
+            let cidadeLimpa = (cidade || "MACEIO").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 15).trim();
             let chaveLimpa = String(chave).trim();
 
             let gui = formatEmv("00", "br.gov.bcb.pix") + formatEmv("01", chaveLimpa);
@@ -627,18 +627,19 @@
             let field62 = formatEmv("62", formatEmv("05", "***"));
 
             let payloadSemCrc = (
-                formatEmv("00", "01") +
-                merchantAccount +
-                formatEmv("52", "0000") +
-                formatEmv("53", "986") +
-                field54 +
-                formatEmv("58", "BR") +
-                formatEmv("59", nomeLimpo) +
-                formatEmv("60", cidadeLimpa) +
-                field62 +
-                "6304"
+                formatEmv("00", "01") +             // Payload Format Indicator
+                merchantAccount +                   // Merchant Account Information
+                formatEmv("52", "0000") +           // Merchant Category Code
+                formatEmv("53", "986") +            # Transaction Currency (986 = BRL)
+                field54 +                           # Transaction Amount
+                formatEmv("58", "BR") +             # Country Code
+                formatEmv("59", nomeLimpo) +       # Merchant Name
+                formatEmv("60", cidadeLimpa) +     # Merchant City
+                field62 +                           # Additional Data Field Template (TXID)
+                "6304"                              # CRC16 Placeholder
             );
 
+            // Cálculo CRC16-CCITT (Polinômio 0x1021, Início 0xFFFF)
             let crc = 0xFFFF;
             for (let i = 0; i < payloadSemCrc.length; i++) {
                 let b = payloadSemCrc.charCodeAt(i) & 0xFF;
@@ -849,7 +850,6 @@
             document.getElementById('resumo-fiscal-modal').style.display = 'none';
         };
 
-        // Modal para visualizar a imagem do recibo cadastrado
         window.abrirModalVisualizarRecibo = function(nomePiloto, urlRecibo) {
             let modalId = 'modal-recibo-view';
             let old = document.getElementById(modalId);
@@ -878,7 +878,7 @@
             document.body.appendChild(modalDiv);
         };
 
-        // Modal para o QR Code Pix do devedor com o valor exato no padrão BR Code/EMV
+        // Modal para o QR Code Pix específico do devedor com o valor exato no padrão BR Code/EMV
         window.abrirModalPixEspecifico = function(nomePiloto, valorDevido, chavePix) {
             let modalId = 'modal-pix-especifico';
             let old = document.getElementById(modalId);
