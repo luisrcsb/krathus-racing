@@ -81,7 +81,7 @@
         <div class="card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
             <div>
                 <h2>🛒 Gestão de Compras Coletivas</h2>
-                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Módulo Isolado - Krathus Racing</p>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Módulo Isolado - Krathus Racing <span id="db-status-badge" style="font-size: 0.7rem; background: #e63946; padding: 2px 6px; border-radius: 4px; margin-left: 8px;">Conectando...</span></p>
             </div>
             <div style="display: flex; gap: 10px;">
                 <a href="index.html" class="btn btn-voltar">⬅️ Voltar à Central</a>
@@ -255,14 +255,29 @@
         let pilotosBaseGlobal = ["Rafael", "DJ", "Ronaldo", "Gustavo"];
 
         try {
-            firebase.initializeApp(firebaseConfig);
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
             db = firebase.database();
         } catch (e) {
-            console.warn("Firebase Init Warning:", e);
+            console.warn("Erro ao iniciar Firebase:", e);
         }
 
         document.addEventListener("DOMContentLoaded", () => {
+            const badge = document.getElementById('db-status-badge');
+            
             if (db) {
+                // Monitor de Conexão do Firebase (.info/connected)
+                db.ref('.info/connected').on('value', snap => {
+                    if (snap.val() === true) {
+                        badge.style.background = "#2ec4b6";
+                        badge.innerText = "Online (Firebase)";
+                    } else {
+                        badge.style.background = "#ffb703";
+                        badge.innerText = "Reconectando...";
+                    }
+                });
+
                 db.ref('pilotos').on('value', snap => {
                     let novaLista = [];
                     if (snap.exists()) {
@@ -276,16 +291,63 @@
                         pilotosBaseGlobal = novaLista.sort();
                     }
                     if (compraAbertaDados) atualizarCalculosCC();
+                }, err => {
+                    console.error("Erro de permissão ou leitura em /pilotos:", err);
+                    badge.style.background = "#e63946";
+                    badge.innerText = "Erro Permissão DB";
                 });
 
                 db.ref('comprasColetivas').on('value', snapshot => {
                     comprasColetivasCache = snapshot.val() || {};
                     renderizarListaComprasColetivas();
+                }, err => {
+                    console.error("Erro de permissão ou leitura em /comprasColetivas:", err);
+                    badge.style.background = "#e63946";
+                    badge.innerText = "Erro Permissão DB";
+                    carregarCacheLocal();
                 });
             } else {
-                renderizarListaComprasColetivas();
+                badge.style.background = "#e63946";
+                badge.innerText = "Offline (Local)";
+                carregarCacheLocal();
             }
         });
+
+        function carregarCacheLocal() {
+            try {
+                let local = localStorage.getItem('krathus_cc_local');
+                if (local) {
+                    comprasColetivasCache = JSON.parse(local);
+                }
+            } catch (e) {
+                comprasColetivasCache = {};
+            }
+            renderizarListaComprasColetivas();
+        }
+
+        function persistirDados(path, valor, callback) {
+            if (db) {
+                db.ref(path).set(valor).then(() => {
+                    if (callback) callback();
+                }).catch(err => {
+                    console.error("Erro ao salvar no Firebase:", err);
+                    alert("⚠️ Erro ao salvar no banco de dados online. Verifique suas permissões de acesso.");
+                });
+            } else {
+                // Fallback de salvamento local caso o Firebase esteja indisponível
+                if (path.startsWith('comprasColetivas/')) {
+                    let key = path.split('/')[1];
+                    if (valor === null) {
+                        delete comprasColetivasCache[key];
+                    } else {
+                        comprasColetivasCache[key] = valor;
+                    }
+                    localStorage.setItem('krathus_cc_local', JSON.stringify(comprasColetivasCache));
+                    renderizarListaComprasColetivas();
+                    if (callback) callback();
+                }
+            }
+        }
 
         function abrirModalCampeonatos2() {
             document.getElementById('campeonatos2-modal').style.display = 'flex';
@@ -306,7 +368,6 @@
             if (senha !== SENHA_UNIFICADA) { alert("❌ Senha incorreta!"); return; }
             let nome = document.getElementById('cc-input-nova-compra').value.trim();
             if (!nome) { alert("Digite o nome da compra."); return; }
-            if (!db) return;
 
             let key = "cc_" + Date.now();
             let participantesIniciais = {};
@@ -317,9 +378,11 @@
                 itens: [{ imgUrl: "", nomeItem: "", link: "", valor: 0, qtd: 1, atribuidoA: pilotosBaseGlobal[0] || "" }],
                 comprador: "", chavePix: "", participantes: participantesIniciais, pagamentos: {}, recibos: {}, valoresManuais: {}, rastreio: ""
             };
-            await db.ref(`comprasColetivas/${key}`).set(nova);
-            document.getElementById('cc-input-nova-compra').value = "";
-            alert("Compra cadastrada!");
+            
+            persistirDados(`comprasColetivas/${key}`, nova, () => {
+                document.getElementById('cc-input-nova-compra').value = "";
+                alert("Compra cadastrada com sucesso!");
+            });
         }
 
         function renderizarListaComprasColetivas() {
@@ -607,14 +670,13 @@
             gerarQrCodePixCC();
         };
 
-        // Algoritmo Oficial Rigoroso do Banco Central (BR Code / EMVCo) com CRC16-CCITT Corrigido
+        // Algoritmo Oficial do Banco Central (BR Code / EMVCo) com CRC16-CCITT
         function gerarPayloadPixBRCode(chave, nomeRecebedor, cidade, valor) {
             function formatEmv(id, val) {
                 let s = String(val);
                 return id + String(s.length).padStart(2, '0') + s;
             }
 
-            // Normalização estrita exigida pelos bancos (sem acentos e caracteres especiais críticos)
             let nomeLimpo = (nomeRecebedor || "KRATHUS RACING").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 25).trim();
             let cidadeLimpa = (cidade || "MACEIO").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 15).trim();
             let chaveLimpa = String(chave).trim();
@@ -627,19 +689,18 @@
             let field62 = formatEmv("62", formatEmv("05", "***"));
 
             let payloadSemCrc = (
-                formatEmv("00", "01") +             // Payload Format Indicator
-                merchantAccount +                   // Merchant Account Information
-                formatEmv("52", "0000") +           // Merchant Category Code
-                formatEmv("53", "986") +            # Transaction Currency (986 = BRL)
-                field54 +                           # Transaction Amount
-                formatEmv("58", "BR") +             # Country Code
-                formatEmv("59", nomeLimpo) +       # Merchant Name
-                formatEmv("60", cidadeLimpa) +     # Merchant City
-                field62 +                           # Additional Data Field Template (TXID)
-                "6304"                              # CRC16 Placeholder
+                formatEmv("00", "01") +
+                merchantAccount +
+                formatEmv("52", "0000") +
+                formatEmv("53", "986") +
+                field54 +
+                formatEmv("58", "BR") +
+                formatEmv("59", nomeLimpo) +
+                formatEmv("60", cidadeLimpa) +
+                field62 +
+                "6304"
             );
 
-            // Cálculo CRC16-CCITT (Polinômio 0x1021, Início 0xFFFF)
             let crc = 0xFFFF;
             for (let i = 0; i < payloadSemCrc.length; i++) {
                 let b = payloadSemCrc.charCodeAt(i) & 0xFF;
@@ -671,7 +732,6 @@
             }
         };
 
-        // Modal de Resumo Fiscal e Financeiro com Recibos disponíveis para consulta
         window.abrirModalResumoFiscal = function(key) {
             let c = comprasColetivasCache[key];
             if (!c) return;
@@ -878,7 +938,6 @@
             document.body.appendChild(modalDiv);
         };
 
-        // Modal para o QR Code Pix específico do devedor com o valor exato no padrão BR Code/EMV
         window.abrirModalPixEspecifico = function(nomePiloto, valorDevido, chavePix) {
             let modalId = 'modal-pix-especifico';
             let old = document.getElementById(modalId);
@@ -915,29 +974,35 @@
 
         window.addRastreioRapido = async function(key) {
             let code = prompt("📦 Digite o código de rastreio dos Correios:");
-            if (code && db) {
-                await db.ref(`comprasColetivas/${key}/rastreio`).set(code.trim());
-                alert("✅ Rastreio salvo!");
+            if (code) {
+                if (comprasColetivasCache[key]) {
+                    comprasColetivasCache[key].rastreio = code.trim();
+                    persistirDados(`comprasColetivas/${key}`, comprasColetivasCache[key], () => {
+                        alert("✅ Rastreio salvo!");
+                    });
+                }
             }
         };
 
         window.salvarCompraColetivaAberta = async function() {
             let senha = prompt("🔒 Senha de segurança para salvar:");
             if (senha !== SENHA_UNIFICADA) { alert("❌ Incorreta!"); return; }
-            if (!db || !compraAbertaKey) return;
-            await db.ref(`comprasColetivas/${compraAbertaKey}`).set(compraAbertaDados);
-            alert("✅ Salvo com sucesso!");
-            voltarListaCompras();
+            if (!compraAbertaKey) return;
+            persistirDados(`comprasColetivas/${compraAbertaKey}`, compraAbertaDados, () => {
+                alert("✅ Salvo com sucesso!");
+                voltarListaCompras();
+            });
         };
 
         window.excluirCompraColetivaAberta = async function() {
             let senha = prompt("🔒 Senha de segurança para excluir:");
             if (senha !== SENHA_UNIFICADA) { alert("❌ Incorreta!"); return; }
-            if (!db || !compraAbertaKey) return;
+            if (!compraAbertaKey) return;
             if (confirm("Deseja excluir esta compra?")) {
-                await db.ref(`comprasColetivas/${compraAbertaKey}`).remove();
-                alert("🗑️ Excluída.");
-                voltarListaCompras();
+                persistirDados(`comprasColetivas/${compraAbertaKey}`, null, () => {
+                    alert("🗑️ Excluída.");
+                    voltarListaCompras();
+                });
             }
         };
 
