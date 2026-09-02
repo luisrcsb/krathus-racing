@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Krathus Racing - Gestão de Compras Coletivas</title>
+    <!-- Firebase SDK Compat -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
     <style>
@@ -87,6 +88,7 @@
         </div>
     </div>
 
+    <!-- MODAL DE RESUMO FISCAL E PAGAMENTO RÁPIDO -->
     <div id="resumo-fiscal-modal" class="custom-modal" style="z-index: 11000;">
         <div class="modal-content" style="border-top-color: #480ca8; max-width: 850px; height: auto;">
             <div class="modal-header">
@@ -97,6 +99,7 @@
         </div>
     </div>
 
+    <!-- MODAL PRINCIPAL DE COMPRAS COLETIVAS -->
     <div id="campeonatos2-modal" class="custom-modal" style="display: flex;">
         <div class="modal-content">
             <div class="modal-header">
@@ -105,6 +108,7 @@
             </div>
             <div class="modal-body">
                 
+                <!-- Visão 1: Lista de Compras -->
                 <div id="lista-compras-coletivas-view" style="display: flex; flex-direction: column; gap: 16px;">
                     <div style="display: flex; flex-direction: column; gap: 8px;">
                         <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Compras Coletivas Cadastradas</span>
@@ -120,19 +124,22 @@
                     </div>
                 </div>
 
+                <!-- Visão 2: Painel de Gerenciamento da Compra Específica -->
                 <div id="painel-unica-compra-view" style="display: none; flex-direction: column; gap: 14px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-bottom: 2px solid var(--border-card); padding-bottom: 10px;">
                         <h3 id="cc-titulo-gerenciamento" style="font-size: 1.1rem; color: var(--accent-cc);">Cadastro: --</h3>
                         <button class="btn-action-danger" style="background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-card);" onclick="voltarListaCompras()">⬅️ Voltar para Lista</button>
                     </div>
 
+                    <!-- Bloco 1: Nome -->
                     <div class="config-panel">
                         <div class="config-panel-title">1. Nome da Compra</div>
                         <input type="text" id="cc-form-nome" class="config-input" style="width: 100%;" oninput="atualizarCalculosCC()">
                     </div>
 
+                    <!-- Bloco 2: Itens e Atribuição aos Pilotos (ou Todos) -->
                     <div class="config-panel">
-                        <div class="config-panel-title">2. Itens da Compra e Atribuição por Piloto</div>
+                        <div class="config-panel-title">2. Itens da Compra e Atribuição (Individual ou Todos)</div>
                         <div class="table-container">
                             <table>
                                 <thead>
@@ -143,7 +150,7 @@
                                         <th style="width: 80px;">Valor (R$)</th>
                                         <th style="width: 60px;">Qtd</th>
                                         <th style="width: 90px;">Subtotal</th>
-                                        <th style="width: 150px;">Atribuído a:</th>
+                                        <th style="width: 170px;">Atribuído a:</th>
                                         <th style="text-align: right; width: 50px;">Ação</th>
                                     </tr>
                                 </thead>
@@ -152,12 +159,14 @@
                         </div>
                         <button class="btn-action-primary" style="background: var(--accent-cc); width: max-content;" onclick="adicionarItemCC()">➕ Adicionar Item</button>
                         
+                        <!-- Aviso de Itens Extras / Não Atribuídos -->
                         <div id="cc-aviso-nao-atribuidos" style="display: none; background: rgba(230, 57, 70, 0.1); border: 1px dashed var(--accent-red); padding: 10px; border-radius: 6px; margin-top: 8px;">
                             <span style="font-size: 0.78rem; font-weight: bold; color: var(--accent-red);">⚠️ Itens pendentes de atribuição ou extras detectados. Atribua-os abaixo para regularizar o rateio:</span>
                             <div id="cc-lista-nao-atribuidos" style="margin-top: 6px; font-size: 0.8rem; color: var(--text-main);"></div>
                         </div>
                     </div>
 
+                    <!-- Bloco 3: Financeiro / Fiscal -->
                     <div class="config-panel">
                         <div class="config-panel-title">3. Informações Financeiras e Fiscais</div>
                         <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;">
@@ -174,9 +183,10 @@
                         </div>
                     </div>
 
+                    <!-- Bloco 4: Cotistas, Rateio Dinâmico e Edição Manual -->
                     <div class="config-panel">
                         <div class="config-panel-title">4. Seleção de Cotistas, Rateio Automático e Edição Manual</div>
-                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 6px;">💡 Dica: Ao marcar/desmarcar cotistas, os valores se redistribuem automaticamente. Se desejar, digite diretamente no campo "Valor Personalizado (Manual)" para fixar a cota daquele participante; o restante será rateado automaticamente entre os demais.</p>
+                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 6px;">💡 Dica: Ao marcar/desmarcar cotistas, os valores se redistribuem automaticamente. Se desejar, digite diretamente no campo "Valor Personalizado (Manual)" para fixar a cota daquele participante; o restante será rateado proporcionalmente entre os demais.</p>
                         <div class="table-container">
                             <table>
                                 <thead>
@@ -184,7 +194,7 @@
                                         <th style="width: 45px; text-align: center;">Ativo</th>
                                         <th>Piloto / Cotista</th>
                                         <th style="width: 140px; text-align: center;">Comprador</th>
-                                        <th>Itens Automáticos</th>
+                                        <th>Itens / Divisão</th>
                                         <th>Valor Base Itens</th>
                                         <th>Valor Personalizado (Manual)</th>
                                         <th>Taxas/Frete Proporcional</th>
@@ -198,6 +208,7 @@
                         </div>
                     </div>
 
+                    <!-- Bloco 5: Pix -->
                     <div class="config-panel">
                         <div class="config-panel-title">5. Chave Pix do Comprador (<span id="cc-label-nome-comprador">Nenhum</span>)</div>
                         <input type="text" id="cc-form-pix" class="config-input" style="width: 100%;" placeholder="CPF, Telefone ou E-mail" oninput="aoDigitarPix()">
@@ -207,6 +218,7 @@
                         </div>
                     </div>
 
+                    <!-- Bloco 6: Rastreio -->
                     <div class="config-panel" style="border-color: #3f37c9;">
                         <div class="config-panel-title" style="color: #3f37c9;">6. Código de Rastreio</div>
                         <input type="text" id="cc-form-rastreio" class="config-input" style="width: 100%; font-weight: bold;" placeholder="Ex: NL123456789BR" oninput="atualizarCalculosCC()">
@@ -222,6 +234,7 @@
         </div>
     </div>
 
+    <!-- Script de Gestão das Compras Coletivas -->
     <script>
         const SENHA_UNIFICADA = "1234";
         
@@ -431,7 +444,6 @@
                 }
             });
 
-            // Capturar inputs de valores manuais alterados pelo usuário
             document.querySelectorAll('.cc-input-manual').forEach(inp => {
                 let pName = inp.getAttribute('data-piloto');
                 let valManual = inp.value.trim();
@@ -468,11 +480,11 @@
 
             let ativosArr = pilotosDisponiveisGlobal.filter(p => compraAbertaDados.participantes && compraAbertaDados.participantes[p] === true);
 
-            // Renderizar tabela de itens
+            // Renderizar tabela de itens com a opção "TODOS"
             let tbodyItens = document.getElementById('cc-tabela-itens');
             tbodyItens.innerHTML = "";
             compraAbertaDados.itens.forEach((it, idx) => {
-                let optionsPilotos = `<option value="">-- Selecione o Piloto --</option>`;
+                let optionsPilotos = `<option value="">-- Selecione --</option><option value="TODOS" ${it.atribuidoA === 'TODOS' ? 'selected' : ''}>👥 Todos (Dividir entre todos)</option>`;
                 pilotosDisponiveisGlobal.forEach(p => {
                     optionsPilotos += `<option value="${escapeHtml(p)}" ${it.atribuidoA === p ? 'selected' : ''}>${escapeHtml(p)}</option>`;
                 });
@@ -491,7 +503,22 @@
                 `;
             });
 
-            // Lógica de Distribuição Automática com sobreposição de Valores Manuais
+            // Cálculo dos valores base por piloto (considerando divisão se "TODOS")
+            let valorBasePilotos = {};
+            ativosArr.forEach(p => valorBasePilotos[p] = 0);
+
+            compraAbertaDados.itens.forEach(it => {
+                let subtotalItem = it.valor * it.qtd;
+                if (it.atribuidoA === "TODOS") {
+                    if (ativosArr.length > 0) {
+                        let partePorPessoa = subtotalItem / ativosArr.length;
+                        ativosArr.forEach(p => valorBasePilotos[p] += partePorPessoa);
+                    }
+                } else if (it.atribuidoA && valorBasePilotos[it.atribuidoA] !== undefined) {
+                    valorBasePilotos[it.atribuidoA] += subtotalItem;
+                }
+            });
+
             let totalManualInformado = 0;
             ativosArr.forEach(p => {
                 if (compraAbertaDados.valoresManuais && compraAbertaDados.valoresManuais[p] !== undefined) {
@@ -502,12 +529,8 @@
             let restoParaDistribuir = totalGlobalFinal - totalManualInformado;
             let cotistasSemManual = ativosArr.filter(p => !compraAbertaDados.valoresManuais || compraAbertaDados.valoresManuais[p] === undefined);
 
-            let totalBaseItensSemManual = 0;
-            cotistasSemManual.forEach(p => {
-                compraAbertaDados.itens.forEach(it => {
-                    if (it.atribuidoA === p) totalBaseItensSemManual += (it.valor * it.qtd);
-                });
-            });
+            let totalBaseSemManual = 0;
+            cotistasSemManual.forEach(p => totalBaseSemManual += valorBasePilotos[p]);
 
             let totalTaxas = compraAbertaDados.frete + compraAbertaDados.imposto + compraAbertaDados.icms - compraAbertaDados.desconto - compraAbertaDados.outrosDescontos;
 
@@ -519,15 +542,7 @@
                 let isComprador = (p === compraAbertaDados.comprador);
                 let isPago = compraAbertaDados.pagamentos && compraAbertaDados.pagamentos[p] === true;
 
-                let valorItensPiloto = 0;
-                let qtdItensPiloto = 0;
-                compraAbertaDados.itens.forEach(it => {
-                    if (it.atribuidoA === p) {
-                        valorItensPiloto += (it.valor * it.qtd);
-                        qtdItensPiloto += it.qtd;
-                    }
-                });
-
+                let valorItensPiloto = valorBasePilotos[p] || 0;
                 let valorTotalDevidoPiloto = 0;
                 let proporcaoTaxas = 0;
                 let valManualAtual = (compraAbertaDados.valoresManuais && compraAbertaDados.valoresManuais[p] !== undefined) ? compraAbertaDados.valoresManuais[p] : "";
@@ -536,7 +551,7 @@
                     if (compraAbertaDados.valoresManuais && compraAbertaDados.valoresManuais[p] !== undefined) {
                         valorTotalDevidoPiloto = compraAbertaDados.valoresManuais[p];
                     } else {
-                        let pesoPiloto = totalBaseItensSemManual > 0 ? (valorItensPiloto / totalBaseItensSemManual) : (1 / (cotistasSemManual.length || 1));
+                        let pesoPiloto = totalBaseSemManual > 0 ? (valorItensPiloto / totalBaseSemManual) : (1 / (cotistasSemManual.length || 1));
                         valorTotalDevidoPiloto = restoParaDistribuir * pesoPiloto;
                     }
                     proporcaoTaxas = (somaPuraItens > 0) ? (valorItensPiloto / somaPuraItens) * totalTaxas : 0;
@@ -547,7 +562,7 @@
                         <td style="text-align: center;"><input type="checkbox" class="cc-check-participante" data-piloto="${escapeHtml(p)}" ${isChecked ? 'checked' : ''} onchange="atualizarCalculosCC()"></td>
                         <td><strong>${escapeHtml(p)}</strong></td>
                         <td style="text-align: center;"><input type="radio" name="radio-comprador" ${isComprador ? 'checked' : ''} ${!isChecked ? 'disabled' : ''} onchange="selecionarComprador('${escapeHtml(p)}')"></td>
-                        <td>${isChecked ? qtdItensPiloto + ' item(ns)' : '-'}</td>
+                        <td>${isChecked ? (valorItensPiloto > 0 ? 'R$ ' + valorItensPiloto.toFixed(2) : '0,00') : '-'}</td>
                         <td>${isChecked ? 'R$ ' + valorItensPiloto.toFixed(2) : '-'}</td>
                         <td>${isChecked ? '<input type="number" step="0.01" class="config-input cc-input-manual" data-piloto="' + escapeHtml(p) + '" value="' + valManualAtual + '" placeholder="Auto" style="width:100px;" oninput="atualizarCalculosCC()">' : '-'}</td>
                         <td>${isChecked ? 'R$ ' + proporcaoTaxas.toFixed(2) : '-'}</td>
