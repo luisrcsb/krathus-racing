@@ -1,28 +1,9 @@
-<!-- 
-========================================================================================================================
-ÍNDICE DO CÓDIGO - CENTRAL DE TELEMETRIA KRATHUS RACING (VERSÃO 5.48.2 - COM MÓDULO DE COMPRAS COLETIVAS)
-========================================================================================================================
-PARTE 1: Cabeçalho, Metadados, Bibliotecas Externas (Chart.js, Firebase, PDF.js) e Estilização CSS (Design System)
-PARTE 2: Modais do Sistema (Ficha do Piloto, Central de Uploads, Championship Manager e Compras Coletivas)
-PARTE 3: Estrutura Principal do Dashboard, Filtros de Baterias/Pilotos/Módulos e KPIs Globais
-PARTE 4: Inicialização do Firebase, Configuração de Cache, Regras de Alias e Ordenação
-PARTE 5: Módulo de Gerenciamento de Campeonatos (ZRound, Bancos Separados, Grids de Largada e Pontuação)
-PARTE 5.1: Módulo Integrado de Gestão de Compras Coletivas e Rateios (NOVO)
-PARTE 6: Processamento e Conversão de Arquivos (PDF para Texto, Parser de Voltas, Base64 e Banco de Dados)
-PARTE 7: Renderização Dinâmica de Gráficos (Evolução de Ritmo e Posição Volta a Volta) e Relatórios
-PARTE 8: Análises Avançadas por Piloto (Ritmo de Prova Detalhado, Consistência Histórica e Laudo)
-PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentários, Reações e Curtidas
-========================================================================================================================
--->
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Krathus Racing - Central de Telemetria</title>
-    <script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=Euw-DHLgOJmK9GodP9_WPfF_pHw_-MNmQBxfRWA1Jbwm4Alel8HHekxvTtepbOL3ZdzPNw-bQjkigV7WPGt2etLcYqUBu9_kDchNIh_EgcMZxmogpyM_qO8EjSkCIFPB83vIy8BXVeb68fb3vSQozwBdYoW-CcIat8cpM3Or5ayfmeg91lgJgeMNxVc8IEOprUjA9iBDCRYzSTKRmam68CI07ulLmIURb9M59KdMj5We-yXf90PpwWsdXb5C0ZDPOnHq0k6PuA08fn_GPplPmOxTf-cFu4Mt16S-Nmc1oeglHHdsoU-YFG5iDSn0WBF6iAOYZxoSdbHF5_464nOQEA" charset="UTF-8"></script>
-    <link rel="stylesheet" crossorigin="anonymous" href="https://gc.kis.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css?attr=aHR0cHM6Ly9jaGF0Z3B0LmNvbS9iYWNrZW5kLWFwaS9lc3R1YXJ5L2NvbnRlbnQ_aWQ9ZmlsZV8wMDAwMDAwMGQxNzg4MjBlYWMyOWYxYmMzMzQzOGNiMCZmbj1pbmRleF9rcmF0aHVzX2xhdWRvX3RlY25pY28uaHRtbCZjZD1hdHRhY2htZW50JnRzPTQ5NjU3MiZwPWZzJmNpZD0xJnNpZz04YzYxZTVlZmE0ZGVmMWZjMjU2OWJlMTEzZjRjMDJmNzZkMzc2ZTIzOGM5NjNlOTc1YTExNGE0OTEzMjhlMDE4JnY9MA"/>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
@@ -469,107 +450,105 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                         </div>
                     </div>
 
-                    <!-- Layout em Duas Colunas Adaptáveis -->
-                    <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+                    <!-- Layout Empilhado (Vertical em 1 Coluna) -->
+                    <div style="display: flex; flex-direction: column; gap: 20px;">
                         
-                        <!-- Coluna 1: Itens e Financeiro -->
-                        <div style="flex: 1 1 45%; min-width: 320px; display: flex; flex-direction: column; gap: 15px;">
-                            
-                            <div class="config-panel" style="border-color: #2a9d8f;">
-                                <div class="config-panel-title" style="color: #2a9d8f;">📦 Descrição e Itens da Compra</div>
-                                <div style="margin-bottom: 10px;">
-                                    <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold;">Renomear Título</label>
-                                    <input type="text" id="cc-edit-nome" class="config-input" style="width: 100%;" onchange="ccAtualizarNomeAtivo()">
-                                </div>
-                                <div class="table-container">
-                                    <table id="cc-tabela-itens">
-                                        <thead>
-                                            <tr>
-                                                <th>Item / Produto</th>
-                                                <th style="width: 80px;">Val. Unit (R$)</th>
-                                                <th style="width: 60px;">Qtd.</th>
-                                                <th style="width: 80px;">Total (R$)</th>
-                                                <th style="width: 40px; text-align:center;">Del</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <!-- Injetado via JS -->
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <button class="btn-text-action" style="color: #2a9d8f; margin-top: 5px; font-weight: bold;" onclick="ccAdicionarItem()">➕ Adicionar Produto</button>
+                        <!-- PARTE 1: Itens -->
+                        <div class="config-panel" style="border-color: #2a9d8f;">
+                            <div class="config-panel-title" style="color: #2a9d8f;">1. 📦 Descrição e Itens da Compra</div>
+                            <div style="margin-bottom: 10px;">
+                                <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold;">Renomear Título</label>
+                                <input type="text" id="cc-edit-nome" class="config-input" style="width: 100%;" onchange="ccAtualizarNomeAtivo()">
                             </div>
+                            <div class="table-container">
+                                <table id="cc-tabela-itens">
+                                    <thead>
+                                        <tr>
+                                            <th>Item / Produto</th>
+                                            <th style="width: 80px;">Val. Unit (R$)</th>
+                                            <th style="width: 60px;">Qtd.</th>
+                                            <th style="width: 80px;">Total (R$)</th>
+                                            <th style="width: 40px; text-align:center;">Del</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Injetado via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <button class="btn-text-action" style="color: #2a9d8f; margin-top: 5px; font-weight: bold;" onclick="ccAdicionarItem()">➕ Adicionar Produto</button>
+                        </div>
 
-                            <div class="config-panel">
-                                <div class="config-panel-title">💰 Quadro Financeiro & Acréscimos (R$)</div>
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                                    <div><label style="font-size: 0.70rem; color: var(--text-muted); font-weight: bold;">ICMS (+)</label><input type="number" id="cc-icms" class="config-input" style="width:100%" value="0" step="0.01" onchange="ccCalcularTotais()"></div>
-                                    <div><label style="font-size: 0.70rem; color: var(--text-muted); font-weight: bold;">IMPOSTO (+)</label><input type="number" id="cc-imposto" class="config-input" style="width:100%" value="0" step="0.01" onchange="ccCalcularTotais()"></div>
-                                    <div><label style="font-size: 0.70rem; color: var(--text-muted); font-weight: bold;">FRETE (+)</label><input type="number" id="cc-frete" class="config-input" style="width:100%" value="0" step="0.01" onchange="ccCalcularTotais()"></div>
-                                    <div><label style="font-size: 0.70rem; color: var(--text-muted); font-weight: bold;">TAXAS EXTRAS (+)</label><input type="number" id="cc-extras" class="config-input" style="width:100%" value="0" step="0.01" onchange="ccCalcularTotais()"></div>
-                                    <div style="grid-column: span 2;"><label style="font-size: 0.70rem; color: var(--accent-red); font-weight: bold;">DESCONTO APLICADO (-)</label><input type="number" id="cc-desconto" class="config-input" style="width:100%" value="0" step="0.01" onchange="ccCalcularTotais()"></div>
-                                </div>
-                                
-                                <div style="margin-top: 15px; padding: 15px; background: rgba(42, 157, 143, 0.1); border-radius: 8px; border: 1px solid #2a9d8f; text-align: center;">
-                                    <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Valor Global Final</span><br>
-                                    <span id="cc-valor-total" style="font-size: 2rem; font-weight: 900; color: #2a9d8f;">R$ 0,00</span>
-                                </div>
+                        <!-- PARTE 2: Financeiro -->
+                        <div class="config-panel">
+                            <div class="config-panel-title">2. 💰 Quadro Financeiro & Acréscimos (R$)</div>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px;">
+                                <div><label style="font-size: 0.70rem; color: var(--text-muted); font-weight: bold;">ICMS (+)</label><input type="number" id="cc-icms" class="config-input" style="width:100%" value="0" step="0.01" onchange="ccCalcularTotais()"></div>
+                                <div><label style="font-size: 0.70rem; color: var(--text-muted); font-weight: bold;">IMPOSTO (+)</label><input type="number" id="cc-imposto" class="config-input" style="width:100%" value="0" step="0.01" onchange="ccCalcularTotais()"></div>
+                                <div><label style="font-size: 0.70rem; color: var(--text-muted); font-weight: bold;">FRETE (+)</label><input type="number" id="cc-frete" class="config-input" style="width:100%" value="0" step="0.01" onchange="ccCalcularTotais()"></div>
+                                <div><label style="font-size: 0.70rem; color: var(--text-muted); font-weight: bold;">TAXAS EXTRAS (+)</label><input type="number" id="cc-extras" class="config-input" style="width:100%" value="0" step="0.01" onchange="ccCalcularTotais()"></div>
+                                <div style="grid-column: 1 / -1;"><label style="font-size: 0.70rem; color: var(--accent-red); font-weight: bold;">DESCONTO APLICADO (-)</label><input type="number" id="cc-desconto" class="config-input" style="width:100%" value="0" step="0.01" onchange="ccCalcularTotais()"></div>
+                            </div>
+                            
+                            <div style="margin-top: 15px; padding: 15px; background: rgba(42, 157, 143, 0.1); border-radius: 8px; border: 1px solid #2a9d8f; text-align: center;">
+                                <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Valor Global Final</span><br>
+                                <span id="cc-valor-total" style="font-size: 2rem; font-weight: 900; color: #2a9d8f;">R$ 0,00</span>
                             </div>
                         </div>
 
-                        <!-- Coluna 2: Rateio e Pagamento -->
-                        <div style="flex: 1 1 45%; min-width: 320px; display: flex; flex-direction: column; gap: 15px;">
-                            
-                            <div class="config-panel">
-                                <div class="config-panel-title">👥 Rateio Oficial entre Pilotos</div>
-                                <div class="table-container" style="max-height: 250px; overflow-y: auto;">
-                                    <table id="cc-tabela-rateio">
-                                        <thead>
-                                            <tr>
-                                                <th title="Marque para incluir no rateio" style="text-align:center;">Inc.</th>
-                                                <th>Piloto Participante</th>
-                                                <th title="Quem fez a compra oficial (Recebe os Pix)" style="text-align:center;">Comp.</th>
-                                                <th>Cota (R$)</th>
-                                                <th>Valor Pago (R$)</th>
-                                                <th>Diferença</th>
-                                                <th style="text-align:center;">Pago</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <!-- Injetado via JS dinamicamente com base nos pilotos do sistema -->
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 5px;">* A <strong>Cota (R$)</strong> é calculada dividindo automaticamente o Valor Global Final pela quantidade de pilotos marcados em "Inc". Caso o piloto pague a mais ou a menos, insira em <strong>Valor Pago</strong> para calcular a diferença.</p>
+                        <!-- PARTE 3: Rateio -->
+                        <div class="config-panel">
+                            <div class="config-panel-title">3. 👥 Rateio Oficial entre Pilotos</div>
+                            <div class="table-container" style="max-height: 350px; overflow-y: auto;">
+                                <table id="cc-tabela-rateio">
+                                    <thead>
+                                        <tr>
+                                            <th title="Marque para incluir no rateio" style="text-align:center;">Inc.</th>
+                                            <th>Piloto Participante</th>
+                                            <th title="Quem fez a compra oficial (Recebe os Pix)" style="text-align:center;">Comp.</th>
+                                            <th>Cota (R$)</th>
+                                            <th>Valor Pago (R$)</th>
+                                            <th>Diferença</th>
+                                            <th style="text-align:center;">Pago</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Injetado via JS dinamicamente com base nos pilotos do sistema -->
+                                    </tbody>
+                                </table>
                             </div>
-
-                            <div class="config-panel">
-                                <div class="config-panel-title">🚚 Código de Rastreio</div>
-                                <input type="text" id="cc-rastreio" class="config-input" style="width: 100%; font-weight: bold; letter-spacing: 1px; color: var(--accent-gold);" placeholder="Ex: NL123456789BR" onchange="ccAtualizarRastreio()">
-                            </div>
-
-                            <div class="config-panel">
-                                <div class="config-panel-title">💸 Recebimento / Pix do Comprador</div>
-                                <div style="display: flex; flex-direction: column; gap: 10px;">
-                                    <div>
-                                        <label style="font-size: 0.70rem; color: var(--text-muted); font-weight: bold;">Chave Pix (E-mail, CPF, Celular ou Aleatória)</label>
-                                        <input type="text" id="cc-pix" class="config-input" style="width: 100%;" placeholder="Insira a chave Pix..." oninput="ccAtualizarPix()">
-                                    </div>
-                                    <div style="display: flex; align-items: center; gap: 15px; margin-top: 10px;">
-                                        <img id="cc-qr-code" src="" alt="QR Code Pix" style="width: 120px; height: 120px; border-radius: 8px; display: none; cursor: pointer; border: 2px solid #2a9d8f;" onclick="ccCopiarPix('qr')" title="Clique para copiar a chave Pix">
-                                        <div style="flex: 1;">
-                                            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px;">O sistema gera um QR Code genérico de atalho com base na chave informada. Clique na chave abaixo ou na imagem para <strong>copiar automaticamente</strong>.</p>
-                                            <button id="cc-btn-copiar-pix" class="btn-action-primary" style="background: var(--bg-card); color: var(--accent-gold); border: 1px dashed var(--accent-gold); width: 100%; word-break: break-all; display: none;" onclick="ccCopiarPix('texto')"></button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
-                                <button class="btn-action-danger" onclick="excluirCompraAtivaColetiva()">🗑️ Excluir Compra Coletiva</button>
-                            </div>
-
+                            <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 5px;">* A <strong>Cota (R$)</strong> é calculada dividindo automaticamente o Valor Global Final pela quantidade de pilotos marcados em "Inc". Caso o piloto pague a mais ou a menos, insira em <strong>Valor Pago</strong> para calcular a diferença.</p>
                         </div>
+
+                        <!-- PARTE 4: Rastreio -->
+                        <div class="config-panel">
+                            <div class="config-panel-title">4. 🚚 Código de Rastreio</div>
+                            <input type="text" id="cc-rastreio" class="config-input" style="width: 100%; font-weight: bold; letter-spacing: 1px; color: var(--accent-gold);" placeholder="Ex: NL123456789BR" onchange="ccAtualizarRastreio()">
+                        </div>
+
+                        <!-- PARTE 5: Recebimento -->
+                        <div class="config-panel">
+                            <div class="config-panel-title">5. 💸 Recebimento / Pix do Comprador</div>
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+                                <div>
+                                    <label style="font-size: 0.70rem; color: var(--text-muted); font-weight: bold;">Chave Pix (E-mail, CPF, Celular ou Aleatória)</label>
+                                    <input type="text" id="cc-pix" class="config-input" style="width: 100%;" placeholder="Insira a chave Pix..." oninput="ccAtualizarPix()">
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 15px; margin-top: 10px;">
+                                    <img id="cc-qr-code" src="" alt="QR Code Pix" style="width: 120px; height: 120px; border-radius: 8px; display: none; cursor: pointer; border: 2px solid #2a9d8f;" onclick="ccCopiarPix('qr')" title="Clique para copiar a chave Pix">
+                                    <div style="flex: 1;">
+                                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px;">O sistema gera um QR Code genérico de atalho com base na chave informada. Clique na chave abaixo ou na imagem para <strong>copiar automaticamente</strong>.</p>
+                                        <button id="cc-btn-copiar-pix" class="btn-action-primary" style="background: var(--bg-card); color: var(--accent-gold); border: 1px dashed var(--accent-gold); width: 100%; max-width: 300px; word-break: break-all; display: none;" onclick="ccCopiarPix('texto')"></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- PARTE 6: Exclusão (Rodapé) -->
+                        <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+                            <button class="btn-action-danger" onclick="excluirCompraAtivaColetiva()">🗑️ Excluir Compra Coletiva</button>
+                        </div>
+
                     </div>
                 </div>
                 
@@ -588,7 +567,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             <div class="header-actions">
                 <button class="btn btn-upload-modal-trigger" onclick="abrirModalUpload()">📤 Uploads</button>
                 <button class="btn btn-campeonatos-trigger" onclick="abrirModalCampeonatos()">🏆 Championship Manager</button>
-                <!-- Botão aciona a nova central de Compras Coletivas -->
                 <button class="btn btn-compras-coletivas-trigger" onclick="abrirModalComprasColetivas()">🛒 Compras Coletivas</button>
                 <button class="btn btn-pdf-global" onclick="gerarRelatórioPDF()">📄 Gerar relatório</button>
             </div>
@@ -624,6 +602,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                             <label class="checkbox-item"><input type="checkbox" value="mod-log-posicao" class="filter-modulo" checked onchange="atualizarDashboard()"> 📝 Relatório de Ultrapassagens</label>
                             <label class="checkbox-item"><input type="checkbox" value="mod-classificacao-analise" class="filter-modulo" checked onchange="atualizarDashboard()"> 📋 Laudo Técnico</label>
                             <label class="checkbox-item"><input type="checkbox" value="mod-tabela-geral" class="filter-modulo" checked onchange="atualizarDashboard()"> ⏱️ Tabela Geral com Gaps</label>
+                            <label class="checkbox-item"><input type="checkbox" value="mod-replay" class="filter-modulo" checked onchange="atualizarDashboard()"> 🎬 Replay Animado da Corrida</label>
                             <label class="checkbox-item"><input type="checkbox" value="mod-comentarios" class="filter-modulo" checked onchange="atualizarDashboard()"> 💬 Comentários e Reações</label>
                         </div>
                     </div>
@@ -660,7 +639,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.48.2 (Consistência e Compras Coletivas Integradas)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.51.0 (Replay Proporcional & Velocidade)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -688,7 +667,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
         let listaJsonsCache = [];
         let campeonatosCache = {};
         
-        // Cache e State do Novo Módulo de Compras Coletivas
         let comprasColetivasCache = {}; 
         let ccAtivaKey = null;
         let ccAtiva = null;
@@ -697,8 +675,8 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
         let pilotosMetadadosCache = {};
         let mesclagensCache = {};
         let campeonatoAtivoKey = null;
+        let replayStates = {};
 
-        // [PARTE 4] Inicialização do Firebase
         try {
             firebase.initializeApp(firebaseConfig);
             db = firebase.database();
@@ -711,7 +689,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             "Edgard": "Edgard Camilo (DJ)",
             "edgar": "Edgard Camilo (DJ)",
             "Edgar": "Edgard Camilo (DJ)",
-            "Dj_Edgar": "Edgard Camilo (DJ)",
             "Dj_Edgar": "Edgard Camilo (DJ)",
             "DJ": "Edgard Camilo (DJ)"
         };
@@ -802,15 +779,10 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                     }
                 });
 
-                // Escuta das Compras Coletivas (Novo Módulo 5.1)
                 db.ref('comprasColetivas').on('value', snapshot => {
                     comprasColetivasCache = snapshot.val() || {};
                     if(document.getElementById('compras-coletivas-modal').style.display === 'flex') {
                         renderizarListaComprasColetivas();
-                        // Se estivermos editando uma compra ativa, recarrega
-                        if (ccAtivaKey && comprasColetivasCache[ccAtivaKey]) {
-                            // Cuidado para não sobrescrever edições não salvas do usuário, então atualizamos apenas a lista se ele estiver na view list.
-                        }
                     }
                 });
 
@@ -838,7 +810,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             }
         });
 
-        // [PARTE 5] Módulo de Gerenciamento de Campeonatos (ZRound)
         window.abrirModalUpload = function() { document.getElementById('upload-modal').style.display = 'flex'; };
         window.fecharModalUpload = function() { document.getElementById('upload-modal').style.display = 'none'; };
 
@@ -1340,11 +1311,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             return ranking;
         }
 
-
-        // =======================================================================================
-        // [PARTE 5.1] NOVO MÓDULO INTEGRADO DE GESTÃO DE COMPRAS COLETIVAS E RATEIOS
-        // =======================================================================================
-        
         window.abrirModalComprasColetivas = function() {
             document.getElementById('compras-coletivas-modal').style.display = 'flex';
             voltarListaComprasColetivas();
@@ -1378,7 +1344,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                 itens: [],
                 icms: 0, imposto: 0, frete: 0, desconto: 0, extras: 0, totalGlobal: 0,
                 rastreio: "", chavePix: "",
-                participantes: {} // Mapeia o nome do piloto ao objeto: { incluido: boolean, comprador: boolean, valorPago: number, statusPago: boolean }
+                participantes: {} 
             };
 
             await db.ref('comprasColetivas/' + key).set(novaCC);
@@ -1400,7 +1366,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
 
             keys.forEach(key => {
                 let cc = comprasColetivasCache[key];
-                // Calcula qtd participantes e pagantes
                 let participativos = Object.values(cc.participantes || {}).filter(p => p.incluido);
                 let numParticipantes = participativos.length;
                 let numPagos = participativos.filter(p => p.statusPago).length;
@@ -1439,7 +1404,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
 
         window.abrirGerenciadorCompraColetiva = function(key) {
             ccAtivaKey = key;
-            // Clonamos para edição em memória até o momento de salvar.
             ccAtiva = JSON.parse(JSON.stringify(comprasColetivasCache[key]));
             if (!ccAtiva.itens) ccAtiva.itens = [];
             if (!ccAtiva.participantes) ccAtiva.participantes = {};
@@ -1449,7 +1413,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             document.getElementById('cc-manage-title').innerText = `Compra: ${ccAtiva.nome}`;
             document.getElementById('cc-edit-nome').value = ccAtiva.nome;
 
-            // Preenche dados financeiros
             document.getElementById('cc-icms').value = ccAtiva.icms || 0;
             document.getElementById('cc-imposto').value = ccAtiva.imposto || 0;
             document.getElementById('cc-frete').value = ccAtiva.frete || 0;
@@ -1461,7 +1424,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
 
             ccAtualizarPix();
             ccRenderItens();
-            ccCalcularTotais(false); // Atualiza e depois renderiza rateio
+            ccCalcularTotais(false);
         };
 
         window.ccAtualizarNomeAtivo = function() {
@@ -1559,7 +1522,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             
             let pilotosArray = obterListaPilotosGeraisSistema();
             
-            // Garante que o piloto sempre exite no objeto da CC ativa
             pilotosArray.forEach(pNome => {
                 if (!ccAtiva.participantes[pNome]) {
                     ccAtiva.participantes[pNome] = { incluido: false, comprador: false, valorPago: null, statusPago: false };
@@ -1569,7 +1531,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             let numParticipantes = Object.values(ccAtiva.participantes).filter(p => p.incluido).length;
             let cotaBase = numParticipantes > 0 ? (ccAtiva.totalGlobal / numParticipantes) : 0;
 
-            // Ordenar: primeiro os incluídos, depois ordem alfabética.
             let renderList = pilotosArray.map(p => ({ nome: p, obj: ccAtiva.participantes[p] }))
                                          .sort((a,b) => (a.obj.incluido === b.obj.incluido) ? a.nome.localeCompare(b.nome) : (a.obj.incluido ? -1 : 1));
 
@@ -1577,14 +1538,11 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                 let pNome = item.nome;
                 let p = item.obj;
                 
-                // Lógica Inteligente para o "Valor Pago": 
-                // Se ele está incluso e ainda não tem valor atribuído (é nulo), mostramos na interface a Cota Base como default.
-                // Não gravamos no objeto como 'valorPago' real até que seja salvo ou editado, permitindo recalcular dinamicamente.
                 let valorExibidoDisplay = (p.incluido && (p.valorPago === null || p.valorPago === undefined)) ? cotaBase : (p.valorPago || 0);
 
                 let diferenca = p.incluido ? (valorExibidoDisplay - cotaBase) : 0;
                 let corDiferenca = diferenca > 0.01 ? 'var(--accent-green)' : (diferenca < -0.01 ? 'var(--accent-red)' : 'var(--text-muted)');
-                let displayDif = diferenca > 0.01 ? `+ R$ ${diferenca.toFixed(2)}` : (diferenca < -0.01 ? `- R$ ${Math.abs(diferenca).toFixed(2)}` : `R$ 0.00`);
+                let displayDif = diferenca > 0.01 ? `+ R$ ${diferenca.toFixed(2)}` : (diferenca < -0.01 ? `- R$ ${Math.abs(diferenca.toFixed(2))}` : `R$ 0.00`);
 
                 html += `
                     <tr style="background: ${p.incluido ? 'rgba(42, 157, 143, 0.05)' : 'transparent'};">
@@ -1615,19 +1573,17 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                 if (!isChecked) {
                     ccAtiva.participantes[pNome].comprador = false;
                     ccAtiva.participantes[pNome].statusPago = false;
-                    ccAtiva.participantes[pNome].valorPago = null; // Reseta customização
+                    ccAtiva.participantes[pNome].valorPago = null;
                 }
-                ccRenderRateio(); // Re-calcula e re-renderiza tudo
+                ccRenderRateio();
             }
         };
 
         window.ccSetComprador = function(pNome) {
             if (ccAtiva) {
-                // Reseta os outros
                 Object.keys(ccAtiva.participantes).forEach(k => ccAtiva.participantes[k].comprador = false);
                 if (ccAtiva.participantes[pNome]) {
                     ccAtiva.participantes[pNome].comprador = true;
-                    // Comprador "paga" pra ele mesmo implicitamente, mas deixamos o usuário decidir o checkbox "Pago".
                 }
                 ccRenderRateio();
             }
@@ -1645,7 +1601,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
         window.ccToggleStatusPago = function(pNome, isChecked) {
             if (ccAtiva && ccAtiva.participantes[pNome]) {
                 ccAtiva.participantes[pNome].statusPago = isChecked;
-                ccRenderRateio(); // Apenas atualiza a UI local
+                ccRenderRateio();
             }
         };
 
@@ -1687,7 +1643,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             if (senha !== SENHA_UNIFICADA) { alert("❌ Senha incorreta!"); return; }
 
             try {
-                // Antes de salvar, garantimos que os nulos da UI virem números reais baseados na cota do momento se estavam vazios.
                 let numParticipantes = Object.values(ccAtiva.participantes).filter(p => p.incluido).length;
                 let cotaBase = numParticipantes > 0 ? (ccAtiva.totalGlobal / numParticipantes) : 0;
                 
@@ -1724,7 +1679,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             }
         };
 
-        // [PARTE 6] Processamento e Conversão de Arquivos (PDF)
         async function arquivoParaBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -2152,7 +2106,22 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                 `;
             }
 
+            let carroSelecionado = meta.carro || "Nenhum";
+            let carroImg = meta.imagemCarro || "";
+            let carroHtml = "";
+            if (carroSelecionado !== "Nenhum" && carroImg) {
+                carroHtml = `
+                    <div style="display: flex; align-items: center; gap: 15px; background: rgba(58, 134, 255, 0.05); padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border-card); margin-bottom: 5px;">
+                        <img src="${carroImg}" alt="${carroSelecionado}" style="width: 70px; height: auto; object-fit: contain; border-radius: 4px;" onerror="this.style.display='none'">
+                        <div>
+                            <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: bold;">Chassi / Bolha</span><br>
+                            <span style="font-size: 1.1rem; color: var(--text-main); font-weight: bold;">🚗 ${escapeHtml(carroSelecionado)}</span>
+                        </div>
+                    </div>`;
+            }
+
             bodyEl.innerHTML = `
+                ${carroHtml}
                 <div class="dossier-grid">
                     <div class="dossier-kpi"><span class="dossier-kpi-label">Sessões</span><span class="dossier-kpi-value">${totalCorridas}</span></div>
                     <div class="dossier-kpi"><span class="dossier-kpi-label">Vitórias</span><span class="dossier-kpi-value">${vitorias}</span></div>
@@ -2250,17 +2219,41 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
 
             let meta = pilotosMetadadosCache[nomePiloto] || {};
             let apelidoAtual = meta.apelido || '';
+            let carroAtual = meta.carro || 'Nenhum';
+
+            const opcoesCarros = [
+                { nome: 'Nenhum', img: '' },
+                { nome: 'Porshe K969', img: 'porshe.png' },
+                { nome: 'Fiesta K989', img: 'fiesta.png' },
+                { nome: 'Pickup 284131', img: 'pickup.png' },
+                { nome: 'Fiesta c/ Rack 284010', img: 'fiestarack.png' }
+            ];
+
+            let selectHtml = `<select id="input-carro" class="config-select" style="flex: 1;">`;
+            opcoesCarros.forEach(c => {
+                let selected = (carroAtual === c.nome) ? 'selected' : '';
+                selectHtml += `<option value="${c.nome}|${c.img}" ${selected}>${c.nome}</option>`;
+            });
+            selectHtml += `</select>`;
 
             let containerConfig = document.getElementById('container-config-protegido');
             containerConfig.innerHTML = `
                 <div class="config-panel">
                     <div class="config-panel-title">🛡️ Painel de Configurações Avançadas do Piloto</div>
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                        <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Renomear / Apelido do Piloto</label>
-                        <div class="config-row">
-                            <input type="text" id="input-novo-nome" class="config-input" value="${escapeHtml(nomePiloto)}">
-                            <input type="text" id="input-apelido" class="config-input" placeholder="Apelido" value="${escapeHtml(apelidoAtual)}">
-                            <button class="btn-action-primary" onclick="salvarMetadadosPiloto('${escapeHtml(nomePiloto)}', event)">Salvar Dados</button>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <div>
+                            <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Renomear / Apelido do Piloto</label>
+                            <div class="config-row" style="margin-top: 4px;">
+                                <input type="text" id="input-novo-nome" class="config-input" value="${escapeHtml(nomePiloto)}">
+                                <input type="text" id="input-apelido" class="config-input" placeholder="Apelido" value="${escapeHtml(apelidoAtual)}">
+                            </div>
+                        </div>
+                        <div>
+                            <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Modelo / Bolha do Carro</label>
+                            <div class="config-row" style="margin-top: 4px;">
+                                ${selectHtml}
+                                <button class="btn-action-primary" onclick="salvarMetadadosPiloto('${escapeHtml(nomePiloto)}', event)">💾 Salvar Dados</button>
+                            </div>
                         </div>
                     </div>
                 </div>`;
@@ -2270,11 +2263,20 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             if (event) event.preventDefault();
             let novoNome = document.getElementById('input-novo-nome').value.trim();
             let novoApelido = document.getElementById('input-apelido').value.trim();
+            
+            let carroVal = document.getElementById('input-carro').value;
+            let [novoCarroNome, novoCarroImg] = carroVal.split('|');
+
             if (!novoNome) return;
             if (!db) { alert("Erro: Firebase desconectado."); return; }
 
             try {
-                await db.ref(`pilotosMetadados/${novoNome}`).set({ apelido: novoApelido });
+                await db.ref(`pilotosMetadados/${novoNome}`).set({ 
+                    apelido: novoApelido,
+                    carro: novoCarroNome,
+                    imagemCarro: novoCarroImg
+                });
+                
                 if (novoNome !== nomeAtual) {
                     await db.ref(`pilotosMetadados/${nomeAtual}`).remove();
                     let safeOldKey = nomeAtual.replace(/[.#$\/\[\]]/g, "_");
@@ -2360,8 +2362,148 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             return String(text).replace(/[&<>"']/g, m => map[m]);
         }
 
-        // Compartilhamento
-        function gerarTextoCompartilhamento(piloto, posicao, dadosBateria) {
+        window.iniciarReplay = function(bateriaKey) {
+            let dadosSessao = obterTodosDadosConsolidados().filter(d => d.bateriaKey === bateriaKey && d.laps && d.laps.length > 0);
+            if (dadosSessao.length === 0) return;
+
+            let canvas = document.getElementById(`canvas-replay-${bateriaKey}`);
+            if (!canvas) return;
+            let ctx = canvas.getContext('2d');
+
+            if (replayStates[bateriaKey] && replayStates[bateriaKey].animId) {
+                cancelAnimationFrame(replayStates[bateriaKey].animId);
+            }
+
+            let pilotosReplay = dadosSessao.map((d, idx) => {
+                let acumulado = 0;
+                let temposAcumulados = (d.laps || []).map(l => {
+                    let t = typeof l === 'object' ? l.tempo : l;
+                    acumulado += t;
+                    return acumulado;
+                });
+                let meta = pilotosMetadadosCache[d.piloto] || {};
+                
+                let carroImgObj = null;
+                if (meta.imagemCarro) {
+                    carroImgObj = new Image();
+                    carroImgObj.src = meta.imagemCarro;
+                }
+
+                return {
+                    nome: meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto,
+                    tempos: temposAcumulados,
+                    cor: ["#2ec4b6", "#ffb703", "#e63946", "#3a86ff", "#ff006e", "#8338ec"][idx % 6],
+                    carroImg: carroImgObj
+                };
+            });
+
+            let maxVoltasGeral = Math.max(...pilotosReplay.map(p => p.tempos.length));
+            let tempoMaximoCorrida = Math.max(...pilotosReplay.map(p => p.tempos[p.tempos.length - 1]));
+            let tempoAtual = 0;
+            let velocidadeSimulacao = replayStates[bateriaKey]?.velocidade || 1.5;
+            let ultimoTimestamp = performance.now();
+
+            function animar(timestamp) {
+                let delta = (timestamp - ultimoTimestamp) / 1000;
+                ultimoTimestamp = timestamp;
+                tempoAtual += delta * velocidadeSimulacao;
+
+                if (tempoAtual > tempoMaximoCorrida) {
+                    tempoAtual = tempoMaximoCorrida;
+                }
+
+                let lblTempo = document.getElementById(`replay-tempo-${bateriaKey}`);
+                if (lblTempo) lblTempo.innerText = `Tempo: ${tempoAtual.toFixed(1)}s / ${tempoMaximoCorrida.toFixed(1)}s`;
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                let alturaPista = canvas.height / pilotosReplay.length;
+                pilotosReplay.forEach((p, index) => {
+                    let y = index * alturaPista + (alturaPista / 2);
+
+                    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(90, y);
+                    ctx.lineTo(canvas.width - 50, y);
+                    ctx.stroke();
+
+                    let voltasCompletas = 0;
+                    for (let v = 0; v < p.tempos.length; v++) {
+                        let tempoVoltaFim = p.tempos[v];
+                        let tempoVoltaInicio = v === 0 ? 0 : p.tempos[v - 1];
+
+                        if (tempoAtual >= tempoVoltaFim) {
+                            voltasCompletas = v + 1;
+                        } else if (tempoAtual > tempoVoltaInicio && tempoAtual < tempoVoltaFim) {
+                            let progressoVolta = (tempoAtual - tempoVoltaInicio) / (tempoVoltaFim - tempoVoltaInicio);
+                            voltasCompletas = v + progressoVolta;
+                            break;
+                        }
+                    }
+
+                    let totalVoltasPiloto = p.tempos.length;
+                    let larguraUtil = canvas.width - 150;
+                    // Escala proporcional real: 100% da pista corresponde ao piloto com mais voltas da bateria
+                    let xCarro = 90 + (Math.min(voltasCompletas, maxVoltasGeral) / maxVoltasGeral) * larguraUtil;
+
+                    if (p.carroImg && p.carroImg.complete && p.carroImg.naturalWidth !== 0) {
+                        ctx.drawImage(p.carroImg, xCarro - 18, y - 10, 36, 16);
+                    } else {
+                        ctx.fillStyle = p.cor;
+                        ctx.beginPath();
+                        ctx.roundRect(xCarro - 12, y - 8, 24, 16, 4);
+                        ctx.fill();
+                    }
+
+                    ctx.fillStyle = '#d0d7e3';
+                    ctx.font = 'bold 12px Segoe UI';
+                    ctx.fillText(p.nome, 10, y + 4);
+
+                    ctx.fillStyle = '#8492a6';
+                    ctx.font = '11px Segoe UI';
+                    ctx.fillText(`${Math.min(Math.floor(voltasCompletas) + 1, totalVoltasPiloto)}/${totalVoltasPiloto}v`, canvas.width - 42, y + 4);
+                });
+
+                if (tempoAtual < tempoMaximoCorrida) {
+                    replayStates[bateriaKey].animId = requestAnimationFrame(animar);
+                }
+            }
+
+            replayStates[bateriaKey] = {
+                ...replayStates[bateriaKey],
+                animId: requestAnimationFrame((ts) => { ultimoTimestamp = ts; animar(ts); })
+            };
+        };
+
+        window.pausarReplay = function(bateriaKey) {
+            if (replayStates[bateriaKey] && replayStates[bateriaKey].animId) {
+                cancelAnimationFrame(replayStates[bateriaKey].animId);
+            }
+        };
+
+        window.mudarVelocidadeReplay = function(bateriaKey, novaVel) {
+            if (!replayStates[bateriaKey]) replayStates[bateriaKey] = {};
+            replayStates[bateriaKey].velocidade = parseFloat(novaVel);
+
+            // Atualiza destaque visual dos botões de velocidade
+            let containerBotoes = document.getElementById(`replay-vel-btns-${bateriaKey}`);
+            if (containerBotoes) {
+                Array.from(containerBotoes.children).forEach(btn => {
+                    if (btn.getAttribute('data-vel') == novaVel) {
+                        btn.style.background = 'var(--accent-gold)';
+                        btn.style.color = '#000';
+                        btn.style.fontWeight = 'bold';
+                    } else {
+                        btn.style.background = 'var(--bg-input)';
+                        btn.style.color = 'var(--text-main)';
+                        btn.style.fontWeight = 'normal';
+                    }
+                });
+            }
+        };
+
+        window.gerarTextoCompartilhamento = function(piloto, posicao, dadosBateria) {
             let nome = piloto.nome || piloto.piloto || "Piloto";
             let voltas = Number(piloto.voltas || 0);
             let melhor = Number(piloto.melhorVolta);
@@ -2486,7 +2628,6 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
             try { document.execCommand('copy'); alert("📋 Relatório completo copiado!"); } finally { document.body.removeChild(area); }
         }
 
-        // [PARTE 7] Renderização Dinâmica de Gráficos e Laudo
         function atualizarDashboard() {
             let dadosBase = obterTodosDadosConsolidados();
             const bateriasSel = Array.from(document.querySelectorAll('.filter-bateria:checked')).map(cb => cb.value);
@@ -2625,6 +2766,30 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                 if (modulosSel.includes('mod-log-posicao')) html += `<div class="card"><div class="card-header">📝 Relatório Detalhado de Ultrapassagens</div><div class="position-analysis-container" style="margin-top:0;"><div class="position-analysis-title">Histórico Volta a Volta</div><div class="position-log-list" id="pos-logs-${bateriaKey}"></div></div></div>`;
                 if (modulosSel.includes('mod-classificacao-analise')) html += `<div class="card"><div class="card-header">📋 Laudo Técnico do Chefe de Equipe</div><div class="table-container"><table><thead><tr><th>POS</th><th>PILOTO</th><th>SESSÃO</th><th>VOLTAS</th><th>MELHOR</th><th>VEL. ESCALA (1/28)</th><th>MÉDIA</th><th>DESVIO</th></tr></thead><tbody id="tabela-unificada-${bateriaKey}"></tbody></table></div></div>`;
                 if (modulosSel.includes('mod-tabela-geral')) html += `<div class="card"><div class="card-header">⏱️ Tabela Geral Volta a Volta (com Gaps e Voltas Atrás)</div><div class="table-container"><table><thead><tr id="head-lapbyLap-${bateriaKey}"><th>VOLTA</th></tr></thead><tbody id="body-lapbyLap-${bateriaKey}"></tbody></table></div></div>`;
+                if (modulosSel.includes('mod-replay')) {
+                    html += `
+                        <div class="card">
+                            <div class="card-header">🎬 Replay Animado da Corrida</div>
+                            <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;">
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="btn-action-primary" onclick="iniciarReplay('${bateriaKey}')">▶️ Play / Reiniciar</button>
+                                    <button class="btn-action-danger" onclick="pausarReplay('${bateriaKey}')">⏸️ Pausar</button>
+                                </div>
+                                <div id="replay-vel-btns-${bateriaKey}" style="display: flex; gap: 5px; align-items: center;">
+                                    <span style="font-size: 0.8rem; color: var(--text-muted); margin-right: 4px;">Velocidade:</span>
+                                    <button class="config-input" data-vel="1" style="padding: 4px 8px; cursor: pointer;" onclick="mudarVelocidadeReplay('${bateriaKey}', 1)">1x</button>
+                                    <button class="config-input" data-vel="1.5" style="padding: 4px 8px; cursor: pointer; background: var(--accent-gold); color: #000; font-weight: bold;" onclick="mudarVelocidadeReplay('${bateriaKey}', 1.5)">1.5x</button>
+                                    <button class="config-input" data-vel="2" style="padding: 4px 8px; cursor: pointer;" onclick="mudarVelocidadeReplay('${bateriaKey}', 2)">2x</button>
+                                    <button class="config-input" data-vel="4" style="padding: 4px 8px; cursor: pointer;" onclick="mudarVelocidadeReplay('${bateriaKey}', 4)">4x</button>
+                                    <button class="config-input" data-vel="8" style="padding: 4px 8px; cursor: pointer;" onclick="mudarVelocidadeReplay('${bateriaKey}', 8)">8x</button>
+                                </div>
+                                <span id="replay-tempo-${bateriaKey}" style="font-size: 0.85rem; color: var(--text-muted); margin-left: auto;">Tempo: 0.0s</span>
+                            </div>
+                            <div style="position: relative; background: var(--bg-body); border-radius: 8px; border: 1px solid var(--border-card); padding: 10px; overflow: hidden;">
+                                <canvas id="canvas-replay-${bateriaKey}" width="1000" height="200" style="width: 100%; height: auto; display: block;"></canvas>
+                            </div>
+                        </div>`;
+                }
                 if (modulosSel.includes('mod-comentarios')) {
                     html += `
                         <div class="comments-section">
@@ -2652,8 +2817,34 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                     if (canvasEl) {
                         let labels = Array.from({length: maxV}, (_, i) => `V${i+1}`);
                         let datasets = dadosSessao.map((d, idx) => {
-                            let meta = pilotosMetadadosCache[d.piloto] || {}; let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
-                            return { label: nomeExib, data: (d.laps || []).map(l => typeof l === 'object' ? l.tempo : l), borderColor: paleta[idx % paleta.length], backgroundColor: paleta[idx % paleta.length], borderWidth: 2, tension: 0.2 };
+                            let meta = pilotosMetadadosCache[d.piloto] || {}; 
+                            let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
+                            
+                            let carroImgObj = null;
+                            if (meta.imagemCarro) {
+                                carroImgObj = new Image();
+                                carroImgObj.src = meta.imagemCarro;
+                                carroImgObj.width = 36;
+                                carroImgObj.height = 16;
+                            }
+                            let voltasDestePiloto = d.laps ? d.laps.length : 0;
+
+                            return { 
+                                label: nomeExib, 
+                                data: (d.laps || []).map(l => typeof l === 'object' ? l.tempo : l), 
+                                borderColor: paleta[idx % paleta.length], 
+                                backgroundColor: paleta[idx % paleta.length], 
+                                borderWidth: 2, 
+                                tension: 0.2,
+                                pointRadius: (ctx) => {
+                                    if (ctx.dataIndex === voltasDestePiloto - 1 && carroImgObj) return 18;
+                                    return 3;
+                                },
+                                pointStyle: (ctx) => {
+                                    if (ctx.dataIndex === voltasDestePiloto - 1 && carroImgObj) return carroImgObj;
+                                    return 'circle';
+                                }
+                            };
                         });
                         chartInstances.push(new Chart(canvasEl.getContext('2d'), { type: 'line', data: { labels, datasets }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#8492a6' } } } } }));
                     }
@@ -2680,11 +2871,45 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                     if (canvasPosEl) {
                         let labelsPos = Array.from({length: maxVPos}, (_, i) => `Volta ${i+1}`);
                         let datasetsPos = dadosSessao.map((d, idx) => {
-                            let meta = pilotosMetadadosCache[d.piloto] || {}; let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
-                            let dadosPiloto = matrizPos[d.piloto] || []; let voltasPiloto = d.laps ? d.laps.length : maxVPos;
+                            let meta = pilotosMetadadosCache[d.piloto] || {}; 
+                            let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
+                            let dadosPiloto = matrizPos[d.piloto] || []; 
+                            let voltasPiloto = d.laps ? d.laps.length : maxVPos;
                             let pontosGrafico = labelsPos.map((_, i) => (i < voltasPiloto ? dadosPiloto[i] : null));
                             let corPiloto = paleta[idx % paleta.length];
-                            return { label: nomeExib, data: pontosGrafico, borderColor: corPiloto, backgroundColor: corPiloto, borderWidth: 3, tension: 0.1, spanGaps: false, pointRadius: (ctx) => (ctx.dataIndex === voltasPiloto - 1 && voltasPiloto < maxVPos) ? 8 : 3, pointStyle: (ctx) => (ctx.dataIndex === voltasPiloto - 1 && voltasPiloto < maxVPos) ? 'crossRot' : 'circle', pointBackgroundColor: (ctx) => (ctx.dataIndex === voltasPiloto - 1 && voltasPiloto < maxVPos) ? '#ff0000' : corPiloto };
+                            
+                            let carroImgObj = null;
+                            if (meta.imagemCarro) {
+                                carroImgObj = new Image();
+                                carroImgObj.src = meta.imagemCarro;
+                                carroImgObj.width = 36;
+                                carroImgObj.height = 16;
+                            }
+
+                            return { 
+                                label: nomeExib, 
+                                data: pontosGrafico, 
+                                borderColor: corPiloto, 
+                                backgroundColor: corPiloto, 
+                                borderWidth: 3, 
+                                tension: 0.1, 
+                                spanGaps: false, 
+                                pointRadius: (ctx) => {
+                                    if (ctx.dataIndex === voltasPiloto - 1) {
+                                        if (carroImgObj) return 18;
+                                        return (voltasPiloto < maxVPos) ? 8 : 6;
+                                    }
+                                    return 3;
+                                }, 
+                                pointStyle: (ctx) => {
+                                    if (ctx.dataIndex === voltasPiloto - 1) {
+                                        if (carroImgObj) return carroImgObj;
+                                        return (voltasPiloto < maxVPos) ? 'crossRot' : 'circle';
+                                    }
+                                    return 'circle';
+                                }, 
+                                pointBackgroundColor: (ctx) => (ctx.dataIndex === voltasPiloto - 1 && voltasPiloto < maxVPos && !carroImgObj) ? '#ff0000' : corPiloto 
+                            };
                         });
                         chartInstances.push(new Chart(canvasPosEl.getContext('2d'), { type: 'line', data: { labels: labelsPos, datasets: datasetsPos }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { reverse: true, min: 1, max: todosBat.length + 0.5, ticks: { stepSize: 1, color: '#8492a6' }, grid: { color: 'rgba(255,255,255,0.05)' } }, x: { ticks: { color: '#8492a6' }, grid: { color: 'rgba(255,255,255,0.05)' } } }, plugins: { legend: { labels: { color: '#8492a6' } } } } }));
                     }
@@ -2725,7 +2950,7 @@ PARTE 9: Tabela Geral de Tempos (Com Gaps e Voltas Atrás), Sistema de Comentár
                             todosBat.forEach(d => { let arr = matrizPos[d.piloto] || []; if (arr[v-1]) posNaVoltaAnt[arr[v-1]] = d.piloto; if (arr[v]) posNaVoltaAtual[arr[v]] = d.piloto; });
                             todosBat.forEach(d => {
                                 let arr = matrizPos[d.piloto] || []; let pAnt = arr[v-1], pAtu = arr[v];
-                                if (pAnt && pAtu && pAnt !== pAtu) {
+                                if (pAnt && pAtu && pAtu !== pAtu) {
                                     let oponente = posNaVoltaAnt[pAtu];
                                     if (oponente && oponente !== d.piloto) {
                                         historicoConfrontosPiloto[d.piloto].push({ volta: v + 1, tipo: 'ganho', oponente, de: pAnt, para: pAtu });
