@@ -7,6 +7,12 @@
     <!-- Firebase SDK Compat -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <!-- Bibliotecas para Leitura de PDF e Decodificação de QR Code -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
     <style>
         :root {
             --bg-body: #0d111a;
@@ -212,13 +218,19 @@
                         </div>
                     </div>
 
-                    <!-- Bloco 5: Pix -->
+                    <!-- Bloco 5: Pix e Upload de PDF do QR Code -->
                     <div class="config-panel">
                         <div class="config-panel-title">5. Chave Pix do Comprador (<span id="cc-label-nome-comprador">Nenhum</span>)</div>
-                        <input type="text" id="cc-form-pix" class="config-input" style="width: 100%;" placeholder="CPF, Telefone ou E-mail" oninput="aoDigitarPix()">
-                        <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                            <input type="text" id="cc-form-pix" class="config-input" style="flex: 1;" placeholder="CPF, Telefone, E-mail ou Payload Pix Copia e Cola" oninput="aoDigitarPix()">
+                            <label class="btn-action-primary" style="background: #480ca8; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin: 0;">
+                                📄 Upload PDF do Pix
+                                <input type="file" id="cc-input-pdf-pix" accept="application/pdf" style="display: none;" onchange="processarUploadPdfPix(event)">
+                            </label>
+                        </div>
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 6px;">
                             <img id="cc-pix-qrcode" class="pix-clickable" src="" alt="QR Code Pix" title="Toque para copiar" onclick="copiarChavePixAtual()" style="width: 120px; height: 120px; background: #fff; padding: 4px; border-radius: 6px; display: none;">
-                            <span id="cc-pix-placeholder" style="font-size: 0.75rem; color: var(--text-muted);">Insira a chave Pix para gerar o QR Code.</span>
+                            <span id="cc-pix-placeholder" style="font-size: 0.75rem; color: var(--text-muted);">Insira a chave Pix, cole o código Copia e Cola ou faça upload do PDF bancário.</span>
                         </div>
                     </div>
 
@@ -403,7 +415,6 @@
                     `<button class="btn-action-track" style="background: rgba(63, 55, 201, 0.2); border: 1px dashed #3f37c9; color: #3f37c9;" onclick="addRastreioRapido('${key}')">📦 Add Rastreio</button>` :
                     `<button class="btn-action-track" onclick="window.open('https://rastreamento.correios.com.br/app/index.php?objeto=${encodeURIComponent(rastreioCode)}', '_blank')">📦 Rastreio: ${escapeHtml(rastreioCode)}</button>`;
 
-                // Coletânea de imagens dos itens escolhidos
                 let imagensItens = [];
                 if (c.itens && Array.isArray(c.itens)) {
                     c.itens.forEach(it => {
@@ -512,6 +523,72 @@
                 btnFin.innerText = "✅ Finalizar Compra Coletiva";
             }
         }
+
+        // Função de Processamento e Extração Automática do PDF do Pix (Texto + QR Code Visual)
+        window.processarUploadPdfPix = async function(event) {
+            let file = event.target.files[0];
+            if (!file) return;
+
+            alert("⏳ Lendo o arquivo PDF e procurando o QR Code ou Payload Pix...");
+            try {
+                let arrayBuffer = await file.arrayBuffer();
+                let loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+                let pdfDoc = await loadingTask.promise;
+                
+                let textoExtraidoGeral = "";
+                let qrCodeEncontrado = null;
+
+                // Percorre todas as páginas do PDF
+                for (let i = 1; i <= pdfDoc.numPages; i++) {
+                    let page = await pdfDoc.getPage(i);
+                    
+                    // 1. Extração de Texto (procurando padrão Pix Copia e Cola "000201...")
+                    let textContent = await page.getTextContent();
+                    let pageText = textContent.items.map(item => item.str).join(" ");
+                    textoExtraidoGeral += " " + pageText;
+
+                    // 2. Extração de Imagens / Renderização para varredura de QR Code
+                    let viewport = page.getViewport({ scale: 2.0 }); // alta resolução para leitura precisa
+                    let canvas = document.createElement('canvas');
+                    let context = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+
+                    await page.render({ canvasContext: context, viewport: viewport }).promise;
+                    let imgData = context.getImageData(0, 0, canvas.width, canvas.height);
+                    let qr = jsQR(imgData.data, imgData.width, imgData.height);
+                    
+                    if (qr && qr.data) {
+                        qrCodeEncontrado = qr.data;
+                        break; // encontrou o QR Code
+                    }
+                }
+
+                // Verifica se achou o payload Pix Copia e Cola no texto do PDF
+                let regexPix = /(000201[\w\d]+)/;
+                let matchPix = textoExtraidoGeral.match(regexPix);
+
+                if (qrCodeEncontrado) {
+                    document.getElementById('cc-form-pix').value = qrCodeEncontrado;
+                    alert("✅ QR Code extraído com sucesso do PDF!");
+                } else if (matchPix && matchPix[1]) {
+                    document.getElementById('cc-form-pix').value = matchPix[1];
+                    alert("✅ Código Pix 'Copia e Cola' extraído do texto do PDF!");
+                } else if (textoExtraidoGeral.length > 10) {
+                    // Tenta colocar o texto bruto se parecer chave Pix (email, cpf, telefone)
+                    document.getElementById('cc-form-pix').value = file.name;
+                    alert("⚠️ PDF lido, mas nenhum BR Code explícito foi detectado. Verifique o campo.");
+                } else {
+                    alert("❌ Não foi possível extrair dados legíveis deste PDF.");
+                }
+
+                atualizarCalculosCC();
+            } catch (err) {
+                console.error("Erro ao processar PDF:", err);
+                alert("❌ Erro ao ler o arquivo PDF. Certifique-se de que é um documento válido.");
+            }
+            event.target.value = ""; // limpa o input
+        };
 
         window.adicionarParticipanteManual = function() {
             let input = document.getElementById('cc-input-novo-participante');
@@ -734,6 +811,11 @@
             let nomeLimpo = (nomeRecebedor || "KRATHUS RACING").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 25).trim();
             let cidadeLimpa = (cidade || "MACEIO").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 15).trim();
             let chaveLimpa = String(chave).trim();
+
+            // Se a chave já for um payload EMV completo (começa com 000201), retorna ela mesma
+            if (chaveLimpa.startsWith("000201")) {
+                return chaveLimpa;
+            }
 
             let gui = formatEmv("00", "br.gov.bcb.pix") + formatEmv("01", chaveLimpa);
             let merchantAccount = formatEmv("26", gui);
