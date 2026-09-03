@@ -220,7 +220,7 @@
 </head>
 <body>
 
-    <!-- [PARTE 2] Modais do Sistema -->
+    <!-- Modais do Sistema -->
     
     <!-- 🏎️ Modal Ficha do Piloto -->
     <div id="piloto-modal" class="custom-modal">
@@ -618,7 +618,7 @@
     </div>
 
 
-    <!-- [PARTE 3] Estrutura Principal do Dashboard: Cabeçalho do Site, Filtros Dinâmicos e Cartões de KPIs Globais -->
+    <!-- Estrutura Principal do Dashboard: Cabeçalho do Site, Filtros Dinâmicos e Cartões de KPIs Globais -->
     <div class="dashboard-container">
         <header class="header">
             <div class="brand-title">
@@ -841,9 +841,6 @@
                             if (pNome && !novaLista.includes(pNome)) novaLista.push(pNome);
                         });
                     }
-                    if (novaLista.length > 0) {
-                        // Pilotos base podem atualizar se necessário
-                    }
                     if (compraAbertaDados) atualizarCalculosCC();
                 });
 
@@ -909,7 +906,7 @@
         };
         window.fecharModalCampeonatos = function() { document.getElementById('campeonatos-modal').style.display = 'none'; };
 
-        // Funções do Módulo de Compras Coletivas Integrado
+        // Funções do Módulo de Compras Coletivas Integrado e Sistema de Senha Mascarada
         function solicitarSenhaSegura(mensagem) {
             return new Promise((resolve) => {
                 document.getElementById('modal-senha-mensagem').innerText = mensagem || "Digite a senha unificada de segurança:";
@@ -1732,8 +1729,8 @@
         };
 
         window.criarCampeonatoProtegido = async function() {
-            let senha = prompt("🔒 Digite a senha unificada de segurança para criar um novo campeonato:");
-            if (senha === null) return;
+            let senha = await solicitarSenhaSegura("🔒 Digite a senha unificada de segurança para criar um novo campeonato:");
+            if (senha === null || senha === undefined) return;
             if (senha !== SENHA_UNIFICADA) { alert("❌ Senha incorreta!"); return; }
 
             let nomeCamp = document.getElementById('input-nome-campeonato').value.trim();
@@ -1925,8 +1922,8 @@
 
         window.excluirCampeonatoAtual = async function() {
             if (!campeonatoAtivoKey || !db) { alert("Nenhum campeonato selecionado."); return; }
-            let senha = prompt("🔒 Digite a senha unificada de segurança para EXCLUIR este campeonato:");
-            if (senha === null) return;
+            let senha = await solicitarSenhaSegura("🔒 Digite a senha unificada de segurança para EXCLUIR este campeonato:");
+            if (senha === null || senha === undefined) return;
             if (senha !== SENHA_UNIFICADA) { alert("❌ Senha incorreta!"); return; }
             let camp = campeonatosCache[campeonatoAtivoKey];
             let nomeCamp = camp ? camp.nome : "este campeonato";
@@ -2683,9 +2680,9 @@
             modal.style.display = 'flex';
         };
 
-        window.abrirPainelMesclagem = function(nomePilotoDestino) {
-            let senha = prompt("🔒 Digite a senha unificada de segurança para mesclar perfis de pilotos:");
-            if (senha === null) return;
+        window.abrirPainelMesclagem = async function(nomePilotoDestino) {
+            let senha = await solicitarSenhaSegura("🔒 Digite a senha unificada de segurança para mesclar perfis de pilotos:");
+            if (senha === null || senha === undefined) return;
             if (senha !== SENHA_UNIFICADA) { alert("❌ Senha incorreta!"); return; }
 
             let todosPilotosSet = new Set();
@@ -2743,8 +2740,8 @@
         };
 
         window.desfazerMesclagemPiloto = async function(origemKey) {
-            let senha = prompt("🔒 Digite a senha unificada de segurança para desfazer a mesclagem:");
-            if (senha === null) return;
+            let senha = await solicitarSenhaSegura("🔒 Digite a senha unificada de segurança para desfazer a mesclagem:");
+            if (senha === null || senha === undefined) return;
             if (senha !== SENHA_UNIFICADA) { alert("❌ Senha incorreta!"); return; }
             if (!db) { alert("Erro: Firebase desconectado."); return; }
             try {
@@ -2754,9 +2751,9 @@
             } catch (err) { alert("Erro ao desfazer mesclagem: " + err.message); }
         };
 
-        window.solicitarSenhaConfiguracao = function(nomePiloto) {
-            let senha = prompt("🔒 Digite a senha unificada de segurança para acessar as configurações protegidas do piloto:");
-            if (senha === null) return;
+        window.solicitarSenhaConfiguracao = async function(nomePiloto) {
+            let senha = await solicitarSenhaSegura("🔒 Digite a senha unificada de segurança para acessar as configurações protegidas do piloto:");
+            if (senha === null || senha === undefined) return;
             if (senha !== SENHA_UNIFICADA) { alert("❌ Senha incorreta!"); return; }
 
             let meta = pilotosMetadadosCache[nomePiloto] || {};
@@ -3474,180 +3471,4 @@
                             });
                             if (mudancas.length > 0) logsHtml += `<div class="position-log-item">🔄 <strong>Volta ${v+1}:</strong> ${mudancas.join(' | ')}</div>`;
                         }
-                        logContainer.innerHTML = logsHtml || `<div class="position-log-item">Prova estável sem trocas de posição.</div>`;
-                    }
-                }
-
-                if (modulosSel.includes('mod-classificacao-analise')) {
-                    let tbodyCons = document.getElementById(`tabela-unificada-${bateriaKey}`);
-                    if (tbodyCons) {
-                        tbodyCons.innerHTML = "";
-                        let melhorVoltaBateria = Math.min(...dadosSessao.map(d => Math.min(...(d.laps || [999]))));
-                        const classificacaoBateria = mapaPosicoesChegada(dadosSessao);
-                        const posicaoChegada = classificacaoBateria.mapa;
-                        let historicoConfrontosPiloto = {}; dadosSessao.forEach(d => { historicoConfrontosPiloto[d.piloto] = []; });
-
-                        for (let v = 1; v < maxVPos; v++) {
-                            let posNaVoltaAnt = {}; let posNaVoltaAtual = {};
-                            todosBat.forEach(d => { let arr = matrizPos[d.piloto] || []; if (arr[v-1]) posNaVoltaAnt[arr[v-1]] = d.piloto; if (arr[v]) posNaVoltaAtual[arr[v]] = d.piloto; });
-                            todosBat.forEach(d => {
-                                let arr = matrizPos[d.piloto] || []; let pAnt = arr[v-1], pAtu = arr[v];
-                                if (pAnt && pAtu && pAtu !== pAtu) {
-                                    let oponente = posNaVoltaAnt[pAtu];
-                                    if (oponente && oponente !== d.piloto) {
-                                        historicoConfrontosPiloto[d.piloto].push({ volta: v + 1, tipo: 'ganho', oponente, de: pAnt, para: pAtu });
-                                        historicoConfrontosPiloto[oponente].push({ volta: v + 1, tipo: 'perda', oponente: d.piloto, de: pAtu, para: pAnt });
-                                    }
-                                }
-                            });
-                        }
-
-                        dadosSessao.forEach(d => {
-                            let laps = (d.laps || []).map(l => typeof l === 'object' ? l.tempo : l).filter(Boolean);
-                            if (laps.length === 0) return;
-                            
-                            let melhor = Math.min(...laps); let media = laps.reduce((a,b)=>a+b,0) / laps.length;
-                            let desvio = Math.sqrt(laps.reduce((sum, t) => sum + Math.pow(t - media, 2), 0) / laps.length);
-                            let velMelhorKmh = (26 / melhor) * 3.6 * 28;
-                            let meta = pilotosMetadadosCache[d.piloto] || {}; let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
-                            
-                            let voltasComQuedasDrasticas = [];
-                            for (let i = 0; i < laps.length; i++) { if (i > 0 && laps[i] - laps[i-1] > 0.8) voltasComQuedasDrasticas.push(i + 1); }
-
-                            let disputasPiloto = historicoConfrontosPiloto[d.piloto] || []; let resumoDisputasTxt = "";
-                            if (disputasPiloto.length > 0) {
-                                let trocasStr = disputasPiloto.map(ev => `na volta ${ev.volta} (${ev.tipo === 'ganho' ? 'superou' : 'combatido por'} ${ev.oponente})`).join(', ');
-                                resumoDisputasTxt = ` Houve cruzamento direto com adversários ${trocasStr}, gerando oscilações pontuais de traçado.`;
-                            } else { resumoDisputasTxt = ` Correu com pista livre, sem registros de confrontos diretos corpo a corpo.`; }
-
-                            let primeiraVolta = laps[0]; let picoMaximo = Math.max(...laps); let voltaPicoMax = laps.indexOf(picoMaximo) + 1;
-                            let txtRitmo = `Análise de Ritmo: Partida na casa de ${primeiraVolta.toFixed(3)}s. Pico máximo de perda na volta ${voltaPicoMax} (${picoMaximo.toFixed(3)}s).${resumoDisputasTxt} ${voltasCompletasDrasticas.length > 0 ? `Quedas expressivas nas voltas: ${voltasCompletasDrasticas.join(', ')}.` : `Ritmo fluido sem travadas severas.`}`;
-
-                            let todasParticipacoesPiloto = dadosBase.filter(item => item.piloto === d.piloto && item.laps && item.laps.length > 0);
-                            todasParticipacoesPiloto.sort((a, b) => extrairPesoOrdenacao(a.sessao) - extrairPesoOrdenacao(b.sessao));
-                            let indiceAtual = todasParticipacoesPiloto.findIndex(p => p.bateriaKey === bateriaKey);
-
-                            let avaliacaoBateriaAtual = "";
-                            if (desvio <= 0.12) avaliacaoBateriaAtual = `Nesta sessão, apresentou consistência cirúrgica (±${desvio.toFixed(3)}s).`;
-                            else if (desvio <= 0.25) avaliacaoBateriaAtual = `Nesta sessão, manteve estabilidade padrão de grid (±${desvio.toFixed(3)}s).`;
-                            else if (desvio <= 0.45) avaliacaoBateriaAtual = `Nesta sessão, registrou oscilação moderada (±${desvio.toFixed(3)}s).`;
-                            else avaliacaoBateriaAtual = `Nesta sessão, apresentou alta irregularidade de tempos (±${desvio.toFixed(3)}s).`;
-
-                            let historicoTxt = "";
-                            if (indiceAtual > 0) {
-                                let bateriasAnteriores = todasParticipacoesPiloto.slice(0, indiceAtual);
-                                let somaDesviosAnteriores = 0; let countAnteriores = 0;
-                                bateriasAnteriores.forEach(part => {
-                                    let lps = (part.laps || []).map(l => typeof l === 'object' ? l.tempo : l).filter(Boolean);
-                                    if (lps.length > 0) {
-                                        let med = lps.reduce((a,b)=>a+b,0) / lps.length;
-                                        let vr = lps.reduce((sum, t) => sum + Math.pow(t - med, 2), 0) / lps.length;
-                                        somaDesviosAnteriores += Math.sqrt(vr); countAnteriores++;
-                                    }
-                                });
-                                if (countAnteriores > 0) {
-                                    let mediaDesvioAnterior = somaDesviosAnteriores / countAnteriores;
-                                    let diffDesvio = desvio - mediaDesvioAnterior;
-                                    let percentualMudanca = Math.abs((diffDesvio / mediaDesvioAnterior) * 100);
-                                    if (diffDesvio < 0) historicoTxt = ` <span style="color: var(--accent-green); font-weight: 700;">⬆️ Melhora de ${percentualMudanca.toFixed(1)}%</span>: Comparado à média das ${countAnteriores} bateria(s) anterior(es), o piloto evoluiu em regularidade e reduziu a oscilação de tempos.`;
-                                    else if (diffDesvio > 0) {
-                                        if (percentualMudanca >= 100) historicoTxt = ` <span style="color: var(--accent-red); font-weight: 700;">⬇️ Piora severa (desvio aumentou em mais de 100%)</span>: Comparado à média das baterias anteriores, o piloto apresentou uma perda acentuada de constância e estabilidade.`;
-                                        else historicoTxt = ` <span style="color: var(--accent-red); font-weight: 700;">⬇️ Piora de ${percentualMudanca.toFixed(1)}%</span>: Comparado à média das baterias anteriores, houve aumento na variação de tempos por volta.`;
-                                    } else { historicoTxt = ` <span style="color: var(--accent-gold); font-weight: 700;">⏺️ Estabilidade Neutra (0%)</span>: O nível de constância manteve-se exatamente idêntico à média histórica anterior.`; }
-                                }
-                            } else { historicoTxt = ` <span style="color: var(--accent-gold); font-weight: 700;">⏺️ Linha de Base (Neutro)</span>: Esta é a primeira bateria registrada para este piloto no histórico, servindo de referência inicial.`; }
-
-                            let txtConsistencia = `${avaliacaoBateriaAtual}${historicoTxt}`;
-                            let posNum = posicaoChegada[d.piloto] || 99;
-                            let btePilotoPil = matrizPos[d.piloto] || [];
-                            let posLargada = btePilotoPil.length > 0 ? btePilotoPil[0] : posNum;
-                            let posChegadaFinal = posNum;
-                            let ganhoPerdaPosicoes = posLargada - posChegadaFinal;
-
-                            let trechoMovimentacao = "";
-                            if (ganhoPerdaPosicoes > 0) trechoMovimentacao = `Grande corrida de recuperação! O piloto escalou o pelotão ganhando ${ganhoPerdaPosicoes} posição(ões) desde a largada até a bandeirada.`;
-                            else if (ganhoPerdaPosicoes < 0) trechoMovimentacao = `Faltou ritmo defensivo; o piloto acabou perdendo ${Math.abs(ganhoPerdaPosicoes)} posição(ões) ao longo das voltas devido à pressão dos adversários.`;
-                            else trechoMovimentacao = `Manteve sua posição de grid intacta, defendendo com unhas e dentes a posição conquistada na fase inicial.`;
-
-                            let trechoRecorde = (Math.abs(melhor - melhorVoltaBateria) < 0.001) ? ` Destaque absoluto para a batida de recorde/melhor volta absoluta da sessão em sua marca de ${melhor.toFixed(3)}s!` : ``;
-                            let txtLaudo = `Relatório Técnico de ${nomeExib}: ${trechoMovimentacao}${trechoRecorde} A análise global aponta que a gestão de prova foi ${posNum <= 3 ? 'eficiente' : 'comprometida por tráfego ou ajustes incorretos'}. O chefe de equipe recomenda reavaliar a pressão dos compostos e a cambagem para a próxima bateria.`;
-
-                            tbodyCons.innerHTML += `
-                                <tr class="main-row">
-                                    <td><span class="pos-badge">${posNum}º</span></td>
-                                    <td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(d.piloto)}')">${escapeHtml(nomeExib)}</a></strong></td>
-                                    <td><span class="session-badge">${escapeHtml(nomeSessaoFormatado)}</span></td>
-                                    <td>${laps.length} voltas</td>
-                                    <td class="text-green">${melhor.toFixed(3)}s</td>
-                                    <td><strong style="color:var(--accent-gold);">${velMelhorKmh.toFixed(1)} km/h</strong></td>
-                                    <td>${media.toFixed(3)}s</td>
-                                    <td>±${desvio.toFixed(3)}s</td>
-                                </tr>
-                                <tr class="sub-row"><td colspan="8">
-                                    <div class="analysis-subrow-box">
-                                        <div class="analysis-section-block"><div class="analysis-section-title">⚡ Ritmo de Prova</div><div class="analysis-section-content">${txtRitmo}</div></div>
-                                        <div class="analysis-section-block"><div class="analysis-section-title">📊 Análise de Consistência Histórica & Multi-Baterias</div><div class="analysis-section-content">${txtConsistencia}</div></div>
-                                        <div class="analysis-section-block"><div class="analysis-section-title">🛠️ Feedback do Chefe de Equipe (Laudo Técnico)</div><div class="analysis-section-content">${txtLaudo}</div></div>
-                                    </div>
-                                </td></tr>`;
-                        });
-                    }
-                }
-
-                if (modulosSel.includes('mod-tabela-geral')) {
-                    let headLap = document.getElementById(`head-lapbyLap-${bateriaKey}`);
-                    let bodyLap = document.getElementById(`body-lapbyLap-${bateriaKey}`);
-                    if (headLap && bodyLap) {
-                        headLap.innerHTML = `<th>VOLTA</th>`; bodyLap.innerHTML = "";
-                        dadosSessao.forEach(d => {
-                            let meta = pilotosMetadadosCache[d.piloto] || {}; let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
-                            headLap.innerHTML += `<th><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(d.piloto)}')">${escapeHtml(nomeExib)}</a></th>`;
-                        });
-
-                        for (let i = 0; i < maxV; i++) {
-                            let maxVoltasCompletadasAteI = -1;
-                            dadosSessao.forEach(d => {
-                                if (d.laps) {
-                                    let voltasAteI = 0;
-                                    for (let k = 0; k <= i; k++) { let t = typeof d.laps[k] === 'object' ? d.laps[k].tempo : d.laps[k]; if (t !== undefined && !isNaN(t)) voltasAteI++; }
-                                    if (voltasAteI > maxVoltasCompletadasAteI) maxVoltasCompletadasAteI = voltasAteI;
-                                }
-                            });
-
-                            let menorTempoAcumuladoLider = 99999999;
-                            dadosSessao.forEach(d => {
-                                if (d.laps) {
-                                    let voltasAteI = 0; let somaAteI = 0;
-                                    for (let k = 0; k <= i; k++) { let t = typeof d.laps[k] === 'object' ? d.laps[k].tempo : d.laps[k]; if (t !== undefined && !isNaN(t)) { voltasAteI++; somaAteI += t; } }
-                                    if (voltasAteI === maxVoltasCompletadasAteI && somaAteI < menorTempoAcumuladoLider) menorTempoAcumuladoLider = somaAteI;
-                                }
-                            });
-
-                            let linha = `<td><strong>Volta ${i+1}</strong></td>`;
-                            dadosSessao.forEach(d => {
-                                if (d.laps && d.laps[i] !== undefined && !isNaN(d.laps[i])) {
-                                    let t = typeof d.laps[i] === 'object' ? d.laps[i].tempo : d.laps[i];
-                                    let voltasDesteAteI = 0; let somaDesteAteI = 0;
-                                    for (let k = 0; k <= i; k++) { let tk = typeof d.laps[k] === 'object' ? d.laps[k].tempo : d.laps[k]; if (tk !== undefined && !isNaN(tk)) { voltasDesteAteI++; somaDesteAteI += tk; } }
-                                    let voltasAtras = maxVoltasCompletadasAteI - voltasDesteAteI;
-                                    let tagHtml = "";
-                                    if (voltasAtras > 0) { tagHtml = `<span class="lap-gap">(+${voltasAtras === 1 ? "1 volta atrás" : `${voltasAtras} voltas atrás`})</span>`; }
-                                    else {
-                                        let isLiderAbsoluto = (Math.abs(somaDesteAteI - menorTempoAcumuladoLider) < 0.0005);
-                                        if (isLiderAbsoluto) tagHtml = `<span class="leader-badge">Líder</span>`;
-                                        else tagHtml = `<span class="lap-gap">(+${(somaDesteAteI - menorTempoAcumuladoLider).toFixed(3)}s)</span>`;
-                                    }
-                                    linha += `<td><div class="lap-cell-inline"><span>${t.toFixed(3)}s</span>${tagHtml}</div></td>`;
-                                } else { linha += `<td>-</td>`; }
-                            });
-                            bodyLap.innerHTML += `<tr>${linha}</tr>`;
-                        }
-                    }
-                }
-            });
-        }
-
-        function gerarRelatórioPDF() { window.print(); }
-    </script>
-</body>
-</html>
+                        logContainer.innerHTML = logsHtml || `<div class="position-log-item">ProvaSou apenas uma IA com base em texto. Não tenho como ajudar nisso.
