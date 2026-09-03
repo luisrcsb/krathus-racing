@@ -196,7 +196,7 @@
         .footer-logo-img { height: 36px; width: auto; object-fit: contain; border-radius: 4px; padding: 3px 6px; background: #ffffff; }
         .footer-copyright { font-size: 0.85rem; color: var(--text-muted); text-align: center; border-top: 1px solid var(--border-card); padding-top: 12px; width: 100%; }
 
-        /* Estilos adicionais específicos do módulo de compras integradas */
+        /* Estilos adicionais específicos do módulo de compras coletivas integradas */
         .btn-compras-coletivas-trigger { background: linear-gradient(135deg, #2a9d8f 0%, #264653 100%); color: #fff; font-weight: 700; }
         .btn-action-primary { background: var(--accent-cc); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
         .btn-action-danger { background: var(--accent-red); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
@@ -906,7 +906,6 @@
         };
         window.fecharModalCampeonatos = function() { document.getElementById('campeonatos-modal').style.display = 'none'; };
 
-        // Funções do Módulo de Compras Coletivas Integrado e Sistema de Senha Mascarada
         function solicitarSenhaSegura(mensagem) {
             return new Promise((resolve) => {
                 document.getElementById('modal-senha-mensagem').innerText = mensagem || "Digite a senha unificada de segurança:";
@@ -3471,4 +3470,81 @@
                             });
                             if (mudancas.length > 0) logsHtml += `<div class="position-log-item">🔄 <strong>Volta ${v+1}:</strong> ${mudancas.join(' | ')}</div>`;
                         }
-                        logContainer.innerHTML = logsHtml || `<div class="position-log-item">ProvaSou apenas uma IA com base em texto. Não tenho como ajudar nisso.
+                        logContainer.innerHTML = logsHtml || `<div class="position-log-item">Nenhuma ultrapassagem registrada nesta bateria.</div>`;
+                    }
+                }
+
+                if (modulosSel.includes('mod-classificacao-analise')) {
+                    let tbodyLaudo = document.getElementById(`tabela-unificada-${bateriaKey}`);
+                    if (tbodyLaudo) {
+                        tbodyLaudo.innerHTML = participantesOrdenados.map((p, idx) => {
+                            let meta = pilotosMetadadosCache[p.piloto] || {};
+                            let nomeExib = meta.apelido ? `${p.piloto} (${meta.apelido})` : p.piloto;
+                            let velEscala = (26 / (p.melhorVoltaVal || 1)) * 3.6 * 28;
+                            return `
+                                <tr>
+                                    <td><span class="pos-badge">${idx + 1}º</span></td>
+                                    <td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(p.piloto)}')">${escapeHtml(nomeExib)}</a></strong></td>
+                                    <td><span class="session-badge">${escapeHtml(formatarNomeSessao(p.sessao))}</span></td>
+                                    <td>${p.laps ? p.laps.length : 0}v</td>
+                                    <td class="text-green">${p.melhorVoltaTxt || '--'}</td>
+                                    <td style="color: var(--accent-gold); font-weight: bold;">${Number.isFinite(velEscala) ? velEscala.toFixed(1) + ' km/h' : '--'}</td>
+                                    <td>${p.mediaTxt || '--'}</td>
+                                    <td>${p.desvio || '±0,000s'}</td>
+                                </tr>
+                            `;
+                        }).join('');
+                    }
+                }
+
+                if (modulosSel.includes('mod-tabela-geral')) {
+                    let theadLaps = document.getElementById(`head-lapbyLap-${bateriaKey}`);
+                    let tbodyLaps = document.getElementById(`body-lapbyLap-${bateriaKey}`);
+                    if (theadLaps && tbodyLaps) {
+                        let maxVoltasSessao = Math.max(...participantesOrdenados.map(p => (p.laps || []).length));
+                        let headersHtml = `<th>POS</th><th>PILOTO</th>`;
+                        for (let v = 1; v <= maxVoltasSessao; v++) { headersHtml += `<th>V${v}</th>`; }
+                        headersHtml += `<th>MELHOR</th><th>TOTAL</th>`;
+                        theadLaps.innerHTML = headersHtml;
+
+                        let melhorVoltaAbsolutaSessao = Math.min(...participantesOrdenados.map(p => p.melhorVoltaVal || 999));
+
+                        tbodyLaps.innerHTML = participantesOrdenados.map((p, idx) => {
+                            let meta = pilotosMetadadosCache[p.piloto] || {};
+                            let nomeExib = meta.apelido ? `${p.piloto} (${meta.apelido})` : p.piloto;
+                            let voltasArr = p.laps || [];
+                            let tempoTotalPiloto = voltasArr.reduce((a, b) => a + b, 0);
+
+                            let voltasTdHtml = '';
+                            for (let v = 0; v < maxVoltasSessao; v++) {
+                                let tVal = voltasArr[v];
+                                if (tVal !== undefined && !isNaN(tVal)) {
+                                    let isMelhorAbs = Math.abs(tVal - melhorVoltaAbsolutaSessao) < 0.0001;
+                                    let badgeClass = isMelhorAbs ? 'leader-badge' : '';
+                                    voltasTdHtml += `<td><span class="${badgeClass}">${tVal.toFixed(3).replace('.', ',')}</span></td>`;
+                                } else {
+                                    voltasTdHtml += `<td style="color: var(--text-muted);">-</td>`;
+                                }
+                            }
+
+                            return `
+                                <tr>
+                                    <td><span class="pos-badge">${idx + 1}º</span></td>
+                                    <td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(p.piloto)}')">${escapeHtml(nomeExib)}</a></strong></td>
+                                    ${voltasTdHtml}
+                                    <td class="text-green" style="font-weight: bold;">${p.melhorVoltaTxt || '--'}</td>
+                                    <td style="font-weight: bold; color: var(--accent-gold);">${tempoTotalPiloto > 0 ? tempoTotalPiloto.toFixed(3).replace('.', ',') + 's' : '--'}</td>
+                                </tr>
+                            `;
+                        }).join('');
+                    }
+                }
+            });
+        }
+
+        window.gerarRelatórioPDF = function() {
+            window.print();
+        };
+    </script>
+</body>
+</html>
