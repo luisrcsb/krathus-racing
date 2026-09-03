@@ -364,15 +364,7 @@
 
                         <!-- ABA 3 -->
                         <div id="zround-aba-3" class="zround-aba-content" style="display: none; flex-direction: column; gap: 12px;">
-                            <div class="upload-box">
-                                <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase;">📤 Upload e Seleção de Provas (Banco de Dados Separado)</span>
-                                <p style="font-size: 0.82rem; color: var(--text-muted);">Adicione novos arquivos de provas (PDF/HTML) ou importe relatórios salvos no banco principal para o banco dedicado deste campeonato.</p>
-                                <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 6px;">
-                                    <input type="file" id="zround-input-file-prova" accept=".pdf,.html,.htm" multiple style="background: var(--bg-card); padding: 8px; border-radius: 6px; border: 1px solid var(--border-card); color: var(--text-main); flex: 1; font-size: 0.85rem;">
-                                    <button class="btn btn-upload-modal-trigger" onclick="uploadProvasBancoSeparado()">Enviar Prova (Banco Separado)</button>
-                                </div>
-                            </div>
-
+                            <!-- 1. Sessão de Treino Exclusiva para Grid -->
                             <div class="upload-box" style="border-color: var(--accent-gold); background: rgba(255, 183, 3, 0.04);">
                                 <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase;">⏱️ Sessão de Treino Exclusiva para Grid (Regra: 3 Melhores Voltas, descarta a pior)</span>
                                 <p style="font-size: 0.82rem; color: var(--text-muted);">Envie um relatório de treino oficial para o cálculo automático do grid de largada inicial da primeira prova.</p>
@@ -383,6 +375,7 @@
                                 <div id="status-treino-grid-info" style="font-size: 0.8rem; color: var(--accent-green); margin-top: 4px;">Nenhum treino de grid processado.</div>
                             </div>
 
+                            <!-- 2. Importar Provas Existentes do Banco Principal do Site -->
                             <div class="upload-box" style="border-style: solid; border-color: var(--border-card);">
                                 <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">📥 Importar Provas Existentes do Banco Principal do Site</span>
                                 <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 6px;">
@@ -392,6 +385,17 @@
                                     <button class="btn-action-primary" onclick="importarProvaDoBancoPrincipalParaCampeonato()">Importar para o Banco Separado</button>
                                 </div>
                             </div>
+
+                            <!-- 3. Upload e Seleção de Provas (Banco de Dados Separado) -->
+                            <div class="upload-box">
+                                <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase;">📤 Upload e Seleção de Provas (Banco de Dados Separado)</span>
+                                <p style="font-size: 0.82rem; color: var(--text-muted);">Adicione novos arquivos de provas (PDF/HTML) para o banco dedicado deste campeonato.</p>
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 6px;">
+                                    <input type="file" id="zround-input-file-prova" accept=".pdf,.html,.htm" multiple style="background: var(--bg-card); padding: 8px; border-radius: 6px; border: 1px solid var(--border-card); color: var(--text-main); flex: 1; font-size: 0.85rem;">
+                                    <button class="btn btn-upload-modal-trigger" onclick="uploadProvasBancoSeparado()">Enviar Prova (Banco Separado)</button>
+                                </div>
+                            </div>
+
                             <div style="display: flex; flex-direction: column; gap: 8px;">
                                 <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Provas Registradas no Banco Separado deste Campeonato</span>
                                 <ul id="zround-lista-provas-banco-separado" style="list-style: none; display: flex; flex-direction: column; gap: 6px; max-height: 180px; overflow-y: auto;">
@@ -3517,7 +3521,7 @@
                             } else { resumoDisputasTxt = ` Correu com pista livre, sem registros de confrontos diretos corpo a corpo.`; }
 
                             let primeiraVolta = laps[0]; let picoMaximo = Math.max(...laps); let voltaPicoMax = laps.indexOf(picoMaximo) + 1;
-                            let txtRitmo = `Análise de Ritmo: Partida na casa de ${primeiraVolta.toFixed(3)}s. Pico máximo de perda na volta ${voltaPicoMax} (${picoMaximo.toFixed(3)}s).${resumoDisputasTxt} ${voltasComQuedasDrasticas.length > 0 ? `Quedas expressivas nas voltas: ${voltasComQuedasDrasticas.join(', ')}.` : `Ritmo fluido sem travadas severas.`}`;
+                            let txtRitmo = `Análise de Ritmo: Partida na casa de ${primeiraVolta.toFixed(3)}s. Pico máximo de perda na volta ${voltaPicoMax} (${picoMaximo.toFixed(3)}s).${resumoDisputasTxt} ${voltasCompletasDrasticas.length > 0 ? `Quedas expressivas nas voltas: ${voltasCompletasDrasticas.join(', ')}.` : `Ritmo fluido sem travadas severas.`}`;
 
                             let todasParticipacoesPiloto = dadosBase.filter(item => item.piloto === d.piloto && item.laps && item.laps.length > 0);
                             todasParticipacoesPiloto.sort((a, b) => extrairPesoOrdenacao(a.sessao) - extrairPesoOrdenacao(b.sessao));
