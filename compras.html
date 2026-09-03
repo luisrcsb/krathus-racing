@@ -46,6 +46,7 @@
         .btn-action-track { background: #3f37c9; color: #fff; border: none; padding: 5px 12px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; cursor: pointer; text-decoration: none; display: inline-block; }
         .btn-action-pix { background: var(--accent-green); color: #0d111a; border: none; padding: 4px 10px; border-radius: 4px; font-weight: 700; font-size: 0.75rem; cursor: pointer; }
         .btn-action-recibo { background: var(--accent-blue); color: #fff; border: none; padding: 4px 10px; border-radius: 4px; font-weight: 600; font-size: 0.75rem; cursor: pointer; text-decoration: none; display: inline-block; }
+        .btn-action-finalize { background: var(--accent-blue); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; font-size: 0.85rem; cursor: pointer; }
 
         .custom-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -227,9 +228,12 @@
                         <input type="text" id="cc-form-rastreio" class="config-input" style="width: 100%; font-weight: bold;" placeholder="Ex: NL123456789BR" oninput="atualizarCalculosCC()">
                     </div>
 
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                         <button class="btn-action-danger" onclick="excluirCompraColetivaAberta()">🗑️ Excluir Compra</button>
-                        <button class="btn-action-primary" style="background: var(--accent-cc); padding: 10px 20px;" onclick="salvarCompraColetivaAberta()">💾 Salvar Alterações</button>
+                        <div style="display: flex; gap: 10px;">
+                            <button id="btn-finalizar-compra-ui" class="btn-action-finalize" onclick="toggleFinalizarCompraColetiva()">✅ Finalizar Compra Coletiva</button>
+                            <button class="btn-action-primary" style="background: var(--accent-cc); padding: 10px 20px;" onclick="salvarCompraColetivaAberta()">💾 Salvar Alterações</button>
+                        </div>
                     </div>
                 </div>
 
@@ -267,7 +271,6 @@
             const badge = document.getElementById('db-status-badge');
             
             if (db) {
-                // Monitor de Conexão do Firebase (.info/connected)
                 db.ref('.info/connected').on('value', snap => {
                     if (snap.val() === true) {
                         badge.style.background = "#2ec4b6";
@@ -291,20 +294,11 @@
                         pilotosBaseGlobal = novaLista.sort();
                     }
                     if (compraAbertaDados) atualizarCalculosCC();
-                }, err => {
-                    console.error("Erro de permissão ou leitura em /pilotos:", err);
-                    badge.style.background = "#e63946";
-                    badge.innerText = "Erro Permissão DB";
                 });
 
                 db.ref('comprasColetivas').on('value', snapshot => {
                     comprasColetivasCache = snapshot.val() || {};
                     renderizarListaComprasColetivas();
-                }, err => {
-                    console.error("Erro de permissão ou leitura em /comprasColetivas:", err);
-                    badge.style.background = "#e63946";
-                    badge.innerText = "Erro Permissão DB";
-                    carregarCacheLocal();
                 });
             } else {
                 badge.style.background = "#e63946";
@@ -331,10 +325,9 @@
                     if (callback) callback();
                 }).catch(err => {
                     console.error("Erro ao salvar no Firebase:", err);
-                    alert("⚠️ Erro ao salvar no banco de dados online. Verifique suas permissões de acesso.");
+                    alert("⚠️ Erro ao salvar no banco de dados online. Verifique suas permissões.");
                 });
             } else {
-                // Fallback de salvamento local caso o Firebase esteja indisponível
                 if (path.startsWith('comprasColetivas/')) {
                     let key = path.split('/')[1];
                     if (valor === null) {
@@ -376,7 +369,7 @@
             let nova = {
                 chave: key, nome: nome, frete: 0, imposto: 0, icms: 0, desconto: 0, outrosDescontos: 0,
                 itens: [{ imgUrl: "", nomeItem: "", link: "", valor: 0, qtd: 1, atribuidoA: pilotosBaseGlobal[0] || "" }],
-                comprador: "", chavePix: "", participantes: participantesIniciais, pagamentos: {}, recibos: {}, valoresManuais: {}, rastreio: ""
+                comprador: "", chavePix: "", participantes: participantesIniciais, pagamentos: {}, recibos: {}, valoresManuais: {}, rastreio: "", finalizada: false
             };
             
             persistirDados(`comprasColetivas/${key}`, nova, () => {
@@ -403,16 +396,29 @@
                 let pagos = 0;
                 parts.forEach(p => { if (c.pagamentos && c.pagamentos[p] === true) pagos++; });
                 let perc = totalParts > 0 ? (pagos / totalParts) * 100 : 0;
+                let isFinalizada = c.finalizada === true;
 
                 let rastreioCode = c.rastreio ? c.rastreio.trim() : "";
                 let rastreioHtml = (!rastreioCode) ? 
                     `<button class="btn-action-track" style="background: rgba(63, 55, 201, 0.2); border: 1px dashed #3f37c9; color: #3f37c9;" onclick="addRastreioRapido('${key}')">📦 Add Rastreio</button>` :
                     `<button class="btn-action-track" onclick="window.open('https://rastreamento.correios.com.br/app/index.php?objeto=${encodeURIComponent(rastreioCode)}', '_blank')">📦 Rastreio: ${escapeHtml(rastreioCode)}</button>`;
 
+                // Definição de cores e borda do card com base no status
+                let borderColor = isFinalizada ? "var(--accent-blue)" : (perc === 100 ? "var(--accent-green)" : "var(--accent-gold)");
+                let badgeStatus = isFinalizada ? 
+                    `<span style="background: rgba(58, 134, 255, 0.2); color: var(--accent-blue); padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.72rem;">🔵 ENTREGUE / FINALIZADA</span>` :
+                    (perc === 100 ? 
+                        `<span style="background: rgba(46, 196, 182, 0.2); color: var(--accent-green); padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.72rem;">🟢 QUITADO / AGUARDANDO ENTREGA</span>` : 
+                        `<span style="background: rgba(255, 183, 3, 0.2); color: var(--accent-gold); padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.72rem;">🟡 EM ANDAMENTO / PENDENTE</span>`
+                    );
+
                 ul.innerHTML += `
-                    <li style="background: var(--bg-input); padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border-card); display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px;">
+                    <li style="background: var(--bg-input); padding: 12px 14px; border-radius: 8px; border: 1px solid ${borderColor}; display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                            <span style="font-size: 1rem; font-weight: 700; color: var(--text-title);">🛒 ${escapeHtml(c.nome)}</span>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="font-size: 1rem; font-weight: 700; color: var(--text-title);">🛒 ${escapeHtml(c.nome)}</span>
+                                ${badgeStatus}
+                            </div>
                             <div style="display: flex; gap: 6px; flex-wrap: wrap;">
                                 <button class="btn-action-summary" onclick="abrirModalResumoFiscal('${key}')">📊 Resumir</button>
                                 ${rastreioHtml}
@@ -421,7 +427,7 @@
                         </div>
                         <div>
                             <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: bold;">STATUS DE PAGAMENTOS (${pagos}/${totalParts})</span>
-                            <div class="progress-bar-container"><div class="progress-bar-fill" style="width: ${perc}%;"></div><div class="progress-bar-text">${Math.round(perc)}%</div></div>
+                            <div class="progress-bar-container"><div class="progress-bar-fill" style="width: ${perc}%; background: ${isFinalizada ? 'var(--accent-blue)' : (perc === 100 ? 'var(--accent-green)' : 'linear-gradient(90deg, #2a9d8f, #2ec4b6)')};"></div><div class="progress-bar-text">${Math.round(perc)}%</div></div>
                         </div>
                     </li>
                 `;
@@ -436,6 +442,7 @@
             if (!compraAbertaDados.pagamentos) compraAbertaDados.pagamentos = {};
             if (!compraAbertaDados.recibos) compraAbertaDados.recibos = {};
             if (!compraAbertaDados.valoresManuais) compraAbertaDados.valoresManuais = {};
+            if (compraAbertaDados.finalizada === undefined) compraAbertaDados.finalizada = false;
 
             pilotosBaseGlobal.forEach(p => {
                 if (compraAbertaDados.participantes[p] === undefined) {
@@ -456,8 +463,29 @@
             document.getElementById('cc-form-outros-descontos').value = compraAbertaDados.outrosDescontos || 0;
             document.getElementById('cc-form-pix').value = compraAbertaDados.chavePix || "";
 
+            atualizarBotaoFinalizarUI();
             atualizarCalculosCC();
         };
+
+        window.toggleFinalizarCompraColetiva = function() {
+            let senha = prompt("🔒 Senha de segurança:");
+            if (senha !== SENHA_UNIFICADA) { alert("❌ Senha incorreta!"); return; }
+            
+            compraAbertaDados.finalizada = !compraAbertaDados.finalizada;
+            atualizarBotaoFinalizarUI();
+            alert(compraAbertaDados.finalizada ? "🔵 Compra marcada como Entregue e Finalizada!" : "🟡 Compra reativada para andamento.");
+        };
+
+        function atualizarBotaoFinalizarUI() {
+            let btnFin = document.getElementById('btn-finalizar-compra-ui');
+            if (compraAbertaDados.finalizada) {
+                btnFin.style.background = "var(--accent-red)";
+                btnFin.innerText = "🔄 Reabrir Compra Coletiva";
+            } else {
+                btnFin.style.background = "var(--accent-blue)";
+                btnFin.innerText = "✅ Finalizar Compra Coletiva";
+            }
+        }
 
         window.adicionarParticipanteManual = function() {
             let input = document.getElementById('cc-input-novo-participante');
