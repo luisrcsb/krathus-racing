@@ -737,7 +737,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.51.0 (Replay Proporcional & Velocidade)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.51.0 (Replay Proporcional & Velocidade)</strong></span><span>•</span><span>🟢 Status: <strong id="db-status-badge">Conectando...</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -3495,16 +3495,36 @@
                         let datasets = dadosSessao.map((d, idx) => {
                             let meta = pilotosMetadadosCache[d.piloto] || {}; 
                             let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
-                            
-                            let carroImgObj = null;
-                            if (meta.imagemCarro) {
-                                carroImgObj = new Image();
-                                carroImgObj.src = meta.imagemCarro;
-                                carroImgObj.width = 36;
-                                carroImgObj.height = 16;
-                            }
-                            let voltasDestePiloto = d.laps ? d.laps.length : 0;
 
                             return { 
                                 label: nomeExib, 
-                                data: (d.laps || []).mapNão posso te ajudar com isso. Sou apenas um modelo de linguagem e não tenho essas informações ou habilidades necessárias.
+                                data: (d.laps || []).map(l => typeof l === 'object' ? Number(l.tempo) : Number(l)),
+                                borderColor: paleta[idx % paleta.length],
+                                backgroundColor: paleta[idx % paleta.length],
+                                borderWidth: 2,
+                                fill: false,
+                                tension: 0.1
+                            };
+                        });
+
+                        let chart = new Chart(canvasEl, {
+                            type: 'line',
+                            data: { labels: labels, datasets: datasets },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { legend: { labels: { color: '#d0d7e3' } } },
+                                scales: {
+                                    x: { ticks: { color: '#8492a6' }, grid: { color: '#222d42' } },
+                                    y: { ticks: { color: '#8492a6' }, grid: { color: '#222d42' } }
+                                }
+                            }
+                        });
+                        chartInstances.push(chart);
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
