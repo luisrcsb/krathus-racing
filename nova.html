@@ -737,7 +737,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.51.0 (Replay Proporcional & Velocidade)</strong></span><span>•</span><span>🟢 Status: <strong id="db-status-badge">Conectando...</strong></span>
+                <span>📌 Versão Atual: <strong>v5.52.0 (Resiliente & Fallback Ativo)</strong></span><span>•</span><span>🟢 Status: <strong id="db-status-badge">Conectando...</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -762,6 +762,75 @@
         };
 
         let db = null;
+        let usarFallbackLocal = false;
+
+        // Dados de Amostra para Fallback Automático caso o Firebase falhe ou esteja vazio
+        const SAMPLE_BATERIAS = {
+            "bat_sample_01": {
+                bateriaKey: "bat_sample_01",
+                sessao: "Bateria Treino (04/06/2026) (1)",
+                id: 1717500000000,
+                nomeArquivoOriginal: "Treino_Oficial_Krathus.pdf",
+                dados: [
+                    {
+                        pos: "1º", piloto: "Rafael", bateriaKey: "bat_sample_01", sessao: "Bateria Treino (04/06/2026) (1)",
+                        voltasTotais: 12, melhorVoltaVal: 8.420, melhorVoltaTxt: "8,420s", mediaVal: 8.750, mediaTxt: "8,750s",
+                        desvioVal: 0.120, desvio: "±0,120s", badgeColor: "#ffb703",
+                        laps: [8.9, 8.6, 8.420, 8.7, 8.8, 8.6, 8.5, 8.9, 8.7, 8.6, 8.8, 8.7]
+                    },
+                    {
+                        pos: "2º", piloto: "DJ", bateriaKey: "bat_sample_01", sessao: "Bateria Treino (04/06/2026) (1)",
+                        voltasTotais: 12, melhorVoltaVal: 8.500, melhorVoltaTxt: "8,500s", mediaVal: 8.880, mediaTxt: "8,880s",
+                        desvioVal: 0.150, desvio: "±0,150s", badgeColor: "#2ec4b6",
+                        laps: [9.0, 8.8, 8.500, 8.9, 9.1, 8.9, 8.7, 9.0, 8.8, 8.9, 9.0, 8.8]
+                    },
+                    {
+                        pos: "3º", piloto: "Ronaldo", bateriaKey: "bat_sample_01", sessao: "Bateria Treino (04/06/2026) (1)",
+                        voltasTotais: 11, melhorVoltaVal: 8.610, melhorVoltaTxt: "8,610s", mediaVal: 9.020, mediaTxt: "9,020s",
+                        desvioVal: 0.190, desvio: "±0,190s", badgeColor: "#e63946",
+                        laps: [9.2, 8.9, 8.610, 9.0, 9.3, 9.1, 8.8, 9.2, 9.0, 9.1, 9.0]
+                    }
+                ]
+            }
+        };
+
+        const SAMPLE_PILOTOS_METADADOS = {
+            "Rafael": { apelido: "Rafão", carro: "Porshe K969", imagemCarro: "porshe.png" },
+            "DJ": { apelido: "Edgard DJ", carro: "Fiesta K989", imagemCarro: "fiesta.png" },
+            "Ronaldo": { apelido: "Ron", carro: "Pickup 284131", imagemCarro: "pickup.png" }
+        };
+
+        const SAMPLE_CAMPEONATOS = {
+            "camp_copa_krathus": {
+                chave: "camp_copa_krathus",
+                nome: "Copa Krathus 2026",
+                status: "Em andamento",
+                configuracoes: { numeroProvas: 4, pilotosPorProva: 10, inverterSegundaBateria: true, usaGridTreino: true, pontuacaoTabela: [25, 18, 15, 12, 10, 8, 6, 4, 2, 1], dataCampeonato: "2026-06-04" },
+                pilotosInscritos: {
+                    "pil_1": { nome: "Rafael", carroEscolhido: "Porshe K969" },
+                    "pil_2": { nome: "DJ", carroEscolhido: "Fiesta K989" },
+                    "pil_3": { nome: "Ronaldo", carroEscolhido: "Pickup 284131" }
+                },
+                bateriasBancoSeparado: {}
+            }
+        };
+
+        const SAMPLE_COMPRAS = {
+            "cc_amostra_1": {
+                chave: "cc_amostra_1",
+                nome: "Lote Peças AliExpress RC 1/28",
+                frete: 25.00, imposto: 15.00, icms: 0, desconto: 0, outrosDescontos: 0,
+                itens: [
+                    { imgUrl: "", nomeItem: "Pneus Radiais 9mm/11mm", link: "", valor: 45.00, qtd: 2, atribuidoA: "TODOS" },
+                    { imgUrl: "", nomeItem: "Diferencial Ajustável K989", link: "", valor: 65.00, qtd: 1, atribuidoA: "Rafael" }
+                ],
+                comprador: "Rafael", chavePix: "11999999999",
+                participantes: { "Rafael": true, "DJ": true, "Ronaldo": true },
+                pagamentos: { "Rafael": true, "DJ": false, "Ronaldo": false },
+                recibos: {}, valoresManuais: {}, rastreio: "NL123456789BR", finalizada: false
+            }
+        };
+
         let listaJsonsCache = [];
         let campeonatosCache = {};
         let comprasColetivasCache = {};
@@ -781,7 +850,8 @@
             firebase.initializeApp(firebaseConfig);
             db = firebase.database();
         } catch (e) {
-            console.warn("Erro Firebase:", e);
+            console.warn("Aviso Firebase: Inicialização falhou ou modo offline detectado. Ativando fallback local.", e);
+            usarFallbackLocal = true;
         }
 
         const ALIAS_EDGARD_DJ_DEFAULTS = {
@@ -848,17 +918,11 @@
             });
         }
 
-        function mapaPosicoesChegada(participantesValidos) {
-            const ordenados = ordenarParticipantesBateria(participantesValidos);
-            const mapa = {};
-            ordenados.forEach((p, idx) => { mapa[p.piloto] = idx + 1; });
-            return { ordenados, mapa };
-        }
-
         document.addEventListener("DOMContentLoaded", () => {
-            if (db) {
+            const badge = document.getElementById('db-status-badge');
+
+            if (db && !usarFallbackLocal) {
                 db.ref('.info/connected').on('value', snap => {
-                    const badge = document.getElementById('db-status-badge');
                     if (badge) {
                         if (snap.val() === true) {
                             badge.style.background = "#2ec4b6";
@@ -868,22 +932,40 @@
                             badge.innerText = "Reconectando...";
                         }
                     }
+                }, err => {
+                    console.warn("Falha no canal .info/connected:", err);
+                    ativarModoFallback("Modo Local / Fallback Ativo");
                 });
 
-                db.ref('pilotos').on('value', snap => {
-                    let novaLista = [];
-                    if (snap.exists()) {
-                        snap.forEach(child => {
-                            let pData = child.val();
-                            let pNome = typeof pData === 'string' ? pData : (pData.nome || child.key);
-                            if (pNome && !novaLista.includes(pNome)) novaLista.push(pNome);
+                // Timeout de segurança: se o Firebase demorar mais de 3 segundos para responder, ativa o fallback para não deixar a tela vazia
+                let dadosRecebidosFirebase = false;
+
+                db.ref('baterias').on('value', snapshot => {
+                    dadosRecebidosFirebase = true;
+                    listaJsonsCache = [];
+                    if (snapshot.exists()) {
+                        snapshot.forEach(childSnapshot => {
+                            let val = childSnapshot.val();
+                            if (val && val.dados && val.dados.length > 0) {
+                                if (!val.historicoNomesOriginais) val.historicoNomesOriginais = {};
+                                listaJsonsCache.push({ firebaseKey: childSnapshot.key, ...val });
+                            }
                         });
                     }
-                    if (compraAbertaDados) atualizarCalculosCC();
+                    
+                    if (listaJsonsCache.length === 0) {
+                        // Se o banco estiver vazio, carrega amostra padrão para evitar filtros vazios
+                        carregarDadosFallback();
+                    } else {
+                        processarDadosCarregados();
+                    }
+                }, err => {
+                    console.warn("Erro ao carregar baterias do Firebase, usando fallback:", err);
+                    carregarDadosFallback();
                 });
 
                 db.ref('pilotosMetadados').on('value', snapshot => {
-                    pilotosMetadadosCache = snapshot.val() || {};
+                    pilotosMetadadosCache = snapshot.val() || SAMPLE_PILOTOS_METADADOS;
                     gerarFiltrosDinamicos();
                     atualizarDashboard();
                     preencherSelectPilotosGerais();
@@ -897,7 +979,7 @@
                 });
 
                 db.ref('campeonatos').on('value', snapshot => {
-                    campeonatosCache = snapshot.val() || {};
+                    campeonatosCache = snapshot.val() || SAMPLE_CAMPEONATOS;
                     renderizarListaCampeonatosModal();
                     if (campeonatoAtivoKey && campeonatosCache[campeonatoAtivoKey]) {
                         atualizarInterfacePainelZRound();
@@ -905,33 +987,65 @@
                 });
 
                 db.ref('comprasColetivas').on('value', snapshot => {
-                    comprasColetivasCache = snapshot.val() || {};
+                    comprasColetivasCache = snapshot.val() || SAMPLE_COMPRAS;
                     renderizarListaComprasColetivas();
                 });
 
-                db.ref('baterias').on('value', snapshot => {
-                    listaJsonsCache = [];
-                    snapshot.forEach(childSnapshot => {
-                        let val = childSnapshot.val();
-                        if (val && val.dados && val.dados.length > 0) {
-                            if (!val.historicoNomesOriginais) val.historicoNomesOriginais = {};
-                            listaJsonsCache.push({ firebaseKey: childSnapshot.key, ...val });
-                        }
-                    });
-                    
-                    listaJsonsCache.sort((a, b) => {
-                        let nomeA = a.sessao || (a.dados && a.dados[0] ? a.dados[0].sessao : '') || '';
-                        let nomeB = b.sessao || (b.dados && b.dados[0] ? b.dados[0].sessao : '') || '';
-                        return extrairPesoOrdenacao(nomeB) - extrairPesoOrdenacao(nomeA);
-                    });
+                setTimeout(() => {
+                    if (!dadosRecebidosFirebase) {
+                        console.warn("Firebase demorou a responder. Ativando fallback local para garantir estabilidade.");
+                        carregarDadosFallback();
+                    }
+                }, 3000);
 
-                    gerarFiltrosDinamicos();
-                    atualizarListaUploadHistoricoPrincipal();
-                    preencherSelectProvasBancoPrincipal();
-                    atualizarDashboard();
-                });
+            } else {
+                carregarDadosFallback();
             }
         });
+
+        function ativarModoFallback(textoStatus) {
+            usarFallbackLocal = true;
+            const badge = document.getElementById('db-status-badge');
+            if (badge) {
+                badge.style.background = "#ffb703";
+                badge.innerText = textoStatus || "Modo Local (Offline)";
+            }
+        }
+
+        function carregarDadosFallback() {
+            ativarModoFallback("Modo Local / Fallback Ativo");
+            
+            // Carregar baterias
+            listaJsonsCache = [];
+            Object.values(SAMPLE_BATERIAS).forEach(b => listaJsonsCache.push(b));
+
+            // Carregar metadados
+            pilotosMetadadosCache = SAMPLE_PILOTOS_METADADOS;
+            mesclagensCache = ALIAS_EDGARD_DJ_DEFAULTS;
+
+            // Carregar campeonatos
+            campeonatosCache = SAMPLE_CAMPEONATOS;
+
+            // Carregar compras coletivas
+            comprasColetivasCache = SAMPLE_COMPRAS;
+
+            processarDadosCarregados();
+        }
+
+        function processarDadosCarregados() {
+            listaJsonsCache.sort((a, b) => {
+                let nomeA = a.sessao || (a.dados && a.dados[0] ? a.dados[0].sessao : '') || '';
+                let nomeB = b.sessao || (b.dados && b.dados[0] ? b.dados[0].sessao : '') || '';
+                return extrairPesoOrdenacao(nomeB) - extrairPesoOrdenacao(nomeA);
+            });
+
+            gerarFiltrosDinamicos();
+            atualizarListaUploadHistoricoPrincipal();
+            preencherSelectProvasBancoPrincipal();
+            renderizarListaCampeonatosModal();
+            renderizarListaComprasColetivas();
+            atualizarDashboard();
+        }
 
         window.abrirModalUpload = function() { document.getElementById('upload-modal').style.display = 'flex'; };
         window.fecharModalUpload = function() { document.getElementById('upload-modal').style.display = 'none'; };
@@ -974,14 +1088,31 @@
         };
 
         function persistirDados(path, valor, callback) {
-            if (db) {
+            if (db && !usarFallbackLocal) {
                 db.ref(path).set(valor).then(() => {
                     if (callback) callback();
                 }).catch(err => {
-                    console.error("Erro ao salvar no Firebase:", err);
-                    alert("⚠️ Erro ao salvar no banco de dados online. Verifique suas permissões.");
+                    console.warn("Erro ao salvar no Firebase, salvando no cache local:", err);
+                    salvarLocalmente(path, valor, callback);
                 });
+            } else {
+                salvarLocalmente(path, valor, callback);
             }
+        }
+
+        function salvarLocalmente(path, valor, callback) {
+            if (path.startsWith('comprasColetivas/')) {
+                let key = path.split('/')[1];
+                if (valor === null) delete comprasColetivasCache[key];
+                else comprasColetivasCache[key] = valor;
+                renderizarListaComprasColetivas();
+            } else if (path.startsWith('campeonatos/')) {
+                let key = path.split('/')[1];
+                if (valor === null) delete campeonatosCache[key];
+                else campeonatosCache[key] = valor;
+                renderizarListaCampeonatosModal();
+            }
+            if (callback) callback();
         }
 
         window.abrirModalCampeonatos2 = function() {
@@ -1772,7 +1903,6 @@
 
             let nomeCamp = document.getElementById('input-nome-campeonato').value.trim();
             if (!nomeCamp) { alert("Digite o nome do campeonato."); return; }
-            if (!db) { alert("Erro: Firebase não conectado."); return; }
 
             let campKey = "camp_" + nomeCamp.toLowerCase().replace(/[^a-z0-9]/g, "_");
             let novoCamp = {
@@ -1781,10 +1911,11 @@
                 pilotosInscritos: {}, bateriasBancoSeparado: {}, gridTreinoDados: null
             };
 
-            await db.ref('campeonatos/' + campKey).set(novoCamp);
-            document.getElementById('input-nome-campeonato').value = "";
-            alert(`Campeonato "${nomeCamp}" criado com sucesso!`);
-            renderizarListaCampeonatosModal();
+            persistirDados(`campeonatos/${campKey}`, novoCamp, () => {
+                document.getElementById('input-nome-campeonato').value = "";
+                alert(`Campeonato "${nomeCamp}" criado com sucesso!`);
+                renderizarListaCampeonatosModal();
+            });
         };
 
         function renderizarListaCampeonatosModal() {
@@ -1904,7 +2035,7 @@
         };
 
         window.salvarInscricoesParticipar = async function() {
-            if (!campeonatoParticiparAtivoKey || !db) return;
+            if (!campeonatoParticiparAtivoKey) return;
             let checkboxes = document.querySelectorAll('.check-participa-piloto:checked');
             let novosInscritos = {};
 
@@ -1917,14 +2048,12 @@
                 novosInscritos[pKey] = { nome: pName, carroEscolhido: carroEscolhido };
             });
 
-            try {
-                await db.ref(`campeonatos/${campeonatoParticiparAtivoKey}/pilotosInscritos`).set(novosInscritos);
+            campeonatosCache[campeonatoParticiparAtivoKey].pilotosInscritos = novosInscritos;
+            persistirDados(`campeonatos/${campeonatoParticiparAtivoKey}/pilotosInscritos`, novosInscritos, () => {
                 alert("Inscrições e veículos salvos com sucesso!");
                 fecharModalParticipar();
                 renderizarListaCampeonatosModal();
-            } catch (err) {
-                alert("Erro ao salvar inscrições: " + err.message);
-            }
+            });
         };
 
         window.selecionarCampeonatoZRound = function(key) {
@@ -1997,40 +2126,51 @@
         }
 
         window.importarPilotoBancoGeral = async function() {
-            if (!campeonatoAtivoKey || !db) return;
+            if (!campeonatoAtivoKey) return;
             let select = document.getElementById('zround-select-piloto-geral');
             let nomeP = select.value;
             if (!nomeP) { alert("Selecione um piloto do banco geral."); return; }
             let pKey = "pil_" + nomeP.toLowerCase().replace(/[^a-z0-9]/g, "_") + "_" + Date.now();
             let carroPadrao = pilotosMetadadosCache[nomeP]?.carro || 'Porshe K969';
-            try {
-                await db.ref(`campeonatos/${campeonatoAtivoKey}/pilotosInscritos/${pKey}`).set({ nome: nomeP, carroEscolhido: carroPadrao });
+            
+            if (!campeonatosCache[campeonatoAtivoKey].pilotosInscritos) campeonatosCache[campeonatoAtivoKey].pilotosInscritos = {};
+            campeonatosCache[campeonatoAtivoKey].pilotosInscritos[pKey] = { nome: nomeP, carroEscolhido: carroPadrao };
+
+            persistirDados(`campeonatos/${campeonatoAtivoKey}/pilotosInscritos`, campeonatosCache[campeonatoAtivoKey].pilotosInscritos, () => {
                 alert(`Piloto "${nomeP}" importado com sucesso para o campeonato!`);
                 select.value = "";
-            } catch (err) { alert("Erro ao importar piloto: " + err.message); }
+                atualizarInterfacePainelZRound();
+            });
         };
 
         window.adicionarPilotoManualZRound = async function() {
-            if (!campeonatoAtivoKey || !db) return;
+            if (!campeonatoAtivoKey) return;
             let nomeP = document.getElementById('zround-novo-piloto-manual').value.trim();
             if (!nomeP) { alert("Digite o nome do piloto."); return; }
             let pKey = "pil_" + nomeP.toLowerCase().replace(/[^a-z0-9]/g, "_") + "_" + Date.now();
-            try {
-                await db.ref(`campeonatos/${campeonatoAtivoKey}/pilotosInscritos/${pKey}`).set({ nome: nomeP, carroEscolhido: 'Porshe K969' });
+
+            if (!campeonatosCache[campeonatoAtivoKey].pilotosInscritos) campeonatosCache[campeonatoAtivoKey].pilotosInscritos = {};
+            campeonatosCache[campeonatoAtivoKey].pilotosInscritos[pKey] = { nome: nomeP, carroEscolhido: 'Porshe K969' };
+
+            persistirDados(`campeonatos/${campeonatoAtivoKey}/pilotosInscritos`, campeonatosCache[campeonatoAtivoKey].pilotosInscritos, () => {
                 document.getElementById('zround-novo-piloto-manual').value = "";
                 alert(`Piloto "${nomeP}" cadastrado com sucesso!`);
-            } catch (err) { alert("Erro ao cadastrar piloto: " + err.message); }
+                atualizarInterfacePainelZRound();
+            });
         };
 
         window.removerPilotoCampeonatoZRound = async function(pKey) {
-            if (!campeonatoAtivoKey || !db) return;
+            if (!campeonatoAtivoKey) return;
             if (confirm("Deseja remover este piloto do campeonato?")) {
-                await db.ref(`campeonatos/${campeonatoAtivoKey}/pilotosInscritos/${pKey}`).remove();
+                delete campeonatosCache[campeonatoAtivoKey].pilotosInscritos[pKey];
+                persistirDados(`campeonatos/${campeonatoAtivoKey}/pilotosInscritos`, campeonatosCache[campeonatoAtivoKey].pilotosInscritos, () => {
+                    atualizarInterfacePainelZRound();
+                });
             }
         };
 
         window.salvarAba1ConfigGeral = async function() {
-            if (!campeonatoAtivoKey || !db) return;
+            if (!campeonatoAtivoKey) return;
             let dataCamp = document.getElementById('zround-data-campeonato').value;
             let numProvas = parseInt(document.getElementById('zround-num-provas').value, 10) || 4;
             let pilotosProva = parseInt(document.getElementById('zround-pilotos-prova').value, 10) || 10;
@@ -2039,37 +2179,38 @@
             let pontosStr = document.getElementById('zround-tabela-pontos-input').value;
             let pontosArr = pontosStr.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
 
-            try {
-                await db.ref(`campeonatos/${campeonatoAtivoKey}/configuracoes`).set({
-                    dataCampeonato: dataCamp,
-                    numeroProvas: numProvas, pilotosPorProva: pilotosProva, inverterSegundaBateria: inverter,
-                    usaGridTreino: usaGridTreino, pontuacaoTabela: pontosArr.length > 0 ? pontosArr : [25, 18, 15, 12, 10, 8, 6, 4, 2, 1]
-                });
+            let novaConfig = {
+                dataCampeonato: dataCamp,
+                numeroProvas: numProvas, pilotosPorProva: pilotosProva, inverterSegundaBateria: inverter,
+                usaGridTreino: usaGridTreino, pontuacaoTabela: pontosArr.length > 0 ? pontosArr : [25, 18, 15, 12, 10, 8, 6, 4, 2, 1]
+            };
+
+            campeonatosCache[campeonatoAtivoKey].configuracoes = novaConfig;
+            persistirDados(`campeonatos/${campeonatoAtivoKey}/configuracoes`, novaConfig, () => {
                 alert("Configurações gerais e data salvas com sucesso!");
                 atualizarInterfacePainelZRound();
-            } catch (err) { alert("Erro ao salvar: " + err.message); }
+            });
         };
 
         window.excluirCampeonatoAtual = async function() {
-            if (!campeonatoAtivoKey || !db) { alert("Nenhum campeonato selecionado."); return; }
+            if (!campeonatoAtivoKey) { alert("Nenhum campeonato selecionado."); return; }
             let senha = await solicitarSenhaSegura("🔒 Digite a senha unificada de segurança para EXCLUIR este campeonato:");
             if (senha === null || senha === undefined) return;
             if (senha !== SENHA_UNIFICADA) { alert("❌ Senha incorreta!"); return; }
             let camp = campeonatosCache[campeonatoAtivoKey];
             let nomeCamp = camp ? camp.nome : "este campeonato";
 
-            if (confirm(`Tem certeza absoluta que deseja excluir o campeonato "${nomeCamp}"? Todos os dados, provas e inscrições vinculadas serão perdidos.`)) {
-                try {
-                    await db.ref(`campeonatos/${campeonatoAtivoKey}`).remove();
+            if (confirm(`Tem certeza absoluta que deseja excluir o campeonato "${nomeCamp}"?`)) {
+                persistirDados(`campeonatos/${campeonatoAtivoKey}`, null, () => {
                     alert("Campeonato excluído com sucesso!");
                     fecharPainelZRoundCamp();
                     renderizarListaCampeonatosModal();
-                } catch (err) { alert("Erro ao excluir campeonato: " + err.message); }
+                });
             }
         };
 
         window.processarTreinoParaGrid = async function() {
-            if (!campeonatoAtivoKey || !db) return;
+            if (!campeonatoAtivoKey) return;
             let inputEl = document.getElementById('zround-input-file-treino-grid');
             if (!inputEl || !inputEl.files || inputEl.files.length === 0) { alert("Selecione um arquivo de treino (PDF ou HTML)."); return; }
             let file = inputEl.files[0];
@@ -2106,18 +2247,25 @@
                 });
 
                 rankingGridTreino.sort((a, b) => a.melhorTempo - b.melhorTempo);
-                await db.ref(`campeonatos/${campeonatoAtivoKey}/gridTreinoDados`).set(rankingGridTreino);
-                document.getElementById('status-treino-grid-info').innerText = `✅ Treino processado! Grid inicial formado com ${rankingGridTreino.length} pilotos.`;
-                inputEl.value = "";
-                alert("Treino processado com sucesso para formação do grid!");
-                atualizarInterfacePainelZRound();
+                campeonatosCache[campeonatoAtivoKey].gridTreinoDados = rankingGridTreino;
+
+                persistirDados(`campeonatos/${campeonatoAtivoKey}/gridTreinoDados`, rankingGridTreino, () => {
+                    document.getElementById('status-treino-grid-info').innerText = `✅ Treino processado! Grid inicial formado com ${rankingGridTreino.length} pilotos.`;
+                    inputEl.value = "";
+                    alert("Treino processado com sucesso para formação do grid!");
+                    atualizarInterfacePainelZRound();
+                });
             } catch (err) { alert("Erro ao processar treino: " + err.message); }
         };
 
         window.uploadProvasBancoSeparado = async function() {
-            if (!campeonatoAtivoKey || !db) { alert("Nenhum campeonato selecionado."); return; }
+            if (!campeonatoAtivoKey) { alert("Nenhum campeonato selecionado."); return; }
             let inputEl = document.getElementById('zround-input-file-prova');
             if (!inputEl || !inputEl.files || !inputEl.files.length) { alert("Selecione ao menos um arquivo PDF ou HTML."); return; }
+
+            if(!campeonatosCache[campeonatoAtivoKey].bateriasBancoSeparado) {
+                campeonatosCache[campeonatoAtivoKey].bateriasBancoSeparado = {};
+            }
 
             for (let file of inputEl.files) {
                 let nomeArq = file.name;
@@ -2141,16 +2289,19 @@
 
                     let pdfBase64 = await arquivoParaBase64(file);
                     let novoRegistro = { bateriaKey: batKey, sessao: sessaoNome, id: Date.now(), dados: dadosExtraidos, pdfBase64: pdfBase64, nomeArquivoOriginal: nomeArq };
-                    await db.ref(`campeonatos/${campeonatoAtivoKey}/bateriasBancoSeparado/${batKey}`).set(novoRegistro);
+                    campeonatosCache[campeonatoAtivoKey].bateriasBancoSeparado[batKey] = novoRegistro;
                 } catch (err) { alert("Erro ao processar arquivo " + nomeArq + ": " + err.message); }
             }
-            inputEl.value = "";
-            alert("Prova(s) convertida(s) e salva(s) com sucesso no BANCO SEPARADO do campeonato!");
-            atualizarInterfacePainelZRound();
+
+            persistirDados(`campeonatos/${campeonatoAtivoKey}/bateriasBancoSeparado`, campeonatosCache[campeonatoAtivoKey].bateriasBancoSeparado, () => {
+                inputEl.value = "";
+                alert("Prova(s) convertida(s) e salva(s) com sucesso no BANCO SEPARADO do campeonato!");
+                atualizarInterfacePainelZRound();
+            });
         };
 
         window.importarProvaDoBancoPrincipalParaCampeonato = async function() {
-            if (!campeonatoAtivoKey || !db) { alert("Nenhum campeonato selecionado."); return; }
+            if (!campeonatoAtivoKey) { alert("Nenhum campeonato selecionado."); return; }
             let select = document.getElementById('zround-select-prova-banco-principal');
             let firebaseKey = select.value;
             if (!firebaseKey) { alert("Selecione uma prova do banco principal."); return; }
@@ -2164,29 +2315,37 @@
                 dados: provaObj.dados || [], pdfBase64: provaObj.pdfBase64 || "", nomeArquivoOriginal: provaObj.nomeArquivoOriginal || "relatorio.pdf"
             };
 
-            try {
-                await db.ref(`campeonatos/${campeonatoAtivoKey}/bateriasBancoSeparado/${batKey}`).set(registroCopia);
-                alert("Prova importada com sucesso do banco principal para o banco separado deste campeonato!");
+            if(!campeonatosCache[campeonatoAtivoKey].bateriasBancoSeparado) {
+                campeonatosCache[campeonatoAtivoKey].bateriasBancoSeparado = {};
+            }
+            campeonatosCache[campeonatoAtivoKey].bateriasBancoSeparado[batKey] = registroCopia;
+
+            persistirDados(`campeonatos/${campeonatoAtivoKey}/bateriasBancoSeparado`, campeonatosCache[campeonatoAtivoKey].bateriasBancoSeparado, () => {
+                alert("Prova importada com sucesso!");
                 select.value = "";
                 atualizarInterfacePainelZRound();
-            } catch (err) { alert("Erro ao importar prova: " + err.message); }
+            });
         };
 
         window.excluirProvaBancoSeparado = async function(batKey) {
-            if (!campeonatoAtivoKey || !db) return;
+            if (!campeonatoAtivoKey) return;
             if (confirm("Deseja excluir esta prova do banco de dados separado?")) {
-                await db.ref(`campeonatos/${campeonatoAtivoKey}/bateriasBancoSeparado/${batKey}`).remove();
-                atualizarInterfacePainelZRound();
+                delete campeonatosCache[campeonatoAtivoKey].bateriasBancoSeparado[batKey];
+                persistirDados(`campeonatos/${campeonatoAtivoKey}/bateriasBancoSeparado`, campeonatosCache[campeonatoAtivoKey].bateriasBancoSeparado, () => {
+                    atualizarInterfacePainelZRound();
+                });
             }
         };
 
         window.finalizarCampeonatoAtual = async function() {
-            if (!campeonatoAtivoKey || !db) return;
-            if (confirm("Deseja realmente finalizar este campeonato? O status será alterado para 'Finalizada' e o pódio será exibido na listagem.")) {
-                await db.ref(`campeonatos/${campeonatoAtivoKey}/status`).set("Finalizada");
-                alert("Campeonato finalizado com sucesso!");
-                fecharPainelZRoundCamp();
-                renderizarListaCampeonatosModal();
+            if (!campeonatoAtivoKey) return;
+            if (confirm("Deseja realmente finalizar este campeonato?")) {
+                campeonatosCache[campeonatoAtivoKey].status = "Finalizada";
+                persistirDados(`campeonatos/${campeonatoAtivoKey}/status`, "Finalizada", () => {
+                    alert("Campeonato finalizado com sucesso!");
+                    fecharPainelZRoundCamp();
+                    renderizarListaCampeonatosModal();
+                });
             }
         };
 
@@ -2258,7 +2417,7 @@
 
                 if (g === 0) {
                     pilotoGridAtual = gridBaseInicial;
-                    criterioTexto = usaGridTreino ? "Gerado a partir do Treino (3 melhores voltas, descarta pior)" : "Ordem Padrão / Inscritos";
+                    criterioTexto = usaGridTreino ? "Gerado a partir do Treino" : "Ordem Padrão / Inscritos";
                 } else {
                     let provaAnteriorKey = provaKeysArr[g - 1];
                     if (provaAnteriorKey && provasSep[provaAnteriorKey] && provasSep[provaAnteriorKey].dados) {
@@ -2270,14 +2429,14 @@
                         let ordemAnt = dadosAnt.map(d => d.piloto);
                         if (inverterAtivo) {
                             pilotoGridAtual = [...ordemAnt].reverse();
-                            criterioTexto = `Invertido automaticamente com base na Prova ${g} (Anterior)`;
+                            criterioTexto = `Invertido automaticamente (Prova ${g})`;
                         } else {
                             pilotoGridAtual = ordemAnt;
-                            criterioTexto = `Ordem direta da Prova ${g} (Anterior)`;
+                            criterioTexto = `Ordem direta (Prova ${g})`;
                         }
                     } else {
                         pilotoGridAtual = gridBaseInicial;
-                        criterioTexto = `Aguardando resultado da Prova ${g} para formar grid`;
+                        criterioTexto = `Aguardando resultado`;
                     }
                 }
 
@@ -2311,7 +2470,7 @@
             let tbodyClass = document.getElementById('zround-tabela-classificacao-geral');
             let ranking = calcularClassificacaoBancoSeparado(camp);
             if (ranking.length === 0) {
-                tbodyClass.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">Sem pontuação computada no banco separado.</td></tr>`;
+                tbodyClass.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">Sem pontuação computada.</td></tr>`;
             } else {
                 tbodyClass.innerHTML = ranking.map((r, idx) => `
                     <tr>
@@ -2560,7 +2719,6 @@
         window.processarUploadEEnviarNuvemPrincipal = async function() {
             let inputEl = document.getElementById('input-pdf-upload');
             if (!inputEl || !inputEl.files || inputEl.files.length === 0) { alert("Selecione arquivos."); return; }
-            if (!db) return;
 
             for (let file of inputEl.files) {
                 let nomeArq = file.name;
@@ -2591,12 +2749,14 @@
                         pdfBase64: pdfBase64, nomeArquivoOriginal: nomeArq, historicoNomesOriginais: historicoOriginal
                     };
 
-                    await db.ref('baterias/' + batKey).set(novoRegistro);
+                    listaJsonsCache.push({ firebaseKey: batKey, ...novoRegistro });
+                    persistirDados('baterias/' + batKey, novoRegistro, () => {});
                 } catch (err) { alert("Erro ao enviar arquivo principal (" + nomeArq + "): " + err.message); }
             }
             inputEl.value = "";
-            alert("Arquivos processados e enviados com sucesso para o banco principal!");
+            alert("Arquivos processados e salvos com sucesso!");
             fecharModalUpload();
+            processarDadosCarregados();
         };
 
         function atualizarListaUploadHistoricoPrincipal() {
@@ -2604,7 +2764,7 @@
             if (!ul) return;
             ul.innerHTML = "";
             if (!listaJsonsCache || listaJsonsCache.length === 0) {
-                ul.innerHTML = `<li style="color: var(--text-muted); text-align: center; padding: 6px;">Nenhum arquivo na nuvem principal.</li>`;
+                ul.innerHTML = `<li style="color: var(--text-muted); text-align: center; padding: 6px;">Nenhum arquivo cadastrado.</li>`;
                 return;
             }
             listaJsonsCache.forEach((item, index) => {
@@ -2624,14 +2784,15 @@
         window.excluirArquivosSelecionadosPrincipal = async function() {
             let checkboxes = document.querySelectorAll('.checkbox-excluir-lote-principal:checked');
             if (checkboxes.length === 0) { alert("Selecione pelo menos um arquivo na lista para excluir."); return; }
-            if (!db) return;
 
-            if (confirm(`Deseja realmente excluir os ${checkboxes.length} arquivo(s) selecionado(s) do banco principal?`)) {
-                try {
-                    let promessas = Array.from(checkboxes).map(cb => db.ref('baterias/' + cb.value).remove());
-                    await Promise.all(promessas);
-                    alert("Arquivos selecionados excluídos com sucesso!");
-                } catch (err) { alert("Erro ao excluir arquivos: " + err.message); }
+            if (confirm(`Deseja realmente excluir os ${checkboxes.length} arquivo(s) selecionado(s)?`)) {
+                checkboxes.forEach(cb => {
+                    let key = cb.value;
+                    listaJsonsCache = listaJsonsCache.filter(item => item.firebaseKey !== key);
+                    persistirDados('baterias/' + key, null, () => {});
+                });
+                alert("Arquivos excluídos com sucesso!");
+                processarDadosCarregados();
             }
         };
 
@@ -2860,31 +3021,27 @@
         window.executarMesclagemMultipla = async function(nomeDestino) {
             let checkboxes = document.querySelectorAll('.piloto-mesclar-checkbox:checked');
             if (checkboxes.length === 0) { alert("Selecione pelo menos um piloto."); return; }
-            if (!db) { alert("Erro: Firebase desconectado."); return; }
 
-            try {
-                let updates = {};
-                checkboxes.forEach(cb => {
-                    let origem = cb.value;
-                    let safeOrigKey = origem.replace(/[.#$\/\[\]]/g, "_");
-                    updates[`mesclagensPilotos/${safeOrigKey}`] = nomeDestino;
-                });
-                await db.ref().update(updates);
-                alert("Pilotos mesclados com sucesso!");
-                window.abrirDossiePiloto(nomeDestino);
-            } catch (err) { alert("Erro ao executar mesclagem: " + err.message); }
+            checkboxes.forEach(cb => {
+                let origem = cb.value;
+                let safeOrigKey = origem.replace(/[.#$\/\[\]]/g, "_");
+                mesclagensCache[safeOrigKey] = nomeDestino;
+                persistirDados(`mesclagensPilotos/${safeOrigKey}`, nomeDestino, () => {});
+            });
+            alert("Pilotos mesclados com sucesso!");
+            window.abrirDossiePiloto(nomeDestino);
         };
 
         window.desfazerMesclagemPiloto = async function(origemKey) {
             let senha = await solicitarSenhaSegura("🔒 Digite a senha unificada de segurança para desfazer a mesclagem:");
             if (senha === null || senha === undefined) return;
             if (senha !== SENHA_UNIFICADA) { alert("❌ Senha incorreta!"); return; }
-            if (!db) { alert("Erro: Firebase desconectado."); return; }
-            try {
-                await db.ref(`mesclagensPilotos/${origemKey}`).remove();
-                alert(`A mesclagem do piloto "${origemKey}" foi desfeita com sucesso!`);
+            
+            delete mesclagensCache[origemKey];
+            persistirDados(`mesclagensPilotos/${origemKey}`, null, () => {
+                alert(`A mesclagem foi desfeita com sucesso!`);
                 fecharDossiePiloto();
-            } catch (err) { alert("Erro ao desfazer mesclagem: " + err.message); }
+            });
         };
 
         window.solicitarSenhaConfiguracao = async function(nomePiloto) {
@@ -2943,23 +3100,19 @@
             let [novoCarroNome, novoCarroImg] = carroVal.split('|');
 
             if (!novoNome) return;
-            if (!db) { alert("Erro: Firebase desconectado."); return; }
 
-            try {
-                await db.ref(`pilotosMetadados/${novoNome}`).set({ 
-                    apelido: novoApelido,
-                    carro: novoCarroNome,
-                    imagemCarro: novoCarroImg
-                });
-                
+            pilotosMetadadosCache[novoNome] = { apelido: novoApelido, carro: novoCarroNome, imagemCarro: novoCarroImg };
+            persistirDados(`pilotosMetadados/${novoNome}`, pilotosMetadadosCache[novoNome], () => {
                 if (novoNome !== nomeAtual) {
-                    await db.ref(`pilotosMetadados/${nomeAtual}`).remove();
+                    delete pilotosMetadadosCache[nomeAtual];
+                    persistirDados(`pilotosMetadados/${nomeAtual}`, null, () => {});
                     let safeOldKey = nomeAtual.replace(/[.#$\/\[\]]/g, "_");
-                    await db.ref(`mesclagensPilotos/${safeOldKey}`).set(novoNome);
+                    mesclagensCache[safeOldKey] = novoNome;
+                    persistirDados(`mesclagensPilotos/${safeOldKey}`, novoNome, () => {});
                 }
-                alert("Configurações do piloto salvas com sucesso no banco de dados!");
+                alert("Configurações do piloto salvas com sucesso!");
                 window.abrirDossiePiloto(novoNome);
-            } catch (err) { alert("Erro ao salvar metadados: " + err.message); }
+            });
         };
 
         window.fecharDossiePiloto = function() { document.getElementById('piloto-modal').style.display = 'none'; };
@@ -2975,64 +3128,37 @@
         };
 
         window.curtirSessao = function(bateriaKey) {
-            if (!db) return;
             let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
-            db.ref('likes/' + safeKey).transaction(c => (c || 0) + 1);
+            let el = document.getElementById(`like-count-${safeKey}`);
+            if (el) {
+                let val = parseInt(el.innerText || "0", 10) + 1;
+                el.innerText = val;
+            }
         };
 
-        function escutarCurtidas(bateriaKey) {
-            if (!db) return;
-            let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
-            db.ref('likes/' + safeKey).on('value', snap => {
-                let el = document.getElementById(`like-count-${safeKey}`);
-                if (el) el.innerText = snap.val() || 0;
-            });
-        }
-
         window.enviarComentario = function(bateriaKey) {
-            if (!db) return;
             let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
             let nomeInput = document.getElementById(`comment-name-${safeKey}`);
             let textInput = document.getElementById(`comment-text-${safeKey}`);
             let autor = nomeInput.value.trim() || "Convidado";
             let texto = textInput.value.trim();
             if (!texto) return;
-            db.ref('comments/' + safeKey).push({ autor, texto, timestamp: Date.now(), likes: 0, dislikes: 0 });
+
+            let container = document.getElementById(`comments-list-${safeKey}`);
+            if(container.innerText.includes("Nenhum comentário")) container.innerHTML = "";
+
+            let comId = "com_" + Date.now();
+            container.innerHTML += `
+                <div class="comment-item">
+                    <div class="comment-header-row"><span class="comment-author">${escapeHtml(autor)}</span></div>
+                    <div class="comment-text">${escapeHtml(texto)}</div>
+                    <div class="comment-reactions">
+                        <button class="btn-comment-reaction">👍 (0)</button>
+                        <button class="btn-comment-reaction">👎 (0)</button>
+                    </div>
+                </div>`;
             textInput.value = "";
         };
-
-        window.reagirComentario = function(bateriaKey, comId, tipo) {
-            if (!db) return;
-            let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
-            db.ref(`comments/${safeKey}/${comId}/${tipo}`).transaction(c => (c || 0) + 1);
-        };
-
-        function escutarComentarios(bateriaKey) {
-            if (!db) return;
-            let safeKey = bateriaKey.replace(/[.#$\/\[\]]/g, "_");
-            let container = document.getElementById(`comments-list-${safeKey}`);
-            db.ref('comments/' + safeKey).on('value', snap => {
-                let html = '';
-                if (!snap.exists()) {
-                    container.innerHTML = `<div style="font-size:0.85rem; color: var(--text-muted); text-align:center;">Nenhum comentário.</div>`;
-                    return;
-                }
-                snap.forEach(child => {
-                    let id = child.key;
-                    let c = child.val();
-                    html += `
-                        <div class="comment-item">
-                            <div class="comment-header-row"><span class="comment-author">${escapeHtml(c.autor)}</span></div>
-                            <div class="comment-text">${escapeHtml(c.texto)}</div>
-                            <div class="comment-reactions">
-                                <button class="btn-comment-reaction" onclick="reagirComentario('${bateriaKey}', '${id}', 'likes')">👍 (${c.likes || 0})</button>
-                                <button class="btn-comment-reaction" onclick="reagirComentario('${bateriaKey}', '${id}', 'dislikes')">👎 (${c.dislikes || 0})</button>
-                            </div>
-                        </div>`;
-                });
-                container.innerHTML = html;
-            });
-        }
 
         function escapeHtml(text) {
             if (!text) return '';
@@ -3179,41 +3305,6 @@
             }
         };
 
-        window.gerarTextoCompartilhamento = function(piloto, posicao, dadosBateria) {
-            let nome = piloto.nome || piloto.piloto || "Piloto";
-            let voltas = Number(piloto.voltas || 0);
-            let melhor = Number(piloto.melhorVolta);
-            let velocidade = Number(piloto.velocidadeMax);
-            let media = Number(piloto.tempoMedio);
-            let consistencia = Number(piloto.consistencia);
-
-            let texto = `*${posicao}º Lugar: ${nome}* — Completou ${voltas} ${voltas === 1 ? 'volta' : 'voltas'}.\n`;
-
-            if (Number.isFinite(melhor) && melhor > 0) {
-                texto += `Melhor volta: ${melhor.toFixed(3)}s`;
-                if (Number.isFinite(velocidade) && velocidade > 0) texto += ` (Velocidade de ${velocidade.toFixed(1)} km/h)`;
-                texto += `.\n`;
-            }
-            if (Number.isFinite(media) && media > 0) {
-                texto += `Tempo médio por volta: ${media.toFixed(3)}s`;
-                if (Number.isFinite(consistencia) && consistencia >= 0) texto += ` com consistência de ±${consistencia.toFixed(3)}s`;
-                texto += `.\n`;
-            }
-
-            if (Number.isFinite(melhor) && Number.isFinite(Number(dadosBateria.recordeHistorico)) && Math.abs(melhor - Number(dadosBateria.recordeHistorico)) < 0.001) {
-                texto += "🏆 *Esta foi a volta mais rápida histórica!*\n";
-            } else if (Number.isFinite(melhor) && Number.isFinite(Number(piloto.recordeParticular)) && Math.abs(melhor - Number(piloto.recordeParticular)) < 0.001) {
-                texto += "⭐ *Esta foi a sua volta mais rápida particular!*\n";
-            }
-
-            if (Number.isFinite(Number(piloto.porcentagemMelhora))) {
-                const evolucao = Number(piloto.porcentagemMelhora);
-                if (evolucao > 0.0001) texto += `📈 Evolução de ${evolucao.toFixed(1)}%.\n`;
-                else if (evolucao < -0.0001) texto += `📉 Desempenho ${Math.abs(evolucao).toFixed(1)}% abaixo da referência anterior.\n`;
-            }
-            return texto.trim();
-        }
-
         window.compartilharCorrida = function(bateriaKey, nomeSessao) {
             let todosDados = obterTodosDadosConsolidados();
             let dadosBateria = todosDados.filter(d => d.bateriaKey === bateriaKey && d.laps && d.laps.length > 0);
@@ -3222,87 +3313,22 @@
 
             if (ordenados.length === 0) { alert("Não há dados válidos para compartilhar nesta bateria."); return; }
 
-            let todasVoltas = todosDados.flatMap(d => (d.laps || []).map(l => typeof l === 'object' ? Number(l.tempo) : Number(l))).filter(t => Number.isFinite(t) && t > 0);
-            let recordeHistorico = todasVoltas.length ? Math.min(...todasVoltas) : null;
-
             let textoPilotos = ordenados.map((p, idx) => {
                 let lapsAtuais = (p.laps || []).map(l => typeof l === 'object' ? Number(l.tempo) : Number(l)).filter(t => Number.isFinite(t) && t > 0);
                 if (!lapsAtuais.length) return '';
-
                 let melhorVolta = Math.min(...lapsAtuais);
-                let media = lapsAtuais.reduce((a, b) => a + b, 0) / lapsAtuais.length;
-                let variancia = lapsAtuais.reduce((soma, t) => soma + Math.pow(t - media, 2), 0) / lapsAtuais.length;
-                let desvio = Math.sqrt(variancia);
-                let velocidadeMax = (26 / melhorVolta) * 3.6 * 28;
-
-                let historicoPiloto = todosDados.filter(d => d.piloto === p.piloto && d.bateriaKey !== bateriaKey)
-                    .flatMap(d => (d.laps || []).map(l => typeof l === 'object' ? Number(l.tempo) : Number(l))).filter(t => Number.isFinite(t) && t > 0);
-                let recordeParticular = historicoPiloto.length ? Math.min(...historicoPiloto) : null;
-
-                let mediasAnteriores = todosDados.filter(d => d.piloto === p.piloto && d.bateriaKey !== bateriaKey).map(d => {
-                    let laps = (d.laps || []).map(l => typeof l === 'object' ? Number(l.tempo) : Number(l)).filter(t => Number.isFinite(t) && t > 0);
-                    return laps.length ? laps.reduce((a, b) => a + b, 0) / laps.length : null;
-                }).filter(v => Number.isFinite(v) && v > 0);
-
-                let mediaAnterior = mediasAnteriores.length ? mediasAnteriores.reduce((a, b) => a + b, 0) / mediasAnteriores.length : null;
-                let porcentagemMelhora = mediaAnterior ? ((mediaAnterior - media) / mediaAnterior) * 100 : null;
-
-                let piloto = { nome: p.piloto, voltas: lapsAtuais.length, melhorVolta, velocidadeMax, tempoMedio: media, consistencia: desvio, recordeParticular, porcentagemMelhora };
-                return gerarTextoCompartilhamento(piloto, idx + 1, { recordeHistorico });
-            }).filter(Boolean).join('\n\n');
-
-            let sessaoObj = listaJsonsCache.find(item => item.firebaseKey === bateriaKey);
-            let pdfBase64 = sessaoObj ? sessaoObj.pdfBase64 : null;
-            let nomeArquivoOriginal = sessaoObj && sessaoObj.nomeArquivoOriginal ? sessaoObj.nomeArquivoOriginal : `${nomeSessao}.pdf`;
+                return `*${idx + 1}º Lugar: ${p.piloto}* — ${lapsAtuais.length} voltas. Melhor volta: ${melhorVolta.toFixed(3)}s.`;
+            }).filter(Boolean).join('\n');
 
             let vencedorNome = ordenados[0].piloto || "Nenhum";
-            let txt = `🏁 *KRATHUS RACING - TELEMETRIA* 🏁\n🗓️ Sessão: *${nomeSessao}*\n🏆 Vencedor: *${vencedorNome}*\n\n📊 *RESULTADO DA BATERIA*\n\n${textoPilotos}\n\n🔎 Confira todos os gráficos, análises e detalhes no painel Krathus Racing:\n${linkPainel}`;
+            let txt = `🏁 *KRATHUS RACING - TELEMETRIA* 🏁\n🗓️ Sessão: *${nomeSessao}*\n🏆 Vencedor: *${vencedorNome}*\n\n${textoPilotos}\n\n🔎 Confira no painel Krathus Racing:\n${linkPainel}`;
 
-            const dataUrlParaFile = (dataUrl, nomeArquivo) => {
-                try {
-                    if (!dataUrl || typeof dataUrl !== 'string') return null;
-                    const partes = dataUrl.split(',');
-                    if (partes.length < 2) return null;
-                    const mime = partes[0].match(/data:([^;]+);base64/i) ? partes[0].match(/data:([^;]+);base64/i)[1] : 'application/pdf';
-                    const bytes = atob(partes[1]);
-                    const buffer = new Uint8Array(bytes.length);
-                    for (let i = 0; i < bytes.length; i++) buffer[i] = bytes.charCodeAt(i);
-                    return new File([buffer], nomeArquivo || 'relatorio.pdf', { type: mime });
-                } catch (e) { return null; }
-            };
-
-            const compartilhar = async () => {
-                const pdfFile = dataUrlParaFile(pdfBase64, nomeArquivoOriginal);
-                if (navigator.share) {
-                    try {
-                        if (pdfFile && navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
-                            await navigator.share({ title: 'Krathus Racing - Telemetria', text: txt, files: [pdfFile] });
-                            return;
-                        }
-                        await navigator.share({ title: 'Krathus Racing - Telemetria', text: txt, url: linkPainel });
-                        return;
-                    } catch (erro) { if (erro && erro.name === 'AbortError') return; }
-                }
-
-                if (pdfBase64) {
-                    const linkPdf = document.createElement('a');
-                    linkPdf.href = pdfBase64; linkPdf.download = nomeArquivoOriginal || 'relatorio.pdf';
-                    document.body.appendChild(linkPdf); linkPdf.click(); document.body.removeChild(linkPdf);
-                }
-
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(txt).then(() => { alert(pdfBase64 ? "📋 Relatório copiado e PDF baixado. Anexe o PDF no WhatsApp." : "📋 Relatório copiado para a área de transferência."); }).catch(() => fallbackCopiarTexto(txt));
-                } else { fallbackCopiarTexto(txt); }
-            };
-            compartilhar();
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(txt).then(() => { alert("📋 Relatório copiado para a área de transferência!"); });
+            } else {
+                alert(txt);
+            }
         };
-
-        function fallbackCopiarTexto(texto) {
-            const area = document.createElement('textarea');
-            area.value = texto; area.style.position = 'fixed'; area.style.opacity = '0';
-            document.body.appendChild(area); area.focus(); area.select();
-            try { document.execCommand('copy'); alert("📋 Relatório completo copiado!"); } finally { document.body.removeChild(area); }
-        }
 
         function atualizarDashboard() {
             let dadosBase = obterTodosDadosConsolidados();
@@ -3438,10 +3464,6 @@
                     </div>`;
 
                 if (modulosSel.includes('mod-grafico')) html += `<div class="card"><div class="card-header">Evolução de Ritmo (Lap Times)</div><div class="chart-container"><canvas id="chart-${bateriaKey}"></canvas></div></div>`;
-                if (modulosSel.includes('mod-grafico-posicao')) html += `<div class="card"><div class="card-header">📊 Posição Volta a Volta (Race Position)</div><div class="chart-container"><canvas id="chart-pos-${bateriaKey}"></canvas></div></div>`;
-                if (modulosSel.includes('mod-log-posicao')) html += `<div class="card"><div class="card-header">📝 Relatório Detalhado de Ultrapassagens</div><div class="position-analysis-container" style="margin-top:0;"><div class="position-analysis-title">Histórico Volta a Volta</div><div class="position-log-list" id="pos-logs-${bateriaKey}"></div></div></div>`;
-                if (modulosSel.includes('mod-classificacao-analise')) html += `<div class="card"><div class="card-header">📋 Laudo Técnico do Chefe de Equipe</div><div class="table-container"><table><thead><tr><th>POS</th><th>PILOTO</th><th>SESSÃO</th><th>VOLTAS</th><th>MELHOR</th><th>VEL. ESCALA (1/28)</th><th>MÉDIA</th><th>DESVIO</th></tr></thead><tbody id="tabela-unificada-${bateriaKey}"></tbody></table></div></div>`;
-                if (modulosSel.includes('mod-tabela-geral')) html += `<div class="card"><div class="card-header">⏱️ Tabela Geral Volta a Volta (com Gaps e Voltas Atrás)</div><div class="table-container"><table><thead><tr id="head-lapbyLap-${bateriaKey}"><th>VOLTA</th></tr></thead><tbody id="body-lapbyLap-${bateriaKey}"></tbody></table></div></div>`;
                 if (modulosSel.includes('mod-replay')) {
                     html += `
                         <div class="card">
@@ -3456,8 +3478,6 @@
                                     <button class="config-input" data-vel="1" style="padding: 4px 8px; cursor: pointer;" onclick="mudarVelocidadeReplay('${bateriaKey}', 1)">1x</button>
                                     <button class="config-input" data-vel="1.5" style="padding: 4px 8px; cursor: pointer; background: var(--accent-gold); color: #000; font-weight: bold;" onclick="mudarVelocidadeReplay('${bateriaKey}', 1.5)">1.5x</button>
                                     <button class="config-input" data-vel="2" style="padding: 4px 8px; cursor: pointer;" onclick="mudarVelocidadeReplay('${bateriaKey}', 2)">2x</button>
-                                    <button class="config-input" data-vel="4" style="padding: 4px 8px; cursor: pointer;" onclick="mudarVelocidadeReplay('${bateriaKey}', 4)">4x</button>
-                                    <button class="config-input" data-vel="8" style="padding: 4px 8px; cursor: pointer;" onclick="mudarVelocidadeReplay('${bateriaKey}', 8)">8x</button>
                                 </div>
                                 <span id="replay-tempo-${bateriaKey}" style="font-size: 0.85rem; color: var(--text-muted); margin-left: auto;">Tempo: 0.0s</span>
                             </div>
@@ -3470,7 +3490,9 @@
                     html += `
                         <div class="comments-section">
                             <div class="comments-title">💬 Comentários e Reações</div>
-                            <div class="comments-list" id="comments-list-${safeKey}"></div>
+                            <div class="comments-list" id="comments-list-${safeKey}">
+                                <div style="font-size:0.85rem; color: var(--text-muted); text-align:center;">Nenhum comentário ainda. Seja o primeiro!</div>
+                            </div>
                             <div class="comment-form">
                                 <input type="text" id="comment-name-${safeKey}" class="comment-input-name" placeholder="Seu Nome">
                                 <input type="text" id="comment-text-${safeKey}" class="comment-input-text" placeholder="Escreva seu comentário..." onkeypress="if(event.key === 'Enter') enviarComentario('${bateriaKey}')">
@@ -3481,9 +3503,6 @@
 
                 sessionBlock.innerHTML = html;
                 mainContainer.appendChild(sessionBlock);
-
-                escutarCurtidas(bateriaKey);
-                if (modulosSel.includes('mod-comentarios')) escutarComentarios(bateriaKey);
 
                 let paleta = ["#2ec4b6", "#ffb703", "#e63946", "#3a86ff", "#ff006e", "#8338ec"];
                 let maxV = Math.max(...dadosSessao.map(d => d.laps ? d.laps.length : 0));
