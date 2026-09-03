@@ -108,6 +108,24 @@
         </div>
     </div>
 
+    <!-- MODAL DE SENHA SEGURA (MASCARADA) -->
+    <div id="modal-senha-segura" class="custom-modal" style="z-index: 20000;">
+        <div class="modal-content" style="max-width: 380px; border-top-color: var(--accent-gold);">
+            <div class="modal-header" style="background: var(--bg-card-header);">
+                <div class="modal-title" style="font-size: 1rem;">🔒 Confirmação de Segurança</div>
+                <button class="modal-close" onclick="fecharModalSenha(false)">&times;</button>
+            </div>
+            <div class="modal-body" style="gap: 14px; text-align: center;">
+                <p id="modal-senha-mensagem" style="font-size: 0.85rem; color: var(--text-main);">Digite a senha unificada para prosseguir:</p>
+                <input type="password" id="modal-senha-input" class="config-input" style="width: 100%; text-align: center; font-size: 1.1rem; letter-spacing: 2px;" placeholder="••••" onkeydown="if(event.key === 'Enter') confirmarSenhaModal()">
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px;">
+                    <button class="btn-action-danger" style="padding: 6px 14px; font-size: 0.8rem;" onclick="fecharModalSenha(false)">Cancelar</button>
+                    <button class="btn-action-primary" style="background: var(--accent-cc); padding: 6px 16px; font-size: 0.8rem;" onclick="confirmarSenhaModal()">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL PRINCIPAL DE COMPRAS COLETIVAS -->
     <div id="campeonatos2-modal" class="custom-modal" style="display: flex;">
         <div class="modal-content">
@@ -269,6 +287,7 @@
         let compraAbertaKey = null;
         let compraAbertaDados = null;
         let pilotosBaseGlobal = ["Rafael", "DJ", "Ronaldo", "Gustavo"];
+        let senhaCallbackPendente = null;
 
         try {
             if (!firebase.apps.length) {
@@ -319,6 +338,36 @@
             }
         });
 
+        // Função de Solicitação de Senha Oculta (Masked Modal)
+        function solicitarSenhaSegura(mensagem) {
+            return new Promise((resolve) => {
+                document.getElementById('modal-senha-mensagem').innerText = mensagem || "Digite a senha unificada de segurança:";
+                let input = document.getElementById('modal-senha-input');
+                input.value = "";
+                document.getElementById('modal-senha-segura').style.display = 'flex';
+                setTimeout(() => input.focus(), 100);
+                senhaCallbackPendente = resolve;
+            });
+        }
+
+        window.confirmarSenhaModal = function() {
+            let input = document.getElementById('modal-senha-input');
+            let digitada = input.value;
+            document.getElementById('modal-senha-segura').style.display = 'none';
+            if (senhaCallbackPendente) {
+                senhaCallbackPendente(digitada);
+                senhaCallbackPendente = null;
+            }
+        };
+
+        window.fecharModalSenha = function(sucesso) {
+            document.getElementById('modal-senha-segura').style.display = 'none';
+            if (senhaCallbackPendente) {
+                senhaCallbackPendente(sucesso ? "" : null);
+                senhaCallbackPendente = null;
+            }
+        };
+
         function carregarCacheLocal() {
             try {
                 let local = localStorage.getItem('krathus_cc_local');
@@ -368,8 +417,8 @@
         }
 
         async function criarCompraColetiva() {
-            let senha = prompt("🔒 Senha unificada de segurança:");
-            if (senha === null) return;
+            let senha = await solicitarSenhaSegura("🔒 Digite a senha para criar uma nova compra coletiva:");
+            if (senha === null || senha === undefined) return;
             if (senha !== SENHA_UNIFICADA) { alert("❌ Senha incorreta!"); return; }
             let nome = document.getElementById('cc-input-nova-compra').value.trim();
             if (!nome) { alert("Digite o nome da compra."); return; }
@@ -504,8 +553,8 @@
             atualizarCalculosCC();
         };
 
-        window.toggleFinalizarCompraColetiva = function() {
-            let senha = prompt("🔒 Senha de segurança:");
+        window.toggleFinalizarCompraColetiva = async function() {
+            let senha = await solicitarSenhaSegura("🔒 Digite a senha para alterar o status de finalização:");
             if (senha !== SENHA_UNIFICADA) { alert("❌ Senha incorreta!"); return; }
             
             compraAbertaDados.finalizada = !compraAbertaDados.finalizada;
@@ -524,7 +573,6 @@
             }
         }
 
-        // Função de Processamento e Extração Automática do PDF do Pix (Texto + QR Code Visual)
         window.processarUploadPdfPix = async function(event) {
             let file = event.target.files[0];
             if (!file) return;
@@ -538,17 +586,13 @@
                 let textoExtraidoGeral = "";
                 let qrCodeEncontrado = null;
 
-                // Percorre todas as páginas do PDF
                 for (let i = 1; i <= pdfDoc.numPages; i++) {
                     let page = await pdfDoc.getPage(i);
-                    
-                    // 1. Extração de Texto (procurando padrão Pix Copia e Cola "000201...")
                     let textContent = await page.getTextContent();
                     let pageText = textContent.items.map(item => item.str).join(" ");
                     textoExtraidoGeral += " " + pageText;
 
-                    // 2. Extração de Imagens / Renderização para varredura de QR Code
-                    let viewport = page.getViewport({ scale: 2.0 }); // alta resolução para leitura precisa
+                    let viewport = page.getViewport({ scale: 2.0 });
                     let canvas = document.createElement('canvas');
                     let context = canvas.getContext('2d');
                     canvas.height = viewport.height;
@@ -560,11 +604,10 @@
                     
                     if (qr && qr.data) {
                         qrCodeEncontrado = qr.data;
-                        break; // encontrou o QR Code
+                        break;
                     }
                 }
 
-                // Verifica se achou o payload Pix Copia e Cola no texto do PDF
                 let regexPix = /(000201[\w\d]+)/;
                 let matchPix = textoExtraidoGeral.match(regexPix);
 
@@ -575,9 +618,8 @@
                     document.getElementById('cc-form-pix').value = matchPix[1];
                     alert("✅ Código Pix 'Copia e Cola' extraído do texto do PDF!");
                 } else if (textoExtraidoGeral.length > 10) {
-                    // Tenta colocar o texto bruto se parecer chave Pix (email, cpf, telefone)
                     document.getElementById('cc-form-pix').value = file.name;
-                    alert("⚠️ PDF lido, mas nenhum BR Code explícito foi detectado. Verifique o campo.");
+                    alert("⚠️ PDF lido, mas nenhum BR Code explícito foi detectado.");
                 } else {
                     alert("❌ Não foi possível extrair dados legíveis deste PDF.");
                 }
@@ -585,9 +627,9 @@
                 atualizarCalculosCC();
             } catch (err) {
                 console.error("Erro ao processar PDF:", err);
-                alert("❌ Erro ao ler o arquivo PDF. Certifique-se de que é um documento válido.");
+                alert("❌ Erro ao ler o arquivo PDF.");
             }
-            event.target.value = ""; // limpa o input
+            event.target.value = "";
         };
 
         window.adicionarParticipanteManual = function() {
@@ -801,7 +843,6 @@
             gerarQrCodePixCC();
         };
 
-        // Algoritmo Oficial do Banco Central (BR Code / EMVCo) com CRC16-CCITT
         function gerarPayloadPixBRCode(chave, nomeRecebedor, cidade, valor) {
             function formatEmv(id, val) {
                 let s = String(val);
@@ -812,7 +853,6 @@
             let cidadeLimpa = (cidade || "MACEIO").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 15).trim();
             let chaveLimpa = String(chave).trim();
 
-            // Se a chave já for um payload EMV completo (começa com 000201), retorna ela mesma
             if (chaveLimpa.startsWith("000201")) {
                 return chaveLimpa;
             }
@@ -1121,7 +1161,7 @@
         };
 
         window.salvarCompraColetivaAberta = async function() {
-            let senha = prompt("🔒 Senha de segurança para salvar:");
+            let senha = await solicitarSenhaSegura("🔒 Digite a senha para salvar as alterações:");
             if (senha !== SENHA_UNIFICADA) { alert("❌ Incorreta!"); return; }
             if (!compraAbertaKey) return;
             persistirDados(`comprasColetivas/${compraAbertaKey}`, compraAbertaDados, () => {
@@ -1131,7 +1171,7 @@
         };
 
         window.excluirCompraColetivaAberta = async function() {
-            let senha = prompt("🔒 Senha de segurança para excluir:");
+            let senha = await solicitarSenhaSegura("🔒 Digite a senha para excluir esta compra:");
             if (senha !== SENHA_UNIFICADA) { alert("❌ Incorreta!"); return; }
             if (!compraAbertaKey) return;
             if (confirm("Deseja excluir esta compra?")) {
