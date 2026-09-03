@@ -115,7 +115,7 @@
                 <div id="lista-compras-coletivas-view" style="display: flex; flex-direction: column; gap: 16px;">
                     <div style="display: flex; flex-direction: column; gap: 8px;">
                         <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Compras Coletivas Cadastradas</span>
-                        <ul id="cc-lista-cadastradas" style="list-style: none; display: flex; flex-direction: column; gap: 10px;"></ul>
+                        <ul id="cc-lista-cadastradas" style="list-style: none; display: flex; flex-direction: column; gap: 12px;"></ul>
                     </div>
 
                     <div class="config-panel" style="border-color: var(--accent-cc);">
@@ -403,7 +403,32 @@
                     `<button class="btn-action-track" style="background: rgba(63, 55, 201, 0.2); border: 1px dashed #3f37c9; color: #3f37c9;" onclick="addRastreioRapido('${key}')">📦 Add Rastreio</button>` :
                     `<button class="btn-action-track" onclick="window.open('https://rastreamento.correios.com.br/app/index.php?objeto=${encodeURIComponent(rastreioCode)}', '_blank')">📦 Rastreio: ${escapeHtml(rastreioCode)}</button>`;
 
-                // Definição de cores e borda do card com base no status
+                // Coletânea de imagens dos itens escolhidos
+                let imagensItens = [];
+                if (c.itens && Array.isArray(c.itens)) {
+                    c.itens.forEach(it => {
+                        if (it.imgUrl && it.imgUrl.trim() !== "") {
+                            imagensItens.push(it.imgUrl.trim());
+                        }
+                    });
+                }
+
+                let galeriaHtml = "";
+                if (imagensItens.length > 0) {
+                    let thumbs = "";
+                    imagensItens.forEach(img => {
+                        thumbs += `<img src="${escapeHtml(img)}" alt="Item" style="width: 48px; height: 48px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border-card); background: #fff;" onerror="this.onerror=null; this.src='https://via.placeholder.com/48?text=Erro';">`;
+                    });
+                    galeriaHtml = `
+                        <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-top: 4px;">
+                            <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: bold;">ITENS (${imagensItens.length}):</span>
+                            <div style="display: flex; gap: 6px; flex-wrap: wrap;">${thumbs}</div>
+                        </div>
+                    `;
+                } else {
+                    galeriaHtml = `<div style="font-size: 0.7rem; color: var(--text-muted); font-style: italic;">Sem imagens de itens cadastradas.</div>`;
+                }
+
                 let borderColor = isFinalizada ? "var(--accent-blue)" : (perc === 100 ? "var(--accent-green)" : "var(--accent-gold)");
                 let badgeStatus = isFinalizada ? 
                     `<span style="background: rgba(58, 134, 255, 0.2); color: var(--accent-blue); padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.72rem;">🔵 ENTREGUE / FINALIZADA</span>` :
@@ -425,6 +450,7 @@
                                 <button class="btn-action-primary" style="background: var(--accent-cc);" onclick="abrirGerenciadorCompra('${key}')">⚙️ Gerenciar</button>
                             </div>
                         </div>
+                        ${galeriaHtml}
                         <div>
                             <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: bold;">STATUS DE PAGAMENTOS (${pagos}/${totalParts})</span>
                             <div class="progress-bar-container"><div class="progress-bar-fill" style="width: ${perc}%; background: ${isFinalizada ? 'var(--accent-blue)' : (perc === 100 ? 'var(--accent-green)' : 'linear-gradient(90deg, #2a9d8f, #2ec4b6)')};"></div><div class="progress-bar-text">${Math.round(perc)}%</div></div>
@@ -605,7 +631,7 @@
 
                 tbodyItens.innerHTML += `
                     <tr class="cc-item-row">
-                        <td><input type="text" class="config-input cc-item-imgurl" value="${escapeHtml(it.imgUrl)}" placeholder="URL" style="width:100%; font-size:0.7rem;"></td>
+                        <td><input type="text" class="config-input cc-item-imgurl" value="${escapeHtml(it.imgUrl)}" placeholder="URL" style="width:100%; font-size:0.7rem;" oninput="atualizarCalculosCC()"></td>
                         <td><input type="text" class="config-input cc-item-nome" value="${escapeHtml(it.nomeItem)}" placeholder="Descrição" style="width:100%; font-size:0.78rem;" oninput="atualizarCalculosCC()"></td>
                         <td><input type="text" class="config-input cc-item-link" value="${escapeHtml(it.link)}" placeholder="Link" style="width:100%; font-size:0.78rem;" oninput="atualizarCalculosCC()"></td>
                         <td><input type="number" step="0.01" class="config-input cc-item-val" value="${it.valor}" style="width:100%; font-size:0.78rem;" oninput="atualizarCalculosCC()"></td>
@@ -737,7 +763,7 @@
                     if (crc & 0x8000) {
                         crc = ((crc << 1) ^ 0x1021) & 0xFFFF;
                     } else {
-                        crc = (crc << 1) & 0xFFFF;
+                        crc = ((crc << 1)) & 0xFFFF;
                     }
                 }
             }
