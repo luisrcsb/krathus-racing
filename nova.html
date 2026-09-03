@@ -8,7 +8,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsQR@1.4.0/dist/jsQR.min.js"></script>
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     </script>
@@ -29,19 +28,10 @@
             --accent-bronze: #cd7f32;
             --accent-blue: #3a86ff;
             --accent-gap: #ff006e;
-            --accent-cc: #2a9d8f;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
         body { background-color: var(--bg-body); color: var(--text-main); padding: 24px; }
-        
-        input[type=number]::-webkit-inner-spin-button, 
-        input[type=number]::-webkit-outer-spin-button { 
-            -webkit-appearance: none; 
-            margin: 0; 
-        }
-        input[type=number] { -moz-appearance: textfield; }
-
         .dashboard-container { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
 
         .header { display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 20px 24px; border-radius: 12px; border: 1px solid var(--border-card); flex-wrap: wrap; gap: 15px; }
@@ -56,7 +46,6 @@
         .btn-pdf-global { background: linear-gradient(135deg, #ff5722 0%, #e63946 100%); color: #ffffff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; }
         .btn-upload-modal-trigger { background: linear-gradient(135deg, #3a86ff 0%, #2ec4b6 100%); color: #ffffff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
         .btn-campeonatos-trigger { background: linear-gradient(135deg, #ffb703 0%, #fb8500 100%); color: #000; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
-        .btn-compras-coletivas-trigger { background: linear-gradient(135deg, #2a9d8f 0%, #264653 100%); color: #fff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
         
         .btn-share { background: rgba(58, 134, 255, 0.15); color: var(--accent-blue); border: 1px solid var(--accent-blue); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; }
         .btn-like { background: rgba(230, 57, 70, 0.15); color: var(--accent-red); border: 1px solid var(--accent-red); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; }
@@ -196,21 +185,6 @@
         .footer-logo-img { height: 36px; width: auto; object-fit: contain; border-radius: 4px; padding: 3px 6px; background: #ffffff; }
         .footer-copyright { font-size: 0.85rem; color: var(--text-muted); text-align: center; border-top: 1px solid var(--border-card); padding-top: 12px; width: 100%; }
 
-        /* Estilos adicionais específicos do módulo de compras integradas */
-        .btn-compras-coletivas-trigger { background: linear-gradient(135deg, #2a9d8f 0%, #264653 100%); color: #fff; font-weight: 700; }
-        .btn-action-primary { background: var(--accent-cc); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
-        .btn-action-danger { background: var(--accent-red); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
-        .btn-action-summary { background: #480ca8; color: #fff; border: none; padding: 5px 12px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; cursor: pointer; }
-        .btn-action-track { background: #3f37c9; color: #fff; border: none; padding: 5px 12px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; cursor: pointer; text-decoration: none; display: inline-block; }
-        .btn-action-pix { background: var(--accent-green); color: #0d111a; border: none; padding: 4px 10px; border-radius: 4px; font-weight: 700; font-size: 0.75rem; cursor: pointer; }
-        .btn-action-recibo { background: var(--accent-blue); color: #fff; border: none; padding: 4px 10px; border-radius: 4px; font-weight: 600; font-size: 0.75rem; cursor: pointer; text-decoration: none; display: inline-block; }
-        .btn-action-finalize { background: var(--accent-blue); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; font-size: 0.85rem; cursor: pointer; }
-        .progress-bar-container { width: 100%; background-color: var(--bg-card); border-radius: 6px; border: 1px solid var(--border-card); overflow: hidden; height: 14px; margin-top: 4px; position: relative; }
-        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #2a9d8f, #2ec4b6); width: 0%; transition: width 0.3s; }
-        .progress-bar-text { position: absolute; width: 100%; text-align: center; top: 0; font-size: 0.65rem; font-weight: 700; color: #fff; line-height: 14px; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
-        .pix-clickable { cursor: pointer; transition: transform 0.1s ease; }
-        .pix-clickable:active { transform: scale(0.97); }
-
         @media print {
             body, body * { color: #000000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             body { background-color: #ffffff !important; padding: 10px !important; font-size: 11px !important; }
@@ -220,8 +194,24 @@
 </head>
 <body>
 
-    <!-- [PARTE 2] Modais do Sistema -->
-    
+    <!-- 🔒 Modal de Senha Segura (Camuflada) -->
+    <div id="senha-modal" class="custom-modal">
+        <div class="modal-content" style="max-width: 420px; border-top-color: var(--accent-red);">
+            <div class="modal-header">
+                <div class="modal-title">🔒 Senha de Segurança</div>
+                <button class="modal-close" onclick="fecharModalSenha(false)">&times;</button>
+            </div>
+            <div class="modal-body" style="gap: 15px;">
+                <p id="senha-modal-mensagem" style="font-size: 0.9rem; color: var(--text-main);">Digite a senha unificada:</p>
+                <input type="password" id="input-senha-segura" class="config-input" style="width: 100%; font-size: 1rem; letter-spacing: 2px;" placeholder="••••" onkeypress="if(event.key === 'Enter') confirmarModalSenha()">
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+                    <button class="btn-action-primary" style="background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-card);" onclick="fecharModalSenha(false)">Cancelar</button>
+                    <button class="btn-action-primary" onclick="confirmarModalSenha()">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 🏎️ Modal Ficha do Piloto -->
     <div id="piloto-modal" class="custom-modal">
         <div class="modal-content">
@@ -364,7 +354,15 @@
 
                         <!-- ABA 3 -->
                         <div id="zround-aba-3" class="zround-aba-content" style="display: none; flex-direction: column; gap: 12px;">
-                            <!-- 1. Sessão de Treino Exclusiva para Grid -->
+                            <div class="upload-box">
+                                <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase;">📤 Upload e Seleção de Provas (Banco de Dados Separado)</span>
+                                <p style="font-size: 0.82rem; color: var(--text-muted);">Adicione novos arquivos de provas (PDF/HTML) ou importe relatórios salvos no banco principal para o banco dedicado deste campeonato.</p>
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 6px;">
+                                    <input type="file" id="zround-input-file-prova" accept=".pdf,.html,.htm" multiple style="background: var(--bg-card); padding: 8px; border-radius: 6px; border: 1px solid var(--border-card); color: var(--text-main); flex: 1; font-size: 0.85rem;">
+                                    <button class="btn btn-upload-modal-trigger" onclick="uploadProvasBancoSeparado()">Enviar Prova (Banco Separado)</button>
+                                </div>
+                            </div>
+
                             <div class="upload-box" style="border-color: var(--accent-gold); background: rgba(255, 183, 3, 0.04);">
                                 <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase;">⏱️ Sessão de Treino Exclusiva para Grid (Regra: 3 Melhores Voltas, descarta a pior)</span>
                                 <p style="font-size: 0.82rem; color: var(--text-muted);">Envie um relatório de treino oficial para o cálculo automático do grid de largada inicial da primeira prova.</p>
@@ -375,7 +373,6 @@
                                 <div id="status-treino-grid-info" style="font-size: 0.8rem; color: var(--accent-green); margin-top: 4px;">Nenhum treino de grid processado.</div>
                             </div>
 
-                            <!-- 2. Importar Provas Existentes do Banco Principal do Site -->
                             <div class="upload-box" style="border-style: solid; border-color: var(--border-card);">
                                 <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">📥 Importar Provas Existentes do Banco Principal do Site</span>
                                 <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 6px;">
@@ -385,17 +382,6 @@
                                     <button class="btn-action-primary" onclick="importarProvaDoBancoPrincipalParaCampeonato()">Importar para o Banco Separado</button>
                                 </div>
                             </div>
-
-                            <!-- 3. Upload e Seleção de Provas (Banco de Dados Separado) -->
-                            <div class="upload-box">
-                                <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase;">📤 Upload e Seleção de Provas (Banco de Dados Separado)</span>
-                                <p style="font-size: 0.82rem; color: var(--text-muted);">Adicione novos arquivos de provas (PDF/HTML) para o banco dedicado deste campeonato.</p>
-                                <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 6px;">
-                                    <input type="file" id="zround-input-file-prova" accept=".pdf,.html,.htm" multiple style="background: var(--bg-card); padding: 8px; border-radius: 6px; border: 1px solid var(--border-card); color: var(--text-main); flex: 1; font-size: 0.85rem;">
-                                    <button class="btn btn-upload-modal-trigger" onclick="uploadProvasBancoSeparado()">Enviar Prova (Banco Separado)</button>
-                                </div>
-                            </div>
-
                             <div style="display: flex; flex-direction: column; gap: 8px;">
                                 <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Provas Registradas no Banco Separado deste Campeonato</span>
                                 <ul id="zround-lista-provas-banco-separado" style="list-style: none; display: flex; flex-direction: column; gap: 6px; max-height: 180px; overflow-y: auto;">
@@ -441,184 +427,7 @@
         </div>
     </div>
 
-    <!-- MODAIS DO MÓDULO DE COMPRAS COLETIVAS INTEGRADO -->
-
-    <!-- MODAL DE RESUMO FISCAL E PAGAMENTO RÁPIDO (COMPLETO) -->
-    <div id="resumo-fiscal-modal" class="custom-modal" style="z-index: 11000;">
-        <div class="modal-content" style="border-top-color: #480ca8; max-width: 900px;">
-            <div class="modal-header" style="background: #2b1b4e;">
-                <div class="modal-title" id="resumo-fiscal-titulo">📊 Resumo Fiscal, Financeiro e Pagamentos</div>
-                <button class="modal-close" onclick="fecharModalResumoFiscal()">&times;</button>
-            </div>
-            <div class="modal-body" id="resumo-fiscal-body" style="display: flex; flex-direction: column; gap: 20px;"></div>
-        </div>
-    </div>
-
-    <!-- MODAL DE SENHA SEGURA (MASCARADA) -->
-    <div id="modal-senha-segura" class="custom-modal" style="z-index: 20000;">
-        <div class="modal-content" style="max-width: 380px; border-top-color: var(--accent-gold);">
-            <div class="modal-header" style="background: var(--bg-card-header);">
-                <div class="modal-title" style="font-size: 1rem;">🔒 Confirmação de Segurança</div>
-                <button class="modal-close" onclick="fecharModalSenha(false)">&times;</button>
-            </div>
-            <div class="modal-body" style="gap: 14px; text-align: center;">
-                <p id="modal-senha-mensagem" style="font-size: 0.85rem; color: var(--text-main);">Digite a senha unificada para prosseguir:</p>
-                <input type="password" id="modal-senha-input" class="config-input" style="width: 100%; text-align: center; font-size: 1.1rem; letter-spacing: 2px;" placeholder="••••" onkeydown="if(event.key === 'Enter') confirmarSenhaModal()">
-                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px;">
-                    <button class="btn-action-danger" style="padding: 6px 14px; font-size: 0.8rem;" onclick="fecharModalSenha(false)">Cancelar</button>
-                    <button class="btn-action-primary" style="background: var(--accent-cc); padding: 6px 16px; font-size: 0.8rem;" onclick="confirmarSenhaModal()">Confirmar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL PRINCIPAL DE COMPRAS COLETIVAS -->
-    <div id="campeonatos2-modal" class="custom-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">🛒 Gestão de Compras Coletivas</div>
-                <button class="modal-close" onclick="fecharModalCampeonatos2()">&times;</button>
-            </div>
-            <div class="modal-body">
-                
-                <!-- Visão 1: Lista de Compras -->
-                <div id="lista-compras-coletivas-view" style="display: flex; flex-direction: column; gap: 16px;">
-                    <div style="display: flex; flex-direction: column; gap: 8px;">
-                        <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Compras Coletivas Cadastradas</span>
-                        <ul id="cc-lista-cadastradas" style="list-style: none; display: flex; flex-direction: column; gap: 12px;"></ul>
-                    </div>
-
-                    <div class="config-panel" style="border-color: var(--accent-cc);">
-                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--accent-cc); text-transform: uppercase;">🔒 Criar Nova Compra Coletiva</span>
-                        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-                            <input type="text" id="cc-input-nova-compra" class="config-input" style="flex:1;" placeholder="Nome da Compra (Ex: Peças RC AliExpress)">
-                            <button class="btn-action-primary" style="background: var(--accent-cc);" onclick="criarCompraColetiva()">Criar Compra Coletiva</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Visão 2: Painel de Gerenciamento da Compra Específica -->
-                <div id="painel-unica-compra-view" style="display: none; flex-direction: column; gap: 14px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-bottom: 2px solid var(--border-card); padding-bottom: 10px;">
-                        <h3 id="cc-titulo-gerenciamento" style="font-size: 1.1rem; color: var(--accent-cc);">Cadastro: --</h3>
-                        <button class="btn-action-danger" style="background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-card);" onclick="voltarListaCompras()">⬅️ Voltar para Lista</button>
-                    </div>
-
-                    <!-- Bloco 1: Nome -->
-                    <div class="config-panel">
-                        <div class="config-panel-title">1. Nome da Compra</div>
-                        <input type="text" id="cc-form-nome" class="config-input" style="width: 100%;" oninput="atualizarCalculosCC()">
-                    </div>
-
-                    <!-- Bloco 2: Itens e Atribuição -->
-                    <div class="config-panel">
-                        <div class="config-panel-title">2. Itens da Compra e Atribuição (Individual ou Todos)</div>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th style="width: 50px;">Img</th>
-                                        <th>Descrição</th>
-                                        <th>Link</th>
-                                        <th style="width: 80px;">Valor (R$)</th>
-                                        <th style="width: 60px;">Qtd</th>
-                                        <th style="width: 90px;">Subtotal</th>
-                                        <th style="width: 190px;">Atribuído a:</th>
-                                        <th style="text-align: right; width: 50px;">Ação</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="cc-tabela-itens"></tbody>
-                            </table>
-                        </div>
-                        <button class="btn-action-primary" style="background: var(--accent-cc); width: max-content;" onclick="adicionarItemCC()">➕ Adicionar Item</button>
-                        
-                        <!-- Aviso de Itens Não Atribuídos -->
-                        <div id="cc-aviso-nao-atribuidos" style="display: none; background: rgba(230, 57, 70, 0.1); border: 1px dashed var(--accent-red); padding: 10px; border-radius: 6px; margin-top: 8px;">
-                            <span style="font-size: 0.78rem; font-weight: bold; color: var(--accent-red);">⚠️ Itens pendentes de atribuição ou extras detectados. Atribua-os abaixo para regularizar o rateio:</span>
-                            <div id="cc-lista-nao-atribuidos" style="margin-top: 6px; font-size: 0.8rem; color: var(--text-main);"></div>
-                        </div>
-                    </div>
-
-                    <!-- Bloco 3: Financeiro / Fiscal -->
-                    <div class="config-panel">
-                        <div class="config-panel-title">3. Informações Financeiras e Fiscais</div>
-                        <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;">
-                            <div><label style="font-size: 0.65rem; color: var(--text-muted); font-weight: bold;">SUBTOTAL</label><input type="number" id="cc-form-subtotal" class="config-input" style="width: 100%; background: var(--bg-body);" readonly></div>
-                            <div><label style="font-size: 0.65rem; color: var(--text-muted); font-weight: bold;">DESCONTO</label><input type="number" id="cc-form-desconto" class="config-input" style="width: 100%;" value="0" step="0.01" oninput="atualizarCalculosCC()"></div>
-                            <div><label style="font-size: 0.65rem; color: var(--text-muted); font-weight: bold;">FRETE</label><input type="number" id="cc-form-frete" class="config-input" style="width: 100%;" value="0" step="0.01" oninput="atualizarCalculosCC()"></div>
-                            <div><label style="font-size: 0.65rem; color: var(--text-muted); font-weight: bold;">IMPOSTO</label><input type="number" id="cc-form-imposto" class="config-input" style="width: 100%;" value="0" step="0.01" oninput="atualizarCalculosCC()"></div>
-                            <div><label style="font-size: 0.65rem; color: var(--text-muted); font-weight: bold;">ICMS</label><input type="number" id="cc-form-icms" class="config-input" style="width: 100%;" value="0" step="0.01" oninput="atualizarCalculosCC()"></div>
-                            <div><label style="font-size: 0.65rem; color: var(--text-muted); font-weight: bold;">OUTROS</label><input type="number" id="cc-form-outros-descontos" class="config-input" style="width: 100%;" value="0" step="0.01" oninput="atualizarCalculosCC()"></div>
-                        </div>
-                        <div style="background: rgba(255, 183, 3, 0.05); padding: 8px 12px; border-radius: 6px; border: 1px dashed var(--accent-gold); display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 0.75rem; font-weight: bold; text-transform: uppercase;">Valor Global Final:</span>
-                            <div id="cc-form-total-global" style="font-size: 1.15rem; font-weight: 900; color: var(--accent-gold);">R$ 0,00</div>
-                        </div>
-                    </div>
-
-                    <!-- Bloco 4: Gestão de Participantes, Rateio e Recibos -->
-                    <div class="config-panel">
-                        <div class="config-panel-title">4. Gestão de Participantes, Rateio e Comprovantes de Recibo</div>
-                        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 8px;">
-                            <input type="text" id="cc-input-novo-participante" class="config-input" placeholder="Adicionar novo participante (Ex: Carlos)" style="max-width: 280px;">
-                            <button type="button" class="btn-action-primary" style="background: var(--accent-cc); padding: 8px 14px;" onclick="adicionarParticipanteManual()">➕ Adicionar Participante</button>
-                        </div>
-                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 6px;">💡 Dica: Marque os ativos, defina quem pagou e cole o link da imagem do recibo de pagamento no campo correspondente.</p>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th style="width: 45px; text-align: center;">Ativo</th>
-                                        <th>Piloto / Cotista</th>
-                                        <th style="width: 120px; text-align: center;">Comprador</th>
-                                        <th>Valor Devido</th>
-                                        <th style="text-align: center; width: 80px;">Status (Pago)</th>
-                                        <th>Link / Imagem do Recibo Pix</th>
-                                        <th style="text-align: center; width: 60px;">Ação</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="cc-tabela-cotistas-rateio"></tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Bloco 5: Pix e Upload de PDF do QR Code -->
-                    <div class="config-panel">
-                        <div class="config-panel-title">5. Chave Pix do Comprador (<span id="cc-label-nome-comprador">Nenhum</span>)</div>
-                        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-                            <input type="text" id="cc-form-pix" class="config-input" style="flex: 1;" placeholder="CPF, Telefone, E-mail ou Payload Pix Copia e Cola" oninput="aoDigitarPix()">
-                            <label class="btn-action-primary" style="background: #480ca8; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin: 0;">
-                                📄 Upload PDF do Pix
-                                <input type="file" id="cc-input-pdf-pix" accept="application/pdf" style="display: none;" onchange="processarUploadPdfPix(event)">
-                            </label>
-                        </div>
-                        <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 6px;">
-                            <img id="cc-pix-qrcode" class="pix-clickable" src="" alt="QR Code Pix" title="Toque para copiar" onclick="copiarChavePixAtual()" style="width: 120px; height: 120px; background: #fff; padding: 4px; border-radius: 6px; display: none;">
-                            <span id="cc-pix-placeholder" style="font-size: 0.75rem; color: var(--text-muted);">Insira a chave Pix, cole o código Copia e Cola ou faça upload do PDF bancário.</span>
-                        </div>
-                    </div>
-
-                    <!-- Bloco 6: Rastreio -->
-                    <div class="config-panel" style="border-color: #3f37c9;">
-                        <div class="config-panel-title" style="color: #3f37c9;">6. Código de Rastreio</div>
-                        <input type="text" id="cc-form-rastreio" class="config-input" style="width: 100%; font-weight: bold;" placeholder="Ex: NL123456789BR" oninput="atualizarCalculosCC()">
-                    </div>
-
-                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                        <button class="btn-action-danger" onclick="excluirCompraColetivaAberta()">🗑️ Excluir Compra</button>
-                        <div style="display: flex; gap: 10px;">
-                            <button id="btn-finalizar-compra-ui" class="btn-action-finalize" onclick="toggleFinalizarCompraColetiva()">✅ Finalizar Compra Coletiva</button>
-                            <button class="btn-action-primary" style="background: var(--accent-cc); padding: 10px 20px;" onclick="salvarCompraColetivaAberta()">💾 Salvar Alterações</button>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </div>
-
-
-    <!-- [PARTE 3] Estrutura Principal do Dashboard: Cabeçalho do Site, Filtros Dinâmicos e Cartões de KPIs Globais -->
+    <!-- Estrutura Principal do Dashboard -->
     <div class="dashboard-container">
         <header class="header">
             <div class="brand-title">
@@ -628,7 +437,6 @@
             <div class="header-actions">
                 <button class="btn btn-upload-modal-trigger" onclick="abrirModalUpload()">📤 Uploads</button>
                 <button class="btn btn-campeonatos-trigger" onclick="abrirModalCampeonatos()">🏆 Championship Manager</button>
-                <button class="btn btn-compras-coletivas-trigger" onclick="abrirModalCampeonatos2()">🛒 Gestão de Compras Coletivas</button>
                 <button class="btn btn-pdf-global" onclick="gerarRelatórioPDF()">📄 Gerar relatório</button>
             </div>
         </header>
@@ -700,7 +508,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.51.0 (Replay Proporcional & Velocidade)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.52.0 (Senha Segura & Replay Proporcional)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -727,17 +535,37 @@
         let db = null;
         let listaJsonsCache = [];
         let campeonatosCache = {};
-        let comprasColetivasCache = {};
-
         let chartInstances = [];
         let pilotosMetadadosCache = {};
         let mesclagensCache = {};
         let campeonatoAtivoKey = null;
         let replayStates = {};
 
-        let compraAbertaKey = null;
-        let compraAbertaDados = null;
-        let senhaCallbackPendente = null;
+        // Sistema de Senha Segura (substituindo o prompt nativo)
+        let senhaCallbackResolver = null;
+        function pedirSenhaSegura(mensagem) {
+            return new Promise((resolve) => {
+                document.getElementById('senha-modal-mensagem').innerText = mensagem || "Digite a senha unificada de segurança:";
+                let input = document.getElementById('input-senha-segura');
+                input.value = "";
+                document.getElementById('senha-modal').style.display = 'flex';
+                setTimeout(() => input.focus(), 100);
+                senhaCallbackResolver = resolve;
+            });
+        }
+
+        window.fecharModalSenha = function(confirmado) {
+            document.getElementById('senha-modal').style.display = 'none';
+            if (senhaCallbackResolver) {
+                let val = confirmado ? document.getElementById('input-senha-segura').value : null;
+                senhaCallbackResolver(val);
+                senhaCallbackResolver = null;
+            }
+        };
+
+        window.confirmarModalSenha = function() {
+            fecharModalSenha(true);
+        };
 
         try {
             firebase.initializeApp(firebaseConfig);
@@ -819,34 +647,6 @@
 
         document.addEventListener("DOMContentLoaded", () => {
             if (db) {
-                db.ref('.info/connected').on('value', snap => {
-                    const badge = document.getElementById('db-status-badge');
-                    if (badge) {
-                        if (snap.val() === true) {
-                            badge.style.background = "#2ec4b6";
-                            badge.innerText = "Online (Firebase)";
-                        } else {
-                            badge.style.background = "#ffb703";
-                            badge.innerText = "Reconectando...";
-                        }
-                    }
-                });
-
-                db.ref('pilotos').on('value', snap => {
-                    let novaLista = [];
-                    if (snap.exists()) {
-                        snap.forEach(child => {
-                            let pData = child.val();
-                            let pNome = typeof pData === 'string' ? pData : (pData.nome || child.key);
-                            if (pNome && !novaLista.includes(pNome)) novaLista.push(pNome);
-                        });
-                    }
-                    if (novaLista.length > 0) {
-                        // Pilotos base podem atualizar se necessário
-                    }
-                    if (compraAbertaDados) atualizarCalculosCC();
-                });
-
                 db.ref('pilotosMetadados').on('value', snapshot => {
                     pilotosMetadadosCache = snapshot.val() || {};
                     gerarFiltrosDinamicos();
@@ -867,11 +667,6 @@
                     if (campeonatoAtivoKey && campeonatosCache[campeonatoAtivoKey]) {
                         atualizarInterfacePainelZRound();
                     }
-                });
-
-                db.ref('comprasColetivas').on('value', snapshot => {
-                    comprasColetivasCache = snapshot.val() || {};
-                    renderizarListaComprasColetivas();
                 });
 
                 db.ref('baterias').on('value', snapshot => {
@@ -909,830 +704,8 @@
         };
         window.fecharModalCampeonatos = function() { document.getElementById('campeonatos-modal').style.display = 'none'; };
 
-        // Funções do Módulo de Compras Coletivas Integrado
-        function solicitarSenhaSegura(mensagem) {
-            return new Promise((resolve) => {
-                document.getElementById('modal-senha-mensagem').innerText = mensagem || "Digite a senha unificada de segurança:";
-                let input = document.getElementById('modal-senha-input');
-                input.value = "";
-                document.getElementById('modal-senha-segura').style.display = 'flex';
-                setTimeout(() => input.focus(), 100);
-                senhaCallbackPendente = resolve;
-            });
-        }
-
-        window.confirmarSenhaModal = function() {
-            let input = document.getElementById('modal-senha-input');
-            let digitada = input.value;
-            document.getElementById('modal-senha-segura').style.display = 'none';
-            if (senhaCallbackPendente) {
-                senhaCallbackPendente(digitada);
-                senhaCallbackPendente = null;
-            }
-        };
-
-        window.fecharModalSenha = function(sucesso) {
-            document.getElementById('modal-senha-segura').style.display = 'none';
-            if (senhaCallbackPendente) {
-                senhaCallbackPendente(sucesso ? "" : null);
-                senhaCallbackPendente = null;
-            }
-        };
-
-        function persistirDados(path, valor, callback) {
-            if (db) {
-                db.ref(path).set(valor).then(() => {
-                    if (callback) callback();
-                }).catch(err => {
-                    console.error("Erro ao salvar no Firebase:", err);
-                    alert("⚠️ Erro ao salvar no banco de dados online. Verifique suas permissões.");
-                });
-            }
-        }
-
-        window.abrirModalCampeonatos2 = function() {
-            document.getElementById('campeonatos2-modal').style.display = 'flex';
-            voltarListaCompras();
-        };
-        window.fecharModalCampeonatos2 = function() { document.getElementById('campeonatos2-modal').style.display = 'none'; };
-        window.voltarListaCompras = function() {
-            compraAbertaKey = null;
-            compraAbertaDados = null;
-            document.getElementById('painel-unica-compra-view').style.display = 'none';
-            document.getElementById('lista-compras-coletivas-view').style.display = 'flex';
-            renderizarListaComprasColetivas();
-        };
-
-        window.criarCompraColetiva = async function() {
-            let senha = await solicitarSenhaSegura("🔒 Digite a senha para criar uma nova compra coletiva:");
-            if (senha === null || senha === undefined) return;
-            if (senha !== SENHA_UNIFICADA) { alert("❌ Senha incorreta!"); return; }
-            let nome = document.getElementById('cc-input-nova-compra').value.trim();
-            if (!nome) { alert("Digite o nome da compra."); return; }
-
-            let key = "cc_" + Date.now();
-            let pilotosBaseGlobal = Object.keys(pilotosMetadadosCache).length > 0 ? Object.keys(pilotosMetadadosCache) : ["Rafael", "DJ", "Ronaldo", "Gustavo"];
-            let participantesIniciais = {};
-            pilotosBaseGlobal.forEach(p => participantesIniciais[p] = true);
-
-            let nova = {
-                chave: key, nome: nome, frete: 0, imposto: 0, icms: 0, desconto: 0, outrosDescontos: 0,
-                itens: [{ imgUrl: "", nomeItem: "", link: "", valor: 0, qtd: 1, atribuidoA: pilotosBaseGlobal[0] || "" }],
-                comprador: "", chavePix: "", participantes: participantesIniciais, pagamentos: {}, recibos: {}, valoresManuais: {}, rastreio: "", finalizada: false
-            };
-            
-            persistirDados(`comprasColetivas/${key}`, nova, () => {
-                document.getElementById('cc-input-nova-compra').value = "";
-                alert("Compra cadastrada com sucesso!");
-            });
-        };
-
-        function renderizarListaComprasColetivas() {
-            const ul = document.getElementById('cc-lista-cadastradas');
-            if(!ul) return;
-            ul.innerHTML = "";
-            let keys = Object.keys(comprasColetivasCache);
-            if (keys.length === 0) {
-                ul.innerHTML = `<li style="color: var(--text-muted); text-align: center; padding: 6px;">Nenhuma compra cadastrada.</li>`;
-                return;
-            }
-
-            keys.forEach(key => {
-                let c = comprasColetivasCache[key];
-                if (!c) return;
-                let parts = Object.keys(c.participantes || {}).filter(p => c.participantes[p] === true);
-                let totalParts = parts.length;
-                let pagos = 0;
-                parts.forEach(p => { if (c.pagamentos && c.pagamentos[p] === true) pagos++; });
-                let perc = totalParts > 0 ? (pagos / totalParts) * 100 : 0;
-                let isFinalizada = c.finalizada === true;
-
-                let rastreioCode = c.rastreio ? c.rastreio.trim() : "";
-                let rastreioHtml = (!rastreioCode) ? 
-                    `<button class="btn-action-track" style="background: rgba(63, 55, 201, 0.2); border: 1px dashed #3f37c9; color: #3f37c9;" onclick="addRastreioRapido('${key}')">📦 Add Rastreio</button>` :
-                    `<button class="btn-action-track" onclick="window.open('https://rastreamento.correios.com.br/app/index.php?objeto=${encodeURIComponent(rastreioCode)}', '_blank')">📦 Rastreio: ${escapeHtml(rastreioCode)}</button>`;
-
-                let imagensItens = [];
-                if (c.itens && Array.isArray(c.itens)) {
-                    c.itens.forEach(it => {
-                        if (it.imgUrl && it.imgUrl.trim() !== "") {
-                            imagensItens.push(it.imgUrl.trim());
-                        }
-                    });
-                }
-
-                let galeriaHtml = "";
-                if (imagensItens.length > 0) {
-                    let thumbs = "";
-                    imagensItens.forEach(img => {
-                        thumbs += `<img src="${escapeHtml(img)}" alt="Item" style="width: 48px; height: 48px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border-card); background: #fff;" onerror="this.onerror=null; this.src='https://via.placeholder.com/48?text=Erro';">`;
-                    });
-                    galeriaHtml = `
-                        <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-top: 4px;">
-                            <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: bold;">ITENS (${imagensItens.length}):</span>
-                            <div style="display: flex; gap: 6px; flex-wrap: wrap;">${thumbs}</div>
-                        </div>
-                    `;
-                } else {
-                    galeriaHtml = `<div style="font-size: 0.7rem; color: var(--text-muted); font-style: italic;">Sem imagens de itens cadastradas.</div>`;
-                }
-
-                let borderColor = isFinalizada ? "var(--accent-blue)" : (perc === 100 ? "var(--accent-green)" : "var(--accent-gold)");
-                let badgeStatus = isFinalizada ? 
-                    `<span style="background: rgba(58, 134, 255, 0.2); color: var(--accent-blue); padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.72rem;">🔵 ENTREGUE / FINALIZADA</span>` :
-                    (perc === 100 ? 
-                        `<span style="background: rgba(46, 196, 182, 0.2); color: var(--accent-green); padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.72rem;">🟢 QUITADO / AGUARDANDO ENTREGA</span>` : 
-                        `<span style="background: rgba(255, 183, 3, 0.2); color: var(--accent-gold); padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.72rem;">🟡 EM ANDAMENTO / PENDENTE</span>`
-                    );
-
-                ul.innerHTML += `
-                    <li style="background: var(--bg-input); padding: 12px 14px; border-radius: 8px; border: 1px solid ${borderColor}; display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <span style="font-size: 1rem; font-weight: 700; color: var(--text-title);">🛒 ${escapeHtml(c.nome)}</span>
-                                ${badgeStatus}
-                            </div>
-                            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                                <button class="btn-action-summary" onclick="abrirModalResumoFiscal('${key}')">📊 Resumir</button>
-                                ${rastreioHtml}
-                                <button class="btn-action-primary" style="background: var(--accent-cc);" onclick="abrirGerenciadorCompra('${key}')">⚙️ Gerenciar</button>
-                            </div>
-                        </div>
-                        ${galeriaHtml}
-                        <div>
-                            <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: bold;">STATUS DE PAGAMENTOS (${pagos}/${totalParts})</span>
-                            <div class="progress-bar-container"><div class="progress-bar-fill" style="width: ${perc}%; background: ${isFinalizada ? 'var(--accent-blue)' : (perc === 100 ? 'var(--accent-green)' : 'linear-gradient(90deg, #2a9d8f, #2ec4b6)')};"></div><div class="progress-bar-text">${Math.round(perc)}%</div></div>
-                        </div>
-                    </li>
-                `;
-            });
-        }
-
-        window.abrirGerenciadorCompra = function(key) {
-            compraAbertaKey = key;
-            compraAbertaDados = JSON.parse(JSON.stringify(comprasColetivasCache[key]));
-            if (!compraAbertaDados.itens) compraAbertaDados.itens = [];
-            if (!compraAbertaDados.participantes) compraAbertaDados.participantes = {};
-            if (!compraAbertaDados.pagamentos) compraAbertaDados.pagamentos = {};
-            if (!compraAbertaDados.recibos) compraAbertaDados.recibos = {};
-            if (!compraAbertaDados.valoresManuais) compraAbertaDados.valoresManuais = {};
-            if (compraAbertaDados.finalizada === undefined) compraAbertaDados.finalizada = false;
-
-            let pilotosBaseGlobal = Object.keys(pilotosMetadadosCache).length > 0 ? Object.keys(pilotosMetadadosCache) : ["Rafael", "DJ", "Ronaldo", "Gustavo"];
-            pilotosBaseGlobal.forEach(p => {
-                if (compraAbertaDados.participantes[p] === undefined) {
-                    compraAbertaDados.participantes[p] = true;
-                }
-            });
-
-            document.getElementById('lista-compras-coletivas-view').style.display = 'none';
-            document.getElementById('painel-unica-compra-view').style.display = 'flex';
-            document.getElementById('cc-titulo-gerenciamento').innerText = `Gerenciando: ${compraAbertaDados.nome}`;
-
-            document.getElementById('cc-form-nome').value = compraAbertaDados.nome || "";
-            document.getElementById('cc-form-rastreio').value = compraAbertaDados.rastreio || "";
-            document.getElementById('cc-form-desconto').value = compraAbertaDados.desconto || 0;
-            document.getElementById('cc-form-frete').value = compraAbertaDados.frete || 0;
-            document.getElementById('cc-form-imposto').value = compraAbertaDados.imposto || 0;
-            document.getElementById('cc-form-icms').value = compraAbertaDados.icms || 0;
-            document.getElementById('cc-form-outros-descontos').value = compraAbertaDados.outrosDescontos || 0;
-            document.getElementById('cc-form-pix').value = compraAbertaDados.chavePix || "";
-
-            atualizarBotaoFinalizarUI();
-            atualizarCalculosCC();
-        };
-
-        window.toggleFinalizarCompraColetiva = async function() {
-            let senha = await solicitarSenhaSegura("🔒 Digite a senha para alterar o status de finalização:");
-            if (senha !== SENHA_UNIFICADA) { alert("❌ Senha incorreta!"); return; }
-            
-            compraAbertaDados.finalizada = !compraAbertaDados.finalizada;
-            atualizarBotaoFinalizarUI();
-            alert(compraAbertaDados.finalizada ? "🔵 Compra marcada como Entregue e Finalizada!" : "🟡 Compra reativada para andamento.");
-        };
-
-        function atualizarBotaoFinalizarUI() {
-            let btnFin = document.getElementById('btn-finalizar-compra-ui');
-            if (compraAbertaDados.finalizada) {
-                btnFin.style.background = "var(--accent-red)";
-                btnFin.innerText = "🔄 Reabrir Compra Coletiva";
-            } else {
-                btnFin.style.background = "var(--accent-blue)";
-                btnFin.innerText = "✅ Finalizar Compra Coletiva";
-            }
-        }
-
-        window.processarUploadPdfPix = async function(event) {
-            let file = event.target.files[0];
-            if (!file) return;
-
-            alert("⏳ Lendo o arquivo PDF e procurando o QR Code ou Payload Pix...");
-            try {
-                let arrayBuffer = await file.arrayBuffer();
-                let loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-                let pdfDoc = await loadingTask.promise;
-                
-                let textoExtraidoGeral = "";
-                let qrCodeEncontrado = null;
-
-                for (let i = 1; i <= pdfDoc.numPages; i++) {
-                    let page = await pdfDoc.getPage(i);
-                    let textContent = await page.getTextContent();
-                    let pageText = textContent.items.map(item => item.str).join(" ");
-                    textoExtraidoGeral += " " + pageText;
-
-                    let viewport = page.getViewport({ scale: 2.0 });
-                    let canvas = document.createElement('canvas');
-                    let context = canvas.getContext('2d');
-                    canvas.height = viewport.height;
-                    canvas.width = viewport.width;
-
-                    await page.render({ canvasContext: context, viewport: viewport }).promise;
-                    let imgData = context.getImageData(0, 0, canvas.width, canvas.height);
-                    let qr = jsQR(imgData.data, imgData.width, imgData.height);
-                    
-                    if (qr && qr.data) {
-                        qrCodeEncontrado = qr.data;
-                        break;
-                    }
-                }
-
-                let regexPix = /(000201[\w\d]+)/;
-                let matchPix = textoExtraidoGeral.match(regexPix);
-
-                if (qrCodeEncontrado) {
-                    document.getElementById('cc-form-pix').value = qrCodeEncontrado;
-                    alert("✅ QR Code extraído com sucesso do PDF!");
-                } else if (matchPix && matchPix[1]) {
-                    document.getElementById('cc-form-pix').value = matchPix[1];
-                    alert("✅ Código Pix 'Copia e Cola' extraído do texto do PDF!");
-                } else if (textoExtraidoGeral.length > 10) {
-                    document.getElementById('cc-form-pix').value = file.name;
-                    alert("⚠️ PDF lido, mas nenhum BR Code explícito foi detectado.");
-                } else {
-                    alert("❌ Não foi possível extrair dados legíveis deste PDF.");
-                }
-
-                atualizarCalculosCC();
-            } catch (err) {
-                console.error("Erro ao processar PDF:", err);
-                alert("❌ Erro ao ler o arquivo PDF.");
-            }
-            event.target.value = "";
-        };
-
-        window.adicionarParticipanteManual = function() {
-            let input = document.getElementById('cc-input-novo-participante');
-            let nomeNovo = input.value.trim();
-            if (!nomeNovo) { alert("Digite o nome do participante."); return; }
-            if (compraAbertaDados.participantes[nomeNovo] !== undefined) { alert("Este participante já está na lista."); return; }
-
-            compraAbertaDados.participantes[nomeNovo] = true;
-            input.value = "";
-            atualizarCalculosCC();
-        };
-
-        window.removerParticipanteDaCompra = function(pName) {
-            if (confirm(`Deseja remover ${pName} desta compra coletiva?`)) {
-                delete compraAbertaDados.participantes[pName];
-                delete compraAbertaDados.pagamentos[pName];
-                delete compraAbertaDados.recibos[pName];
-                delete compraAbertaDados.valoresManuais[pName];
-                if (compraAbertaDados.comprador === pName) compraAbertaDados.comprador = "";
-                
-                compraAbertaDados.itens.forEach(it => {
-                    if (it.atribuidoA === pName) it.atribuidoA = "";
-                });
-                atualizarCalculosCC();
-            }
-        };
-
-        window.adicionarItemCC = function() {
-            let listaParticipantesAtuais = Object.keys(compraAbertaDados.participantes);
-            compraAbertaDados.itens.push({ imgUrl: "", nomeItem: "", link: "", valor: 0, qtd: 1, atribuidoA: listaParticipantesAtuais[0] || "" });
-            atualizarCalculosCC();
-        };
-        window.removerItemCC = function(idx) {
-            compraAbertaDados.itens.splice(idx, 1);
-            atualizarCalculosCC();
-        };
-
-        window.atualizarCalculosCC = function() {
-            if (!compraAbertaDados) return;
-            compraAbertaDados.nome = document.getElementById('cc-form-nome').value.trim();
-            compraAbertaDados.rastreio = document.getElementById('cc-form-rastreio').value.trim();
-            compraAbertaDados.desconto = parseFloat(document.getElementById('cc-form-desconto').value) || 0;
-            compraAbertaDados.frete = parseFloat(document.getElementById('cc-form-frete').value) || 0;
-            compraAbertaDados.imposto = parseFloat(document.getElementById('cc-form-imposto').value) || 0;
-            compraAbertaDados.icms = parseFloat(document.getElementById('cc-form-icms').value) || 0;
-            compraAbertaDados.outrosDescontos = parseFloat(document.getElementById('cc-form-outros-descontos').value) || 0;
-            compraAbertaDados.chavePix = document.getElementById('cc-form-pix').value.trim();
-
-            let rows = document.querySelectorAll('.cc-item-row');
-            rows.forEach((r, idx) => {
-                if(compraAbertaDados.itens[idx]) {
-                    compraAbertaDados.itens[idx].imgUrl = r.querySelector('.cc-item-imgurl').value;
-                    compraAbertaDados.itens[idx].nomeItem = r.querySelector('.cc-item-nome').value;
-                    compraAbertaDados.itens[idx].link = r.querySelector('.cc-item-link').value;
-                    compraAbertaDados.itens[idx].valor = parseFloat(r.querySelector('.cc-item-val').value) || 0;
-                    compraAbertaDados.itens[idx].qtd = parseInt(r.querySelector('.cc-item-qtd').value) || 1;
-                    compraAbertaDados.itens[idx].atribuidoA = r.querySelector('.cc-item-atribuido').value;
-                }
-            });
-
-            document.querySelectorAll('.cc-check-participante').forEach(chk => {
-                let pName = chk.getAttribute('data-piloto');
-                if (chk.checked) compraAbertaDados.participantes[pName] = true;
-                else {
-                    delete compraAbertaDados.participantes[pName];
-                    delete compraAbertaDados.pagamentos[pName];
-                    delete compraAbertaDados.recibos[pName];
-                    delete compraAbertaDados.valoresManuais[pName];
-                    if (compraAbertaDados.comprador === pName) compraAbertaDados.comprador = "";
-                }
-            });
-
-            document.querySelectorAll('.cc-input-recibo').forEach(inp => {
-                let pName = inp.getAttribute('data-piloto');
-                let linkRecibo = inp.value.trim();
-                if (linkRecibo === "") {
-                    delete compraAbertaDados.recibos[pName];
-                } else {
-                    compraAbertaDados.recibos[pName] = linkRecibo;
-                }
-            });
-
-            let somaPuraItens = 0;
-            let itensNaoAtribuidos = [];
-            
-            compraAbertaDados.itens.forEach((i, idx) => {
-                somaPuraItens += (i.valor * i.qtd);
-                if (!i.atribuidoA || i.atribuidoA.trim() === "") {
-                    itensNaoAtribuidos.push(`Item #${idx + 1} (${i.nomeItem || 'Sem nome'})`);
-                }
-            });
-
-            document.getElementById('cc-form-subtotal').value = somaPuraItens.toFixed(2);
-            
-            let totalGlobalFinal = somaPuraItens + compraAbertaDados.frete + compraAbertaDados.imposto + compraAbertaDados.icms - compraAbertaDados.desconto - compraAbertaDados.outrosDescontos;
-            document.getElementById('cc-form-total-global').innerText = `R$ ${totalGlobalFinal.toFixed(2)}`;
-
-            let divAviso = document.getElementById('cc-aviso-nao-atribuidos');
-            let listaNaoAtrib = document.getElementById('cc-lista-nao-atribuidos');
-            if (itensNaoAtribuidos.length > 0) {
-                divAviso.style.display = 'block';
-                listaNaoAtrib.innerText = itensNaoAtribuidos.join(', ');
-            } else {
-                divAviso.style.display = 'none';
-            }
-
-            let participantesLista = Object.keys(compraAbertaDados.participantes);
-            let ativosArr = participantesLista.filter(p => compraAbertaDados.participantes[p] === true);
-
-            let tbodyItens = document.getElementById('cc-tabela-itens');
-            tbodyItens.innerHTML = "";
-            compraAbertaDados.itens.forEach((it, idx) => {
-                let optionsPilotos = `<option value="">-- Selecione --</option><option value="TODOS" ${it.atribuidoA === 'TODOS' ? 'selected' : ''}>👥 Todos (Dividir entre todos)</option>`;
-                participantesLista.forEach(p => {
-                    optionsPilotos += `<option value="${escapeHtml(p)}" ${it.atribuidoA === p ? 'selected' : ''}>${escapeHtml(p)}</option>`;
-                });
-
-                tbodyItens.innerHTML += `
-                    <tr class="cc-item-row">
-                        <td><input type="text" class="config-input cc-item-imgurl" value="${escapeHtml(it.imgUrl)}" placeholder="URL" style="width:100%; font-size:0.7rem;" oninput="atualizarCalculosCC()"></td>
-                        <td><input type="text" class="config-input cc-item-nome" value="${escapeHtml(it.nomeItem)}" placeholder="Descrição" style="width:100%; font-size:0.78rem;" oninput="atualizarCalculosCC()"></td>
-                        <td><input type="text" class="config-input cc-item-link" value="${escapeHtml(it.link)}" placeholder="Link" style="width:100%; font-size:0.78rem;" oninput="atualizarCalculosCC()"></td>
-                        <td><input type="number" step="0.01" class="config-input cc-item-val" value="${it.valor}" style="width:100%; font-size:0.78rem;" oninput="atualizarCalculosCC()"></td>
-                        <td><input type="number" class="config-input cc-item-qtd" value="${it.qtd}" style="width:100%; font-size:0.78rem;" oninput="atualizarCalculosCC()"></td>
-                        <td style="font-weight:bold; color: var(--accent-gold);">R$ ${(it.valor * it.qtd).toFixed(2)}</td>
-                        <td><select class="config-input cc-item-atribuido" style="width:100%; font-size:0.78rem;" onchange="atualizarCalculosCC()">${optionsPilotos}</select></td>
-                        <td style="text-align: right;"><button type="button" class="btn-action-danger" style="padding: 3px 6px; font-size: 0.7rem;" onclick="removerItemCC(${idx})">🗑️</button></td>
-                    </tr>
-                `;
-            });
-
-            let valorBasePilotos = {};
-            participantesLista.forEach(p => valorBasePilotos[p] = 0);
-
-            compraAbertaDados.itens.forEach(it => {
-                let subtotalItem = it.valor * it.qtd;
-                if (it.atribuidoA === "TODOS") {
-                    if (ativosArr.length > 0) {
-                        let partePorPessoa = subtotalItem / ativosArr.length;
-                        ativosArr.forEach(p => { if(valorBasePilotos[p] !== undefined) valorBasePilotos[p] += partePorPessoa; });
-                    }
-                } else if (it.atribuidoA && valorBasePilotos[it.atribuidoA] !== undefined) {
-                    valorBasePilotos[it.atribuidoA] += subtotalItem;
-                }
-            });
-
-            let totalManualInformado = 0;
-            ativosArr.forEach(p => {
-                if (compraAbertaDados.valoresManuais && compraAbertaDados.valoresManuais[p] !== undefined) {
-                    totalManualInformado += compraAbertaDados.valoresManuais[p];
-                }
-            });
-
-            let restoParaDistribuir = totalGlobalFinal - totalManualInformado;
-            let cotistasSemManual = ativosArr.filter(p => !compraAbertaDados.valoresManuais || compraAbertaDados.valoresManuais[p] === undefined);
-
-            let totalBaseSemManual = 0;
-            cotistasSemManual.forEach(p => totalBaseSemManual += (valorBasePilotos[p] || 0));
-
-            let tbodyTabelaUnificada = document.getElementById('cc-tabela-cotistas-rateio');
-            tbodyTabelaUnificada.innerHTML = "";
-
-            participantesLista.forEach(p => {
-                let isChecked = compraAbertaDados.participantes && compraAbertaDados.participantes[p] === true;
-                let isComprador = (p === compraAbertaDados.comprador);
-                let isPago = compraAbertaDados.pagamentos && compraAbertaDados.pagamentos[p] === true;
-                let reciboVal = (compraAbertaDados.recibos && compraAbertaDados.recibos[p]) ? compraAbertaDados.recibos[p] : "";
-
-                let valorItensPiloto = valorBasePilotos[p] || 0;
-                let valorTotalDevidoPiloto = 0;
-
-                if (isChecked) {
-                    if (compraAbertaDados.valoresManuais && compraAbertaDados.valoresManuais[p] !== undefined) {
-                        valorTotalDevidoPiloto = compraAbertaDados.valoresManuais[p];
-                    } else {
-                        let pesoPiloto = totalBaseSemManual > 0 ? (valorItensPiloto / totalBaseSemManual) : (1 / (cotistasSemManual.length || 1));
-                        valorTotalDevidoPiloto = restoParaDistribuir * pesoPiloto;
-                    }
-                }
-
-                tbodyTabelaUnificada.innerHTML += `
-                    <tr>
-                        <td style="text-align: center;"><input type="checkbox" class="cc-check-participante" data-piloto="${escapeHtml(p)}" ${isChecked ? 'checked' : ''} onchange="atualizarCalculosCC()"></td>
-                        <td><strong>${escapeHtml(p)}</strong></td>
-                        <td style="text-align: center;"><input type="radio" name="radio-comprador" ${isComprador ? 'checked' : ''} ${!isChecked ? 'disabled' : ''} onchange="selecionarComprador('${escapeHtml(p)}')"></td>
-                        <td style="font-weight: bold; color: var(--accent-gold);">${isChecked ? 'R$ ' + valorTotalDevidoPiloto.toFixed(2) : '-'}</td>
-                        <td style="text-align: center;"><input type="checkbox" ${isPago ? 'checked' : ''} ${!isChecked ? 'disabled' : ''} onchange="togglePagamento('${escapeHtml(p)}', this.checked)"></td>
-                        <td>${isChecked ? '<input type="text" class="config-input cc-input-recibo" data-piloto="' + escapeHtml(p) + '" value="' + escapeHtml(reciboVal) + '" placeholder="Cole a URL da imagem do recibo" style="width:100%; font-size:0.75rem;" oninput="atualizarCalculosCC()">' : '-'}</td>
-                        <td style="text-align: center;"><button type="button" class="btn-action-danger" style="padding: 3px 6px; font-size: 0.7rem;" onclick="removerParticipanteDaCompra('${escapeHtml(p)}')">🗑️</button></td>
-                    </tr>
-                `;
-            });
-
-            document.getElementById('cc-label-nome-comprador').innerText = compraAbertaDados.comprador || "Nenhum";
-            gerarQrCodePixCC();
-        };
-
-        window.selecionarComprador = function(pName) {
-            compraAbertaDados.comprador = pName;
-            compraAbertaDados.participantes[pName] = true;
-            compraAbertaDados.pagamentos[pName] = true;
-            atualizarCalculosCC();
-        };
-        window.togglePagamento = function(pName, val) {
-            compraAbertaDados.pagamentos[pName] = val;
-            atualizarCalculosCC();
-        };
-        window.aoDigitarPix = function() {
-            compraAbertaDados.chavePix = document.getElementById('cc-form-pix').value.trim();
-            gerarQrCodePixCC();
-        };
-
-        function gerarPayloadPixBRCode(chave, nomeRecebedor, cidade, valor) {
-            function formatEmv(id, val) {
-                let s = String(val);
-                return id + String(s.length).padStart(2, '0') + s;
-            }
-
-            let nomeLimpo = (nomeRecebedor || "KRATHUS RACING").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 25).trim();
-            let cidadeLimpa = (cidade || "MACEIO").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 15).trim();
-            let chaveLimpa = String(chave).trim();
-
-            if (chaveLimpa.startsWith("000201")) {
-                return chaveLimpa;
-            }
-
-            let gui = formatEmv("00", "br.gov.bcb.pix") + formatEmv("01", chaveLimpa);
-            let merchantAccount = formatEmv("26", gui);
-            
-            let valStr = (valor !== undefined && valor !== null && Number(valor) > 0) ? Number(valor).toFixed(2) : "";
-            let field54 = valStr ? formatEmv("54", valStr) : "";
-            let field62 = formatEmv("62", formatEmv("05", "***"));
-
-            let payloadSemCrc = (
-                formatEmv("00", "01") +
-                merchantAccount +
-                formatEmv("52", "0000") +
-                formatEmv("53", "986") +
-                field54 +
-                formatEmv("58", "BR") +
-                formatEmv("59", nomeLimpo) +
-                formatEmv("60", cidadeLimpa) +
-                field62 +
-                "6304"
-            );
-
-            let crc = 0xFFFF;
-            for (let i = 0; i < payloadSemCrc.length; i++) {
-                let b = payloadSemCrc.charCodeAt(i) & 0xFF;
-                crc ^= (b << 8);
-                for (let j = 0; j < 8; j++) {
-                    if (crc & 0x8000) {
-                        crc = ((crc << 1) ^ 0x1021) & 0xFFFF;
-                    } else {
-                        crc = ((crc << 1)) & 0xFFFF;
-                    }
-                }
-            }
-            let crcHex = crc.toString(16).toUpperCase().padStart(4, '0');
-            return payloadSemCrc + crcHex;
-        }
-
-        window.gerarQrCodePixCC = function() {
-            let chave = document.getElementById('cc-form-pix').value.trim();
-            let imgEl = document.getElementById('cc-pix-qrcode');
-            let placeEl = document.getElementById('cc-pix-placeholder');
-            if (chave) {
-                let payloadPix = gerarPayloadPixBRCode(chave, "Krathus Racing", "Maceio", 0);
-                imgEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(payloadPix)}`;
-                imgEl.style.display = 'block';
-                placeEl.style.display = 'none';
-            } else {
-                imgEl.style.display = 'none';
-                placeEl.style.display = 'block';
-            }
-        };
-
-        window.abrirModalResumoFiscal = function(key) {
-            let c = comprasColetivasCache[key];
-            if (!c) return;
-            document.getElementById('resumo-fiscal-titulo').innerText = `📊 Resumo: ${c.nome}`;
-
-            let subtotalItens = 0;
-            let itensHtml = "";
-            let itensArr = c.itens || [];
-            itensArr.forEach((it, i) => {
-                let sub = (it.valor || 0) * (it.qtd || 1);
-                subtotalItens += sub;
-                itensHtml += `
-                    <tr>
-                        <td>#${i+1}</td>
-                        <td>${escapeHtml(it.nomeItem || 'Item sem nome')}</td>
-                        <td>${it.qtd || 1}</td>
-                        <td>R$ ${(it.valor || 0).toFixed(2)}</td>
-                        <td style="font-weight: bold; color: var(--accent-gold);">R$ ${sub.toFixed(2)}</td>
-                        <td>${escapeHtml(it.atribuidoA || 'Não atribuído')}</td>
-                    </tr>
-                `;
-            });
-
-            let frete = c.frete || 0;
-            let imposto = c.imposto || 0;
-            let icms = c.icms || 0;
-            let desconto = c.desconto || 0;
-            let outros = c.outrosDescontos || 0;
-            let totalGlobal = subtotalItens + frete + imposto + icms - desconto - outros;
-
-            let participantes = c.participantes || {};
-            let ativos = Object.keys(participantes).filter(p => participantes[p] === true);
-            let pagamentos = c.pagamentos || {};
-            let recibos = c.recibos || {};
-            let valoresManuais = c.valoresManuais || {};
-
-            let valorBasePilotos = {};
-            ativos.forEach(p => valorBasePilotos[p] = 0);
-
-            itensArr.forEach(it => {
-                let sub = (it.valor || 0) * (it.qtd || 1);
-                if (it.atribuidoA === "TODOS") {
-                    if (ativos.length > 0) {
-                        let parte = sub / ativos.length;
-                        ativos.forEach(p => { if(valorBasePilotos[p] !== undefined) valorBasePilotos[p] += parte; });
-                    }
-                } else if (it.atribuidoA && valorBasePilotos[it.atribuidoA] !== undefined) {
-                    valorBasePilotos[it.atribuidoA] += sub;
-                }
-            });
-
-            let totalManual = 0;
-            ativos.forEach(p => {
-                if (valoresManuais[p] !== undefined) totalManual += valoresManuais[p];
-            });
-
-            let resto = totalGlobal - totalManual;
-            let semManual = ativos.filter(p => valoresManuais[p] === undefined);
-            let totalBaseSemManual = 0;
-            semManual.forEach(p => totalBaseSemManual += (valorBasePilotos[p] || 0));
-
-            let financeiroHtml = "";
-            let comprador = c.comprador || "Não definido";
-            let chavePix = c.chavePix || "";
-
-            ativos.forEach(p => {
-                let isPago = pagamentos[p] === true;
-                let devido = 0;
-                if (valoresManuais[p] !== undefined) {
-                    devido = valoresManuais[p];
-                } else {
-                    let peso = totalBaseSemManual > 0 ? ((valorBasePilotos[p] || 0) / totalBaseSemManual) : (1 / (semManual.length || 1));
-                    devido = resto * peso;
-                }
-
-                let statusBadge = isPago ? 
-                    `<span style="color: var(--accent-green); font-weight: bold;">✅ Quitado</span>` : 
-                    `<span style="color: var(--accent-gold); font-weight: bold;">⏳ Pendente</span>`;
-
-                let reciboBtnOrInfo = "-";
-                if (recibos[p] && recibos[p].trim() !== "") {
-                    reciboBtnOrInfo = `<button class="btn-action-recibo" onclick="abrirModalVisualizarRecibo('${escapeHtml(p)}', '${escapeHtml(recibos[p])}')">🖼️ Ver Recibo</button>`;
-                } else if (isPago) {
-                    reciboBtnOrInfo = `<span style="font-size: 0.7rem; color: var(--text-muted);">Sem recibo</span>`;
-                }
-
-                let pixBtnOrInfo = "";
-                if (!isPago) {
-                    if (chavePix) {
-                        pixBtnOrInfo = `<button class="btn-action-pix" onclick="abrirModalPixEspecifico('${escapeHtml(p)}', ${devido.toFixed(2)}, '${escapeHtml(chavePix)}')">💳 Pix (R$ ${devido.toFixed(2)})</button>`;
-                    } else {
-                        pixBtnOrInfo = `<span style="font-size: 0.7rem; color: var(--accent-red);">Pix ausente</span>`;
-                    }
-                } else {
-                    pixBtnOrInfo = `<span style="font-size: 0.75rem; color: var(--accent-green); font-weight: bold;">Quitado</span>`;
-                }
-
-                financeiroHtml += `
-                    <tr>
-                        <td><strong>${escapeHtml(p)}</strong> ${p === comprador ? '👑 (Comprador)' : ''}</td>
-                        <td style="font-weight: bold; color: var(--accent-gold);">R$ ${devido.toFixed(2)}</td>
-                        <td>${statusBadge}</td>
-                        <td style="text-align: center;">${reciboBtnOrInfo}</td>
-                        <td style="text-align: center;">${pixBtnOrInfo}</td>
-                    </tr>
-                `;
-            });
-
-            let rastreioCode = c.rastreio ? c.rastreio.trim() : "";
-            let rastreioSecao = rastreioCode ? 
-                `<div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-card); padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-card);">
-                    <span>📦 Código de Rastreio: <strong>${escapeHtml(rastreioCode)}</strong></span>
-                    <button class="btn-action-track" onclick="window.open('https://rastreamento.correios.com.br/app/index.php?objeto=${encodeURIComponent(rastreioCode)}', '_blank')">🔍 Rastrear nos Correios</button>
-                 </div>` :
-                `<div style="font-size: 0.8rem; color: var(--text-muted);">📦 Nenhum código de rastreio cadastrado para esta compra.</div>`;
-
-            document.getElementById('resumo-fiscal-body').innerHTML = `
-                <div class="config-panel">
-                    <div class="config-panel-title">📦 Rastreamento da Encomenda</div>
-                    ${rastreioSecao}
-                </div>
-
-                <div class="config-panel">
-                    <div class="config-panel-title">🛒 Relação de Itens da Compra</div>
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Descrição</th>
-                                    <th>Qtd</th>
-                                    <th>Valor Unit.</th>
-                                    <th>Subtotal</th>
-                                    <th>Atribuído a</th>
-                                </tr>
-                            </thead>
-                            <tbody>${itensHtml}</tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="config-panel">
-                    <div class="config-panel-title">💰 Resumo Fiscal, Taxas e Total Global</div>
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; font-size: 0.85rem;">
-                        <div>Subtotal dos Itens: <strong>R$ ${subtotalItens.toFixed(2)}</strong></div>
-                        <div>Frete: <strong>R$ ${frete.toFixed(2)}</strong></div>
-                        <div>Impostos / ICMS: <strong>R$ ${(imposto + icms).toFixed(2)}</strong></div>
-                        <div>Descontos / Outros: <strong>- R$ ${(desconto + outros).toFixed(2)}</strong></div>
-                        <div style="grid-column: span 2; font-size: 1.1rem; color: var(--accent-gold); font-weight: 900; text-align: right;">VALOR GLOBAL FINAL: R$ ${totalGlobal.toFixed(2)}</div>
-                    </div>
-                </div>
-
-                <div class="config-panel">
-                    <div class="config-panel-title">👥 Situação Financeira dos Participantes (Comprador: ${escapeHtml(comprador)})</div>
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Participante</th>
-                                    <th>Valor Devido</th>
-                                    <th>Situação</th>
-                                    <th style="text-align: center;">Comprovante / Recibo</th>
-                                    <th style="text-align: center;">Pagamento / Pix com Valor Exato</th>
-                                </tr>
-                            </thead>
-                            <tbody>${financeiroHtml}</tbody>
-                        </table>
-                    </div>
-                </div>
-            `;
-
-            document.getElementById('resumo-fiscal-modal').style.display = 'flex';
-        };
-
-        window.fecharModalResumoFiscal = function() {
-            document.getElementById('resumo-fiscal-modal').style.display = 'none';
-        };
-
-        window.abrirModalVisualizarRecibo = function(nomePiloto, urlRecibo) {
-            let modalId = 'modal-recibo-view';
-            let old = document.getElementById(modalId);
-            if (old) old.remove();
-
-            let modalDiv = document.createElement('div');
-            modalDiv.id = modalId;
-            modalDiv.className = 'custom-modal';
-            modalDiv.style.zIndex = '13000';
-            modalDiv.style.display = 'flex';
-            modalDiv.innerHTML = `
-                <div class="modal-content" style="max-width: 500px; border-top-color: var(--accent-blue);">
-                    <div class="modal-header" style="background: var(--bg-card-header);">
-                        <div class="modal-title">🖼️ Recibo de Pagamento - ${escapeHtml(nomePiloto)}</div>
-                        <button class="modal-close" onclick="document.getElementById('${modalId}').remove()">&times;</button>
-                    </div>
-                    <div class="modal-body" style="text-align: center; gap: 14px;">
-                        <div style="background: #fff; padding: 6px; border-radius: 8px; max-height: 400px; overflow: auto; display: flex; justify-content: center; align-items: center;">
-                            <img src="${escapeHtml(urlRecibo)}" alt="Recibo Pix" style="max-width: 100%; height: auto; display: block; border-radius: 4px;" onerror="this.onerror=null; this.src='https://via.placeholder.com/350x200?text=Erro+ao+carregar+imagem';">
-                        </div>
-                        <a href="${escapeHtml(urlRecibo)}" target="_blank" class="btn-action-primary" style="background: var(--accent-blue); text-decoration: none; display: inline-block;">🔗 Abrir Imagem em Nova Guia</a>
-                        <button class="btn-action-danger" onclick="document.getElementById('${modalId}').remove()">Fechar</button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modalDiv);
-        };
-
-        window.abrirModalPixEspecifico = function(nomePiloto, valorDevido, chavePix) {
-            let modalId = 'modal-pix-especifico';
-            let old = document.getElementById(modalId);
-            if (old) old.remove();
-
-            let payloadBrCode = gerarPayloadPixBRCode(chavePix, "Krathus Racing", "Maceio", valorDevido);
-            let qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(payloadBrCode)}`;
-
-            let modalDiv = document.createElement('div');
-            modalDiv.id = modalId;
-            modalDiv.className = 'custom-modal';
-            modalDiv.style.zIndex = '12000';
-            modalDiv.style.display = 'flex';
-            modalDiv.innerHTML = `
-                <div class="modal-content" style="max-width: 420px; border-top-color: var(--accent-green);">
-                    <div class="modal-header" style="background: var(--bg-card-header);">
-                        <div class="modal-title">💳 Pix Oficial para ${escapeHtml(nomePiloto)}</div>
-                        <button class="modal-close" onclick="document.getElementById('${modalId}').remove()">&times;</button>
-                    </div>
-                    <div class="modal-body" style="text-align: center; gap: 14px;">
-                        <p style="font-size: 0.85rem; color: var(--text-main);">Valor exato da cota: <strong style="color: var(--accent-gold); font-size: 1.15rem;">R$ ${Number(valorDevido).toFixed(2)}</strong></p>
-                        <p style="font-size: 0.78rem; color: var(--text-muted);">Chave Pix do Comprador:</p>
-                        <input type="text" class="config-input" value="${escapeHtml(chavePix)}" readonly style="text-align: center; font-weight: bold; cursor: pointer;" onclick="navigator.clipboard.writeText('${escapeHtml(chavePix)}'); alert('Chave Pix copiada!');" title="Clique para copiar">
-                        <div style="background: #fff; padding: 10px; border-radius: 8px; display: inline-block; margin: 0 auto;">
-                            <img src="${qrUrl}" alt="QR Code Pix com Valor" style="width: 160px; height: 160px; display: block;">
-                        </div>
-                        <p style="font-size: 0.7rem; color: var(--text-muted);">Escaneie com o app do banco. O valor de R$ ${Number(valorDevido).toFixed(2)} já virá preenchido automaticamente.</p>
-                        <button class="btn-action-primary" style="background: var(--accent-green); color: #0d111a;" onclick="document.getElementById('${modalId}').remove()">Fechar</button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modalDiv);
-        };
-
-        window.addRastreioRapido = async function(key) {
-            let code = prompt("📦 Digite o código de rastreio dos Correios:");
-            if (code) {
-                if (comprasColetivasCache[key]) {
-                    comprasColetivasCache[key].rastreio = code.trim();
-                    persistirDados(`comprasColetivas/${key}`, comprasColetivasCache[key], () => {
-                        alert("✅ Rastreio salvo!");
-                    });
-                }
-            }
-        };
-
-        window.salvarCompraColetivaAberta = async function() {
-            let senha = await solicitarSenhaSegura("🔒 Digite a senha para salvar as alterações:");
-            if (senha !== SENHA_UNIFICADA) { alert("❌ Incorreta!"); return; }
-            if (!compraAbertaKey) return;
-            persistirDados(`comprasColetivas/${compraAbertaKey}`, compraAbertaDados, () => {
-                alert("✅ Salvo com sucesso!");
-                voltarListaCompras();
-            });
-        };
-
-        window.excluirCompraColetivaAberta = async function() {
-            let senha = await solicitarSenhaSegura("🔒 Digite a senha para excluir esta compra:");
-            if (senha !== SENHA_UNIFICADA) { alert("❌ Incorreta!"); return; }
-            if (!compraAbertaKey) return;
-            if (confirm("Deseja excluir esta compra?")) {
-                persistirDados(`comprasColetivas/${compraAbertaKey}`, null, () => {
-                    alert("🗑️ Excluída.");
-                    voltarListaCompras();
-                });
-            }
-        };
-
         window.criarCampeonatoProtegido = async function() {
-            let senha = prompt("🔒 Digite a senha unificada de segurança para criar um novo campeonato:");
+            let senha = await pedirSenhaSegura("🔒 Digite a senha unificada de segurança para criar um novo campeonato:");
             if (senha === null) return;
             if (senha !== SENHA_UNIFICADA) { alert("❌ Senha incorreta!"); return; }
 
@@ -1925,7 +898,7 @@
 
         window.excluirCampeonatoAtual = async function() {
             if (!campeonatoAtivoKey || !db) { alert("Nenhum campeonato selecionado."); return; }
-            let senha = prompt("🔒 Digite a senha unificada de segurança para EXCLUIR este campeonato:");
+            let senha = await pedirSenhaSegura("🔒 Digite a senha unificada de segurança para EXCLUIR este campeonato:");
             if (senha === null) return;
             if (senha !== SENHA_UNIFICADA) { alert("❌ Senha incorreta!"); return; }
             let camp = campeonatosCache[campeonatoAtivoKey];
@@ -2383,7 +1356,7 @@
             });
 
             let resultadoFinal = [];
-            let coresBadge = ["#ffb703", "#e76f51", "#2ec4b6", "#3a86ff", "#ff006e", "#8338ec"];
+            let coresBadge = ["#ffb703", "#e76f51", "#2ec4b6", "#3a86ff", "#e63946"];
             let contador = 0;
 
             Object.keys(pilotosMap).forEach(pName => {
@@ -2683,8 +1656,8 @@
             modal.style.display = 'flex';
         };
 
-        window.abrirPainelMesclagem = function(nomePilotoDestino) {
-            let senha = prompt("🔒 Digite a senha unificada de segurança para mesclar perfis de pilotos:");
+        window.abrirPainelMesclagem = async function(nomePilotoDestino) {
+            let senha = await pedirSenhaSegura("🔒 Digite a senha unificada de segurança para mesclar perfis de pilotos:");
             if (senha === null) return;
             if (senha !== SENHA_UNIFICADA) { alert("❌ Senha incorreta!"); return; }
 
@@ -2743,7 +1716,7 @@
         };
 
         window.desfazerMesclagemPiloto = async function(origemKey) {
-            let senha = prompt("🔒 Digite a senha unificada de segurança para desfazer a mesclagem:");
+            let senha = await pedirSenhaSegura("🔒 Digite a senha unificada de segurança para desfazer a mesclagem:");
             if (senha === null) return;
             if (senha !== SENHA_UNIFICADA) { alert("❌ Senha incorreta!"); return; }
             if (!db) { alert("Erro: Firebase desconectado."); return; }
@@ -2754,8 +1727,8 @@
             } catch (err) { alert("Erro ao desfazer mesclagem: " + err.message); }
         };
 
-        window.solicitarSenhaConfiguracao = function(nomePiloto) {
-            let senha = prompt("🔒 Digite a senha unificada de segurança para acessar as configurações protegidas do piloto:");
+        window.solicitarSenhaConfiguracao = async function(nomePiloto) {
+            let senha = await pedirSenhaSegura("🔒 Digite a senha unificada de segurança para acessar as configurações protegidas do piloto:");
             if (senha === null) return;
             if (senha !== SENHA_UNIFICADA) { alert("❌ Senha incorreta!"); return; }
 
@@ -2835,9 +1808,7 @@
             if (event.target === document.getElementById('piloto-modal')) document.getElementById('piloto-modal').style.display = 'none';
             if (event.target === document.getElementById('upload-modal')) document.getElementById('upload-modal').style.display = 'none';
             if (event.target === document.getElementById('campeonatos-modal')) document.getElementById('campeonatos-modal').style.display = 'none';
-            if (event.target === document.getElementById('campeonatos2-modal')) document.getElementById('campeonatos2-modal').style.display = 'none';
-            if (event.target === document.getElementById('resumo-fiscal-modal')) document.getElementById('resumo-fiscal-modal').style.display = 'none';
-            if (event.target === document.getElementById('modal-senha-segura')) document.getElementById('modal-senha-segura').style.display = 'none';
+            if (event.target === document.getElementById('senha-modal')) fecharModalSenha(false);
         };
 
         window.curtirSessao = function(bateriaKey) {
@@ -3521,7 +2492,7 @@
                             } else { resumoDisputasTxt = ` Correu com pista livre, sem registros de confrontos diretos corpo a corpo.`; }
 
                             let primeiraVolta = laps[0]; let picoMaximo = Math.max(...laps); let voltaPicoMax = laps.indexOf(picoMaximo) + 1;
-                            let txtRitmo = `Análise de Ritmo: Partida na casa de ${primeiraVolta.toFixed(3)}s. Pico máximo de perda na volta ${voltaPicoMax} (${picoMaximo.toFixed(3)}s).${resumoDisputasTxt} ${voltasCompletasDrasticas.length > 0 ? `Quedas expressivas nas voltas: ${voltasCompletasDrasticas.join(', ')}.` : `Ritmo fluido sem travadas severas.`}`;
+                            let txtRitmo = `Análise de Ritmo: Partida na casa de ${primeiraVolta.toFixed(3)}s. Pico máximo de perda na volta ${voltaPicoMax} (${picoMaximo.toFixed(3)}s).${resumoDisputasTxt} ${voltasComQuedasDrasticas.length > 0 ? `Quedas expressivas nas voltas: ${voltasComQuedasDrasticas.join(', ')}.` : `Ritmo fluido sem travadas severas.`}`;
 
                             let todasParticipacoesPiloto = dadosBase.filter(item => item.piloto === d.piloto && item.laps && item.laps.length > 0);
                             todasParticipacoesPiloto.sort((a, b) => extrairPesoOrdenacao(a.sessao) - extrairPesoOrdenacao(b.sessao));
