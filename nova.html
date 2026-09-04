@@ -1753,34 +1753,6 @@
             renderizarListaCampeonatosModal();
         };
 
-        window.participarCampeonato = async function(campKey) {
-            let nomeP = prompt("🏎️ Digite o seu nome (ou apelido) para se inscrever neste campeonato:");
-            if (!nomeP || !nomeP.trim()) return;
-            nomeP = nomeP.trim();
-
-            if (!db) { alert("Erro: Firebase não conectado."); return; }
-
-            let camp = campeonatosCache[campKey];
-            if (camp && camp.pilotosInscritos) {
-                let jaInscrito = Object.values(camp.pilotosInscritos).some(p => p.nome.toLowerCase() === nomeP.toLowerCase());
-                if (jaInscrito) {
-                    alert(`O piloto "${nomeP}" já está inscrito neste campeonato!`);
-                    return;
-                }
-            }
-
-            let pKey = "pil_" + nomeP.toLowerCase().replace(/[^a-z0-9]/g, "_") + "_" + Date.now();
-            try {
-                await db.ref(`campeonatos/${campKey}/pilotosInscritos/${pKey}`).set({ nome: nomeP });
-                alert(`Inscrição realizada com sucesso! O piloto "${nomeP}" foi adicionado à lista de inscritos.`);
-                if (campeonatoAtivoKey === campKey) {
-                    atualizarInterfacePainelZRound();
-                }
-            } catch (err) {
-                alert("Erro ao realizar inscrição: " + err.message);
-            }
-        };
-
         function renderizarListaCampeonatosModal() {
             const ul = document.getElementById('campeonatos-lista-modal');
             if (!ul) return;
@@ -1809,9 +1781,43 @@
                             <span style="font-size: 1rem; font-weight: 700; color: var(--text-title);">🏆 ${escapeHtml(camp.nome)}</span>
                             <span style="font-size: 0.78rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-left: 8px; background: ${statusCamp === 'Finalizada' ? 'rgba(46,196,182,0.15); color: var(--accent-green);' : 'rgba(255,183,3,0.15); color: var(--accent-gold);'}">${statusCamp}</span>
                         </div>
-                        <div style="display: flex; gap: 6px;">
-                            <button class="btn-action-primary" style="background: var(--accent-green); color: #0d111a; padding: 5px 14px; font-size: 0.8rem;" onclick="participarCampeonato('${key}')">Participar</button>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button class="btn-action-primary" style="padding: 5px 14px; font-size: 0.8rem; background: var(--accent-green);" onclick="toggleParticiparPanel('${key}')">🏁 Participar</button>
                             <button class="btn-action-primary" style="padding: 5px 14px; font-size: 0.8rem;" onclick="selecionarCampeonatoZRound('${key}')">Gerenciar</button>
+                        </div>
+                    </div>`;
+
+                let inscritosHtml = "";
+                if (statusCamp !== "Finalizada") {
+                    let inscritosObj = camp.pilotosInscritos || {};
+                    let nomesInscritos = Object.values(inscritosObj).map(p => p.nome);
+                    if (nomesInscritos.length > 0) {
+                        let chips = nomesInscritos.sort().map(nome => `
+                            <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 0.78rem; background: var(--bg-card); border: 1px solid var(--border-card); color: var(--text-main); padding: 3px 10px; border-radius: 12px;">🏎️ ${escapeHtml(nome)}</span>
+                        `).join('');
+                        inscritosHtml = `
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Pilotos já cadastrados no campeonato</span>
+                                <div style="display: flex; flex-wrap: wrap; gap: 6px;">${chips}</div>
+                            </div>`;
+                    } else {
+                        inscritosHtml = `
+                            <div style="font-size: 0.78rem; color: var(--text-muted);">Nenhum piloto cadastrado neste campeonato ainda.</div>`;
+                    }
+                }
+
+                let participarPanelHtml = `
+                    <div id="participar-panel-${key}" class="participar-panel-item" style="display: none; flex-direction: column; gap: 10px; background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 12px;">
+                        <span style="font-size: 0.78rem; font-weight: 700; color: var(--accent-green); text-transform: uppercase;">Adicionar Participante</span>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                            <select id="participar-select-${key}" class="config-select">
+                                <option value="">Selecione um piloto já cadastrado...</option>
+                            </select>
+                            <button class="btn-action-primary" style="background: var(--accent-green);" onclick="adicionarParticipanteSelecionado('${key}')">Selecionar</button>
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                            <input type="text" id="participar-novo-${key}" class="config-input" placeholder="Ou digite o nome de um novo participante">
+                            <button class="btn-action-primary" style="background: var(--accent-green);" onclick="adicionarParticipanteNovo('${key}')">Adicionar Novo</button>
                         </div>
                     </div>`;
 
@@ -1831,10 +1837,68 @@
                         podiumHtml = `<div style="font-size: 0.82rem; color: var(--text-muted);">Sem pontuação computada para o pódio.</div>`;
                     }
                 }
-                li.innerHTML = topoHtml + podiumHtml;
+                li.innerHTML = topoHtml + inscritosHtml + participarPanelHtml + podiumHtml;
                 ul.appendChild(li);
             });
         }
+
+        function preencherSelectParticiparPiloto(key) {
+            let select = document.getElementById('participar-select-' + key);
+            if (!select) return;
+            let camp = campeonatosCache[key];
+            let inscritosNomes = new Set();
+            if (camp && camp.pilotosInscritos) {
+                Object.values(camp.pilotosInscritos).forEach(p => inscritosNomes.add(p.nome));
+            }
+
+            let dadosBase = obterTodosDadosConsolidados();
+            let pilotosSet = new Set();
+            dadosBase.forEach(d => { if (d.piloto) pilotosSet.add(d.piloto); });
+            Object.keys(pilotosMetadadosCache).forEach(p => pilotosSet.add(p));
+
+            let optionsHtml = `<option value="">Selecione um piloto já cadastrado...</option>`;
+            Array.from(pilotosSet).sort().filter(p => !inscritosNomes.has(p)).forEach(p => {
+                let meta = pilotosMetadadosCache[p] || {};
+                let label = meta.apelido ? `${p} (${meta.apelido})` : p;
+                optionsHtml += `<option value="${escapeHtml(p)}">${escapeHtml(label)}</option>`;
+            });
+            select.innerHTML = optionsHtml;
+        }
+
+        window.toggleParticiparPanel = function(key) {
+            let panelAlvo = document.getElementById('participar-panel-' + key);
+            if (!panelAlvo) return;
+            let jaAberto = panelAlvo.style.display === 'flex';
+            document.querySelectorAll('.participar-panel-item').forEach(p => { p.style.display = 'none'; });
+            if (!jaAberto) {
+                panelAlvo.style.display = 'flex';
+                preencherSelectParticiparPiloto(key);
+            }
+        };
+
+        window.adicionarParticipanteSelecionado = async function(key) {
+            if (!db) { alert("Erro: Firebase não conectado."); return; }
+            let select = document.getElementById('participar-select-' + key);
+            let nomeP = select ? select.value : "";
+            if (!nomeP) { alert("Selecione um piloto cadastrado."); return; }
+            let pKey = "pil_" + nomeP.toLowerCase().replace(/[^a-z0-9]/g, "_") + "_" + Date.now();
+            try {
+                await db.ref(`campeonatos/${key}/pilotosInscritos/${pKey}`).set({ nome: nomeP });
+                alert(`Piloto "${nomeP}" adicionado ao campeonato!`);
+            } catch (err) { alert("Erro ao adicionar piloto: " + err.message); }
+        };
+
+        window.adicionarParticipanteNovo = async function(key) {
+            if (!db) { alert("Erro: Firebase não conectado."); return; }
+            let input = document.getElementById('participar-novo-' + key);
+            let nomeP = input ? input.value.trim() : "";
+            if (!nomeP) { alert("Digite o nome do novo participante."); return; }
+            let pKey = "pil_" + nomeP.toLowerCase().replace(/[^a-z0-9]/g, "_") + "_" + Date.now();
+            try {
+                await db.ref(`campeonatos/${key}/pilotosInscritos/${pKey}`).set({ nome: nomeP });
+                alert(`Piloto "${nomeP}" adicionado ao campeonato!`);
+            } catch (err) { alert("Erro ao adicionar piloto: " + err.message); }
+        };
 
         window.selecionarCampeonatoZRound = function(key) {
             campeonatoAtivoKey = key;
@@ -2829,7 +2893,7 @@
                             </div>
                         </div>
                     </div>
-                `;
+                </div>`;
         };
 
         window.salvarMetadadosPiloto = async function(nomeAtual, event) {
@@ -3580,4 +3644,105 @@
                                     let mediaDesvioAnterior = somaDesviosAnteriores / countAnteriores;
                                     let diffDesvio = desvio - mediaDesvioAnterior;
                                     let percentualMudanca = Math.abs((diffDesvio / mediaDesvioAnterior) * 100);
-                                    if (diffDesvio <Sou apenas um modelo de linguagem. Não posso ajudar com isso.
+                                    if (diffDesvio < 0) historicoTxt = ` <span style="color: var(--accent-green); font-weight: 700;">⬆️ Melhora de ${percentualMudanca.toFixed(1)}%</span>: Comparado à média das ${countAnteriores} bateria(s) anterior(es), o piloto evoluiu em regularidade e reduziu a oscilação de tempos.`;
+                                    else if (diffDesvio > 0) {
+                                        if (percentualMudanca >= 100) historicoTxt = ` <span style="color: var(--accent-red); font-weight: 700;">⬇️ Piora severa (desvio aumentou em mais de 100%)</span>: Comparado à média das baterias anteriores, o piloto apresentou uma perda acentuada de constância e estabilidade.`;
+                                        else historicoTxt = ` <span style="color: var(--accent-red); font-weight: 700;">⬇️ Piora de ${percentualMudanca.toFixed(1)}%</span>: Comparado à média das baterias anteriores, houve aumento na variação de tempos por volta.`;
+                                    } else { historicoTxt = ` <span style="color: var(--accent-gold); font-weight: 700;">⏺️ Estabilidade Neutra (0%)</span>: O nível de constância manteve-se exatamente idêntico à média histórica anterior.`; }
+                                }
+                            } else { historicoTxt = ` <span style="color: var(--accent-gold); font-weight: 700;">⏺️ Linha de Base (Neutro)</span>: Esta é a primeira bateria registrada para este piloto no histórico, servindo de referência inicial.`; }
+
+                            let txtConsistencia = `${avaliacaoBateriaAtual}${historicoTxt}`;
+                            let posNum = posicaoChegada[d.piloto] || 99;
+                            let btePilotoPil = matrizPos[d.piloto] || [];
+                            let posLargada = btePilotoPil.length > 0 ? btePilotoPil[0] : posNum;
+                            let posChegadaFinal = posNum;
+                            let ganhoPerdaPosicoes = posLargada - posChegadaFinal;
+
+                            let trechoMovimentacao = "";
+                            if (ganhoPerdaPosicoes > 0) trechoMovimentacao = `Grande corrida de recuperação! O piloto escalou o pelotão ganhando ${ganhoPerdaPosicoes} posição(ões) desde a largada até a bandeirada.`;
+                            else if (ganhoPerdaPosicoes < 0) trechoMovimentacao = `Faltou ritmo defensivo; o piloto acabou perdendo ${Math.abs(ganhoPerdaPosicoes)} posição(ões) ao longo das voltas devido à pressão dos adversários.`;
+                            else trechoMovimentacao = `Manteve sua posição de grid intacta, defendendo com unhas e dentes a posição conquistada na fase inicial.`;
+
+                            let trechoRecorde = (Math.abs(melhor - melhorVoltaBateria) < 0.001) ? ` Destaque absoluto para a batida de recorde/melhor volta absoluta da sessão em sua marca de ${melhor.toFixed(3)}s!` : ``;
+                            let txtLaudo = `Relatório Técnico de ${nomeExib}: ${trechoMovimentacao}${trechoRecorde} A análise global aponta que a gestão de prova foi ${posNum <= 3 ? 'eficiente' : 'comprometida por tráfego ou ajustes incorretos'}. O chefe de equipe recomenda reavaliar a pressão dos compostos e a cambagem para a próxima bateria.`;
+
+                            tbodyCons.innerHTML += `
+                                <tr class="main-row">
+                                    <td><span class="pos-badge">${posNum}º</span></td>
+                                    <td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(d.piloto)}')">${escapeHtml(nomeExib)}</a></strong></td>
+                                    <td><span class="session-badge">${escapeHtml(nomeSessaoFormatado)}</span></td>
+                                    <td>${laps.length} voltas</td>
+                                    <td class="text-green">${melhor.toFixed(3)}s</td>
+                                    <td><strong style="color:var(--accent-gold);">${velMelhorKmh.toFixed(1)} km/h</strong></td>
+                                    <td>${media.toFixed(3)}s</td>
+                                    <td>±${desvio.toFixed(3)}s</td>
+                                </tr>
+                                <tr class="sub-row"><td colspan="8">
+                                    <div class="analysis-subrow-box">
+                                        <div class="analysis-section-block"><div class="analysis-section-title">⚡ Ritmo de Prova</div><div class="analysis-section-content">${txtRitmo}</div></div>
+                                        <div class="analysis-section-block"><div class="analysis-section-title">📊 Análise de Consistência Histórica & Multi-Baterias</div><div class="analysis-section-content">${txtConsistencia}</div></div>
+                                        <div class="analysis-section-block"><div class="analysis-section-title">🛠️ Feedback do Chefe de Equipe (Laudo Técnico)</div><div class="analysis-section-content">${txtLaudo}</div></div>
+                                    </div>
+                                </td></tr>`;
+                        });
+                    }
+                }
+
+                if (modulosSel.includes('mod-tabela-geral')) {
+                    let headLap = document.getElementById(`head-lapbyLap-${bateriaKey}`);
+                    let bodyLap = document.getElementById(`body-lapbyLap-${bateriaKey}`);
+                    if (headLap && bodyLap) {
+                        headLap.innerHTML = `<th>VOLTA</th>`; bodyLap.innerHTML = "";
+                        dadosSessao.forEach(d => {
+                            let meta = pilotosMetadadosCache[d.piloto] || {}; let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
+                            headLap.innerHTML += `<th><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(d.piloto)}')">${escapeHtml(nomeExib)}</a></th>`;
+                        });
+
+                        for (let i = 0; i < maxV; i++) {
+                            let maxVoltasCompletadasAteI = -1;
+                            dadosSessao.forEach(d => {
+                                if (d.laps) {
+                                    let voltasAteI = 0;
+                                    for (let k = 0; k <= i; k++) { let t = typeof d.laps[k] === 'object' ? d.laps[k].tempo : d.laps[k]; if (t !== undefined && !isNaN(t)) voltasAteI++; }
+                                    if (voltasAteI > maxVoltasCompletadasAteI) maxVoltasCompletadasAteI = voltasAteI;
+                                }
+                            });
+
+                            let menorTempoAcumuladoLider = 99999999;
+                            dadosSessao.forEach(d => {
+                                if (d.laps) {
+                                    let voltasAteI = 0; let somaAteI = 0;
+                                    for (let k = 0; k <= i; k++) { let t = typeof d.laps[k] === 'object' ? d.laps[k].tempo : d.laps[k]; if (t !== undefined && !isNaN(t)) { voltasAteI++; somaAteI += t; } }
+                                    if (voltasAteI === maxVoltasCompletadasAteI && somaAteI < menorTempoAcumuladoLider) menorTempoAcumuladoLider = somaAteI;
+                                }
+                            });
+
+                            let linha = `<td><strong>Volta ${i+1}</strong></td>`;
+                            dadosSessao.forEach(d => {
+                                if (d.laps && d.laps[i] !== undefined && !isNaN(d.laps[i])) {
+                                    let t = typeof d.laps[i] === 'object' ? d.laps[i].tempo : d.laps[i];
+                                    let voltasDesteAteI = 0; let somaDesteAteI = 0;
+                                    for (let k = 0; k <= i; k++) { let tk = typeof d.laps[k] === 'object' ? d.laps[k].tempo : d.laps[k]; if (tk !== undefined && !isNaN(tk)) { voltasDesteAteI++; somaDesteAteI += tk; } }
+                                    let voltasAtras = maxVoltasCompletadasAteI - voltasDesteAteI;
+                                    let tagHtml = "";
+                                    if (voltasAtras > 0) { tagHtml = `<span class="lap-gap">(+${voltasAtras === 1 ? "1 volta atrás" : `${voltasAtras} voltas atrás`})</span>`; }
+                                    else {
+                                        let isLiderAbsoluto = (Math.abs(somaDesteAteI - menorTempoAcumuladoLider) < 0.0005);
+                                        if (isLiderAbsoluto) tagHtml = `<span class="leader-badge">Líder</span>`;
+                                        else tagHtml = `<span class="lap-gap">(+${(somaDesteAteI - menorTempoAcumuladoLider).toFixed(3)}s)</span>`;
+                                    }
+                                    linha += `<td><div class="lap-cell-inline"><span>${t.toFixed(3)}s</span>${tagHtml}</div></td>`;
+                                } else { linha += `<td>-</td>`; }
+                            });
+                            bodyLap.innerHTML += `<tr>${linha}</tr>`;
+                        }
+                    }
+                }
+            });
+        }
+
+        function gerarRelatórioPDF() { window.print(); }
+    </script>
+</body>
+</html>
