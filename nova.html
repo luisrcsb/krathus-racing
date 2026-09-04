@@ -713,7 +713,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.51.0 (Replay Proporcional & Velocidade)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.53.0 (Race Position Fix & Line Termination)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -3465,263 +3465,109 @@
                             let meta = pilotosMetadadosCache[p.piloto] || {};
                             let labelExib = meta.apelido ? `${p.piloto} (${meta.apelido})` : p.piloto;
                             let cor = ["#e63946", "#2ec4b6", "#ffb703", "#3a86ff", "#ff006e", "#8338ec"][idx % 6];
-                            let lapsData = (p.laps || []).map(l => typeof l === 'object' ? l.tempo : l);
+                            let lapsData = (p.laps || []).map(l => typeof l === 'object' ? Number(l.tempo) : Number(l));
                             return {
                                 label: labelExib,
                                 data: lapsData,
                                 borderColor: cor,
                                 backgroundColor: cor,
-                                borderWidth: 2,
-                                pointRadius: 3,
-                                tension: 0.1
+                                fill: false,
+                                tension: 0.15
                             };
                         });
 
                         let maxVoltas = Math.max(...dadosSessao.map(p => (p.laps || []).length));
-                        let labelsVoltas = Array.from({length: maxVoltas}, (_, i) => `V${i + 1}`);
+                        let labelsVoltas = Array.from({ length: maxVoltas }, (_, i) => `Volta ${i + 1}`);
 
-                        let chartIns = new Chart(ctx, {
+                        let chartInstance = new Chart(ctx, {
                             type: 'line',
                             data: { labels: labelsVoltas, datasets: datasets },
                             options: {
                                 responsive: true,
                                 maintainAspectRatio: false,
-                                plugins: { legend: { labels: { color: '#d0d7e3', font: { size: 11 } } } },
+                                plugins: { legend: { labels: { color: '#d0d7e3', font: { family: 'Segoe UI' } } } },
                                 scales: {
-                                    x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8492a6' } },
-                                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8492a6' } }
+                                    x: { ticks: { color: '#8492a6' }, grid: { color: '#222d42' } },
+                                    y: { ticks: { color: '#8492a6' }, grid: { color: '#222d42' }, title: { display: true, text: 'Tempo (s)', color: '#8492a6' } }
                                 }
                             }
                         });
-                        chartInstances.push(chartIns);
+                        chartInstances.push(chartInstance);
                     }
                 }
 
+                // --- CORREÇÃO DO GRÁFICO DE POSIÇÃO (Race Position) & INTERRUPÇÃO NA ÚLTIMA VOLTA ---
                 if (modulosSel.includes('mod-grafico-posicao')) {
                     let ctxPos = document.getElementById(`chart-pos-${bateriaKey}`);
                     if (ctxPos) {
-                        let maxVoltas = Math.max(...dadosSessao.map(p => (p.laps || []).length));
-                        let labelsVoltas = Array.from({length: maxVoltas}, (_, i) => `V${i + 1}`);
+                        let maxVoltasSessao = 0;
+                        dadosSessao.forEach(p => {
+                            let lapsValidos = (p.laps || []).map(l => typeof l === 'object' ? Number(l.tempo) : Number(l)).filter(t => Number.isFinite(t) && t > 0);
+                            if (lapsValidos.length > maxVoltasSessao) maxVoltasSessao = lapsValidos.length;
+                        });
 
-                        let matrizPosicoes = {};
-                        dadosSessao.forEach(p => { matrizPosicoes[p.piloto] = []; });
+                        let posDatasets = dadosSessao.map((p, idx) => {
+                            let lapsValidos = (p.laps || []).map(l => typeof l === 'object' ? Number(l.tempo) : Number(l)).filter(t => Number.isFinite(t) && t > 0);
+                            let posicoesPorVolta = [];
 
-                        for (let v = 0; v < maxVoltas; v++) {
-                            let temposNaVolta = dadosSessao.map(p => {
-                                let laps = (p.laps || []).map(l => typeof l === 'object' ? Number(l.tempo) : Number(l));
-                                let acumulado = 0;
-                                for (let i = 0; i <= v && i < laps.length; i++) {
-                                    if (laps[i] > 0) acumulado += laps[i];
+                            for (let voltaIdx = 0; voltaIdx < maxVoltasSessao; voltaIdx++) {
+                                if (voltaIdx >= lapsValidos.length) {
+                                    posicoesPorVolta.push(null);
+                                    continue;
                                 }
-                                return { piloto: p.piloto, tempoAcumulado: acumulado > 0 ? acumulado : 999999, qtdVoltas: v < laps.length && laps[v] > 0 ? v + 1 : 0 };
-                            });
 
-                            temposNaVolta.sort((a, b) => {
-                                if (a.qtdVoltas !== b.qtdVoltas) return b.qtdVoltas - a.qtdVoltas;
-                                return a.tempoAcumulado - b.tempoAcumulado;
-                            });
+                                let temposAcumuladosNaVolta = [];
+                                dadosSessao.forEach(outroP => {
+                                    let outroLaps = (outroP.laps || []).map(l => typeof l === 'object' ? Number(l.tempo) : Number(l)).filter(t => Number.isFinite(t) && t > 0);
+                                    if (outroLaps.length > voltaIdx) {
+                                        let acm = 0;
+                                        for (let v = 0; v <= voltaIdx; v++) acm += outroLaps[v];
+                                        temposAcumuladosNaVolta.push({ piloto: outroP.piloto, tempoAcm: acm });
+                                    }
+                                });
 
-                            temposNaVolta.forEach((item, posIdx) => {
-                                if (matrizPosicoes[item.piloto]) {
-                                    matrizPosicoes[item.piloto].push(posIdx + 1);
-                                }
-                            });
-                        }
+                                temposAcumuladosNaVolta.sort((a, b) => a.tempoAcm - b.tempoAcm);
+                                let pos = temposAcumuladosNaVolta.findIndex(item => item.piloto === p.piloto) + 1;
+                                posicoesPorVolta.push(pos > 0 ? pos : null);
+                            }
 
-                        let datasetsPos = Object.keys(matrizPosicoes).map((piloto, idx) => {
-                            let meta = pilotosMetadadosCache[piloto] || {};
-                            let labelExib = meta.apelido ? `${piloto} (${meta.apelido})` : piloto;
+                            let meta = pilotosMetadadosCache[p.piloto] || {};
+                            let labelExib = meta.apelido ? `${p.piloto} (${meta.apelido})` : p.piloto;
                             let cor = ["#e63946", "#2ec4b6", "#ffb703", "#3a86ff", "#ff006e", "#8338ec"][idx % 6];
+
                             return {
                                 label: labelExib,
-                                data: matrizPosicoes[piloto],
+                                data: posicoesPorVolta,
                                 borderColor: cor,
                                 backgroundColor: cor,
-                                borderWidth: 2,
-                                pointRadius: 3,
-                                tension: 0.1
+                                fill: false,
+                                tension: 0.1,
+                                spanGaps: false
                             };
                         });
 
-                        let chartPosIns = new Chart(ctxPos, {
+                        let labelsVoltasPos = Array.from({ length: maxVoltasSessao }, (_, i) => `Volta ${i + 1}`);
+
+                        let chartPosInstance = new Chart(ctxPos, {
                             type: 'line',
-                            data: { labels: labelsVoltas, datasets: datasetsPos },
+                            data: { labels: labelsVoltasPos, datasets: posDatasets },
                             options: {
                                 responsive: true,
                                 maintainAspectRatio: false,
+                                plugins: { legend: { labels: { color: '#d0d7e3', font: { family: 'Segoe UI' } } } },
                                 scales: {
+                                    x: { ticks: { color: '#8492a6' }, grid: { color: '#222d42' } },
                                     y: {
                                         reverse: true,
                                         min: 1,
                                         ticks: { stepSize: 1, color: '#8492a6' },
-                                        grid: { color: 'rgba(255,255,255,0.05)' }
-                                    },
-                                    x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8492a6' } }
-                                },
-                                plugins: { legend: { labels: { color: '#d0d7e3', font: { size: 11 } } } }
+                                        grid: { color: '#222d42' },
+                                        title: { display: true, text: 'Posição', color: '#8492a6' }
+                                    }
+                                }
                             }
                         });
-                        chartInstances.push(chartPosIns);
-                    }
-                }
-
-                if (modulosSel.includes('mod-log-posicao')) {
-                    let logContainer = document.getElementById(`pos-logs-${bateriaKey}`);
-                    if (logContainer) {
-                        let maxVoltas = Math.max(...dadosSessao.map(p => (p.laps || []).length));
-                        let logHtml = '';
-                        let posAnterior = {};
-
-                        for (let v = 0; v < maxVoltas; v++) {
-                            let temposNaVolta = dadosSessao.map(p => {
-                                let laps = (p.laps || []).map(l => typeof l === 'object' ? Number(l.tempo) : Number(l));
-                                let acumulado = 0;
-                                for (let i = 0; i <= v && i < laps.length; i++) {
-                                    if (laps[i] > 0) acumulado += laps[i];
-                                }
-                                return { piloto: p.piloto, tempoAcumulado: acumulado > 0 ? acumulado : 999999, qtdVoltas: v < laps.length && laps[v] > 0 ? v + 1 : 0 };
-                            });
-
-                            temposNaVolta.sort((a, b) => {
-                                if (a.qtdVoltas !== b.qtdVoltas) return b.qtdVoltas - a.qtdVoltas;
-                                return a.tempoAcumulado - b.tempoAcumulado;
-                            });
-
-                            let mudancasNaVolta = [];
-                            temposNaVolta.forEach((item, posIdx) => {
-                                let novaPos = posIdx + 1;
-                                let antigaPos = posAnterior[item.piloto];
-                                if (antigaPos !== undefined && antigaPos !== novaPos) {
-                                    let diff = antigaPos - novaPos;
-                                    if (diff > 0) {
-                                        mudancasNaVolta.push(`<div class="position-log-item">Volta ${v + 1}: <strong style="color:var(--text-title);">${escapeHtml(item.piloto)}</strong> ganhou ${diff} ${diff === 1 ? 'posição' : 'posições'} (${antigaPos}º ➡️ ${novaPos}º) <span class="tag-gain">▲</span></div>`);
-                                    } else {
-                                        let perdas = Math.abs(diff);
-                                        mudancasNaVolta.push(`<div class="position-log-item">Volta ${v + 1}: <strong style="color:var(--text-title);">${escapeHtml(item.piloto)}</strong> perdeu ${perdas} ${perdas === 1 ? 'posição' : 'posições'} (${antigaPos}º ➡️ ${novaPos}º) <span class="tag-loss">▼</span></div>`);
-                                    }
-                                }
-                                posAnterior[item.piloto] = novaPos;
-                            });
-
-                            if (mudancasNaVolta.length > 0) {
-                                logHtml += mudancasNaVolta.join('');
-                            }
-                        }
-
-                        logContainer.innerHTML = logHtml || `<div style="font-size: 0.85rem; color: var(--text-muted); text-align: center;">Nenhuma alteração de posição registrada nas voltas.</div>`;
-                    }
-                }
-
-                let tbodyTabela = document.getElementById(`tabela-unificada-${bateriaKey}`);
-                if (tbodyTabela) {
-                    tbodyTabela.innerHTML = dadosSessao.map((p, idx) => {
-                        let meta = pilotosMetadadosCache[p.piloto] || {};
-                        let nomeExib = meta.apelido ? `${p.piloto} (${meta.apelido})` : p.piloto;
-                        let velEscala = p.melhorVoltaVal ? (26 / p.melhorVoltaVal) * 3.6 * 28 : 0;
-                        return `
-                            <tr>
-                                <td><span class="pos-badge">${idx + 1}º</span></td>
-                                <td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(p.piloto)}')">${escapeHtml(nomeExib)}</a></strong></td>
-                                <td><span class="session-badge">${escapeHtml(nomeSessaoFormatado)}</span></td>
-                                <td>${p.laps.length}</td>
-                                <td class="text-green">${escapeHtml(p.melhorVoltaTxt)}</td>
-                                <td style="color: var(--accent-gold); font-weight: bold;">${velEscala > 0 ? velEscala.toFixed(1) + ' km/h' : '--'}</td>
-                                <td>${escapeHtml(p.mediaTxt)}</td>
-                                <td>${escapeHtml(p.desvio)}</td>
-                            </tr>
-                        `;
-                    }).join('');
-                }
-
-                if (modulosSel.includes('mod-tabela-geral')) {
-                    let headLap = document.getElementById(`head-lapbyLap-${bateriaKey}`);
-                    let bodyLap = document.getElementById(`body-lapbyLap-${bateriaKey}`);
-                    if (headLap && bodyLap) {
-                        let maxV = Math.max(...dadosSessao.map(p => (p.laps || []).length));
-                        let ths = `<th>PILOTO</th><th style="text-align: center;">TOTAL</th>`;
-                        for (let i = 1; i <= maxV; i++) ths += `<th style="text-align: center;">V${i}</th>`;
-                        headLap.innerHTML = ths;
-
-                        let pilotosProcessados = dadosSessao.map(p => {
-                            let laps = (p.laps || []).map(l => typeof l === 'object' ? Number(l.tempo) : Number(l));
-                            let acumulados = [];
-                            let soma = 0;
-                            laps.forEach(t => {
-                                if (t > 0) { soma += t; acumulados.push(soma); }
-                                else { acumulados.push(null); }
-                            });
-                            return {
-                                piloto: p.piloto,
-                                laps: laps,
-                                acumulados: acumulados,
-                                totalVoltas: laps.filter(t => t > 0).length,
-                                tempoTotal: soma
-                            };
-                        });
-
-                        let lideresPorVolta = [];
-                        for (let v = 0; v < maxV; v++) {
-                            let validosNaVolta = pilotosProcessados.map(p => {
-                                let ac = p.acumulados[v];
-                                let completou = (ac !== null && ac !== undefined);
-                                return {
-                                    piloto: p.piloto,
-                                    voltasCompletadas: v + 1,
-                                    acumulado: completou ? ac : 999999,
-                                    temVolta: completou
-                                };
-                            }).filter(x => x.temVolta);
-
-                            if (validosNaVolta.length > 0) {
-                                validosNaVolta.sort((a, b) => a.acumulado - b.acumulado);
-                                lideresPorVolta.push(validosNaVolta[0]);
-                            } else {
-                                lideresPorVolta.push(null);
-                            }
-                        }
-
-                        bodyLap.innerHTML = pilotosProcessados.map(p => {
-                            let meta = pilotosMetadadosCache[p.piloto] || {};
-                            let nomeExib = meta.apelido ? `${p.piloto} (${meta.apelido})` : p.piloto;
-                            let tds = `<td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(p.piloto)}')">${escapeHtml(nomeExib)}</a></strong></td>`;
-                            tds += `<td style="text-align: center; font-weight: bold; color: var(--accent-gold);">${p.totalVoltas}v (${p.tempoTotal > 0 ? p.tempoTotal.toFixed(3) + 's' : '-'})</td>`;
-
-                            let melhorVoltaPiloto = p.laps.length > 0 ? Math.min(...p.laps.filter(t => t > 0)) : null;
-
-                            for (let v = 0; v < maxV; v++) {
-                                let tVal = p.laps[v];
-                                let acVal = p.acumulados[v];
-                                let lider = lideresPorVolta[v];
-
-                                if (tVal && tVal > 0 && acVal !== null) {
-                                    let isMelhor = (melhorVoltaPiloto !== null && Math.abs(tVal - melhorVoltaPiloto) < 0.0001);
-                                    let estiloVolta = isMelhor ? `color: var(--accent-green); font-weight: bold;` : `color: var(--text-main);`;
-                                    
-                                    let gapTxt = "";
-                                    if (lider && lider.piloto !== p.piloto) {
-                                        let diff = acVal - lider.acumulado;
-                                        if (diff > 0) {
-                                            gapTxt = `<span class="lap-gap" style="font-size: 0.72rem; color: var(--accent-gap); display: block;">+${diff.toFixed(3)}s</span>`;
-                                        }
-                                    } else if (lider && lider.piloto === p.piloto) {
-                                        gapTxt = `<span style="font-size: 0.70rem; color: var(--accent-gold); display: block;">LÍDER</span>`;
-                                    }
-
-                                    tds += `<td style="text-align: center; vertical-align: middle; background: rgba(28, 38, 59, 0.3); border-radius: 4px; padding: 6px;">
-                                        <div style="${estiloVolta}">${tVal.toFixed(3)}s</div>
-                                        ${gapTxt}
-                                    </td>`;
-                                } else {
-                                    let voltasAtrasTxt = "-";
-                                    if (lider && p.totalVoltas < (v + 1)) {
-                                        let vAtras = (v + 1) - p.totalVoltas;
-                                        voltasAtrasTxt = `<span style="color: var(--accent-red); font-size: 0.75rem; font-weight: bold;">+${vAtras}v</span>`;
-                                    }
-                                    tds += `<td style="text-align: center; color: var(--text-muted); vertical-align: middle;">${voltasAtrasTxt}</td>`;
-                                }
-                            }
-                            return `<tr>${tds}</tr>`;
-                        }).join('');
+                        chartInstances.push(chartPosInstance);
                     }
                 }
             });
