@@ -1865,6 +1865,16 @@
                 li.style.flexDirection = "column";
                 li.style.gap = "8px";
 
+                // Montar lista de pilotos inscritos para exibir logo abaixo do nome
+                let pilotosObj = camp.pilotosInscritos || {};
+                let nomesPilotos = Object.values(pilotosObj).map(p => p.nome);
+                let listaPilotosHtml = "";
+                if (nomesPilotos.length > 0) {
+                    listaPilotosHtml = `<div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">🏎️ <strong>Pilotos cadastrados:</strong> ${escapeHtml(nomesPilotos.join(', '))}</div>`;
+                } else {
+                    listaPilotosHtml = `<div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; font-style: italic;">Nenhum piloto cadastrado ainda.</div>`;
+                }
+
                 let topoHtml = `
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                         <div>
@@ -1875,7 +1885,8 @@
                             <button class="btn-action-primary" style="padding: 5px 14px; font-size: 0.8rem; background: var(--accent-gold); color: #000;" onclick="abrirModalParticipar('${key}')">Participar</button>
                             <button class="btn-action-primary" style="padding: 5px 14px; font-size: 0.8rem;" onclick="selecionarCampeonatoZRound('${key}')">Gerenciar</button>
                         </div>
-                    </div>`;
+                    </div>
+                    ${listaPilotosHtml}`;
 
                 let podiumHtml = "";
                 if (statusCamp === "Finalizada") {
@@ -2891,7 +2902,7 @@
                             </div>
                         </div>
                     </div>
-                </div>`;
+                `;
         };
 
         window.salvarMetadadosPiloto = async function(nomeAtual, event) {
