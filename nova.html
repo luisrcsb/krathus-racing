@@ -3496,41 +3496,37 @@
                     }
                 }
 
-                // --- CORREÇÃO DO GRÁFICO DE POSIÇÃO (Race Position) & INTERRUPÇÃO NA ÚLTIMA VOLTA ---
+                // --- RENDERIZAÇÃO DETALHADA DO GRÁFICO E DO LOG DE POSIÇÕES ---
+                let maxVoltasSessao = 0;
+                dadosSessao.forEach(p => {
+                    let lapsValidos = (p.laps || []).map(l => typeof l === 'object' ? Number(l.tempo) : Number(l)).filter(t => Number.isFinite(t) && t > 0);
+                    if (lapsValidos.length > maxVoltasSessao) maxVoltasSessao = lapsValidos.length;
+                });
+
+                let historicoPosicoesPorVolta = [];
+                for (let voltaIdx = 0; voltaIdx < maxVoltasSessao; voltaIdx++) {
+                    let temposAcumuladosNaVolta = [];
+                    dadosSessao.forEach(p => {
+                        let lapsValidos = (p.laps || []).map(l => typeof l === 'object' ? Number(l.tempo) : Number(l)).filter(t => Number.isFinite(t) && t > 0);
+                        if (lapsValidos.length > voltaIdx) {
+                            let acm = 0;
+                            for (let v = 0; v <= voltaIdx; v++) acm += lapsValidos[v];
+                            temposAcumuladosNaVolta.push({ piloto: p.piloto, tempoAcm: acm });
+                        }
+                    });
+                    temposAcumuladosNaVolta.sort((a, b) => a.tempoAcm - b.tempoAcm);
+                    let posMap = {};
+                    temposAcumuladosNaVolta.forEach((item, posIdx) => {
+                        posMap[item.piloto] = posIdx + 1;
+                    });
+                    historicoPosicoesPorVolta.push(posMap);
+                }
+
                 if (modulosSel.includes('mod-grafico-posicao')) {
                     let ctxPos = document.getElementById(`chart-pos-${bateriaKey}`);
                     if (ctxPos) {
-                        let maxVoltasSessao = 0;
-                        dadosSessao.forEach(p => {
-                            let lapsValidos = (p.laps || []).map(l => typeof l === 'object' ? Number(l.tempo) : Number(l)).filter(t => Number.isFinite(t) && t > 0);
-                            if (lapsValidos.length > maxVoltasSessao) maxVoltasSessao = lapsValidos.length;
-                        });
-
                         let posDatasets = dadosSessao.map((p, idx) => {
-                            let lapsValidos = (p.laps || []).map(l => typeof l === 'object' ? Number(l.tempo) : Number(l)).filter(t => Number.isFinite(t) && t > 0);
-                            let posicoesPorVolta = [];
-
-                            for (let voltaIdx = 0; voltaIdx < maxVoltasSessao; voltaIdx++) {
-                                if (voltaIdx >= lapsValidos.length) {
-                                    posicoesPorVolta.push(null);
-                                    continue;
-                                }
-
-                                let temposAcumuladosNaVolta = [];
-                                dadosSessao.forEach(outroP => {
-                                    let outroLaps = (outroP.laps || []).map(l => typeof l === 'object' ? Number(l.tempo) : Number(l)).filter(t => Number.isFinite(t) && t > 0);
-                                    if (outroLaps.length > voltaIdx) {
-                                        let acm = 0;
-                                        for (let v = 0; v <= voltaIdx; v++) acm += outroLaps[v];
-                                        temposAcumuladosNaVolta.push({ piloto: outroP.piloto, tempoAcm: acm });
-                                    }
-                                });
-
-                                temposAcumuladosNaVolta.sort((a, b) => a.tempoAcm - b.tempoAcm);
-                                let pos = temposAcumuladosNaVolta.findIndex(item => item.piloto === p.piloto) + 1;
-                                posicoesPorVolta.push(pos > 0 ? pos : null);
-                            }
-
+                            let posicoesPorVolta = historicoPosicoesPorVolta.map(mapaVolta => mapaVolta[p.piloto] || null);
                             let meta = pilotosMetadadosCache[p.piloto] || {};
                             let labelExib = meta.apelido ? `${p.piloto} (${meta.apelido})` : p.piloto;
                             let cor = ["#e63946", "#2ec4b6", "#ffb703", "#3a86ff", "#ff006e", "#8338ec"][idx % 6];
@@ -3568,6 +3564,56 @@
                             }
                         });
                         chartInstances.push(chartPosInstance);
+                    }
+                }
+
+                if (modulosSel.includes('mod-log-posicao')) {
+                    let containerLogs = document.getElementById(`pos-logs-${bateriaKey}`);
+                    if (containerLogs) {
+                        let logsHtml = '';
+                        if (historicoPosicoesPorVolta.length <= 1) {
+                            logsHtml = `<div class="position-log-item" style="color: var(--text-muted);">Dados insuficientes para gerar relatório de ultrapassagens (necessário mais de 1 volta).</div>`;
+                        } else {
+                            for (let v = 1; v < historicoPosicoesPorVolta.length; v++) {
+                                let mapaAnterior = historicoPosicoesPorVolta[v - 1];
+                                let mapaAtual = historicoPosicoesPorVolta[v];
+                                let movimentacoesVolta = [];
+
+                                Object.keys(mapaAtual).forEach(piloto => {
+                                    let posAnt = mapaAnterior[piloto];
+                                    let posAtv = mapaAtual[piloto];
+                                    if (posAnt !== undefined && posAtv !== undefined) {
+                                        let diff = posAnt - posAtv; 
+                                        if (diff !== 0) {
+                                            movimentacoesVolta.push({ piloto, posAnt, posAtv, diff });
+                                        }
+                                    }
+                                });
+
+                                if (movimentacoesVolta.length > 0) {
+                                    let descricoes = movimentacoesVolta.map(m => {
+                                        let meta = pilotosMetadadosCache[m.piloto] || {};
+                                        let nomeExib = meta.apelido ? `${m.piloto} (${meta.apelido})` : m.piloto;
+                                        if (m.diff > 0) {
+                                            return `🔹 <strong style="color: var(--text-title);">${escapeHtml(nomeExib)}</strong> <span class="tag-gain">ganhou ${m.diff} ${m.diff === 1 ? 'posição' : 'posições'}</span> (de ${m.posAnt}º para ${m.posAtv}º)`;
+                                        } else {
+                                            return `🔸 <strong style="color: var(--text-title);">${escapeHtml(nomeExib)}</strong> <span class="tag-loss">perdeu ${Math.abs(m.diff)} ${Math.abs(m.diff) === 1 ? 'posição' : 'posições'}</span> (de ${m.posAnt}º para ${m.posAtv}º)`;
+                                        }
+                                    }).join('<br>');
+
+                                    logsHtml += `
+                                        <div class="position-log-item">
+                                            <strong style="color: var(--accent-gold); display: block; margin-bottom: 4px;">Volta ${v + 1}:</strong>
+                                            ${descricoes}
+                                        </div>
+                                    `;
+                                }
+                            }
+                            if (!logsHtml) {
+                                logsHtml = `<div class="position-log-item" style="color: var(--text-muted);">Nenhuma alteração de posições registrada entre as voltas. O grid manteve-se estável.</div>`;
+                            }
+                        }
+                        containerLogs.innerHTML = logsHtml;
                     }
                 }
             });
