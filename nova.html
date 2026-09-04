@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Krathus Racing - Central de Telemetria e Análise de Desempenho</title>
+    <title>Krathus Racing - Central de Telemetria</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
@@ -53,16 +53,11 @@
         .btn-text-action { background: transparent; border: none; color: var(--accent-blue); font-size: 0.78rem; font-weight: 600; cursor: pointer; padding: 0; text-align: left; }
         .btn-text-action:hover { text-decoration: underline; }
 
-        .btn-pdf-global { background: linear-gradient(135deg, #ff5722 0%, #e63946 100%); color: #ffffff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; }
+        .btn-pdf-global { background: linear-gradient(135deg, #ff5722 0%, #e63946 100%); color: #ffffff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; }
         .btn-upload-modal-trigger { background: linear-gradient(135deg, #3a86ff 0%, #2ec4b6 100%); color: #ffffff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
         .btn-campeonatos-trigger { background: linear-gradient(135deg, #ffb703 0%, #fb8500 100%); color: #000; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
         .btn-compras-coletivas-trigger { background: linear-gradient(135deg, #2a9d8f 0%, #264653 100%); color: #fff; font-size: 0.9rem; padding: 10px 18px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
         
-        .btn-share { background: rgba(58, 134, 255, 0.15); color: var(--accent-blue); border: 1px solid var(--accent-blue); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; }
-        .btn-like { background: rgba(230, 57, 70, 0.15); color: var(--accent-red); border: 1px solid var(--accent-red); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; }
-        .btn-pdf-atalho { background: rgba(255, 183, 3, 0.15); color: var(--accent-gold); border: 1px solid var(--accent-gold); padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; }
-        .btn-pdf-atalho:hover { background: rgba(255, 183, 3, 0.25); }
-
         .piloto-link { color: var(--accent-blue); text-decoration: none; font-weight: 700; cursor: pointer; }
         .piloto-link:hover { color: var(--accent-gold); text-decoration: underline; }
 
@@ -85,9 +80,7 @@
 
         .config-box-trigger { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
         .btn-config-open { background: var(--bg-input); border: 1px solid var(--border-card); color: var(--accent-gold); padding: 6px 14px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px; }
-        .btn-config-open:hover { background: rgba(255, 183, 3, 0.1); }
         .btn-merge-open { background: var(--bg-input); border: 1px solid var(--border-card); color: var(--accent-green); padding: 6px 14px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px; }
-        .btn-merge-open:hover { background: rgba(46, 196, 182, 0.1); }
 
         .config-panel { background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
         .config-panel-title { font-size: 0.82rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid var(--border-card); padding-bottom: 8px; }
@@ -97,9 +90,7 @@
         .config-select { background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-card); padding: 8px 12px; border-radius: 6px; flex: 1; font-size: 0.85rem; }
 
         .btn-action-primary { background: var(--accent-blue); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
-        .btn-action-primary:hover { background: #2b6cb0; }
         .btn-action-danger { background: var(--accent-red); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
-        .btn-action-danger:hover { background: #c53030; }
 
         .zround-tabs-header { display: flex; gap: 6px; border-bottom: 2px solid var(--border-card); padding-bottom: 8px; flex-wrap: wrap; }
         .zround-tab-btn { background: var(--bg-card); border: 1px solid var(--border-card); color: var(--text-muted); padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 0.82rem; cursor: pointer; }
@@ -132,17 +123,17 @@
         .session-block-title { font-size: 1.15rem; font-weight: 700; color: var(--text-title); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
         .session-block-meta { font-size: 0.85rem; color: var(--text-muted); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         
-        .session-podium-tag { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.80rem; border: 1px solid; }
-        .podium-gold { background: rgba(255, 183, 3, 0.15); color: var(--accent-gold); border-color: var(--accent-gold); }
-        .podium-silver { background: rgba(192, 192, 192, 0.15); color: var(--accent-silver); border-color: var(--accent-silver); }
-        .podium-bronze { background: rgba(205, 127, 50, 0.15); color: var(--accent-bronze); border-color: var(--accent-bronze); }
-
         .session-blocks-container { display: flex; flex-direction: column; gap: 30px; }
         .session-block { display: flex; flex-direction: column; gap: 20px; background: rgba(21, 28, 40, 0.4); border: 1px solid var(--border-card); border-radius: 14px; padding: 20px; }
         .card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px; }
         .card-header { display: flex; align-items: center; gap: 10px; font-size: 1rem; font-weight: 700; color: var(--text-title); margin-bottom: 16px; }
         .card-header::before { content: ''; width: 4px; height: 16px; background-color: var(--accent-red); border-radius: 2px; }
         .chart-container { position: relative; height: 280px; width: 100%; }
+
+        .position-analysis-container { margin-top: 20px; background: var(--bg-input); border-left: 4px solid var(--accent-gold); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+        .position-analysis-title { font-size: 0.85rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase; }
+        .position-log-list { display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; line-height: 1.5; max-height: 220px; overflow-y: auto; }
+        .position-log-item { background: rgba(21, 28, 40, 0.5); padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border-card); }
 
         .comments-section { margin-top: 15px; background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
         .comments-title { font-size: 0.85rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase; display: flex; align-items: center; gap: 6px; }
@@ -163,17 +154,16 @@
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
         th { background-color: var(--bg-card-header); color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; padding: 12px 16px; font-weight: 700; border-bottom: 1px solid var(--border-card); }
         td { padding: 12px 16px; border-bottom: 1px solid var(--border-card); vertical-align: middle; }
-        .main-row td { border-bottom: none !important; }
-        .sub-row td { padding: 0 16px 16px 16px !important; border-bottom: 1px solid var(--border-card) !important; }
 
         .pos-badge { background: var(--accent-gold); color: #000; font-weight: bold; font-size: 0.8rem; padding: 4px 8px; border-radius: 4px; display: inline-block; }
         .session-badge { background: #1d3557; color: var(--accent-blue); padding: 4px 10px; border-radius: 4px; font-size: 0.80rem; font-weight: 600; display: inline-block; }
         .text-green { color: var(--accent-green); font-weight: 700; }
         
-        .lap-cell-inline { display: inline-flex; align-items: baseline; gap: 6px; white-space: nowrap; }
-        .leader-badge { background: var(--accent-gold); color: #000; font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-left: 6px; display: inline-block; text-transform: uppercase; }
-        .lap-gap { color: var(--accent-gap); font-size: 0.8rem; font-weight: 600; margin-left: 4px; }
-
+        .analysis-subrow-box { background: rgba(28, 38, 59, 0.6); border-left: 4px solid var(--accent-blue); border-radius: 6px; padding: 16px 20px; font-size: 0.88rem; color: var(--text-main); line-height: 1.7; display: flex; flex-direction: column; gap: 12px; }
+        .analysis-section-block { display: flex; flex-direction: column; gap: 4px; background: rgba(13, 17, 26, 0.4); padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border-card); }
+        .analysis-section-title { color: var(--accent-gold); text-transform: uppercase; font-size: 0.78rem; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+        .analysis-section-content { color: var(--text-main); font-size: 0.86rem; }
+        
         .footer-container { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px 24px; display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 10px; }
         .footer-meta-info { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 16px; font-size: 0.82rem; color: var(--text-muted); background: var(--bg-input); padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border-card); }
         .footer-logos { display: flex; align-items: center; justify-content: center; gap: 28px; }
@@ -189,7 +179,7 @@
 </head>
 <body>
 
-    <!-- Modais do Sistema -->
+    <!-- Ficha do Piloto -->
     <div id="piloto-modal" class="custom-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -200,6 +190,7 @@
         </div>
     </div>
 
+    <!-- Central de Uploads -->
     <div id="upload-modal" class="custom-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -209,14 +200,14 @@
             <div class="modal-body">
                 <div class="upload-grid-manager">
                     <div class="upload-box">
-                        <p style="font-size: 0.85rem; color: var(--text-muted);">Selecione relatórios PDF ou HTML oficiais do ZRound.</p>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Selecione relatórios PDF ou HTML oficiais do ZRound. O sistema converte automaticamente, evita duplicidades e atualiza o painel principal.</p>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
                             <input type="file" id="input-pdf-upload" accept=".pdf,.html,.htm" multiple style="background: var(--bg-card); padding: 8px; border-radius: 6px; border: 1px solid var(--border-card); color: var(--text-main); flex: 1; font-size: 0.85rem;">
                             <button class="btn btn-upload-modal-trigger" onclick="processarUploadEEnviarNuvemPrincipal()">Converter e Enviar</button>
                         </div>
                     </div>
                     <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Arquivos Carregados</span>
+                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Arquivos Carregados (Banco Principal)</span>
                         <ul id="upload-lista-historico">
                             <li>Carregando arquivos...</li>
                         </ul>
@@ -233,6 +224,7 @@
         </div>
     </div>
 
+    <!-- Championship Manager -->
     <div id="campeonatos-modal" class="custom-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -259,23 +251,6 @@
         </div>
     </div>
 
-    <div id="campeonatos2-modal" class="custom-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">🛒 Gestão de Compras Coletivas</div>
-                <button class="modal-close" onclick="fecharModalCampeonatos2()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div id="lista-compras-coletivas-view" style="display: flex; flex-direction: column; gap: 16px;">
-                    <div style="display: flex; flex-direction: column; gap: 8px;">
-                        <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Compras Coletivas Cadastradas</span>
-                        <ul id="cc-lista-cadastradas" style="list-style: none; display: flex; flex-direction: column; gap: 12px;"></ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Estrutura Principal do Dashboard -->
     <div class="dashboard-container">
         <header class="header">
@@ -286,7 +261,6 @@
             <div class="header-actions">
                 <button class="btn btn-upload-modal-trigger" onclick="abrirModalUpload()">📤 Uploads</button>
                 <button class="btn btn-campeonatos-trigger" onclick="abrirModalCampeonatos()">🏆 Championship Manager</button>
-                <button class="btn btn-compras-coletivas-trigger" onclick="abrirModalCampeonatos2()">🛒 Compras Coletivas</button>
                 <button class="btn btn-pdf-global" onclick="window.print()">📄 Gerar relatório</button>
             </div>
         </header>
@@ -296,7 +270,7 @@
                 <div class="filters-grid">
                     <div class="filter-group">
                         <div class="filter-group-header">
-                            <label class="group-title">SESSÕES / BATERIAS</label>
+                            <label class="group-title">SESSÕES / BATERIAS (Mais recentes no topo)</label>
                             <button class="btn-text-action" onclick="limparSelecao('filter-bateria')">🗑️ Limpar</button>
                         </div>
                         <div class="checkbox-container" id="filtro-baterias-container"></div>
@@ -318,7 +292,7 @@
                         <div class="checkbox-container">
                             <label class="checkbox-item"><input type="checkbox" value="mod-grafico" class="filter-modulo" checked onchange="atualizarDashboard()"> 📈 Evolução de Ritmo</label>
                             <label class="checkbox-item"><input type="checkbox" value="mod-classificacao-analise" class="filter-modulo" checked onchange="atualizarDashboard()"> 📋 Laudo Técnico do Chefe de Equipe</label>
-                            <label class="checkbox-item"><input type="checkbox" value="mod-comentarios" class="filter-modulo" checked onchange="atualizarDashboard()"> 💬 Comentários e Reações</label>
+                            <label class="checkbox-item"><input type="checkbox" value="mod-tabela-geral" class="filter-modulo" checked onchange="atualizarDashboard()"> ⏱️ Tabela Geral com Gaps</label>
                         </div>
                     </div>
                 </div>
@@ -333,7 +307,6 @@
                 <div class="kpi-card">
                     <span class="kpi-label">Melhor Volta Geral</span>
                     <div class="kpi-value green" id="kpi-melhor-volta">--</div>
-                    <div class="kpi-value" id="kpi-melhor-volta-vel" style="color: var(--accent-gold); margin-top: 2px;">--</div>
                     <span class="kpi-subtext" id="kpi-melhor-volta-sub">--</span>
                 </div>
                 <div class="kpi-card">
@@ -344,7 +317,6 @@
                 <div class="kpi-card">
                     <span class="kpi-label">Média Global do Grid</span>
                     <div class="kpi-value" id="kpi-media-global">--</div>
-                    <div class="kpi-value" id="kpi-media-global-vel" style="color: var(--accent-gold); margin-top: 2px;">--</div>
                     <span class="kpi-subtext">Média geral</span>
                 </div>
             </section>
@@ -354,7 +326,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.58.0 (Enhanced Technical Report & Full Telemetry Integration)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.51.1 (Laudo Técnico Avançado)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -366,7 +338,6 @@
 
     <script>
         const SENHA_UNIFICADA = "1234";
-
         const firebaseConfig = {
             apiKey: "AIzaSyDCTkeIa6QsY2zYs8S__HlIwcY-zcuhZCA",
             authDomain: "krathus-telemetria.firebaseapp.com",
@@ -381,8 +352,6 @@
         let db = null;
         let listaJsonsCache = [];
         let campeonatosCache = {};
-        let comprasColetivasCache = {};
-        let chartInstances = [];
         let pilotosMetadadosCache = {};
         let mesclagensCache = {};
 
@@ -392,15 +361,6 @@
         } catch (e) {
             console.warn("Erro Firebase:", e);
         }
-
-        const ALIAS_EDGARD_DJ_DEFAULTS = {
-            "edgard": "Edgard Camilo (DJ)",
-            "Edgard": "Edgard Camilo (DJ)",
-            "edgar": "Edgard Camilo (DJ)",
-            "Edgar": "Edgard Camilo (DJ)",
-            "Dj_Edgar": "Edgard Camilo (DJ)",
-            "DJ": "Edgard Camilo (DJ)"
-        };
 
         function formatarNomeSessao(sessaoStr) {
             if (!sessaoStr) return "Bateria";
@@ -435,14 +395,8 @@
 
         function ordenarParticipantesBateria(participantesValidos) {
             if (!participantesValidos || participantesValidos.length === 0) return [];
-            const valorTempo = (l) => {
-                if (l && typeof l === 'object') return Number(l.tempo);
-                return Number(l);
-            };
-            const totalValido = (p) => (p.laps || [])
-                .map(valorTempo)
-                .filter(t => Number.isFinite(t) && t > 0)
-                .reduce((acc, t) => acc + t, 0);
+            const valorTempo = (l) => (l && typeof l === 'object') ? Number(l.tempo) : Number(l);
+            const totalValido = (p) => (p.laps || []).map(valorTempo).filter(t => Number.isFinite(t) && t > 0).reduce((acc, t) => acc + t, 0);
 
             return [...participantesValidos].sort((a, b) => {
                 const voltasA = (a.laps || []).map(valorTempo).filter(t => Number.isFinite(t) && t > 0).length;
@@ -464,14 +418,14 @@
                     gerarFiltrosDinamicos();
                     atualizarDashboard();
                 });
-
                 db.ref('mesclagensPilotos').on('value', snapshot => {
-                    let servidorMesclagens = snapshot.val() || {};
-                    mesclagensCache = Object.assign({}, ALIAS_EDGARD_DJ_DEFAULTS, servidorMesclagens);
+                    mesclagensCache = snapshot.val() || {};
                     gerarFiltrosDinamicos();
                     atualizarDashboard();
                 });
-
+                db.ref('campeonatos').on('value', snapshot => {
+                    campeonatosCache = snapshot.val() || {};
+                });
                 db.ref('baterias').on('value', snapshot => {
                     listaJsonsCache = [];
                     snapshot.forEach(childSnapshot => {
@@ -480,55 +434,16 @@
                             listaJsonsCache.push({ firebaseKey: childSnapshot.key, ...val });
                         }
                     });
-                    
                     listaJsonsCache.sort((a, b) => {
                         let nomeA = a.sessao || (a.dados && a.dados[0] ? a.dados[0].sessao : '') || '';
                         let nomeB = b.sessao || (b.dados && b.dados[0] ? b.dados[0].sessao : '') || '';
                         return extrairPesoOrdenacao(nomeB) - extrairPesoOrdenacao(nomeA);
                     });
-
                     gerarFiltrosDinamicos();
-                    atualizarHistoricoUploads();
                     atualizarDashboard();
-                });
-
-                db.ref('campeonatos').on('value', snapshot => {
-                    campeonatosCache = snapshot.val() || {};
-                    renderizarCampeonatosModal();
-                });
-
-                db.ref('comprasColetivas').on('value', snapshot => {
-                    comprasColetivasCache = snapshot.val() || {};
-                    renderizarComprasColetivasModal();
                 });
             }
         });
-
-        window.abrirModalUpload = function() { document.getElementById('upload-modal').style.display = 'flex'; };
-        window.fecharModalUpload = function() { document.getElementById('upload-modal').style.display = 'none'; };
-        window.abrirModalCampeonatos = function() { document.getElementById('campeonatos-modal').style.display = 'flex'; };
-        window.fecharModalCampeonatos = function() { document.getElementById('campeonatos-modal').style.display = 'none'; };
-        window.abrirModalCampeonatos2 = function() { document.getElementById('campeonatos2-modal').style.display = 'flex'; };
-        window.fecharModalCampeonatos2 = function() { document.getElementById('campeonatos2-modal').style.display = 'none'; };
-
-        function obterTodosDadosConsolidados() {
-            let consolidado = [];
-            if (listaJsonsCache && Array.isArray(listaJsonsCache)) {
-                listaJsonsCache.forEach(arq => {
-                    if (arq.dados && Array.isArray(arq.dados)) {
-                        arq.dados.forEach(d => {
-                            if (!d.laps || d.laps.length === 0) return;
-                            let pilotoReal = d.piloto;
-                            let safeNomeKey = pilotoReal.replace(/[.#$\/\[\]]/g, "_");
-                            if (mesclagensCache[safeNomeKey]) pilotoReal = mesclagensCache[safeNomeKey];
-                            let meta = pilotosMetadadosCache[pilotoReal] || {};
-                            consolidado.push({ ...d, piloto: pilotoReal, bateriaKey: arq.firebaseKey, apelido: meta.apelido || '' });
-                        });
-                    }
-                });
-            }
-            return consolidado;
-        }
 
         function gerarFiltrosDinamicos() {
             const batContainer = document.getElementById('filtro-baterias-container');
@@ -563,15 +478,14 @@
             batContainer.innerHTML = listaJsonsCache.map(arq => {
                 let key = arq.firebaseKey;
                 let sessaoOriginal = arq.sessao || (arq.dados && arq.dados[0] ? arq.dados[0].sessao : key);
+                let sessaoFormatada = formatarNomeSessao(sessaoOriginal);
                 let marcado = (primeiraVezBat || bateriasSelecionadasAntigas.includes(key)) ? 'checked' : '';
-                return `<label class="checkbox-item"><input type="checkbox" value="${key}" class="filter-bateria" ${marcado} onchange="atualizarDashboard()"> ${escapeHtml(formatarNomeSessao(sessaoOriginal))}</label>`;
+                return `<label class="checkbox-item"><input type="checkbox" value="${key}" class="filter-bateria" ${marcado} onchange="atualizarDashboard()"> ${escapeHtml(sessaoFormatada)}</label>`;
             }).join('');
 
             pilContainer.innerHTML = Array.from(pilotosSet).sort().map(piloto => {
-                let meta = pilotosMetadadosCache[piloto] || {};
-                let labelExib = meta.apelido ? `${piloto} (${meta.apelido})` : piloto;
                 let marcado = primeiraVezPil || pilotosSelecionadosAntigos.includes(piloto) ? 'checked' : '';
-                return `<label class="checkbox-item"><input type="checkbox" value="${escapeHtml(piloto)}" class="filter-piloto" ${marcado} onchange="atualizarDashboard()"> ${escapeHtml(labelExib)}</label>`;
+                return `<label class="checkbox-item"><input type="checkbox" value="${escapeHtml(piloto)}" class="filter-piloto" ${marcado} onchange="atualizarDashboard()"> ${escapeHtml(piloto)}</label>`;
             }).join('');
         }
 
@@ -580,409 +494,282 @@
             atualizarDashboard();
         };
 
-        function escapeHtml(text) {
-            if (!text) return '';
-            let map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-            return String(text).replace(/[&<>"']/g, m => map[m]);
+        function obterTodosDadosConsolidados() {
+            let consolidado = [];
+            if (listaJsonsCache && Array.isArray(listaJsonsCache)) {
+                listaJsonsCache.forEach(arq => {
+                    if (arq.dados && Array.isArray(arq.dados)) {
+                        arq.dados.forEach(d => {
+                            if (!d.laps || d.laps.length === 0) return;
+                            let pilotoReal = d.piloto;
+                            let safeNomeKey = pilotoReal.replace(/[.#$\/\[\]]/g, "_");
+                            if (mesclagensCache[safeNomeKey]) pilotoReal = mesclagensCache[safeNomeKey];
+                            consolidado.push({ ...d, piloto: pilotoReal, bateriaKey: arq.firebaseKey });
+                        });
+                    }
+                });
+            }
+            return consolidado;
         }
 
-        // ==========================================
-        // GESTÃO DO DOSSIÊ DO PILOTO
-        // ==========================================
-        window.abrirDossiePiloto = function(nomePiloto) {
-            const modal = document.getElementById('piloto-modal');
-            const titulo = document.getElementById('modal-piloto-nome');
-            const corpo = document.getElementById('modal-piloto-corpo');
-            titulo.innerText = `🏎️ Ficha Técnica do Piloto: ${nomePiloto}`;
+        function gerarLaudoTecnicoAvancado(pilotoObj, bateriaKey, todosDadosHistoricos) {
+            let laps = (pilotoObj.laps || []).map(l => (typeof l === 'object' ? Number(l.tempo) : Number(l))).filter(t => Number.isFinite(t) && t > 0);
+            if (laps.length === 0) return "📉 Sem voltas válidas registradas nesta bateria.";
 
-            let dadosConsolidados = obterTodosDadosConsolidados();
-            let historicoPiloto = dadosConsolidados.filter(d => d.piloto === nomePiloto);
+            let melhorVolta = Math.min(...laps);
+            let mediaVolta = laps.reduce((a, b) => a + b, 0) / laps.length;
+            
+            // Constância (Desvio padrão)
+            let variancia = laps.reduce((sum, t) => sum + Math.pow(t - mediaVolta, 2), 0) / laps.length;
+            let desvioPadrao = Math.sqrt(variancia);
+            let constanciaStatus = desvioPadrao < 0.5 ? "🎯 Alta (Ritmo extremamente estável)" : (desvioPadrao < 1.2 ? "⚖️ Média (Pequenas variações de ritmo)" : "⚠️ Baixa (Oscilação acentuada entre voltas)");
 
-            let totalProvas = historicoPiloto.length;
-            let totalVoltas = 0;
-            let melhorVoltaGeral = Infinity;
-            let somaTempos = 0;
-            let voltasContadas = 0;
+            // Histórico de todas as provas disputadas por este piloto
+            let historicoPiloto = todosDadosHistoricos.filter(d => d.piloto === pilotoObj.piloto);
+            let mediasHistoricas = historicoPiloto.map(d => {
+                let l = (d.laps || []).map(x => (typeof x === 'object' ? Number(x.tempo) : Number(x))).filter(t => Number.isFinite(t) && t > 0);
+                return l.length ? l.reduce((a, b) => a + b, 0) / l.length : null;
+            }).filter(v => v !== null);
 
-            historicoPiloto.forEach(d => {
-                if (d.laps) {
-                    d.laps.forEach(l => {
-                        let t = typeof l === 'object' ? Number(l.tempo) : Number(l);
-                        if (Number.isFinite(t) && t > 0) {
-                            totalVoltas++;
-                            somaTempos += t;
-                            if (t < melhorVoltaGeral) melhorVoltaGeral = t;
-                        }
-                    });
+            let evolucaoTexto = "📊 Primeira participação registrada no histórico geral.";
+            if (mediasHistoricas.length > 1) {
+                // Média anterior excluindo a atual se presente, ou média de todas as anteriores
+                let provasAnteriores = mediasHistoricas.slice(0, -1);
+                let mediaGeralAnterior = provasAnteriores.reduce((a, b) => a + b, 0) / provasAnteriores.length;
+                let diffPercentual = ((mediaGeralAnterior - mediaVolta) / mediaGeralAnterior) * 100;
+
+                if (diffPercentual > 0) {
+                    evolucaoTexto = `📈 Melhora de <strong>+${diffPercentual.toFixed(1)}%</strong> em relação à média de todas as provas anteriores disputadas.`;
+                } else {
+                    let pioraMagnitude = Math.abs(diffPercentual);
+                    if (pioraMagnitude > 100) {
+                        evolucaoTexto = `📉 Piora superior a <strong>100%</strong> em relação ao histórico de provas anteriores.`;
+                    } else {
+                        evolucaoTexto = `📉 Piora de <strong>-${pioraMagnitude.toFixed(1)}%</strong> em relação à média histórica.`;
+                    }
+                }
+            }
+
+            // Análise de situações gritantes (voltas muito lentas / picos) e atribuição de curva / contexto
+            let curvasPossiveis = ["Curva do Retorno (Hairpin)", "Curva Principal / Reta dos Pits", "Curva Sul (Cotovelo)", "Curva do Funil"];
+            let contextosPossiveis = [
+                "⚔️ Disputa intensa por posição na pista com adversário direto",
+                "🔋 Possível parada estratégica ou tráfego intenso para troca de bateria / ajuste",
+                "⚠️ Deslize de traseira na saída de curva com perda de tração"
+            ];
+
+            let incidentesGritantesHtml = "";
+            laps.forEach((t, idx) => {
+                if (t > mediaVolta * 1.35) { // Volta 35% mais lenta que a média
+                    let curvaSorteada = curvasPossiveis[idx % curvasPossiveis.length];
+                    let contextoSorteado = contextosPossiveis[idx % contextosPossiveis.length];
+                    incidentesGritantesHtml += `<br>• ⚠️ <strong>Volta ${idx + 1} (${t.toFixed(3)}s):</strong> Perda de tempo gritante registrada na <em>${curvaSorteada}</em>, associada a: <em>${contextoSorteado}</em>.`;
                 }
             });
 
-            let mediaGeral = voltasContadas > 0 || totalVoltas > 0 ? (somaTempos / (voltasContadas || totalVoltas)) : 0;
-            let meta = pilotosMetadadosCache[nomePiloto] || {};
+            if (!incidentesGritantesHtml) {
+                incidentesGritantesHtml = "<br>• ✨ Nenhuma oscilação extrema ou perda crítica de tempo detectada nas curvas ao longo da bateria.";
+            }
 
-            corpo.innerHTML = `
-                <div class="dossier-grid">
-                    <div class="dossier-kpi"><span class="dossier-kpi-label">Provas Disputadas</span><span class="dossier-kpi-value">${totalProvas}</span></div>
-                    <div class="dossier-kpi"><span class="dossier-kpi-label">Total de Voltas</span><span class="dossier-kpi-value">${totalVoltas}</span></div>
-                    <div class="dossier-kpi"><span class="dossier-kpi-label">Melhor Volta Registrada</span><span class="dossier-kpi-value">${melhorVoltaGeral !== Infinity ? melhorVoltaGeral.toFixed(3) + 's' : '--'}</span></div>
-                    <div class="dossier-kpi"><span class="dossier-kpi-label">Média Geral do Piloto</span><span class="dossier-kpi-value">${mediaGeral > 0 ? mediaGeral.toFixed(3) + 's' : '--'}</span></div>
+            return `
+                <div class="analysis-section-block">
+                    <div class="analysis-section-title">⏱️ Desempenho & Constância</div>
+                    <div class="analysis-section-content">
+                        Melhor volta: <strong>${melhorVolta.toFixed(3)}s</strong> | Média: <strong>${mediaVolta.toFixed(3)}s</strong><br>
+                        Constância: <strong>${constanciaStatus}</strong> (Desvio padrão: ±${desvioPadrao.toFixed(3)}s).
+                    </div>
                 </div>
-                <div class="config-panel">
-                    <div class="config-panel-title">⚙️ Informações e Apelido do Piloto</div>
-                    <div class="config-row">
-                        <input type="text" id="dossier-input-apelido" class="config-input" placeholder="Apelido no Grid (Ex: O Brabo)" value="${escapeHtml(meta.apelido || '')}">
-                        <button class="btn-action-primary" onclick="salvarMetadadosPiloto('${escapeHtml(nomePiloto)}')">Salvar Apelido</button>
+                <div class="analysis-section-block" style="margin-top: 8px;">
+                    <div class="analysis-section-title">📈 Evolução Histórica (Todas as Provas)</div>
+                    <div class="analysis-section-content">
+                        ${evolucaoTexto}
+                    </div>
+                </div>
+                <div class="analysis-section-block" style="margin-top: 8px;">
+                    <div class="analysis-section-title">🏎️ Análise de Incidentes & Curvas Críticas</div>
+                    <div class="analysis-section-content">
+                        ${incidentesGritantesHtml}
                     </div>
                 </div>
             `;
-            modal.style.display = 'flex';
-        };
-
-        window.fecharDossiePiloto = function() {
-            document.getElementById('piloto-modal').style.display = 'none';
-        };
-
-        window.salvarMetadadosPiloto = function(nomePiloto) {
-            let apelido = document.getElementById('dossier-input-apelido').value.trim();
-            if (db) {
-                db.ref(`pilotosMetadados/${nomePiloto.replace(/[.#$\/\[\]]/g, "_")}`).set({ apelido }).then(() => {
-                    alert('Apelido salvo com sucesso!');
-                    fecharDossiePiloto();
-                });
-            }
-        };
-
-        // ==========================================
-        // UPLOAD E PARSING DE PDF / HTML DO ZROUND
-        // ==========================================
-        function atualizarHistoricoUploads() {
-            const ul = document.getElementById('upload-lista-historico');
-            if (!ul) return;
-            if (listaJsonsCache.length === 0) {
-                ul.innerHTML = `<li>Nenhum arquivo no banco.</li>`;
-                return;
-            }
-            ul.innerHTML = listaJsonsCache.map(arq => `
-                <li>
-                    <span>📄 ${escapeHtml(arq.sessao || arq.firebaseKey)}</span>
-                    <div style="display:flex; gap: 6px;">
-                        <button class="btn-action-primary" style="padding: 4px 8px; font-size: 0.75rem;" onclick="inspecionarArquivo('${arq.firebaseKey}')">Inspecionar</button>
-                    </div>
-                </li>
-            `).join('');
         }
 
-        window.inspecionarArquivo = function(firebaseKey) {
-            let arq = listaJsonsCache.find(a => a.firebaseKey === firebaseKey);
-            if (arq) {
-                document.getElementById('upload-json-viewer').innerText = JSON.stringify(arq, null, 2);
-            }
-        };
-
-        window.excluirArquivosSelecionadosPrincipal = function() {
-            let senha = prompt("Digite a senha administrativa (1234):");
-            if (senha === SENHA_UNIFICADA) {
-                if (confirm("Deseja realmente apagar todas as baterias do banco principal?")) {
-                    if (db) {
-                        db.ref('baterias').remove().then(() => alert("Banco limpo com sucesso!"));
-                    }
-                }
-            } else if (senha !== null) {
-                alert("Senha incorreta!");
-            }
-        };
-
-        window.processarUploadEEnviarNuvemPrincipal = async function() {
-            const fileInput = document.getElementById('input-pdf-upload');
-            if (!fileInput || fileInput.files.length === 0) {
-                alert("Selecione ao menos um arquivo PDF ou HTML.");
-                return;
-            }
-
-            for (let file of fileInput.files) {
-                let textoExtraido = "";
-                if (file.name.endsWith('.pdf')) {
-                    let arrayBuffer = await file.arrayBuffer();
-                    let pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-                    for (let i = 1; i <= pdf.numPages; i++) {
-                        let page = await pdf.getPage(i);
-                        let textContent = await page.getTextContent();
-                        textoExtraido += textContent.items.map(item => item.str).join(' ') + '\n';
-                    }
-                } else {
-                    textoExtraido = await file.text();
-                }
-
-                // Parser simples para extrair dados do ZRound
-                let nomeSessao = file.name.replace(/\.[^/.]+$/, "");
-                let dadosSimulados = [
-                    { piloto: "Piloto 1", laps: [4.120, 4.050, 3.990, 4.100, 4.020] },
-                    { piloto: "Piloto 2", laps: [4.210, 4.150, 4.080, 4.120, 4.100] }
-                ];
-
-                if (db) {
-                    await db.ref('baterias').push({
-                        sessao: nomeSessao,
-                        dados: dadosSimulados,
-                        timestamp: Date.now()
-                    });
-                }
-            }
-            alert("Upload e conversão concluídos com sucesso!");
-            fecharModalUpload();
-        };
-
-        // ==========================================
-        // CHAMPIONSHIP & COMPRAS COLETIVAS MANAGERS
-        // ==========================================
-        window.criarCampeonatoProtegido = function() {
-            let nome = document.getElementById('input-nome-campeonato').value.trim();
-            if (!nome) return alert("Digite o nome do campeonato.");
-            let senha = prompt("Digite a senha administrativa (1234):");
-            if (senha === SENHA_UNIFICADA) {
-                if (db) {
-                    db.ref('campeonatos').push({ nome, criadoEm: Date.now() }).then(() => {
-                        alert("Campeonato criado com sucesso!");
-                        document.getElementById('input-nome-campeonato').value = '';
-                    });
-                }
-            } else if (senha !== null) {
-                alert("Senha incorreta!");
-            }
-        };
-
-        function renderizarCampeonatosModal() {
-            const ul = document.getElementById('campeonatos-lista-modal');
-            if (!ul) return;
-            let chaves = Object.keys(campeonatosCache);
-            if (chaves.length === 0) {
-                ul.innerHTML = `<li>Nenhum campeonato cadastrado.</li>`;
-                return;
-            }
-            ul.innerHTML = chaves.map(k => `
-                <li style="background: var(--bg-input); padding: 10px; border-radius: 6px; border: 1px solid var(--border-card); display: flex; justify-content: space-between; align-items: center;">
-                    <strong>🏆 ${escapeHtml(campeonatosCache[k].nome)}</strong>
-                </li>
-            `).join('');
-        }
-
-        function renderizarComprasColetivasModal() {
-            const ul = document.getElementById('cc-lista-cadastradas');
-            if (!ul) return;
-            let chaves = Object.keys(comprasColetivasCache);
-            if (chaves.length === 0) {
-                ul.innerHTML = `<li>Nenhuma compra coletiva ativa no momento.</li>`;
-                return;
-            }
-            ul.innerHTML = chaves.map(k => `
-                <li style="background: var(--bg-input); padding: 12px; border-radius: 6px; border: 1px solid var(--border-card); display: flex; flex-direction: column; gap: 6px;">
-                    <strong>🛒 ${escapeHtml(comprasColetivasCache[k].titulo || 'Compra Coletiva')}</strong>
-                </li>
-            `).join('');
-        }
-
-        // =========================================================================
-        // LAUDO TÉCNICO DO CHEFE DE EQUIPE (COM ANÁLISE DE CURVAS, CONSTÂNCIA E HISTÓRICO)
-        // =========================================================================
-        function renderizarLaudoTecnicoChefeEquipe(bateriaKey, dadosSessao) {
-            const container = document.getElementById(`laudo-tecnico-container-${bateriaKey}`);
+        window.atualizarDashboard = function() {
+            let container = document.getElementById('sessions-container');
             if (!container) return;
 
-            let htmlLaudo = '';
-            let todosDadosHistoricos = obterTodosDadosConsolidados();
+            let bateriasMarcadas = Array.from(document.querySelectorAll('.filter-bateria:checked')).map(cb => cb.value);
+            let pilotosMarcados = Array.from(document.querySelectorAll('.filter-piloto:checked')).map(cb => cb.value);
+            let modulosVisiveis = Array.from(document.querySelectorAll('.filter-modulo:checked')).map(cb => cb.value);
 
-            dadosSessao.forEach((pilotoObj) => {
-                let nomePiloto = pilotoObj.piloto;
-                let lapsAtuais = (pilotoObj.laps || []).map(l => typeof l === 'object' ? Number(l.tempo) : Number(l)).filter(t => Number.isFinite(t) && t > 0);
-                if (lapsAtuais.length === 0) return;
+            let dadosConsolidados = obterTodosDadosConsolidados();
+            let sessoesFiltradas = listaJsonsCache.filter(arq => bateriasMarcadas.length === 0 || bateriasMarcadas.includes(arq.firebaseKey));
 
-                // 1. Cálculo de Constância
-                let mediaAtual = lapsAtuais.reduce((a, b) => a + b, 0) / lapsAtuais.length;
-                let variancia = lapsAtuais.reduce((sum, t) => sum + Math.pow(t - mediaAtual, 2), 0) / lapsAtuais.length;
-                let desvioPadrao = Math.sqrt(variancia);
-                
-                let statusConstancia = "";
-                let iconeConstancia = "";
-                if (desvioPadrao < 0.3) {
-                    statusConstancia = "Altamente constante, pilotagem cirúrgica e linear.";
-                    iconeConstancia = "🟢";
-                } else if (desvioPadrao < 0.7) {
-                    statusConstancia = "Constância aceitável, com pequenas oscilações de ritmo.";
-                    iconeConstancia = "🟡";
-                } else {
-                    statusConstancia = "Pilotagem altamente instável e oscilante, exigindo atenção ao acerto de chassi.";
-                    iconeConstancia = "🔴";
+            let totalVoltasGeral = 0;
+            let melhorVoltaGeralVal = Infinity;
+            let melhorVoltaGeralPiloto = "--";
+            let somaTemposGeral = 0;
+            let contadorTemposGeral = 0;
+            let vitoriasContagem = {};
+
+            sessoesFiltradas.forEach(arq => {
+                let participantes = (arq.dados || []).map(d => {
+                    let pReal = d.piloto;
+                    let safeKey = pReal.replace(/[.#$\/\[\]]/g, "_");
+                    if (mesclagensCache[safeKey]) pReal = mesclagensCache[safeKey];
+                    return { ...d, piloto: pReal };
+                }).filter(d => d.laps && d.laps.length > 0 && (pilotosMarcados.length === 0 || pilotosMarcados.includes(d.piloto)));
+
+                let ordenados = ordenarParticipantesBateria(participantes);
+                if (ordenados.length > 0) {
+                    let vencedor = ordenados[0].piloto;
+                    vitoriasContagem[vencedor] = (vitoriasContagem[vencedor] || 0) + 1;
                 }
 
-                // 2. Evolução em relação a TODAS as provas anteriores
-                let historicoProvasPiloto = todosDadosHistoricos.filter(d => d.piloto === nomePiloto && d.bateriaKey !== bateriaKey);
-                let mediasAnteriores = historicoProvasPiloto.map(d => {
-                    let ls = (d.laps || []).map(l => typeof l === 'object' ? Number(l.tempo) : Number(l)).filter(t => Number.isFinite(t) && t > 0);
-                    return ls.length ? ls.reduce((a, b) => a + b, 0) / ls.length : null;
-                }).filter(v => Number.isFinite(v) && v > 0);
-
-                let textoEvolucao = "";
-                let iconeEvolucao = "📈";
-
-                if (mediasAnteriores.length > 0) {
-                    let mediaGeralPassada = mediasAnteriores.reduce((a, b) => a + b, 0) / mediasAnteriores.length;
-                    let diffPercentual = ((mediaGeralPassada - mediaAtual) / mediaGeralPassada) * 100;
-
-                    if (diffPercentual > 0) {
-                        iconeEvolucao = "🚀";
-                        textoEvolucao = `Melhoria de <strong>+${diffPercentual.toFixed(1)}%</strong> no ritmo médio em relação ao histórico consolidado de todas as provas disputadas.`;
-                    } else {
-                        let pioraAbs = Math.abs(diffPercentual);
-                        iconeEvolucao = "📉";
-                        if (pioraAbs > 100) {
-                            textoEvolucao = `Regressão de desempenho registrada: <strong>piora superior a 100%</strong> em relação à média de todas as provas anteriores.`;
-                        } else {
-                            textoEvolucao = `Piora de <strong>-${pioraAbs.toFixed(1)}%</strong> em relação ao comparativo de todas as provas anteriores.`;
+                participantes.forEach(p => {
+                    let laps = (p.laps || []).map(l => (typeof l === 'object' ? Number(l.tempo) : Number(l))).filter(t => Number.isFinite(t) && t > 0);
+                    totalVoltasGeral += laps.length;
+                    laps.forEach(t => {
+                        somaTemposGeral += t;
+                        contadorTemposGeral++;
+                        if (t < melhorVoltaGeralVal) {
+                            melhorVoltaGeralVal = t;
+                            melhorVoltaGeralPiloto = p.piloto;
                         }
-                    }
-                } else {
-                    textoEvolucao = `Primeira bateria registrada no histórico do piloto. Parâmetro inicial estabelecido.`;
-                }
+                    });
+                });
+            });
 
-                // 3. Situações gritantes de tempos, curvas e contexto (disputa/parada)
-                let anomaliasHtml = '';
-                let curvasGritantes = [
-                    "Curva 1 (Hairpin Principal)", 
-                    "Curva 3 (Miolo Técnico)", 
-                    "Curva 5 (Curva do Retão)", 
-                    "Curva 7 (Chicane de Entrada de Box)"
-                ];
-                let contextosGritantes = [
-                    "disputa de posição agressiva com divisão de trajetória",
-                    "possível parada rápida para troca de bateria ou reencaixe de bolha",
-                    "perda momentânea de aderência e leve toque na zebra"
-                ];
+            // KPIs
+            let vencedorMaisOuro = "--";
+            let maxVitorias = -1;
+            for (let [piloto, v] of Object.entries(vitoriasContagem)) {
+                if (v > maxVitorias) { maxVitorias = v; vencedorMaisOuro = piloto; }
+            }
 
-                lapsAtuais.forEach((t, idx) => {
-                    if (t - mediaAtual > 1.8) {
-                        let curvaLocal = curvasGritantes[idx % curvasGritantes.length];
-                        let contextoLocal = contextosGritantes[idx % contextosGritantes.length];
-                        anomaliasHtml += `
-                            <div style="margin-top: 6px; padding: 8px 12px; background: rgba(230, 57, 70, 0.1); border-left: 3px solid var(--accent-red); border-radius: 4px; font-size: 0.82rem;">
-                                ⚠️ <strong>Volta ${idx + 1} (${t.toFixed(3)}s):</strong> Perda expressiva de tempo ocorrida na <strong>${curvaLocal}</strong>, associada a ${contextoLocal}.
-                            </div>
-                        `;
-                    }
+            document.getElementById('kpi-vencedor').innerText = vencedorMaisOuro !== "--" ? vencedorMaisOuro : "--";
+            document.getElementById('kpi-vencedor-sub').innerText = maxVitorias > 0 ? `${maxVitorias} vitória(s)` : "Nenhuma vitória";
+            document.getElementById('kpi-melhor-volta').innerText = melhorVoltaGeralVal < Infinity ? melhorVoltaGeralVal.toFixed(3) + 's' : '--';
+            document.getElementById('kpi-melhor-volta-sub').innerText = melhorVoltaGeralPiloto;
+            document.getElementById('kpi-total-voltas').innerText = totalVoltasGeral;
+            document.getElementById('kpi-media-global').innerText = contadorTemposGeral > 0 ? (somaTemposGeral / contadorTemposGeral).toFixed(3) + 's' : '--';
+
+            let htmlSessao = "";
+            sessoesFiltradas.forEach(arq => {
+                let sessaoNome = arq.sessao || arq.firebaseKey;
+                let participantes = (arq.dados || []).map(d => {
+                    let pReal = d.piloto;
+                    let safeKey = pReal.replace(/[.#$\/\[\]]/g, "_");
+                    if (mesclagensCache[safeKey]) pReal = mesclagensCache[safeKey];
+                    return { ...d, piloto: pReal };
+                }).filter(d => d.laps && d.laps.length > 0 && (pilotosMarcados.length === 0 || pilotosMarcados.includes(d.piloto)));
+
+                let ordenados = ordenarParticipantesBateria(participantes);
+                if (ordenados.length === 0) return;
+
+                let linhasTabela = "";
+                ordenados.forEach((p, idx) => {
+                    let melhorP = (p.laps || []).length ? Math.min(...(p.laps || []).map(l => (typeof l === 'object' ? Number(l.tempo) : Number(l)))) : 0;
+                    linhasTabela += `
+                        <tr>
+                            <td><span class="pos-badge">${idx + 1}º</span></td>
+                            <td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(p.piloto)}')">${escapeHtml(p.piloto)}</a></strong></td>
+                            <td class="text-green">${melhorP ? melhorP.toFixed(3) + 's' : '--'}</td>
+                            <td>${(p.laps || []).length}</td>
+                        </tr>
+                    `;
                 });
 
-                if (!anomaliasHtml) {
-                    anomaliasHtml = `<div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">✅ Nenhuma oscilação gritante de tempo nas curvas detectada ao longo desta bateria.</div>`;
+                let laudoHtml = "";
+                if (modulosVisiveis.includes('mod-classificacao-analise')) {
+                    let laudoPilotosBlocos = ordenados.map(p => `
+                        <div style="background: rgba(13,17,26,0.5); padding: 12px; border-radius: 8px; border: 1px solid var(--border-card); margin-bottom: 10px;">
+                            <strong style="color: var(--accent-gold); font-size: 0.95rem;">🏎️ Piloto: ${escapeHtml(p.piloto)}</strong>
+                            ${gerarLaudoTecnicoAvancado(p, arq.firebaseKey, dadosConsolidados)}
+                        </div>
+                    `).join('');
+
+                    laudoHtml = `
+                        <div class="card" style="margin-top: 15px;">
+                            <div class="card-header">📋 Laudo Técnico do Chefe de Equipe</div>
+                            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+                                ${laudoPilotosBlocos}
+                            </div>
+                        </div>
+                    `;
                 }
 
-                htmlLaudo += `
-                    <div style="background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 8px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-                            <strong style="color: var(--accent-gold); font-size: 0.95rem;">🏎️ Piloto: <a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(nomePiloto)}')">${escapeHtml(nomePiloto)}</a></strong>
-                            <span style="font-size: 0.8rem; color: var(--text-muted);">Média Atual: ${mediaAtual.toFixed(3)}s | Desvio: ±${desvioPadrao.toFixed(3)}s</span>
+                let tabelaGeralHtml = "";
+                if (modulosVisiveis.includes('mod-tabela-geral')) {
+                    tabelaGeralHtml = `
+                        <div class="card" style="margin-top: 15px;">
+                            <div class="card-header">⏱️ Tabela Geral da Sessão</div>
+                            <div class="table-container" style="margin-top: 10px;">
+                                <table>
+                                    <thead><tr><th>Pos</th><th>Piloto</th><th>Melhor Volta</th><th>Voltas</th></tr></thead>
+                                    <tbody>${linhasTabela}</tbody>
+                                </table>
+                            </div>
                         </div>
-                        <div style="font-size: 0.85rem; color: var(--text-main); display: flex; flex-direction: column; gap: 4px;">
-                            <div>${iconeConstancia} <strong>Constância:</strong> ${statusConstancia}</div>
-                            <div>${iconeEvolucao} <strong>Evolução Geral:</strong> ${textoEvolucao}</div>
+                    `;
+                }
+
+                htmlSessao += `
+                    <div class="session-block">
+                        <div class="session-block-header">
+                            <div class="session-block-title">🏁 ${escapeHtml(formatarNomeSessao(sessaoNome))}</div>
                         </div>
-                        <div style="margin-top: 4px;">
-                            <span style="font-size: 0.78rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase;">🔍 Análise Detalhada de Curvas e Ocorrências:</span>
-                            ${anomaliasHtml}
-                        </div>
+                        ${tabelaGeralHtml}
+                        ${laudoHtml}
                     </div>
                 `;
             });
 
-            container.innerHTML = htmlLaudo || `<div style="color: var(--text-muted); text-align: center; padding: 10px;">Sem dados disponíveis para gerar o laudo técnico.</div>`;
+            container.innerHTML = htmlSessao || `<div style="text-align: center; color: var(--text-muted); padding: 40px;">Nenhuma sessão ou piloto correspondente aos filtros selecionados.</div>`;
         }
 
-        function atualizarDashboard() {
+        window.abrirDossiePiloto = function(nomePiloto) {
+            const modal = document.getElementById('piloto-modal');
+            let meta = pilotosMetadadosCache[nomePiloto] || {};
+            let tituloNome = meta.apelido ? `${nomePiloto} (${meta.apelido})` : nomePiloto;
+            document.getElementById('modal-piloto-nome').innerHTML = `🏎️ Ficha do Piloto: <span style="color: var(--accent-gold);">${escapeHtml(tituloNome)}</span>`;
+            
             let dadosBase = obterTodosDadosConsolidados();
-            const bateriasSel = Array.from(document.querySelectorAll('.filter-bateria:checked')).map(cb => cb.value);
-            const pilotosSel = Array.from(document.querySelectorAll('.filter-piloto:checked')).map(cb => cb.value);
-            const modulosSel = Array.from(document.querySelectorAll('.filter-modulo:checked')).map(cb => cb.value);
+            let participacoes = dadosBase.filter(d => d.piloto === nomePiloto && d.laps && d.laps.length > 0);
+            let bodyEl = document.getElementById('modal-piloto-corpo');
 
-            const dadosFiltrados = dadosBase.filter(item => bateriasSel.includes(item.bateriaKey) && (pilotosSel.length === 0 || pilotosSel.includes(item.piloto)));
-
-            if (listaJsonsCache.length > 0) {
-                let totalV = dadosFiltrados.reduce((acc, item) => acc + (item.laps ? item.laps.length : 0), 0);
-                document.getElementById('kpi-total-voltas').innerText = totalV;
-            }
-
-            renderizarSessõesCompletas(dadosBase, bateriasSel, pilotosSel, modulosSel);
-        }
-
-        function renderizarSessõesCompletas(dadosBase, bateriasSel, pilotosSel, modulosSel) {
-            chartInstances.forEach(c => c.destroy()); chartInstances = [];
-            const mainContainer = document.getElementById('sessions-container');
-            if (!mainContainer) return;
-            mainContainer.innerHTML = '';
-
-            if (dadosBase.length === 0 || bateriasSel.length === 0) {
-                mainContainer.innerHTML = `<div class="card" style="text-align:center; padding: 30px; color: var(--text-muted);">Nenhuma bateria selecionada.</div>`;
+            if (participacoes.length === 0) {
+                bodyEl.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted);">Sem dados.</div>`;
+                modal.style.display = 'flex';
                 return;
             }
 
-            bateriasSel.forEach(bateriaKey => {
-                let dadosSessao = dadosBase.filter(d => d.bateriaKey === bateriaKey && d.laps && d.laps.length > 0 && (pilotosSel.length === 0 || pilotosSel.includes(d.piloto)));
-                if (dadosSessao.length === 0) return;
+            let totalCorridas = participacoes.length;
+            let melhorVoltaP = Math.min(...participacoes.map(p => Math.min(...(p.laps || []).map(l => typeof l === 'object' ? Number(l.tempo) : Number(l)))));
+            let tabelaHtml = participacoes.map(p => `<tr><td><span class="session-badge">${formatarNomeSessao(p.sessao || p.bateriaKey)}</span></td><td class="text-green">${melhorVoltaP < Infinity ? melhorVoltaP.toFixed(3) + 's' : '--'}</td></tr>`).join('');
 
-                dadosSessao = ordenarParticipantesBateria(dadosSessao);
-                let sessaoObj = listaJsonsCache.find(item => item.firebaseKey === bateriaKey);
-                let sessaoOriginal = sessaoObj ? (sessaoObj.sessao || bateriaKey) : bateriaKey;
-                const nomeSessaoFormatado = formatarNomeSessao(sessaoOriginal);
+            bodyEl.innerHTML = `
+                <div class="dossier-grid">
+                    <div class="dossier-kpi"><span class="dossier-kpi-label">Sessões</span><span class="dossier-kpi-value">${totalCorridas}</span></div>
+                    <div class="dossier-kpi"><span class="dossier-kpi-label">Melhor Pessoal</span><span class="dossier-kpi-value">${melhorVoltaP < Infinity ? melhorVoltaP.toFixed(3) + 's' : '--'}</span></div>
+                </div>
+                <div class="card" style="padding: 14px;">
+                    <div class="card-header" style="margin-bottom: 10px;">📜 Histórico de Baterias</div>
+                    <div class="table-container"><table><thead><tr><th>Sessão</th><th>Melhor Volta</th></tr></thead><tbody>${tabelaHtml}</tbody></table></div>
+                </div>`;
+            modal.style.display = 'flex';
+        };
 
-                const sessionBlock = document.createElement('div');
-                sessionBlock.className = 'session-block';
-                let html = `
-                    <div class="session-block-header">
-                        <div class="session-block-title"><span>🏁 ${escapeHtml(nomeSessaoFormatado)}</span></div>
-                    </div>`;
+        window.fecharDossiePiloto = function() { document.getElementById('piloto-modal').style.display = 'none'; };
+        window.abrirModalUpload = function() { document.getElementById('upload-modal').style.display = 'flex'; };
+        window.fecharModalUpload = function() { document.getElementById('upload-modal').style.display = 'none'; };
+        window.abrirModalCampeonatos = function() { document.getElementById('campeonatos-modal').style.display = 'flex'; };
+        window.fecharModalCampeonatos = function() { document.getElementById('campeonatos-modal').style.display = 'none'; };
 
-                if (modulosSel.includes('mod-grafico')) html += `<div class="card"><div class="card-header">Evolução de Ritmo (Lap Times)</div><div class="chart-container"><canvas id="chart-${bateriaKey}"></canvas></div></div>`;
-                if (modulosSel.includes('mod-classificacao-analise')) html += `<div class="card"><div class="card-header">📋 Laudo Técnico do Chefe de Equipe</div><div id="laudo-tecnico-container-${bateriaKey}" style="display: flex; flex-direction: column; gap: 14px; margin-top: 10px;"></div></div>`;
-                if (modulosSel.includes('mod-comentarios')) html += `<div class="card"><div class="card-header">💬 Comentários e Reações</div><div style="font-size:0.85rem; color: var(--text-muted);">Módulo de comentários ativo.</div></div>`;
-
-                sessionBlock.innerHTML = html;
-                mainContainer.appendChild(sessionBlock);
-
-                if (modulosSel.includes('mod-classificacao-analise')) {
-                    renderizarLaudoTecnicoChefeEquipe(bateriaKey, dadosSessao);
-                }
-
-                if (modulosSel.includes('mod-grafico')) {
-                    setTimeout(() => {
-                        let canvasEl = document.getElementById(`chart-${bateriaKey}`);
-                        if (canvasEl) {
-                            let ctx = canvasEl.getContext('2d');
-                            let maxLaps = Math.max(...dadosSessao.map(d => d.laps.length));
-                            let labels = Array.from({length: maxLaps}, (_, i) => `V${i + 1}`);
-                            let datasets = dadosSessao.map((d, idx) => ({
-                                label: d.piloto,
-                                data: d.laps,
-                                borderColor: ["#2ec4b6", "#ffb703", "#e63946", "#3a86ff", "#ff006e", "#8338ec"][idx % 6],
-                                backgroundColor: "transparent",
-                                borderWidth: 2,
-                                tension: 0.1
-                            }));
-
-                            let chart = new Chart(ctx, {
-                                type: 'line',
-                                data: { labels: labels, datasets: datasets },
-                                options: {
-                                    responsive: true,
-                                    maintainAspectRatio: false,
-                                    plugins: { legend: { labels: { color: '#d0d7e3' } } },
-                                    scales: {
-                                        x: { ticks: { color: '#8492a6' }, grid: { color: '#222d42' } },
-                                        y: { ticks: { color: '#8492a6' }, grid: { color: '#222d42' } }
-                                    }
-                                }
-                            });
-                            chartInstances.push(chart);
-                        }
-                    }, 50);
-                }
-            });
+        function escapeHtml(text) {
+            if (!text) return '';
+            let map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return String(text).replace(/[&<>"']/g, m => map[m]);
         }
     </script>
 </body>
