@@ -1865,7 +1865,6 @@
                 li.style.flexDirection = "column";
                 li.style.gap = "8px";
 
-                // Montar lista de pilotos inscritos para exibir logo abaixo do nome
                 let pilotosObj = camp.pilotosInscritos || {};
                 let nomesPilotos = Object.values(pilotosObj).map(p => p.nome);
                 let listaPilotosHtml = "";
@@ -3638,45 +3637,87 @@
                     let headLap = document.getElementById(`head-lapbyLap-${bateriaKey}`);
                     let bodyLap = document.getElementById(`body-lapbyLap-${bateriaKey}`);
                     if (headLap && bodyLap) {
-                        let maxV = Math.max(...dadosSessao.map(p => p.laps.length));
-                        let ths = `<th>PILOTO</th>`;
-                        for (let i = 1; i <= maxV; i++) ths += `<th>V${i}</th>`;
+                        let maxV = Math.max(...dadosSessao.map(p => (p.laps || []).length));
+                        let ths = `<th>PILOTO</th><th style="text-align: center;">TOTAL</th>`;
+                        for (let i = 1; i <= maxV; i++) ths += `<th style="text-align: center;">V${i}</th>`;
                         headLap.innerHTML = ths;
 
-                        let liderVoltasAcumuladas = [];
+                        let pilotosProcessados = dadosSessao.map(p => {
+                            let laps = (p.laps || []).map(l => typeof l === 'object' ? Number(l.tempo) : Number(l));
+                            let acumulados = [];
+                            let soma = 0;
+                            laps.forEach(t => {
+                                if (t > 0) { soma += t; acumulados.push(soma); }
+                                else { acumulados.push(null); }
+                            });
+                            return {
+                                piloto: p.piloto,
+                                laps: laps,
+                                acumulados: acumulados,
+                                totalVoltas: laps.filter(t => t > 0).length,
+                                tempoTotal: soma
+                            };
+                        });
+
+                        let lideresPorVolta = [];
                         for (let v = 0; v < maxV; v++) {
-                            let temposV = dadosSessao.map(p => {
-                                let laps = (p.laps || []).map(l => typeof l === 'object' ? Number(l.tempo) : Number(l));
-                                let ac = 0;
-                                for (let i = 0; i <= v && i < laps.length; i++) if (laps[i] > 0) ac += laps[i];
-                                return { piloto: p.piloto, ac: ac > 0 ? ac : 999999, temVolta: v < laps.length && laps[v] > 0 };
+                            let validosNaVolta = pilotosProcessados.map(p => {
+                                let ac = p.acumulados[v];
+                                let completou = (ac !== null && ac !== undefined);
+                                return {
+                                    piloto: p.piloto,
+                                    voltasCompletadas: v + 1,
+                                    acumulado: completou ? ac : 999999,
+                                    temVolta: completou
+                                };
                             }).filter(x => x.temVolta);
-                            temposV.sort((a, b) => a.ac - b.ac);
-                            liderVoltasAcumuladas.push(temposV[0] ? temposV[0].ac : 0);
+
+                            if (validosNaVolta.length > 0) {
+                                validosNaVolta.sort((a, b) => a.acumulado - b.acumulado);
+                                lideresPorVolta.push(validosNaVolta[0]);
+                            } else {
+                                lideresPorVolta.push(null);
+                            }
                         }
 
-                        bodyLap.innerHTML = dadosSessao.map((p, pIdx) => {
+                        bodyLap.innerHTML = pilotosProcessados.map(p => {
                             let meta = pilotosMetadadosCache[p.piloto] || {};
                             let nomeExib = meta.apelido ? `${p.piloto} (${meta.apelido})` : p.piloto;
                             let tds = `<td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(p.piloto)}')">${escapeHtml(nomeExib)}</a></strong></td>`;
-                            let laps = (p.laps || []).map(l => typeof l === 'object' ? Number(l.tempo) : Number(l));
+                            tds += `<td style="text-align: center; font-weight: bold; color: var(--accent-gold);">${p.totalVoltas}v (${p.tempoTotal > 0 ? p.tempoTotal.toFixed(3) + 's' : '-'})</td>`;
+
+                            let melhorVoltaPiloto = p.laps.length > 0 ? Math.min(...p.laps.filter(t => t > 0)) : null;
 
                             for (let v = 0; v < maxV; v++) {
-                                let tVal = laps[v];
-                                if (tVal && tVal > 0) {
-                                    let ac = 0;
-                                    for (let i = 0; i <= v; i++) if (laps[i] > 0) ac += laps[i];
+                                let tVal = p.laps[v];
+                                let acVal = p.acumulados[v];
+                                let lider = lideresPorVolta[v];
+
+                                if (tVal && tVal > 0 && acVal !== null) {
+                                    let isMelhor = (melhorVoltaPiloto !== null && Math.abs(tVal - melhorVoltaPiloto) < 0.0001);
+                                    let estiloVolta = isMelhor ? `color: var(--accent-green); font-weight: bold;` : `color: var(--text-main);`;
                                     
-                                    let tempoLiderAcumulado = liderVoltasAcumuladas[v];
                                     let gapTxt = "";
-                                    if (pIdx > 0 && tempoLiderAcumulado > 0 && ac > 0) {
-                                        let diff = ac - tempoLiderAcumulado;
-                                        if (diff > 0) gapTxt = `<span class="lap-gap">+${diff.toFixed(3)}s</span>`;
+                                    if (lider && lider.piloto !== p.piloto) {
+                                        let diff = acVal - lider.acumulado;
+                                        if (diff > 0) {
+                                            gapTxt = `<span class="lap-gap" style="font-size: 0.72rem; color: var(--accent-gap); display: block;">+${diff.toFixed(3)}s</span>`;
+                                        }
+                                    } else if (lider && lider.piloto === p.piloto) {
+                                        gapTxt = `<span style="font-size: 0.70rem; color: var(--accent-gold); display: block;">LÍDER</span>`;
                                     }
 
-                                    tds += `<td><div class="lap-cell-inline"><span>${tVal.toFixed(3)}s</span>${gapTxt}</div></td>`;
+                                    tds += `<td style="text-align: center; vertical-align: middle; background: rgba(28, 38, 59, 0.3); border-radius: 4px; padding: 6px;">
+                                        <div style="${estiloVolta}">${tVal.toFixed(3)}s</div>
+                                        ${gapTxt}
+                                    </td>`;
                                 } else {
-                                    tds += `<td style="color: var(--text-muted);">-</td>`;
+                                    let voltasAtrasTxt = "-";
+                                    if (lider && p.totalVoltas < (v + 1)) {
+                                        let vAtras = (v + 1) - p.totalVoltas;
+                                        voltasAtrasTxt = `<span style="color: var(--accent-red); font-size: 0.75rem; font-weight: bold;">+${vAtras}v</span>`;
+                                    }
+                                    tds += `<td style="text-align: center; color: var(--text-muted); vertical-align: middle;">${voltasAtrasTxt}</td>`;
                                 }
                             }
                             return `<tr>${tds}</tr>`;
@@ -3685,10 +3726,6 @@
                 }
             });
         }
-
-        window.gerarRelatórioPDF = function() {
-            window.print();
-        };
     </script>
 </body>
 </html>
