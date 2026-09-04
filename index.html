@@ -196,7 +196,6 @@
         .footer-logo-img { height: 36px; width: auto; object-fit: contain; border-radius: 4px; padding: 3px 6px; background: #ffffff; }
         .footer-copyright { font-size: 0.85rem; color: var(--text-muted); text-align: center; border-top: 1px solid var(--border-card); padding-top: 12px; width: 100%; }
 
-        /* Estilos adicionais específicos do módulo de compras coletivas integradas */
         .btn-compras-coletivas-trigger { background: linear-gradient(135deg, #2a9d8f 0%, #264653 100%); color: #fff; font-weight: 700; }
         .btn-action-primary { background: var(--accent-cc); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
         .btn-action-danger { background: var(--accent-red); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
@@ -222,7 +221,7 @@
 
     <!-- Modais do Sistema -->
     
-    <!-- 🏎️ Modal Ficha do Piloto -->
+    <!-- Ficha do Piloto -->
     <div id="piloto-modal" class="custom-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -233,7 +232,7 @@
         </div>
     </div>
 
-    <!-- 📤 Modal Central de Uploads -->
+    <!-- Central de Uploads -->
     <div id="upload-modal" class="custom-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -267,11 +266,11 @@
         </div>
     </div>
 
-    <!-- 🏆 Campeonatos -->
+    <!-- Championship Manager -->
     <div id="campeonatos-modal" class="custom-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">🏆 Campeonatos</div>
+                <div class="modal-title">🏆 Championship Manager</div>
                 <button class="modal-close" onclick="fecharModalCampeonatos()">&times;</button>
             </div>
             <div class="modal-body">
@@ -291,7 +290,7 @@
                         </ul>
                     </div>
 
-                    <!-- PAINEL ZROUND COM 5 ABAS PRINCIPAIS -->
+                    <!-- Painel ZRound com 5 Abas -->
                     <div id="container-zround-campeonato" style="display: none; flex-direction: column; gap: 15px; border-top: 2px solid var(--border-card); padding-top: 15px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                             <h3 id="zround-camp-titulo-ativo" style="font-size: 1.1rem; color: var(--accent-gold);">Configurando: --</h3>
@@ -306,7 +305,7 @@
                             <button class="zround-tab-btn" onclick="mudarAbaZRound(5)">📊 5. Classificação Geral do Campeonato</button>
                         </div>
 
-                        <!-- ABA 1 -->
+                        <!-- Aba 1 -->
                         <div id="zround-aba-1" class="zround-aba-content" style="display: flex; flex-direction: column; gap: 12px;">
                             <div class="config-panel">
                                 <div class="config-panel-title">Parâmetros Gerais e Sistema de Pontuação</div>
@@ -337,7 +336,7 @@
                             </div>
                         </div>
 
-                        <!-- ABA 2 -->
+                        <!-- Aba 2 -->
                         <div id="zround-aba-2" class="zround-aba-content" style="display: none; flex-direction: column; gap: 12px;">
                             <div class="config-panel">
                                 <div class="config-panel-title">Inscrição Manual ou Importação de Pilotos do Banco Geral</div>
@@ -362,9 +361,8 @@
                             </div>
                         </div>
 
-                        <!-- ABA 3 -->
+                        <!-- Aba 3 -->
                         <div id="zround-aba-3" class="zround-aba-content" style="display: none; flex-direction: column; gap: 12px;">
-                            <!-- 1. Sessão de Treino Exclusiva para Grid -->
                             <div class="upload-box" style="border-color: var(--accent-gold); background: rgba(255, 183, 3, 0.04);">
                                 <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase;">⏱️ Sessão de Treino Exclusiva para Grid (Regra: 3 Melhores Voltas, descarta a pior)</span>
                                 <p style="font-size: 0.82rem; color: var(--text-muted);">Envie um relatório de treino oficial para o cálculo automático do grid de largada inicial da primeira prova.</p>
@@ -375,7 +373,6 @@
                                 <div id="status-treino-grid-info" style="font-size: 0.8rem; color: var(--accent-green); margin-top: 4px;">Nenhum treino de grid processado.</div>
                             </div>
 
-                            <!-- 2. Importar Provas Existentes do Banco Principal do Site -->
                             <div class="upload-box" style="border-style: solid; border-color: var(--border-card);">
                                 <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">📥 Importar Provas Existentes do Banco Principal do Site</span>
                                 <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 6px;">
@@ -386,7 +383,6 @@
                                 </div>
                             </div>
 
-                            <!-- 3. Upload e Seleção de Provas (Banco de Dados Separado) -->
                             <div class="upload-box">
                                 <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase;">📤 Upload e Seleção de Provas (Banco de Dados Separado)</span>
                                 <p style="font-size: 0.82rem; color: var(--text-muted);">Adicione novos arquivos de provas (PDF/HTML) para o banco dedicado deste campeonato.</p>
@@ -404,7 +400,7 @@
                             </div>
                         </div>
 
-                        <!-- ABA 4 -->
+                        <!-- Aba 4 -->
                         <div id="zround-aba-4" class="zround-aba-content" style="display: none; flex-direction: column; gap: 12px;">
                             <div class="config-panel">
                                 <div class="config-panel-title">Formação dos Grids de Largada</div>
@@ -417,7 +413,7 @@
                             </div>
                         </div>
 
-                        <!-- ABA 5 -->
+                        <!-- Aba 5 -->
                         <div id="zround-aba-5" class="zround-aba-content" style="display: none; flex-direction: column; gap: 12px;">
                             <div class="config-panel">
                                 <div class="config-panel-title">Classificação Geral do Campeonato</div>
@@ -441,9 +437,37 @@
         </div>
     </div>
 
-    <!-- MODAIS DO MÓDULO DE COMPRAS COLETIVAS INTEGRADO -->
+    <!-- Participar do Campeonato -->
+    <div id="participar-campeonato-modal" class="custom-modal" style="z-index: 10500;">
+        <div class="modal-content" style="max-width: 600px; border-top-color: var(--accent-gold);">
+            <div class="modal-header" style="background: var(--bg-card-header);">
+                <div class="modal-title" id="participar-modal-titulo">🏎️ Participar do Campeonato</div>
+                <button class="modal-close" onclick="fecharModalParticipar()">&times;</button>
+            </div>
+            <div class="modal-body" style="display: flex; flex-direction: column; gap: 16px;">
+                <p style="font-size: 0.85rem; color: var(--text-muted);">Selecione um piloto para inscrever neste campeonato:</p>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                    <select id="participar-select-piloto" class="config-select">
+                        <option value="">Selecione um piloto do banco geral...</option>
+                    </select>
+                    <button class="btn-action-primary" onclick="adicionarPilotoPorModalParticipar()">Inscrever Piloto</button>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+                    <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Pilotos Inscritos no Campeonato</span>
+                    <div class="table-container">
+                        <table>
+                            <thead><tr><th>Piloto</th><th style="text-align: right;">Ação</th></tr></thead>
+                            <tbody id="participar-tabela-inscritos">
+                                <tr><td colspan="2" style="text-align: center; color: var(--text-muted);">Nenhum piloto inscrito.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <!-- MODAL DE RESUMO FISCAL E PAGAMENTO RÁPIDO (COMPLETO) -->
+    <!-- Modais de Compras Coletivas -->
     <div id="resumo-fiscal-modal" class="custom-modal" style="z-index: 11000;">
         <div class="modal-content" style="border-top-color: #480ca8; max-width: 900px;">
             <div class="modal-header" style="background: #2b1b4e;">
@@ -454,7 +478,6 @@
         </div>
     </div>
 
-    <!-- MODAL DE SENHA SEGURA (MASCARADA) -->
     <div id="modal-senha-segura" class="custom-modal" style="z-index: 20000;">
         <div class="modal-content" style="max-width: 380px; border-top-color: var(--accent-gold);">
             <div class="modal-header" style="background: var(--bg-card-header);">
@@ -472,7 +495,6 @@
         </div>
     </div>
 
-    <!-- MODAL PRINCIPAL DE COMPRAS COLETIVAS -->
     <div id="campeonatos2-modal" class="custom-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -481,7 +503,6 @@
             </div>
             <div class="modal-body">
                 
-                <!-- Visão 1: Lista de Compras -->
                 <div id="lista-compras-coletivas-view" style="display: flex; flex-direction: column; gap: 16px;">
                     <div style="display: flex; flex-direction: column; gap: 8px;">
                         <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Compras Coletivas Cadastradas</span>
@@ -497,20 +518,17 @@
                     </div>
                 </div>
 
-                <!-- Visão 2: Painel de Gerenciamento da Compra Específica -->
                 <div id="painel-unica-compra-view" style="display: none; flex-direction: column; gap: 14px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-bottom: 2px solid var(--border-card); padding-bottom: 10px;">
                         <h3 id="cc-titulo-gerenciamento" style="font-size: 1.1rem; color: var(--accent-cc);">Cadastro: --</h3>
                         <button class="btn-action-danger" style="background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-card);" onclick="voltarListaCompras()">⬅️ Voltar para Lista</button>
                     </div>
 
-                    <!-- Bloco 1: Nome -->
                     <div class="config-panel">
                         <div class="config-panel-title">1. Nome da Compra</div>
                         <input type="text" id="cc-form-nome" class="config-input" style="width: 100%;" oninput="atualizarCalculosCC()">
                     </div>
 
-                    <!-- Bloco 2: Itens e Atribuição -->
                     <div class="config-panel">
                         <div class="config-panel-title">2. Itens da Compra e Atribuição (Individual ou Todos)</div>
                         <div class="table-container">
@@ -532,14 +550,12 @@
                         </div>
                         <button class="btn-action-primary" style="background: var(--accent-cc); width: max-content;" onclick="adicionarItemCC()">➕ Adicionar Item</button>
                         
-                        <!-- Aviso de Itens Não Atribuídos -->
                         <div id="cc-aviso-nao-atribuidos" style="display: none; background: rgba(230, 57, 70, 0.1); border: 1px dashed var(--accent-red); padding: 10px; border-radius: 6px; margin-top: 8px;">
                             <span style="font-size: 0.78rem; font-weight: bold; color: var(--accent-red);">⚠️ Itens pendentes de atribuição ou extras detectados. Atribua-os abaixo para regularizar o rateio:</span>
                             <div id="cc-lista-nao-atribuidos" style="margin-top: 6px; font-size: 0.8rem; color: var(--text-main);"></div>
                         </div>
                     </div>
 
-                    <!-- Bloco 3: Financeiro / Fiscal -->
                     <div class="config-panel">
                         <div class="config-panel-title">3. Informações Financeiras e Fiscais</div>
                         <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;">
@@ -556,7 +572,6 @@
                         </div>
                     </div>
 
-                    <!-- Bloco 4: Gestão de Participantes, Rateio e Recibos -->
                     <div class="config-panel">
                         <div class="config-panel-title">4. Gestão de Participantes, Rateio e Comprovantes de Recibo</div>
                         <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 8px;">
@@ -582,7 +597,6 @@
                         </div>
                     </div>
 
-                    <!-- Bloco 5: Pix e Upload de PDF do QR Code -->
                     <div class="config-panel">
                         <div class="config-panel-title">5. Chave Pix do Comprador (<span id="cc-label-nome-comprador">Nenhum</span>)</div>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
@@ -598,7 +612,6 @@
                         </div>
                     </div>
 
-                    <!-- Bloco 6: Rastreio -->
                     <div class="config-panel" style="border-color: #3f37c9;">
                         <div class="config-panel-title" style="color: #3f37c9;">6. Código de Rastreio</div>
                         <input type="text" id="cc-form-rastreio" class="config-input" style="width: 100%; font-weight: bold;" placeholder="Ex: NL123456789BR" oninput="atualizarCalculosCC()">
@@ -618,7 +631,7 @@
     </div>
 
 
-    <!-- Estrutura Principal do Dashboard: Cabeçalho do Site, Filtros Dinâmicos e Cartões de KPIs Globais -->
+    <!-- Estrutura Principal do Dashboard -->
     <div class="dashboard-container">
         <header class="header">
             <div class="brand-title">
@@ -627,7 +640,7 @@
             </div>
             <div class="header-actions">
                 <button class="btn btn-upload-modal-trigger" onclick="abrirModalUpload()">📤 Uploads</button>
-                <button class="btn btn-campeonatos-trigger" onclick="abrirModalCampeonatos()">🏆 Campeonatos</button>
+                <button class="btn btn-campeonatos-trigger" onclick="abrirModalCampeonatos()">🏆 Championship Manager</button>
                 <button class="btn btn-compras-coletivas-trigger" onclick="abrirModalCampeonatos2()">🛒 Gestão de Compras Coletivas</button>
                 <button class="btn btn-pdf-global" onclick="gerarRelatórioPDF()">📄 Gerar relatório</button>
             </div>
@@ -733,6 +746,7 @@
         let pilotosMetadadosCache = {};
         let mesclagensCache = {};
         let campeonatoAtivoKey = null;
+        let campeonatoParticiparKey = null;
         let replayStates = {};
 
         let compraAbertaKey = null;
@@ -810,13 +824,6 @@
             });
         }
 
-        function mapaPosicoesChegada(participantesValidos) {
-            const ordenados = ordenarParticipantesBateria(participantesValidos);
-            const mapa = {};
-            ordenados.forEach((p, idx) => { mapa[p.piloto] = idx + 1; });
-            return { ordenados, mapa };
-        }
-
         document.addEventListener("DOMContentLoaded", () => {
             if (db) {
                 db.ref('.info/connected').on('value', snap => {
@@ -864,6 +871,9 @@
                     if (campeonatoAtivoKey && campeonatosCache[campeonatoAtivoKey]) {
                         atualizarInterfacePainelZRound();
                     }
+                    if (campeonatoParticiparKey && campeonatosCache[campeonatoParticiparKey]) {
+                        renderizarTabelaInscritosParticipar();
+                    }
                 });
 
                 db.ref('comprasColetivas').on('value', snapshot => {
@@ -906,6 +916,90 @@
         };
         window.fecharModalCampeonatos = function() { document.getElementById('campeonatos-modal').style.display = 'none'; };
 
+        window.abrirModalParticipar = function(key) {
+            campeonatoParticiparKey = key;
+            let camp = campeonatosCache[key];
+            if (!camp) return;
+
+            document.getElementById('participar-modal-titulo').innerHTML = `🏎️ Participar: <span style="color: var(--accent-gold);">${escapeHtml(camp.nome)}</span>`;
+            
+            let select = document.getElementById('participar-select-piloto');
+            let dadosBase = obterTodosDadosConsolidados();
+            let pilotosSet = new Set();
+            dadosBase.forEach(d => { if(d.piloto) pilotosSet.add(d.piloto); });
+            Object.keys(pilotosMetadadosCache).forEach(p => pilotosSet.add(p));
+
+            let optionsHtml = `<option value="">Selecione um piloto já cadastrado no site...</option>`;
+            Array.from(pilotosSet).sort().forEach(p => {
+                let meta = pilotosMetadadosCache[p] || {};
+                let label = meta.apelido ? `${p} (${meta.apelido})` : p;
+                optionsHtml += `<option value="${escapeHtml(p)}">${escapeHtml(label)}</option>`;
+            });
+            select.innerHTML = optionsHtml;
+
+            renderizarTabelaInscritosParticipar();
+            document.getElementById('participar-campeonato-modal').style.display = 'flex';
+        };
+
+        window.fecharModalParticipar = function() {
+            document.getElementById('participar-campeonato-modal').style.display = 'none';
+            campeonatoParticiparKey = null;
+        };
+
+        function renderizarTabelaInscritosParticipar() {
+            if (!campeonatoParticiparKey || !campeonatosCache[campeonatoParticiparKey]) return;
+            let camp = campeonatosCache[campeonatoParticiparKey];
+            let tbody = document.getElementById('participar-tabela-inscritos');
+            let pilotosInscritos = camp.pilotosInscritos || {};
+            let pKeys = Object.keys(pilotosInscritos);
+
+            if (pKeys.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: var(--text-muted);">Nenhum piloto inscrito.</td></tr>`;
+            } else {
+                tbody.innerHTML = pKeys.map(pk => `
+                    <tr>
+                        <td><strong>${escapeHtml(pilotosInscritos[pk].nome)}</strong></td>
+                        <td style="text-align: right;"><button class="btn-text-action" style="color: var(--accent-red);" onclick="removerPilotoParticipar('${pk}')">Remover</button></td>
+                    </tr>`).join('');
+            }
+        }
+
+        window.adicionarPilotoPorModalParticipar = async function() {
+            if (!campeonatoParticiparKey || !db) return;
+            let select = document.getElementById('participar-select-piloto');
+            let nomeP = select.value;
+            if (!nomeP) { alert("Selecione um piloto."); return; }
+
+            let camp = campeonatosCache[campeonatoParticiparKey];
+            let inscritos = camp.pilotosInscritos || {};
+            let jaInscrito = Object.values(inscritos).some(p => p.nome === nomeP);
+            if (jaInscrito) { alert("Este piloto já está inscrito neste campeonato."); return; }
+
+            let pKey = "pil_" + nomeP.toLowerCase().replace(/[^a-z0-9]/g, "_") + "_" + Date.now();
+            try {
+                await db.ref(`campeonatos/${campeonatoParticiparKey}/pilotosInscritos/${pKey}`).set({ nome: nomeP });
+                select.value = "";
+                renderizarTabelaInscritosParticipar();
+                if (campeonatoAtivoKey === campeonatoParticiparKey) {
+                    atualizarInterfacePainelZRound();
+                }
+                alert(`Piloto "${nomeP}" inscrito com sucesso!`);
+            } catch (err) { alert("Erro ao inscrever piloto: " + err.message); }
+        };
+
+        window.removerPilotoParticipar = async function(pk) {
+            if (!campeonatoParticiparKey || !db) return;
+            if (confirm("Deseja remover este piloto do campeonato?")) {
+                try {
+                    await db.ref(`campeonatos/${campeonatoParticiparKey}/pilotosInscritos/${pk}`).remove();
+                    renderizarTabelaInscritosParticipar();
+                    if (campeonatoAtivoKey === campeonatoParticiparKey) {
+                        atualizarInterfacePainelZRound();
+                    }
+                } catch (err) { alert("Erro ao remover piloto: " + err.message); }
+            }
+        };
+
         function solicitarSenhaSegura(mensagem) {
             return new Promise((resolve) => {
                 document.getElementById('modal-senha-mensagem').innerText = mensagem || "Digite a senha unificada de segurança:";
@@ -941,7 +1035,7 @@
                     if (callback) callback();
                 }).catch(err => {
                     console.error("Erro ao salvar no Firebase:", err);
-                    alert("⚠️ Erro ao salvar no banco de dados online. Verifique suas permissões.");
+                    alert("⚠️ Erro ao salvar no banco de dados online.");
                 });
             }
         }
@@ -1728,8 +1822,8 @@
         };
 
         window.criarCampeonatoProtegido = async function() {
-            let senha = await solicitarSenhaSegura("🔒 Digite a senha unificada de segurança para criar um novo campeonato:");
-            if (senha === null || senha === undefined) return;
+            let senha = prompt("🔒 Digite a senha unificada de segurança para criar um novo campeonato:");
+            if (senha === null) return;
             if (senha !== SENHA_UNIFICADA) { alert("❌ Senha incorreta!"); return; }
 
             let nomeCamp = document.getElementById('input-nome-campeonato').value.trim();
@@ -1777,7 +1871,10 @@
                             <span style="font-size: 1rem; font-weight: 700; color: var(--text-title);">🏆 ${escapeHtml(camp.nome)}</span>
                             <span style="font-size: 0.78rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-left: 8px; background: ${statusCamp === 'Finalizada' ? 'rgba(46,196,182,0.15); color: var(--accent-green);' : 'rgba(255,183,3,0.15); color: var(--accent-gold);'}">${statusCamp}</span>
                         </div>
-                        <button class="btn-action-primary" style="padding: 5px 14px; font-size: 0.8rem;" onclick="selecionarCampeonatoZRound('${key}')">Gerenciar</button>
+                        <div style="display: flex; gap: 6px;">
+                            <button class="btn-action-primary" style="padding: 5px 14px; font-size: 0.8rem; background: var(--accent-gold); color: #000;" onclick="abrirModalParticipar('${key}')">Participar</button>
+                            <button class="btn-action-primary" style="padding: 5px 14px; font-size: 0.8rem;" onclick="selecionarCampeonatoZRound('${key}')">Gerenciar</button>
+                        </div>
                     </div>`;
 
                 let podiumHtml = "";
@@ -1921,8 +2018,8 @@
 
         window.excluirCampeonatoAtual = async function() {
             if (!campeonatoAtivoKey || !db) { alert("Nenhum campeonato selecionado."); return; }
-            let senha = await solicitarSenhaSegura("🔒 Digite a senha unificada de segurança para EXCLUIR este campeonato:");
-            if (senha === null || senha === undefined) return;
+            let senha = prompt("🔒 Digite a senha unificada de segurança para EXCLUIR este campeonato:");
+            if (senha === null) return;
             if (senha !== SENHA_UNIFICADA) { alert("❌ Senha incorreta!"); return; }
             let camp = campeonatosCache[campeonatoAtivoKey];
             let nomeCamp = camp ? camp.nome : "este campeonato";
@@ -2679,9 +2776,9 @@
             modal.style.display = 'flex';
         };
 
-        window.abrirPainelMesclagem = async function(nomePilotoDestino) {
-            let senha = await solicitarSenhaSegura("🔒 Digite a senha unificada de segurança para mesclar perfis de pilotos:");
-            if (senha === null || senha === undefined) return;
+        window.abrirPainelMesclagem = function(nomePilotoDestino) {
+            let senha = prompt("🔒 Digite a senha unificada de segurança para mesclar perfis de pilotos:");
+            if (senha === null) return;
             if (senha !== SENHA_UNIFICADA) { alert("❌ Senha incorreta!"); return; }
 
             let todosPilotosSet = new Set();
@@ -2739,8 +2836,8 @@
         };
 
         window.desfazerMesclagemPiloto = async function(origemKey) {
-            let senha = await solicitarSenhaSegura("🔒 Digite a senha unificada de segurança para desfazer a mesclagem:");
-            if (senha === null || senha === undefined) return;
+            let senha = prompt("🔒 Digite a senha unificada de segurança para desfazer a mesclagem:");
+            if (senha === null) return;
             if (senha !== SENHA_UNIFICADA) { alert("❌ Senha incorreta!"); return; }
             if (!db) { alert("Erro: Firebase desconectado."); return; }
             try {
@@ -2750,9 +2847,9 @@
             } catch (err) { alert("Erro ao desfazer mesclagem: " + err.message); }
         };
 
-        window.solicitarSenhaConfiguracao = async function(nomePiloto) {
-            let senha = await solicitarSenhaSegura("🔒 Digite a senha unificada de segurança para acessar as configurações protegidas do piloto:");
-            if (senha === null || senha === undefined) return;
+        window.solicitarSenhaConfiguracao = function(nomePiloto) {
+            let senha = prompt("🔒 Digite a senha unificada de segurança para acessar as configurações protegidas do piloto:");
+            if (senha === null) return;
             if (senha !== SENHA_UNIFICADA) { alert("❌ Senha incorreta!"); return; }
 
             let meta = pilotosMetadadosCache[nomePiloto] || {};
@@ -2833,6 +2930,7 @@
             if (event.target === document.getElementById('campeonatos-modal')) document.getElementById('campeonatos-modal').style.display = 'none';
             if (event.target === document.getElementById('campeonatos2-modal')) document.getElementById('campeonatos2-modal').style.display = 'none';
             if (event.target === document.getElementById('resumo-fiscal-modal')) document.getElementById('resumo-fiscal-modal').style.display = 'none';
+            if (event.target === document.getElementById('participar-campeonato-modal')) document.getElementById('participar-campeonato-modal').style.display = 'none';
             if (event.target === document.getElementById('modal-senha-segura')) document.getElementById('modal-senha-segura').style.display = 'none';
         };
 
@@ -3330,13 +3428,16 @@
                 }
                 if (modulosSel.includes('mod-comentarios')) {
                     html += `
-                        <div class="comments-section">
-                            <div class="comments-title">💬 Comentários e Reações</div>
-                            <div class="comments-list" id="comments-list-${safeKey}"></div>
-                            <div class="comment-form">
-                                <input type="text" id="comment-name-${safeKey}" class="comment-input-name" placeholder="Seu Nome">
-                                <input type="text" id="comment-text-${safeKey}" class="comment-input-text" placeholder="Escreva seu comentário..." onkeypress="if(event.key === 'Enter') enviarComentario('${bateriaKey}')">
-                                <button class="btn-comment" onclick="enviarComentario('${bateriaKey}')">Enviar</button>
+                        <div class="card">
+                            <div class="card-header">💬 Comentários e Reações</div>
+                            <div class="comments-section" style="margin-top:0;">
+                                <div class="comments-title">Comentários da Sessão</div>
+                                <div class="comments-list" id="comments-list-${safeKey}"></div>
+                                <div class="comment-form">
+                                    <input type="text" id="comment-name-${safeKey}" class="comment-input-name" placeholder="Seu Nome">
+                                    <input type="text" id="comment-text-${safeKey}" class="comment-input-text" placeholder="Escreva um comentário..." onkeydown="if(event.key==='Enter')enviarComentario('${bateriaKey}')">
+                                    <button class="btn-comment" onclick="enviarComentario('${bateriaKey}')">Enviar</button>
+                                </div>
                             </div>
                         </div>`;
                 }
@@ -3345,197 +3446,229 @@
                 mainContainer.appendChild(sessionBlock);
 
                 escutarCurtidas(bateriaKey);
-                if (modulosSel.includes('mod-comentarios')) escutarComentarios(bateriaKey);
-
-                let paleta = ["#2ec4b6", "#ffb703", "#e63946", "#3a86ff", "#ff006e", "#8338ec"];
-                let maxV = Math.max(...dadosSessao.map(d => d.laps ? d.laps.length : 0));
+                escutarComentarios(bateriaKey);
 
                 if (modulosSel.includes('mod-grafico')) {
-                    let canvasEl = document.getElementById(`chart-${bateriaKey}`);
-                    if (canvasEl) {
-                        let labels = Array.from({length: maxV}, (_, i) => `V${i+1}`);
-                        let datasets = dadosSessao.map((d, idx) => {
-                            let meta = pilotosMetadadosCache[d.piloto] || {}; 
-                            let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
-                            
-                            let carroImgObj = null;
-                            if (meta.imagemCarro) {
-                                carroImgObj = new Image();
-                                carroImgObj.src = meta.imagemCarro;
-                                carroImgObj.width = 36;
-                                carroImgObj.height = 16;
-                            }
-                            let voltasDestePiloto = d.laps ? d.laps.length : 0;
-
-                            return { 
-                                label: nomeExib, 
-                                data: (d.laps || []).map(l => typeof l === 'object' ? l.tempo : l), 
-                                borderColor: paleta[idx % paleta.length], 
-                                backgroundColor: paleta[idx % paleta.length], 
-                                borderWidth: 2, 
-                                tension: 0.2,
-                                pointRadius: (ctx) => {
-                                    if (ctx.dataIndex === voltasDestePiloto - 1 && carroImgObj) return 18;
-                                    return 3;
-                                },
-                                pointStyle: (ctx) => {
-                                    if (ctx.dataIndex === voltasDestePiloto - 1 && carroImgObj) return carroImgObj;
-                                    return 'circle';
-                                }
+                    let ctx = document.getElementById(`chart-${bateriaKey}`);
+                    if (ctx) {
+                        let datasets = dadosSessao.map((p, idx) => {
+                            let meta = pilotosMetadadosCache[p.piloto] || {};
+                            let labelExib = meta.apelido ? `${p.piloto} (${meta.apelido})` : p.piloto;
+                            let cor = ["#e63946", "#2ec4b6", "#ffb703", "#3a86ff", "#ff006e", "#8338ec"][idx % 6];
+                            let lapsData = (p.laps || []).map(l => typeof l === 'object' ? l.tempo : l);
+                            return {
+                                label: labelExib,
+                                data: lapsData,
+                                borderColor: cor,
+                                backgroundColor: cor,
+                                borderWidth: 2,
+                                pointRadius: 3,
+                                tension: 0.1
                             };
                         });
-                        chartInstances.push(new Chart(canvasEl.getContext('2d'), { type: 'line', data: { labels, datasets }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#8492a6' } } } } }));
+
+                        let maxVoltas = Math.max(...dadosSessao.map(p => (p.laps || []).length));
+                        let labelsVoltas = Array.from({length: maxVoltas}, (_, i) => `V${i + 1}`);
+
+                        let chartIns = new Chart(ctx, {
+                            type: 'line',
+                            data: { labels: labelsVoltas, datasets: datasets },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { legend: { labels: { color: '#d0d7e3', font: { size: 11 } } } },
+                                scales: {
+                                    x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8492a6' } },
+                                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8492a6' } }
+                                }
+                            }
+                        });
+                        chartInstances.push(chartIns);
                     }
                 }
 
-                let maxVPos = Math.max(...todosBat.map(d => d.laps ? d.laps.length : 0));
-                let matrizPos = {};
-                todosBat.forEach(d => { matrizPos[d.piloto] = []; });
-                for (let v = 0; v < maxVPos; v++) {
-                    let acumulados = [];
-                    todosBat.forEach(d => {
-                        if (d.laps) {
-                            let soma = 0, completadas = 0;
-                            for (let k = 0; k <= Math.min(v, d.laps.length - 1); k++) { let t = typeof d.laps[k] === 'object' ? d.laps[k].tempo : d.laps[k]; if (t) { soma += t; completadas++; } }
-                            acumulados.push({ piloto: d.piloto, tempoAcumulado: soma, voltas: completadas });
-                        }
-                    });
-                    acumulados.sort((a,b) => b.voltas !== a.voltas ? b.voltas - a.voltas : a.tempoAcumulado - b.tempoAcumulado);
-                    acumulados.forEach((item, posIdx) => { if (matrizPos[item.piloto]) matrizPos[item.piloto].push(posIdx + 1); });
-                }
-
                 if (modulosSel.includes('mod-grafico-posicao')) {
-                    let canvasPosEl = document.getElementById(`chart-pos-${bateriaKey}`);
-                    if (canvasPosEl) {
-                        let labelsPos = Array.from({length: maxVPos}, (_, i) => `Volta ${i+1}`);
-                        let datasetsPos = dadosSessao.map((d, idx) => {
-                            let meta = pilotosMetadadosCache[d.piloto] || {}; 
-                            let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
-                            let dadosPiloto = matrizPos[d.piloto] || []; 
-                            let voltasPiloto = d.laps ? d.laps.length : maxVPos;
-                            let pontosGrafico = labelsPos.map((_, i) => (i < voltasPiloto ? dadosPiloto[i] : null));
-                            let corPiloto = paleta[idx % paleta.length];
-                            
-                            let carroImgObj = null;
-                            if (meta.imagemCarro) {
-                                carroImgObj = new Image();
-                                carroImgObj.src = meta.imagemCarro;
-                                carroImgObj.width = 36;
-                                carroImgObj.height = 16;
-                            }
+                    let ctxPos = document.getElementById(`chart-pos-${bateriaKey}`);
+                    if (ctxPos) {
+                        let maxVoltas = Math.max(...dadosSessao.map(p => (p.laps || []).length));
+                        let labelsVoltas = Array.from({length: maxVoltas}, (_, i) => `V${i + 1}`);
 
-                            return { 
-                                label: nomeExib, 
-                                data: pontosGrafico, 
-                                borderColor: corPiloto, 
-                                backgroundColor: corPiloto, 
-                                borderWidth: 3, 
-                                tension: 0.1, 
-                                spanGaps: false, 
-                                pointRadius: (ctx) => {
-                                    if (ctx.dataIndex === voltasPiloto - 1) {
-                                        if (carroImgObj) return 18;
-                                        return (voltasPiloto < maxVPos) ? 8 : 6;
-                                    }
-                                    return 3;
-                                }, 
-                                pointStyle: (ctx) => {
-                                    if (ctx.dataIndex === voltasPiloto - 1) {
-                                        if (carroImgObj) return carroImgObj;
-                                        return (voltasPiloto < maxVPos) ? 'crossRot' : 'circle';
-                                    }
-                                    return 'circle';
-                                }, 
-                                pointBackgroundColor: (ctx) => (ctx.dataIndex === voltasPiloto - 1 && voltasPiloto < maxVPos && !carroImgObj) ? '#ff0000' : corPiloto 
+                        let matrizPosicoes = {};
+                        dadosSessao.forEach(p => { matrizPosicoes[p.piloto] = []; });
+
+                        for (let v = 0; v < maxVoltas; v++) {
+                            let temposNaVolta = dadosSessao.map(p => {
+                                let laps = (p.laps || []).map(l => typeof l === 'object' ? Number(l.tempo) : Number(l));
+                                let acumulado = 0;
+                                for (let i = 0; i <= v && i < laps.length; i++) {
+                                    if (laps[i] > 0) acumulado += laps[i];
+                                }
+                                return { piloto: p.piloto, tempoAcumulado: acumulado > 0 ? acumulado : 999999, qtdVoltas: v < laps.length && laps[v] > 0 ? v + 1 : 0 };
+                            });
+
+                            temposNaVolta.sort((a, b) => {
+                                if (a.qtdVoltas !== b.qtdVoltas) return b.qtdVoltas - a.qtdVoltas;
+                                return a.tempoAcumulado - b.tempoAcumulado;
+                            });
+
+                            temposNaVolta.forEach((item, posIdx) => {
+                                if (matrizPosicoes[item.piloto]) {
+                                    matrizPosicoes[item.piloto].push(posIdx + 1);
+                                }
+                            });
+                        }
+
+                        let datasetsPos = Object.keys(matrizPosicoes).map((piloto, idx) => {
+                            let meta = pilotosMetadadosCache[piloto] || {};
+                            let labelExib = meta.apelido ? `${piloto} (${meta.apelido})` : piloto;
+                            let cor = ["#e63946", "#2ec4b6", "#ffb703", "#3a86ff", "#ff006e", "#8338ec"][idx % 6];
+                            return {
+                                label: labelExib,
+                                data: matrizPosicoes[piloto],
+                                borderColor: cor,
+                                backgroundColor: cor,
+                                borderWidth: 2,
+                                pointRadius: 3,
+                                tension: 0.1
                             };
                         });
-                        chartInstances.push(new Chart(canvasPosEl.getContext('2d'), { type: 'line', data: { labels: labelsPos, datasets: datasetsPos }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { reverse: true, min: 1, max: todosBat.length + 0.5, ticks: { stepSize: 1, color: '#8492a6' }, grid: { color: 'rgba(255,255,255,0.05)' } }, x: { ticks: { color: '#8492a6' }, grid: { color: 'rgba(255,255,255,0.05)' } } }, plugins: { legend: { labels: { color: '#8492a6' } } } } }));
+
+                        let chartPosIns = new Chart(ctxPos, {
+                            type: 'line',
+                            data: { labels: labelsVoltas, datasets: datasetsPos },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                scales: {
+                                    y: {
+                                        reverse: true,
+                                        min: 1,
+                                        ticks: { stepSize: 1, color: '#8492a6' },
+                                        grid: { color: 'rgba(255,255,255,0.05)' }
+                                    },
+                                    x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8492a6' } }
+                                },
+                                plugins: { legend: { labels: { color: '#d0d7e3', font: { size: 11 } } } }
+                            }
+                        });
+                        chartInstances.push(chartPosIns);
                     }
                 }
 
                 if (modulosSel.includes('mod-log-posicao')) {
                     let logContainer = document.getElementById(`pos-logs-${bateriaKey}`);
                     if (logContainer) {
-                        let logsHtml = '';
-                        for (let v = 1; v < maxVPos; v++) {
-                            let mudancas = [];
-                            todosBat.forEach(d => {
-                                let arr = matrizPos[d.piloto] || []; let pAnt = arr[v-1], pAtu = arr[v];
-                                let meta = pilotosMetadadosCache[d.piloto] || {}; let nomeExib = meta.apelido ? `${d.piloto} (${meta.apelido})` : d.piloto;
-                                if (pAnt && pAtu && pAtu !== pAnt) {
-                                    let linkPilotoStr = `<a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(d.piloto)}')">${escapeHtml(nomeExib)}</a>`;
-                                    if (pAtu < pAnt) mudancas.push(`🔥 <strong style="color:${paleta[0]}">${linkPilotoStr}</strong> ganhou (<span class="tag-gain">${pAnt}º para ${pAtu}º</span>)`);
-                                    else mudancas.push(`💧 <strong style="color:${paleta[0]}">${linkPilotoStr}</strong> perdeu (<span class="tag-loss">${pAnt}º para ${pAtu}º</span>)`);
+                        let maxVoltas = Math.max(...dadosSessao.map(p => (p.laps || []).length));
+                        let logHtml = '';
+                        let posAnterior = {};
+
+                        for (let v = 0; v < maxVoltas; v++) {
+                            let temposNaVolta = dadosSessao.map(p => {
+                                let laps = (p.laps || []).map(l => typeof l === 'object' ? Number(l.tempo) : Number(l));
+                                let acumulado = 0;
+                                for (let i = 0; i <= v && i < laps.length; i++) {
+                                    if (laps[i] > 0) acumulado += laps[i];
                                 }
+                                return { piloto: p.piloto, tempoAcumulado: acumulado > 0 ? acumulado : 999999, qtdVoltas: v < laps.length && laps[v] > 0 ? v + 1 : 0 };
                             });
-                            if (mudancas.length > 0) logsHtml += `<div class="position-log-item">🔄 <strong>Volta ${v+1}:</strong> ${mudancas.join(' | ')}</div>`;
+
+                            temposNaVolta.sort((a, b) => {
+                                if (a.qtdVoltas !== b.qtdVoltas) return b.qtdVoltas - a.qtdVoltas;
+                                return a.tempoAcumulado - b.tempoAcumulado;
+                            });
+
+                            let mudancasNaVolta = [];
+                            temposNaVolta.forEach((item, posIdx) => {
+                                let novaPos = posIdx + 1;
+                                let antigaPos = posAnterior[item.piloto];
+                                if (antigaPos !== undefined && antigaPos !== novaPos) {
+                                    let diff = antigaPos - novaPos;
+                                    if (diff > 0) {
+                                        mudancasNaVolta.push(`<div class="position-log-item">Volta ${v + 1}: <strong style="color:var(--text-title);">${escapeHtml(item.piloto)}</strong> ganhou ${diff} ${diff === 1 ? 'posição' : 'posições'} (${antigaPos}º ➡️ ${novaPos}º) <span class="tag-gain">▲</span></div>`);
+                                    } else {
+                                        let perdas = Math.abs(diff);
+                                        mudancasNaVolta.push(`<div class="position-log-item">Volta ${v + 1}: <strong style="color:var(--text-title);">${escapeHtml(item.piloto)}</strong> perdeu ${perdas} ${perdas === 1 ? 'posição' : 'posições'} (${antigaPos}º ➡️ ${novaPos}º) <span class="tag-loss">▼</span></div>`);
+                                    }
+                                }
+                                posAnterior[item.piloto] = novaPos;
+                            });
+
+                            if (mudancasNaVolta.length > 0) {
+                                logHtml += mudancasNaVolta.join('');
+                            }
                         }
-                        logContainer.innerHTML = logsHtml || `<div class="position-log-item">Nenhuma ultrapassagem registrada nesta bateria.</div>`;
+
+                        logContainer.innerHTML = logHtml || `<div style="font-size: 0.85rem; color: var(--text-muted); text-align: center;">Nenhuma alteração de posição registrada nas voltas.</div>`;
                     }
                 }
 
-                if (modulosSel.includes('mod-classificacao-analise')) {
-                    let tbodyLaudo = document.getElementById(`tabela-unificada-${bateriaKey}`);
-                    if (tbodyLaudo) {
-                        tbodyLaudo.innerHTML = participantesOrdenados.map((p, idx) => {
-                            let meta = pilotosMetadadosCache[p.piloto] || {};
-                            let nomeExib = meta.apelido ? `${p.piloto} (${meta.apelido})` : p.piloto;
-                            let velEscala = (26 / (p.melhorVoltaVal || 1)) * 3.6 * 28;
-                            return `
-                                <tr>
-                                    <td><span class="pos-badge">${idx + 1}º</span></td>
-                                    <td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(p.piloto)}')">${escapeHtml(nomeExib)}</a></strong></td>
-                                    <td><span class="session-badge">${escapeHtml(formatarNomeSessao(p.sessao))}</span></td>
-                                    <td>${p.laps ? p.laps.length : 0}v</td>
-                                    <td class="text-green">${p.melhorVoltaTxt || '--'}</td>
-                                    <td style="color: var(--accent-gold); font-weight: bold;">${Number.isFinite(velEscala) ? velEscala.toFixed(1) + ' km/h' : '--'}</td>
-                                    <td>${p.mediaTxt || '--'}</td>
-                                    <td>${p.desvio || '±0,000s'}</td>
-                                </tr>
-                            `;
-                        }).join('');
-                    }
+                let tbodyTabela = document.getElementById(`tabela-unificada-${bateriaKey}`);
+                if (tbodyTabela) {
+                    tbodyTabela.innerHTML = dadosSessao.map((p, idx) => {
+                        let meta = pilotosMetadadosCache[p.piloto] || {};
+                        let nomeExib = meta.apelido ? `${p.piloto} (${meta.apelido})` : p.piloto;
+                        let velEscala = p.melhorVoltaVal ? (26 / p.melhorVoltaVal) * 3.6 * 28 : 0;
+                        return `
+                            <tr>
+                                <td><span class="pos-badge">${idx + 1}º</span></td>
+                                <td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(p.piloto)}')">${escapeHtml(nomeExib)}</a></strong></td>
+                                <td><span class="session-badge">${escapeHtml(nomeSessaoFormatado)}</span></td>
+                                <td>${p.laps.length}</td>
+                                <td class="text-green">${escapeHtml(p.melhorVoltaTxt)}</td>
+                                <td style="color: var(--accent-gold); font-weight: bold;">${velEscala > 0 ? velEscala.toFixed(1) + ' km/h' : '--'}</td>
+                                <td>${escapeHtml(p.mediaTxt)}</td>
+                                <td>${escapeHtml(p.desvio)}</td>
+                            </tr>
+                        `;
+                    }).join('');
                 }
 
                 if (modulosSel.includes('mod-tabela-geral')) {
-                    let theadLaps = document.getElementById(`head-lapbyLap-${bateriaKey}`);
-                    let tbodyLaps = document.getElementById(`body-lapbyLap-${bateriaKey}`);
-                    if (theadLaps && tbodyLaps) {
-                        let maxVoltasSessao = Math.max(...participantesOrdenados.map(p => (p.laps || []).length));
-                        let headersHtml = `<th>POS</th><th>PILOTO</th>`;
-                        for (let v = 1; v <= maxVoltasSessao; v++) { headersHtml += `<th>V${v}</th>`; }
-                        headersHtml += `<th>MELHOR</th><th>TOTAL</th>`;
-                        theadLaps.innerHTML = headersHtml;
+                    let headLap = document.getElementById(`head-lapbyLap-${bateriaKey}`);
+                    let bodyLap = document.getElementById(`body-lapbyLap-${bateriaKey}`);
+                    if (headLap && bodyLap) {
+                        let maxV = Math.max(...dadosSessao.map(p => p.laps.length));
+                        let ths = `<th>PILOTO</th>`;
+                        for (let i = 1; i <= maxV; i++) ths += `<th>V${i}</th>`;
+                        headLap.innerHTML = ths;
 
-                        let melhorVoltaAbsolutaSessao = Math.min(...participantesOrdenados.map(p => p.melhorVoltaVal || 999));
+                        let liderVoltasAcumuladas = [];
+                        for (let v = 0; v < maxV; v++) {
+                            let temposV = dadosSessao.map(p => {
+                                let laps = (p.laps || []).map(l => typeof l === 'object' ? Number(l.tempo) : Number(l));
+                                let ac = 0;
+                                for (let i = 0; i <= v && i < laps.length; i++) if (laps[i] > 0) ac += laps[i];
+                                return { piloto: p.piloto, ac: ac > 0 ? ac : 999999, temVolta: v < laps.length && laps[v] > 0 };
+                            }).filter(x => x.temVolta);
+                            temposV.sort((a, b) => a.ac - b.ac);
+                            liderVoltasAcumuladas.push(temposV[0] ? temposV[0].ac : 0);
+                        }
 
-                        tbodyLaps.innerHTML = participantesOrdenados.map((p, idx) => {
+                        bodyLap.innerHTML = dadosSessao.map((p, pIdx) => {
                             let meta = pilotosMetadadosCache[p.piloto] || {};
                             let nomeExib = meta.apelido ? `${p.piloto} (${meta.apelido})` : p.piloto;
-                            let voltasArr = p.laps || [];
-                            let tempoTotalPiloto = voltasArr.reduce((a, b) => a + b, 0);
+                            let tds = `<td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(p.piloto)}')">${escapeHtml(nomeExib)}</a></strong></td>`;
+                            let laps = (p.laps || []).map(l => typeof l === 'object' ? Number(l.tempo) : Number(l));
 
-                            let voltasTdHtml = '';
-                            for (let v = 0; v < maxVoltasSessao; v++) {
-                                let tVal = voltasArr[v];
-                                if (tVal !== undefined && !isNaN(tVal)) {
-                                    let isMelhorAbs = Math.abs(tVal - melhorVoltaAbsolutaSessao) < 0.0001;
-                                    let badgeClass = isMelhorAbs ? 'leader-badge' : '';
-                                    voltasTdHtml += `<td><span class="${badgeClass}">${tVal.toFixed(3).replace('.', ',')}</span></td>`;
+                            for (let v = 0; v < maxV; v++) {
+                                let tVal = laps[v];
+                                if (tVal && tVal > 0) {
+                                    let ac = 0;
+                                    for (let i = 0; i <= v; i++) if (laps[i] > 0) ac += laps[i];
+                                    
+                                    let tempoLiderAcumulado = liderVoltasAcumuladas[v];
+                                    let gapTxt = "";
+                                    if (pIdx > 0 && tempoLiderAcumulado > 0 && ac > 0) {
+                                        let diff = ac - tempoLiderAcumulado;
+                                        if (diff > 0) gapTxt = `<span class="lap-gap">+${diff.toFixed(3)}s</span>`;
+                                    }
+
+                                    tds += `<td><div class="lap-cell-inline"><span>${tVal.toFixed(3)}s</span>${gapTxt}</div></td>`;
                                 } else {
-                                    voltasTdHtml += `<td style="color: var(--text-muted);">-</td>`;
+                                    tds += `<td style="color: var(--text-muted);">-</td>`;
                                 }
                             }
-
-                            return `
-                                <tr>
-                                    <td><span class="pos-badge">${idx + 1}º</span></td>
-                                    <td><strong><a class="piloto-link" onclick="abrirDossiePiloto('${escapeHtml(p.piloto)}')">${escapeHtml(nomeExib)}</a></strong></td>
-                                    ${voltasTdHtml}
-                                    <td class="text-green" style="font-weight: bold;">${p.melhorVoltaTxt || '--'}</td>
-                                    <td style="font-weight: bold; color: var(--accent-gold);">${tempoTotalPiloto > 0 ? tempoTotalPiloto.toFixed(3).replace('.', ',') + 's' : '--'}</td>
-                                </tr>
-                            `;
+                            return `<tr>${tds}</tr>`;
                         }).join('');
                     }
                 }
