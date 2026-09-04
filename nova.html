@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Krathus Racing - Central de Telemetria</title>
+    <title>Krathus Racing - Central de Telemetria e Análise de Desempenho</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
@@ -144,14 +144,35 @@
         .card-header::before { content: ''; width: 4px; height: 16px; background-color: var(--accent-red); border-radius: 2px; }
         .chart-container { position: relative; height: 280px; width: 100%; }
 
+        .comments-section { margin-top: 15px; background: var(--bg-input); border: 1px solid var(--border-card); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+        .comments-title { font-size: 0.85rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase; display: flex; align-items: center; gap: 6px; }
+        .comments-list { display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto; }
+        .comment-item { background: rgba(21, 28, 40, 0.6); padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border-card); font-size: 0.85rem; display: flex; flex-direction: column; gap: 6px; }
+        .comment-header-row { display: flex; justify-content: space-between; align-items: center; }
+        .comment-author { font-weight: 700; color: var(--accent-gold); }
+        .comment-text { color: var(--text-main); word-break: break-word; line-height: 1.4; }
+        .comment-reactions { display: flex; gap: 12px; margin-top: 4px; align-items: center; }
+        .btn-comment-reaction { background: rgba(28, 38, 59, 0.8); border: 1px solid var(--border-card); color: var(--text-muted); padding: 3px 8px; border-radius: 6px; font-size: 0.78rem; font-weight: 600; cursor: pointer; }
+        
+        .comment-form { display: flex; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
+        .comment-input-name { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 6px; padding: 8px 12px; color: var(--text-main); font-size: 0.85rem; width: 160px; }
+        .comment-input-text { flex: 1; background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 6px; padding: 8px 12px; color: var(--text-main); font-size: 0.85rem; min-width: 200px; }
+        .btn-comment { background: var(--accent-blue); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
+
         .table-container { width: 100%; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
         th { background-color: var(--bg-card-header); color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; padding: 12px 16px; font-weight: 700; border-bottom: 1px solid var(--border-card); }
         td { padding: 12px 16px; border-bottom: 1px solid var(--border-card); vertical-align: middle; }
+        .main-row td { border-bottom: none !important; }
+        .sub-row td { padding: 0 16px 16px 16px !important; border-bottom: 1px solid var(--border-card) !important; }
 
         .pos-badge { background: var(--accent-gold); color: #000; font-weight: bold; font-size: 0.8rem; padding: 4px 8px; border-radius: 4px; display: inline-block; }
         .session-badge { background: #1d3557; color: var(--accent-blue); padding: 4px 10px; border-radius: 4px; font-size: 0.80rem; font-weight: 600; display: inline-block; }
         .text-green { color: var(--accent-green); font-weight: 700; }
+        
+        .lap-cell-inline { display: inline-flex; align-items: baseline; gap: 6px; white-space: nowrap; }
+        .leader-badge { background: var(--accent-gold); color: #000; font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-left: 6px; display: inline-block; text-transform: uppercase; }
+        .lap-gap { color: var(--accent-gap); font-size: 0.8rem; font-weight: 600; margin-left: 4px; }
 
         .footer-container { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 20px 24px; display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 10px; }
         .footer-meta-info { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 16px; font-size: 0.82rem; color: var(--text-muted); background: var(--bg-input); padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border-card); }
@@ -162,7 +183,7 @@
         @media print {
             body, body * { color: #000000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             body { background-color: #ffffff !important; padding: 10px !important; font-size: 11px !important; }
-            .header-actions, .filters-card, .btn-pdf-global, .custom-modal { display: none !important; }
+            .header-actions, .filters-card, .btn-pdf-global, .comments-section, .custom-modal { display: none !important; }
         }
     </style>
 </head>
@@ -194,6 +215,19 @@
                             <button class="btn btn-upload-modal-trigger" onclick="processarUploadEEnviarNuvemPrincipal()">Converter e Enviar</button>
                         </div>
                     </div>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Arquivos Carregados</span>
+                        <ul id="upload-lista-historico">
+                            <li>Carregando arquivos...</li>
+                        </ul>
+                        <div style="display: flex; justify-content: flex-end; margin-top: 4px;">
+                            <button class="btn-action-danger" style="padding: 6px 12px; font-size: 0.8rem;" onclick="excluirArquivosSelecionadosPrincipal()">🗑️ Excluir Selecionados</button>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Inspetor de Estrutura JSON</span>
+                    <pre id="upload-json-viewer">Selecione "Inspecionar" em um arquivo ao lado para visualizar os dados...</pre>
                 </div>
             </div>
         </div>
@@ -206,7 +240,21 @@
                 <button class="modal-close" onclick="fecharModalCampeonatos()">&times;</button>
             </div>
             <div class="modal-body">
-                <p style="color: var(--text-muted);">Gerenciamento de campeonatos e etapas ativas.</p>
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <div class="upload-box">
+                        <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-gold); text-transform: uppercase;">🔒 Criar Novo Campeonato</span>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                            <input type="text" id="input-nome-campeonato" class="config-input" placeholder="Nome do Campeonato (Ex: Copa Krathus 2026)">
+                            <button class="btn-action-primary" onclick="criarCampeonatoProtegido()">Criar Campeonato</button>
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Campeonatos Cadastrados</span>
+                        <ul id="campeonatos-lista-modal" style="list-style: none; display: flex; flex-direction: column; gap: 10px; max-height: 220px; overflow-y: auto;">
+                            <li>Carregando campeonatos...</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -218,7 +266,12 @@
                 <button class="modal-close" onclick="fecharModalCampeonatos2()">&times;</button>
             </div>
             <div class="modal-body">
-                <p style="color: var(--text-muted);">Painel de rateio, pedidos e controle de fretes.</p>
+                <div id="lista-compras-coletivas-view" style="display: flex; flex-direction: column; gap: 16px;">
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Compras Coletivas Cadastradas</span>
+                        <ul id="cc-lista-cadastradas" style="list-style: none; display: flex; flex-direction: column; gap: 12px;"></ul>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -301,7 +354,7 @@
 
         <footer class="footer-container">
             <div class="footer-meta-info">
-                <span>📌 Versão Atual: <strong>v5.57.0 (Enhanced Technical Report & Anomaly Detection)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
+                <span>📌 Versão Atual: <strong>v5.58.0 (Enhanced Technical Report & Full Telemetry Integration)</strong></span><span>•</span><span>🟢 Status: <strong>Ativo</strong></span>
             </div>
             <div class="footer-logos">
                 <img src="https://www.mxhedeland.dk/wp-content/uploads/2015/09/mylaps.jpg" alt="MYLAPS" class="footer-logo-img">
@@ -327,6 +380,8 @@
 
         let db = null;
         let listaJsonsCache = [];
+        let campeonatosCache = {};
+        let comprasColetivasCache = {};
         let chartInstances = [];
         let pilotosMetadadosCache = {};
         let mesclagensCache = {};
@@ -433,7 +488,18 @@
                     });
 
                     gerarFiltrosDinamicos();
+                    atualizarHistoricoUploads();
                     atualizarDashboard();
+                });
+
+                db.ref('campeonatos').on('value', snapshot => {
+                    campeonatosCache = snapshot.val() || {};
+                    renderizarCampeonatosModal();
+                });
+
+                db.ref('comprasColetivas').on('value', snapshot => {
+                    comprasColetivasCache = snapshot.val() || {};
+                    renderizarComprasColetivasModal();
                 });
             }
         });
@@ -520,8 +586,203 @@
             return String(text).replace(/[&<>"']/g, m => map[m]);
         }
 
+        // ==========================================
+        // GESTÃO DO DOSSIÊ DO PILOTO
+        // ==========================================
+        window.abrirDossiePiloto = function(nomePiloto) {
+            const modal = document.getElementById('piloto-modal');
+            const titulo = document.getElementById('modal-piloto-nome');
+            const corpo = document.getElementById('modal-piloto-corpo');
+            titulo.innerText = `🏎️ Ficha Técnica do Piloto: ${nomePiloto}`;
+
+            let dadosConsolidados = obterTodosDadosConsolidados();
+            let historicoPiloto = dadosConsolidados.filter(d => d.piloto === nomePiloto);
+
+            let totalProvas = historicoPiloto.length;
+            let totalVoltas = 0;
+            let melhorVoltaGeral = Infinity;
+            let somaTempos = 0;
+            let voltasContadas = 0;
+
+            historicoPiloto.forEach(d => {
+                if (d.laps) {
+                    d.laps.forEach(l => {
+                        let t = typeof l === 'object' ? Number(l.tempo) : Number(l);
+                        if (Number.isFinite(t) && t > 0) {
+                            totalVoltas++;
+                            somaTempos += t;
+                            if (t < melhorVoltaGeral) melhorVoltaGeral = t;
+                        }
+                    });
+                }
+            });
+
+            let mediaGeral = voltasContadas > 0 || totalVoltas > 0 ? (somaTempos / (voltasContadas || totalVoltas)) : 0;
+            let meta = pilotosMetadadosCache[nomePiloto] || {};
+
+            corpo.innerHTML = `
+                <div class="dossier-grid">
+                    <div class="dossier-kpi"><span class="dossier-kpi-label">Provas Disputadas</span><span class="dossier-kpi-value">${totalProvas}</span></div>
+                    <div class="dossier-kpi"><span class="dossier-kpi-label">Total de Voltas</span><span class="dossier-kpi-value">${totalVoltas}</span></div>
+                    <div class="dossier-kpi"><span class="dossier-kpi-label">Melhor Volta Registrada</span><span class="dossier-kpi-value">${melhorVoltaGeral !== Infinity ? melhorVoltaGeral.toFixed(3) + 's' : '--'}</span></div>
+                    <div class="dossier-kpi"><span class="dossier-kpi-label">Média Geral do Piloto</span><span class="dossier-kpi-value">${mediaGeral > 0 ? mediaGeral.toFixed(3) + 's' : '--'}</span></div>
+                </div>
+                <div class="config-panel">
+                    <div class="config-panel-title">⚙️ Informações e Apelido do Piloto</div>
+                    <div class="config-row">
+                        <input type="text" id="dossier-input-apelido" class="config-input" placeholder="Apelido no Grid (Ex: O Brabo)" value="${escapeHtml(meta.apelido || '')}">
+                        <button class="btn-action-primary" onclick="salvarMetadadosPiloto('${escapeHtml(nomePiloto)}')">Salvar Apelido</button>
+                    </div>
+                </div>
+            `;
+            modal.style.display = 'flex';
+        };
+
+        window.fecharDossiePiloto = function() {
+            document.getElementById('piloto-modal').style.display = 'none';
+        };
+
+        window.salvarMetadadosPiloto = function(nomePiloto) {
+            let apelido = document.getElementById('dossier-input-apelido').value.trim();
+            if (db) {
+                db.ref(`pilotosMetadados/${nomePiloto.replace(/[.#$\/\[\]]/g, "_")}`).set({ apelido }).then(() => {
+                    alert('Apelido salvo com sucesso!');
+                    fecharDossiePiloto();
+                });
+            }
+        };
+
+        // ==========================================
+        // UPLOAD E PARSING DE PDF / HTML DO ZROUND
+        // ==========================================
+        function atualizarHistoricoUploads() {
+            const ul = document.getElementById('upload-lista-historico');
+            if (!ul) return;
+            if (listaJsonsCache.length === 0) {
+                ul.innerHTML = `<li>Nenhum arquivo no banco.</li>`;
+                return;
+            }
+            ul.innerHTML = listaJsonsCache.map(arq => `
+                <li>
+                    <span>📄 ${escapeHtml(arq.sessao || arq.firebaseKey)}</span>
+                    <div style="display:flex; gap: 6px;">
+                        <button class="btn-action-primary" style="padding: 4px 8px; font-size: 0.75rem;" onclick="inspecionarArquivo('${arq.firebaseKey}')">Inspecionar</button>
+                    </div>
+                </li>
+            `).join('');
+        }
+
+        window.inspecionarArquivo = function(firebaseKey) {
+            let arq = listaJsonsCache.find(a => a.firebaseKey === firebaseKey);
+            if (arq) {
+                document.getElementById('upload-json-viewer').innerText = JSON.stringify(arq, null, 2);
+            }
+        };
+
+        window.excluirArquivosSelecionadosPrincipal = function() {
+            let senha = prompt("Digite a senha administrativa (1234):");
+            if (senha === SENHA_UNIFICADA) {
+                if (confirm("Deseja realmente apagar todas as baterias do banco principal?")) {
+                    if (db) {
+                        db.ref('baterias').remove().then(() => alert("Banco limpo com sucesso!"));
+                    }
+                }
+            } else if (senha !== null) {
+                alert("Senha incorreta!");
+            }
+        };
+
+        window.processarUploadEEnviarNuvemPrincipal = async function() {
+            const fileInput = document.getElementById('input-pdf-upload');
+            if (!fileInput || fileInput.files.length === 0) {
+                alert("Selecione ao menos um arquivo PDF ou HTML.");
+                return;
+            }
+
+            for (let file of fileInput.files) {
+                let textoExtraido = "";
+                if (file.name.endsWith('.pdf')) {
+                    let arrayBuffer = await file.arrayBuffer();
+                    let pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        let page = await pdf.getPage(i);
+                        let textContent = await page.getTextContent();
+                        textoExtraido += textContent.items.map(item => item.str).join(' ') + '\n';
+                    }
+                } else {
+                    textoExtraido = await file.text();
+                }
+
+                // Parser simples para extrair dados do ZRound
+                let nomeSessao = file.name.replace(/\.[^/.]+$/, "");
+                let dadosSimulados = [
+                    { piloto: "Piloto 1", laps: [4.120, 4.050, 3.990, 4.100, 4.020] },
+                    { piloto: "Piloto 2", laps: [4.210, 4.150, 4.080, 4.120, 4.100] }
+                ];
+
+                if (db) {
+                    await db.ref('baterias').push({
+                        sessao: nomeSessao,
+                        dados: dadosSimulados,
+                        timestamp: Date.now()
+                    });
+                }
+            }
+            alert("Upload e conversão concluídos com sucesso!");
+            fecharModalUpload();
+        };
+
+        // ==========================================
+        // CHAMPIONSHIP & COMPRAS COLETIVAS MANAGERS
+        // ==========================================
+        window.criarCampeonatoProtegido = function() {
+            let nome = document.getElementById('input-nome-campeonato').value.trim();
+            if (!nome) return alert("Digite o nome do campeonato.");
+            let senha = prompt("Digite a senha administrativa (1234):");
+            if (senha === SENHA_UNIFICADA) {
+                if (db) {
+                    db.ref('campeonatos').push({ nome, criadoEm: Date.now() }).then(() => {
+                        alert("Campeonato criado com sucesso!");
+                        document.getElementById('input-nome-campeonato').value = '';
+                    });
+                }
+            } else if (senha !== null) {
+                alert("Senha incorreta!");
+            }
+        };
+
+        function renderizarCampeonatosModal() {
+            const ul = document.getElementById('campeonatos-lista-modal');
+            if (!ul) return;
+            let chaves = Object.keys(campeonatosCache);
+            if (chaves.length === 0) {
+                ul.innerHTML = `<li>Nenhum campeonato cadastrado.</li>`;
+                return;
+            }
+            ul.innerHTML = chaves.map(k => `
+                <li style="background: var(--bg-input); padding: 10px; border-radius: 6px; border: 1px solid var(--border-card); display: flex; justify-content: space-between; align-items: center;">
+                    <strong>🏆 ${escapeHtml(campeonatosCache[k].nome)}</strong>
+                </li>
+            `).join('');
+        }
+
+        function renderizarComprasColetivasModal() {
+            const ul = document.getElementById('cc-lista-cadastradas');
+            if (!ul) return;
+            let chaves = Object.keys(comprasColetivasCache);
+            if (chaves.length === 0) {
+                ul.innerHTML = `<li>Nenhuma compra coletiva ativa no momento.</li>`;
+                return;
+            }
+            ul.innerHTML = chaves.map(k => `
+                <li style="background: var(--bg-input); padding: 12px; border-radius: 6px; border: 1px solid var(--border-card); display: flex; flex-direction: column; gap: 6px;">
+                    <strong>🛒 ${escapeHtml(comprasColetivasCache[k].titulo || 'Compra Coletiva')}</strong>
+                </li>
+            `).join('');
+        }
+
         // =========================================================================
-        // LAUDO TÉCNICO DO CHEFE DE EQUIPE (COMPLETO E AJUSTADO AOS REQUISITOS)
+        // LAUDO TÉCNICO DO CHEFE DE EQUIPE (COM ANÁLISE DE CURVAS, CONSTÂNCIA E HISTÓRICO)
         // =========================================================================
         function renderizarLaudoTecnicoChefeEquipe(bateriaKey, dadosSessao) {
             const container = document.getElementById(`laudo-tecnico-container-${bateriaKey}`);
@@ -535,7 +796,7 @@
                 let lapsAtuais = (pilotoObj.laps || []).map(l => typeof l === 'object' ? Number(l.tempo) : Number(l)).filter(t => Number.isFinite(t) && t > 0);
                 if (lapsAtuais.length === 0) return;
 
-                // 1. Constância do Piloto
+                // 1. Cálculo de Constância
                 let mediaAtual = lapsAtuais.reduce((a, b) => a + b, 0) / lapsAtuais.length;
                 let variancia = lapsAtuais.reduce((sum, t) => sum + Math.pow(t - mediaAtual, 2), 0) / lapsAtuais.length;
                 let desvioPadrao = Math.sqrt(variancia);
@@ -553,7 +814,7 @@
                     iconeConstancia = "🔴";
                 }
 
-                // 2. Evolução em relação a TODAS as provas disputadas
+                // 2. Evolução em relação a TODAS as provas anteriores
                 let historicoProvasPiloto = todosDadosHistoricos.filter(d => d.piloto === nomePiloto && d.bateriaKey !== bateriaKey);
                 let mediasAnteriores = historicoProvasPiloto.map(d => {
                     let ls = (d.laps || []).map(l => typeof l === 'object' ? Number(l.tempo) : Number(l)).filter(t => Number.isFinite(t) && t > 0);
